@@ -1,0 +1,9 @@
+﻿namespace OutbreakTracker2.Sandbox;
+
+internal class Program
+{
+    static void Main(string[] args)
+    {
+        Console.WriteLine("Hello, World!");
+    }
+}
