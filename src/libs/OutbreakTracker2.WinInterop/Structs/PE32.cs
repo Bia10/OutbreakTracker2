@@ -1,6 +1,8 @@
-namespace OutbreakTracker2.WinInterop;
+using System.Runtime.InteropServices;
 
-internal static class PE32
+namespace OutbreakTracker2.WinInterop.Structs;
+
+public static class PE32
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct ImageDosHeader

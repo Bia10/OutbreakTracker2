@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutbreakTracker2.UnitTests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutbreakTracker2.WinInterop", "libs\OutbreakTracker2.WinInterop\OutbreakTracker2.WinInterop.csproj", "{729C9662-A7C3-44B8-BD4A-2FD9763D6951}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutbreakTracker2.PCSX2Memory", "libs\OutbreakTracker2.PCSX2Memory\OutbreakTracker2.PCSX2Memory.csproj", "{CCC53498-C404-45A5-9400-AE7F6FC8B2E2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutbreakTracker2.Memory", "libs\OutbreakTracker2.Memory\OutbreakTracker2.Memory.csproj", "{AADDC293-4BEC-4583-BB45-E3BC5E4BBF22}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{729C9662-A7C3-44B8-BD4A-2FD9763D6951}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{729C9662-A7C3-44B8-BD4A-2FD9763D6951}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{729C9662-A7C3-44B8-BD4A-2FD9763D6951}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCC53498-C404-45A5-9400-AE7F6FC8B2E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCC53498-C404-45A5-9400-AE7F6FC8B2E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCC53498-C404-45A5-9400-AE7F6FC8B2E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCC53498-C404-45A5-9400-AE7F6FC8B2E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AADDC293-4BEC-4583-BB45-E3BC5E4BBF22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AADDC293-4BEC-4583-BB45-E3BC5E4BBF22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AADDC293-4BEC-4583-BB45-E3BC5E4BBF22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AADDC293-4BEC-4583-BB45-E3BC5E4BBF22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

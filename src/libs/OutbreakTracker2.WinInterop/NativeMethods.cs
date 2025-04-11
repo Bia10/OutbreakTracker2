@@ -1,16 +1,21 @@
-﻿namespace OutbreakTracker2.WinInterop;
+﻿using System.Runtime.InteropServices;
 
-public static class NativeMethods
+namespace OutbreakTracker2.WinInterop;
+
+public static partial class NativeMethods
 {
-    [DllImport("kernel32.dll", CharSet = CharSet.Auto, EntryPoint = "OpenProcess", SetLastError = true)]
-    internal static extern nint OpenProcess(ProcessAccessFlags dwDesiredAccess, bool bInheritHandle, int dwProcessId);
+    [LibraryImport("kernel32.dll", EntryPoint = "OpenProcess", SetLastError = true)]
+    public static partial nint OpenProcess(ProcessAccessFlags dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, int dwProcessId);
 
-    [DllImport("kernel32.dll", CharSet = CharSet.Auto, EntryPoint = "ReadProcessMemory", SetLastError = true)]
-    internal static extern bool ReadProcessMemory(nint hProcess, nint lpBaseAddress, [Out] byte[] lpBuffer, int nSize, out int lpNumberOfBytesRead);
+    [LibraryImport("kernel32.dll", EntryPoint = "ReadProcessMemory", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool ReadProcessMemory(nint hProcess, nint lpBaseAddress, [Out] byte[] lpBuffer, int nSize, out int lpNumberOfBytesRead);
 
-    [DllImport("kernel32.dll", CharSet = CharSet.Auto, EntryPoint = "WriteProcessMemory", SetLastError = true)]
-    internal static extern bool WriteProcessMemory(nint hProcess, nint lpBaseAddress, byte[] lpBuffer, int nSize, nint lpNumberOfBytesWritten);
+    [LibraryImport("kernel32.dll", EntryPoint = "WriteProcessMemory", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool WriteProcessMemory(nint hProcess, nint lpBaseAddress, byte[] lpBuffer, int nSize, nint lpNumberOfBytesWritten);
 
-    [DllImport("kernel32.dll", EntryPoint = "CloseHandle", SetLastError = true)]
-    internal static extern bool CloseHandle(nint handle);
+    [LibraryImport("kernel32.dll", EntryPoint = "CloseHandle", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool CloseHandle(nint handle);
 }
