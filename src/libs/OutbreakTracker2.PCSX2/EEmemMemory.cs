@@ -1,7 +1,7 @@
 ﻿using OutbreakTracker2.Memory;
 using OutbreakTracker2.WinInterop.Structs;
 
-namespace OutbreakTracker2.PCSX2Memory;
+namespace OutbreakTracker2.PCSX2;
 
 public sealed class EEmemMemory : IEEmemMemory
 {

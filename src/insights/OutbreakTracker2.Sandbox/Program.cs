@@ -1,6 +1,6 @@
 ﻿using OutbreakTracker2.Memory;
 using OutbreakTracker2.Outbreak.Readers;
-using OutbreakTracker2.PCSX2Memory;
+using OutbreakTracker2.PCSX2;
 
 namespace OutbreakTracker2.Sandbox;
 

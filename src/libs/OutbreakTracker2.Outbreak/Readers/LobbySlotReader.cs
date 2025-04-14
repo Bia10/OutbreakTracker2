@@ -1,6 +1,6 @@
 ﻿using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Serialization;
-using OutbreakTracker2.PCSX2Memory;
+using OutbreakTracker2.PCSX2;
 using System.Text.Json;
 using OutbreakTracker2.Outbreak.Enums;
 

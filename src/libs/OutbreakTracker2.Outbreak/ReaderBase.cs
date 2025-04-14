@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using OutbreakTracker2.Memory;
 using OutbreakTracker2.Outbreak.Enums;
-using OutbreakTracker2.PCSX2Memory;
+using OutbreakTracker2.PCSX2;
 using System.Text;
 using FastEnumUtility;
 using OutbreakTracker2.Outbreak.Extensions;
