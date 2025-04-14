@@ -1,13 +1,8 @@
-﻿using OutbreakTracker2.WinInterop;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿namespace OutbreakTracker2.Memory;
 
-namespace OutbreakTracker2.Memory;
-
-public class MemoryReader
+public class MemoryReader : IMemoryReader
 {
-    public static T Read<T>(nint hProcess, nint address) where T : struct
+    public T Read<T>(nint hProcess, nint address) where T : struct
     {
         int size = Marshal.SizeOf<T>();
         byte[] buffer = new byte[size];
@@ -21,17 +16,17 @@ public class MemoryReader
         finally
         {
             handle.Free();
-        } 
+        }
     }
 
     // This has to be a bit overcomplicated as Outbreak supports multiple char widths like halfwidth and fullwidth character forms
-    public static string ReadString(nint hProcess, nint address, Encoding? encoding = null)
+    public string ReadString(nint hProcess, nint address, Encoding? encoding = null)
     {
         // Under some bizzare scenario, if the null terminator is not found, we can read up to MAX of 1MB of data
         const int maxSafeLength = 1048576;
         Console.WriteLine($"Starting ReadString at address 0x{address:X8}");
 
-        if (address == 0)
+        if (address == nint.Zero)
         {
             Console.WriteLine("Attempted to read from NULL pointer");
             return string.Empty;
@@ -46,13 +41,13 @@ public class MemoryReader
         var bytes = new List<byte>(256);
         var buffer = new byte[1];
         int consecutiveFails = 0;
-        string result = string.Empty;
+        string result;
 
         try
         {
             while (bytes.Count < maxSafeLength)
             {
-                bool success = NativeMethods.ReadProcessMemory(hProcess, address + bytes.Count, buffer,1, out int bytesRead);
+                bool success = NativeMethods.ReadProcessMemory(hProcess, address + bytes.Count, buffer, 1, out int bytesRead);
 
                 if (!HandleReadResult(ref consecutiveFails, success, bytes.Count, bytesRead, address, out bool shouldBreak))
                     if (shouldBreak) break;
@@ -78,27 +73,26 @@ public class MemoryReader
         return result;
     }
 
-    private static void LogByteDetails(byte b, int offset, List<byte> bytes, Encoding encoding)
+    private static void LogByteDetails(byte @byte, int offset, List<byte> bytes, Encoding encoding)
     {
         var multiByteInfo = new StringBuilder();
         if (encoding.CodePage == 932 && offset > 0 && IsShiftJisLeadByte(bytes[offset - 1]))
-        {
-            try 
+            try
             {
-                var pair = new[] { bytes[offset - 1], b };
+                byte[] pair = new[] { bytes[offset - 1], @byte };
                 string decoded = encoding.GetString(pair);
-                multiByteInfo.Append($" | Shift-JIS Pair: {decoded} (0x{bytes[offset - 1]:X2}{b:X2})");
+                multiByteInfo.Append($" | Shift-JIS Pair: {decoded} (0x{bytes[offset - 1]:X2}{@byte:X2})");
             }
-            catch { /* Ignore decoding errors */ }
-        }
+            catch
+            {
+                /* Ignore decoding errors */
+            }
 
-        Console.WriteLine($"Byte 0x{b:X2} @ {offset} - {GetByteInterpretations(b)}{multiByteInfo}");
+        Console.WriteLine($"Byte 0x{@byte:X2} @ {offset} - {GetByteInterpretations(@byte)}{multiByteInfo}");
     }
 
     private static bool IsShiftJisLeadByte(byte @byte)
-    {
-        return (@byte >= 0x81 && @byte <= 0x9F) || (@byte >= 0xE0 && @byte <= 0xEF);
-    }
+        => @byte is >= 0x81 and <= 0x9F or >= 0xE0 and <= 0xEF;
 
     private static string ProcessFinalBytes(List<byte> bytes, Encoding encoding)
     {
@@ -112,7 +106,7 @@ public class MemoryReader
 
         if (result.Contains('\ufffd'))
         {
-            Console.WriteLine($"Encoding issues detected. Trying fallback encodings...");
+            Console.WriteLine("Encoding issues detected. Trying fallback encodings...");
             TryFallbackEncodings(bytes);
         }
 
@@ -122,7 +116,7 @@ public class MemoryReader
 
     private static void TryFallbackEncodings(List<byte> bytes)
     {
-        var encodings = new[]
+        Encoding[] encodings = new[]
         {
             Encoding.UTF8,
             Encoding.GetEncoding(932), // Shift-JIS
@@ -130,18 +124,16 @@ public class MemoryReader
             Encoding.GetEncoding(54936) // GB18030 (Chinese fallback)
         };
 
-        foreach (var encoding in encodings)
-        {
+        foreach (Encoding encoding in encodings)
             try
             {
                 string decoded = encoding.GetString([.. bytes]);
                 Console.WriteLine($"Fallback {encoding.EncodingName}: {decoded} | Bytes: {BitConverter.ToString([.. bytes])}");
             }
-            catch 
-            { 
+            catch
+            {
                 /* Ignore unsupported encodings */
             }
-        }
     }
 
     private static bool HandleReadResult(ref int consecutiveFails, bool success, int offset, int bytesRead, nint address, out bool shouldBreak)
@@ -151,15 +143,16 @@ public class MemoryReader
         {
             int lastError = Marshal.GetLastWin32Error();
             Console.WriteLine($"ReadProcessMemory failed at offset {offset} " +
-                        $"(Address: 0x{(address + offset):X8}) " +
-                        $"Error: 0x{lastError:X8} ({new Win32Exception(lastError).Message})");
+                              $"(Address: 0x{address + offset:X8}) " +
+                              $"Error: 0x{lastError:X8} ({new Win32Exception(lastError).Message})");
             consecutiveFails++;
-        
+
             if (consecutiveFails >= 3)
             {
-                Console.WriteLine($"Aborting read after 3 consecutive failures");
+                Console.WriteLine("Aborting read after 3 consecutive failures");
                 shouldBreak = true;
             }
+
             return false;
         }
 
@@ -177,7 +170,7 @@ public class MemoryReader
     private static string GetByteInterpretations(byte @byte)
     {
         var sb = new StringBuilder();
-    
+
         try
         {
             sb.Append($"ASCII: {FormatChar(Encoding.ASCII, @byte)} ");
@@ -204,8 +197,8 @@ public class MemoryReader
                 '\t' => "\\t",
                 '\n' => "\\n",
                 '\r' => "\\r",
+                '\ufffd' => "�",
                 _ when char.IsControl(@char) => $"\\u{(int)@char:X4}",
-                _ when @char == '\ufffd' => "�",
                 _ => @char.ToString()
             };
         }

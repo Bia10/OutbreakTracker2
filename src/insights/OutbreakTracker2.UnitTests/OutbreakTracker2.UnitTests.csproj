@@ -20,4 +20,8 @@
     <Using Include="NUnit.Framework" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\libs\OutbreakTracker2.Outbreak\OutbreakTracker2.Outbreak.csproj" />
+  </ItemGroup>
+
 </Project>

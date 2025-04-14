@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+﻿using OutbreakTracker2.WinInterop.Enums;
 
 namespace OutbreakTracker2.WinInterop;
 

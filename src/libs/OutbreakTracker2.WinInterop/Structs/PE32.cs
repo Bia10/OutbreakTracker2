@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 namespace OutbreakTracker2.WinInterop.Structs;
 
 public static class PE32
@@ -21,12 +19,16 @@ public static class PE32
         public ushort Cs;          // Initial (relative) CS value
         public ushort LfaRlc;      // File address of relocation table
         public ushort Ovno;        // Overlay number
+
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public ushort[] Res;       // Reserved words
+
         public ushort OemId;       // OEM identifier
         public ushort OemInfo;     // OEM information
+
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
         public ushort[] Res2;      // Reserved words
+
         public int LfaNew;         // File address of new exe header
     }
 
