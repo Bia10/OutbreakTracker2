@@ -1,4 +1,6 @@
-﻿namespace OutbreakTracker2.UnitTests;
+﻿using OutbreakTracker2.Outbreak;
+
+namespace OutbreakTracker2.UnitTests;
 
 [TestFixture]
 public class LobbyAddressTests
@@ -24,7 +26,7 @@ public class LobbyAddressTests
     private const nint F2_Slot19 = 0x62A618;
     private const nint F2_Slot20 = 0x62A774;
 
-    public static nint F2_GetLobbyAddress(nint slotNum)
+    private static nint F2_GetLobbyAddress(nint slotNum)
     {
         return slotNum switch
         {

@@ -1,4 +1,7 @@
-﻿namespace OutbreakTracker2.App;
+﻿using System;
+using Avalonia;
+
+namespace OutbreakTracker2.App;
 
 internal class Program
 {

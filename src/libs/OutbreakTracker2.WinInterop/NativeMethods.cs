@@ -1,4 +1,5 @@
-﻿using OutbreakTracker2.WinInterop.Enums;
+﻿using System.Runtime.InteropServices;
+using OutbreakTracker2.WinInterop.Enums;
 
 namespace OutbreakTracker2.WinInterop;
 
@@ -13,7 +14,7 @@ public static partial class NativeMethods
 
     [LibraryImport("kernel32.dll", EntryPoint = "WriteProcessMemory", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static partial bool WriteProcessMemory(nint hProcess, nint lpBaseAddress, byte[] lpBuffer, int nSize, nint lpNumberOfBytesWritten);
+    public static partial bool WriteProcessMemory(nint hProcess, nint lpBaseAddress, [In] byte[] lpBuffer, int nSize, out nint lpNumberOfBytesWritten);
 
     [LibraryImport("kernel32.dll", EntryPoint = "CloseHandle", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]

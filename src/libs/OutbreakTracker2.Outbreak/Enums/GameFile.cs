@@ -1,4 +1,6 @@
-﻿namespace OutbreakTracker2.Outbreak.Enums;
+﻿using System.Runtime.Serialization;
+
+namespace OutbreakTracker2.Outbreak.Enums;
 
 public enum GameFile : byte
 {

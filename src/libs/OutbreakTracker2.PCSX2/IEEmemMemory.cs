@@ -1,4 +1,6 @@
-﻿namespace OutbreakTracker2.PCSX2Memory;
+﻿using OutbreakTracker2.Memory;
+
+namespace OutbreakTracker2.PCSX2Memory;
 
 public interface IEEmemMemory
 {

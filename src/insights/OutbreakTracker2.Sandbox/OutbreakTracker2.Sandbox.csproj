@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\libs\OutbreakTracker2.Outbreak\OutbreakTracker2.Outbreak.csproj" />
-    <ProjectReference Include="..\..\libs\OutbreakTracker2.PCSX2Memory\OutbreakTracker2.PCSX2Memory.csproj" />
+    <ProjectReference Include="..\..\libs\OutbreakTracker2.PCSX2\OutbreakTracker2.PCSX2.csproj" />
   </ItemGroup>
 
 </Project>

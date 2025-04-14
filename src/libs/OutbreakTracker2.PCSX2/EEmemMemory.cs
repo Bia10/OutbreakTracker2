@@ -1,6 +1,9 @@
-﻿namespace OutbreakTracker2.PCSX2Memory;
+﻿using OutbreakTracker2.Memory;
+using OutbreakTracker2.WinInterop.Structs;
 
-public class EEmemMemory : IEEmemMemory
+namespace OutbreakTracker2.PCSX2Memory;
+
+public sealed class EEmemMemory : IEEmemMemory
 {
     private readonly GameClient _gameClient;
 
@@ -83,7 +86,7 @@ public class EEmemMemory : IEEmemMemory
         nint addrOld = GetAddressFromPtr(ptrOffset);
 
         foreach (nint offset in offsets)
-            addrNew = addrOld + offset; 
+            addrNew = addrOld + offset;
 
         return addrNew;
     }

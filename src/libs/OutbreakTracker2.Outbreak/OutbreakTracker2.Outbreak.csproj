@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OutbreakTracker2.PCSX2Memory\OutbreakTracker2.PCSX2Memory.csproj" />
+    <ProjectReference Include="..\OutbreakTracker2.PCSX2\OutbreakTracker2.PCSX2.csproj" />
   </ItemGroup>
 	
 </Project>

@@ -1,4 +1,6 @@
-﻿namespace OutbreakTracker2.Outbreak;
+﻿using OutbreakTracker2.Outbreak.Extensions;
+
+namespace OutbreakTracker2.Outbreak;
 
 public class FileTwoPtrs
 {
@@ -9,7 +11,7 @@ public class FileTwoPtrs
 
     public static nint GetLobbyAddress(int slotIndex)
     {
-        if (slotIndex is < 0 or >= Constants.MaxLobbySlots)
+        if (slotIndex.IsSlotIndexValid())
             throw new InvalidOperationException($"Invalid Slot Index: {slotIndex}");
 
         return BaseLobbySlot + slotIndex * LobbySlotStructSize;
@@ -22,4 +24,11 @@ public class FileTwoPtrs
     public const nint LobbySlotScenarioID = 0x14;
     public const nint LobbySlotVersion = 0x16;
     public const nint LobbySlotTitle = 0x18;
+
+    public const nint LobbyRoomMaxPlayer = 0x5FF77A;
+    public const nint LobbyRoomDifficulty = 0x6020CA;
+    public const nint LobbyRoomStatus = 0x62DDF0;
+    public const nint LobbyRoomScenarioId = 0x62DDF6;
+    public const nint LobbyRoomTime = 0x62E768;
+    public const nint LobbyRoomCurPlayer = 0x6411E6;
 }

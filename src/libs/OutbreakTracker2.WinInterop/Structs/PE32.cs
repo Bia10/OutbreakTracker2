@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace OutbreakTracker2.WinInterop.Structs;
 
 public static class PE32

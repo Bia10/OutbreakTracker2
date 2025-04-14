@@ -1,4 +1,6 @@
-﻿namespace OutbreakTracker2.Memory;
+﻿using System.Text;
+
+namespace OutbreakTracker2.Memory;
 
 public interface IMemoryReader
 {

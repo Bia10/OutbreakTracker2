@@ -1,6 +1,11 @@
-﻿namespace OutbreakTracker2.Memory;
+﻿using System.ComponentModel;
+using System.Runtime.InteropServices;
+using System.Text;
+using OutbreakTracker2.WinInterop;
 
-public class MemoryReader : IMemoryReader
+namespace OutbreakTracker2.Memory;
+
+public sealed class MemoryReader : IMemoryReader
 {
     public T Read<T>(nint hProcess, nint address) where T : struct
     {
@@ -79,7 +84,7 @@ public class MemoryReader : IMemoryReader
         if (encoding.CodePage == 932 && offset > 0 && IsShiftJisLeadByte(bytes[offset - 1]))
             try
             {
-                byte[] pair = new[] { bytes[offset - 1], @byte };
+                byte[] pair = [bytes[offset - 1], @byte];
                 string decoded = encoding.GetString(pair);
                 multiByteInfo.Append($" | Shift-JIS Pair: {decoded} (0x{bytes[offset - 1]:X2}{@byte:X2})");
             }
@@ -116,13 +121,13 @@ public class MemoryReader : IMemoryReader
 
     private static void TryFallbackEncodings(List<byte> bytes)
     {
-        Encoding[] encodings = new[]
-        {
+        Encoding[] encodings =
+        [
             Encoding.UTF8,
             Encoding.GetEncoding(932), // Shift-JIS
             Encoding.GetEncoding(1252), // Western European
             Encoding.GetEncoding(54936) // GB18030 (Chinese fallback)
-        };
+        ];
 
         foreach (Encoding encoding in encodings)
             try

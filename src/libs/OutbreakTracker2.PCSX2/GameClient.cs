@@ -1,6 +1,11 @@
-﻿namespace OutbreakTracker2.PCSX2Memory;
+﻿using System.ComponentModel;
+using System.Diagnostics;
+using OutbreakTracker2.WinInterop;
+using OutbreakTracker2.WinInterop.Enums;
 
-public class GameClient : IDisposable
+namespace OutbreakTracker2.PCSX2Memory;
+
+public sealed class GameClient : IDisposable
 {
     private bool _disposed;
     public nint Handle { get; private set; }
