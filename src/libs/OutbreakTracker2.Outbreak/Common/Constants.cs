@@ -1,4 +1,4 @@
-﻿namespace OutbreakTracker2.Outbreak;
+﻿namespace OutbreakTracker2.Outbreak.Common;
 
 internal static class Constants
 {

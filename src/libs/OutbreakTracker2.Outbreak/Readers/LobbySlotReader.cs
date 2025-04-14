@@ -3,6 +3,7 @@ using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.PCSX2;
 using System.Text.Json;
 using OutbreakTracker2.Outbreak.Enums;
+using OutbreakTracker2.Outbreak.Common;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 

@@ -5,8 +5,9 @@ using OutbreakTracker2.PCSX2;
 using System.Text;
 using FastEnumUtility;
 using OutbreakTracker2.Outbreak.Extensions;
+using OutbreakTracker2.Outbreak.Common;
 
-namespace OutbreakTracker2.Outbreak;
+namespace OutbreakTracker2.Outbreak.Readers;
 
 public abstract class ReaderBase
 {

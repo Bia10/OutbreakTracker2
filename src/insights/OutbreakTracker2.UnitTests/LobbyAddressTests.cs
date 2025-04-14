@@ -1,4 +1,4 @@
-﻿using OutbreakTracker2.Outbreak;
+﻿using OutbreakTracker2.Outbreak.Common;
 
 namespace OutbreakTracker2.UnitTests;
 

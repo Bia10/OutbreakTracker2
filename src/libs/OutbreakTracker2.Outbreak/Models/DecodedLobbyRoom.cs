@@ -1,4 +1,6 @@
-﻿namespace OutbreakTracker2.Outbreak.Models;
+﻿using OutbreakTracker2.Outbreak.Common;
+
+namespace OutbreakTracker2.Outbreak.Models;
 
 public sealed record DecodedLobbyRoom
 {

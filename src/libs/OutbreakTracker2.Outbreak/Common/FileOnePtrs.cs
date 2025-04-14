@@ -1,6 +1,6 @@
 ﻿using OutbreakTracker2.Outbreak.Extensions;
 
-namespace OutbreakTracker2.Outbreak;
+namespace OutbreakTracker2.Outbreak.Common;
 
 public class FileOnePtrs
 {

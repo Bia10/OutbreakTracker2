@@ -1,4 +1,6 @@
-﻿namespace OutbreakTracker2.Outbreak.Extensions;
+﻿using OutbreakTracker2.Outbreak.Common;
+
+namespace OutbreakTracker2.Outbreak.Extensions;
 
 public static class IntExtensions
 {
