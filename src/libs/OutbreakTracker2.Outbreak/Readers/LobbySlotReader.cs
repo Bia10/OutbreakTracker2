@@ -1,64 +1,108 @@
-﻿using OutbreakTracker2.Outbreak.Models;
+﻿using OutbreakTracker2.Outbreak.Common;
+using OutbreakTracker2.Outbreak.Enums;
+using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Offsets;
 using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.PCSX2;
 using System.Text.Json;
-using OutbreakTracker2.Outbreak.Enums;
-using OutbreakTracker2.Outbreak.Common;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
 public sealed class LobbySlotReader : ReaderBase
 {
-    public LobbySlotReader(GameClient gameClient, EEmemMemory memory) : base(gameClient, memory) { }
+    public LobbySlotReader(GameClient gameClient, EEmemMemory memory)
+        : base(gameClient, memory) { }
 
-    public DecodedLobbySlot[] DecodedLobbySlots { get; } = new DecodedLobbySlot[Constants.MaxLobbySlots];
+    public DecodedLobbySlot[] DecodedLobbySlots { get; } 
+        = new DecodedLobbySlot[Constants.MaxLobbySlots];
 
-    public short GetIndex(int slotIndex) => ReadSlotValue(slotIndex, [], [], nameof(GetIndex), (short)-1);
-    public short GetCurPlayers(int slotIndex) => ReadSlotValue(slotIndex, [FileOnePtrs.LobbySlotPlayer], [FileTwoPtrs.LobbySlotPlayer], nameof(GetCurPlayers), (short)-1);
-    public short GetMaxPlayers(int slotIndex) => ReadSlotValue(slotIndex, [FileOnePtrs.LobbySlotMaxPlayer], [FileTwoPtrs.LobbySlotMaxPlayer], nameof(GetMaxPlayers), (short)-1);
-    public byte GetStatus(int slotIndex) => ReadSlotValue(slotIndex, [FileOnePtrs.LobbySlotStatus], [FileTwoPtrs.LobbySlotStatus], nameof(GetStatus), (byte)SlotStatus.Unknown);
-    public byte GetPass(int slotIndex) => ReadSlotValue(slotIndex, [FileOnePtrs.LobbySlotPass], [FileTwoPtrs.LobbySlotPass], nameof(GetPass), (byte)SlotPass.NoPass);
-    public short GetScenarioId(int slotIndex) => ReadSlotValue(slotIndex, [FileOnePtrs.LobbySlotScenarioID], [FileTwoPtrs.LobbySlotScenarioID], nameof(GetScenarioId), (short)FileTwoScenario.Unknown);
-    public short GetVersion(int slotIndex) => ReadSlotValue(slotIndex, [FileOnePtrs.LobbySlotVersion], [FileTwoPtrs.LobbySlotVersion], nameof(GetVersion), (short)GameVersion.Unknown);
-    public string GetTitle(int slotIndex) => ReadSlotValue(slotIndex, [FileOnePtrs.LobbySlotTitle], [FileTwoPtrs.LobbySlotTitle], nameof(GetTitle), string.Empty);
+    public short GetIndex(int slotIndex) 
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.Index, nameof(GetIndex), (short)-1);
+    
+    public short GetCurPlayers(int slotIndex) 
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.CurPlayers, nameof(GetCurPlayers), (short)-1);
+    
+    public short GetMaxPlayers(int slotIndex) 
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.MaxPlayers, nameof(GetMaxPlayers), (short)-1);
+    
+    public byte GetStatus(int slotIndex) 
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.Status, nameof(GetStatus), (byte)SlotStatus.Unknown);
+    
+    public byte GetPass(int slotIndex) 
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.Pass, nameof(GetPass), (byte)SlotPass.NoPass);
+    
+    public short GetScenarioId(int slotIndex) 
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.ScenarioId, nameof(GetScenarioId), (short)FileTwoScenario.Unknown);
+    
+    public short GetVersion(int slotIndex) 
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.Version, nameof(GetVersion), (short)GameVersion.Unknown);
+    
+    public string GetTitle(int slotIndex) 
+        => ReadSlotString(slotIndex, LobbySlotOffsets.Title, nameof(GetTitle), string.Empty);
 
-    public string GetStatusString(int slotIndex) => GetEnumString(GetStatus(slotIndex), SlotStatus.Unknown);
-    public string GetPassString(int slotIndex) => GetEnumString(GetPass(slotIndex), SlotPass.NoPass);
-    public string GetVersionString(int slotIndex) => GetEnumString(GetVersion(slotIndex), GameVersion.Unknown);
-
-    public string GetScenarioString(int slotIndex)
-    {
-        short scenarioId = GetScenarioId(slotIndex);
-        return CurrentFile switch
-        {
-            GameFile.FileOne => GetEnumString(scenarioId, FileOneScenario.Unknown),
-            GameFile.FileTwo => GetEnumString(scenarioId, FileTwoScenario.Unknown),
-            _ => throw new InvalidOperationException($"[{nameof(GetScenarioString)}] Unable to recognize current game file {CurrentFile.ToString()}")
-        };
-    }
+    public string GetStatusString(int slotIndex) 
+        => GetEnumString(GetStatus(slotIndex), SlotStatus.Unknown);
+    
+    public string GetPassString(int slotIndex) 
+        => GetEnumString(GetPass(slotIndex), SlotPass.NoPass);
+    
+    public string GetVersionString(int slotIndex) 
+        => GetEnumString(GetVersion(slotIndex), GameVersion.Unknown);
+    
+    public string GetScenarioString(int slotIndex) 
+        => GetScenarioString(GetScenarioId(slotIndex), 
+            FileOneScenario.Unknown, 
+            FileTwoScenario.Unknown);
 
     public void UpdateLobbySlots(bool debug = false)
     {
         if (CurrentFile == GameFile.Unknown) return;
 
+        long start = Environment.TickCount64;
+
+        var errors = new List<string>();
+        
         for (var i = 0; i < Constants.MaxLobbySlots; i++)
         {
-            Console.WriteLine($"Decoding lobby at slot index: {i}");
+            if (debug) Console.WriteLine($"Decoding lobby at slot index: {i}");
 
-            DecodedLobbySlots[i] = new DecodedLobbySlot
+            try 
             {
-                SlotNumber = GetIndex(i),
-                CurPlayers = GetCurPlayers(i),
-                MaxPlayers = GetMaxPlayers(i),
-                Status = GetStatusString(i),
-                IsPassProtected = GetPassString(i),
-                ScenarioId = GetScenarioString(i),
-                Version = GetVersionString(i),
-                Title = GetTitle(i)
-            };
+                DecodedLobbySlots[i] = new DecodedLobbySlot
+                {
+                    SlotNumber = GetIndex(i),
+                    CurPlayers = GetCurPlayers(i),
+                    MaxPlayers = GetMaxPlayers(i),
+                    Status = GetStatusString(i),
+                    IsPassProtected = GetPassString(i),
+                    ScenarioId = GetScenarioString(i),
+                    Version = GetVersionString(i),
+                    Title = GetTitle(i)
+                };
+            }
+            catch (Exception ex)
+            {
+                errors.Add($"Slot {i} error: {ex.Message}");
+                DecodedLobbySlots[i] = new DecodedLobbySlot 
+                { 
+                    Status = "Error", 
+                    ScenarioId = "Error", 
+                    Version = "Error" 
+                };
+            }
         }
 
+        if (errors.Count > 0)
+        {
+            Console.WriteLine($"Encountered {errors.Count} errors:");
+            foreach (var error in errors) Console.WriteLine(error);
+        }
+
+        long duration = Environment.TickCount64 - start;
+
         if (!debug) return;
+
+        Console.WriteLine($"Decoded lobby slots in {duration}ms");
 
         foreach (DecodedLobbySlot lobbySlot in DecodedLobbySlots)
             Console.WriteLine(JsonSerializer.Serialize(lobbySlot, DecodedLobbySlotJsonContext.Default.DecodedLobbySlot));
