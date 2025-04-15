@@ -48,4 +48,66 @@ public class FileOnePtrs
     public const nint LobbyRoomPlayerEnabledOffset = 0x0;
     public const nint LobbyRoomPlayerNameIdOffset = 0xE4;
     public const nint LobbyRoomPlayerNPCTypeOffset = 0xE6;
+
+    private const nint Door1HP = 0x472FC0;//472FC0/472FF0
+    private const nint Door2HP = 0x473086;//473086
+    private const nint Door3HP = 0x4731C0;//4731C0/473220
+    private const nint Door4HP = 0x473232;//473232/473260
+    private const nint Door5HP = 0x473504;//473504/4735F0
+    private const nint Door6HP = 0x473652;//room 102
+                             // +0xC0 192 bytes
+    private const nint Door7HP = 0x473712;//room 201
+                             // +0xC0 192 bytes        
+    private const nint Door8HP = 0x4737D2;//room 202
+    private const nint Door9HP = 0x4739B6;//4739B6/473A70 dd t-shaped
+    private const nint Door10HP = 0x473A40;//473A40/473A72 store room
+
+    public static nint GetDoorHealthAddress(nint doorID)
+    {
+        return doorID switch
+        {
+            0 => Door1HP,
+            1 => Door2HP,
+            2 => Door3HP,
+            3 => Door4HP,
+            4 => Door5HP,
+            5 => Door6HP,
+            6 => Door7HP,
+            7 => Door8HP,
+            8 => Door9HP,
+            9 => Door10HP,
+            _ => -1
+        };
+    }
+
+    private const nint Door1Flag = 0x48AFBC;//48AFBC
+    private const nint Door2Flag = 0x48AFEC;//48AFEC
+    private const nint Door3Flag = 0x48AD90;//
+    private const nint Door4Flag = 0x48B058;//48B058
+    private const nint Door5Flag = 0x48B10C;//48B10C/48B148
+    private const nint Door6Flag = 0x48B160;//room 102
+                               // +0x30 (48 bytes)
+    private const nint Door7Flag = 0x48B190;//room 201
+                               // +0x30 (48 bytes)
+    private const nint Door8Flag = 0x48B1C0;//room 202
+    private const nint Door9Flag = 0x48B238;//48B238/48B268 dd t-shaped
+    private const nint Door10Flag = 0x48B25C;//48B25C/48B268 store room
+
+    public static nint GetDoorFlagAddress(nint doorID)
+    {
+        return doorID switch
+        {
+            0 => Door1Flag,
+            1 => Door2Flag,
+            2 => Door3Flag,
+            3 => Door4Flag,
+            4 => Door5Flag,
+            5 => Door6Flag,
+            6 => Door7Flag,
+            7 => Door8Flag,
+            8 => Door9Flag,
+            9 => Door10Flag,
+            _ => -1
+        };
+    }
 }

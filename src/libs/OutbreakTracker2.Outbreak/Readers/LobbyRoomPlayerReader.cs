@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
-internal class LobbyRoomPlayerReader : ReaderBase
+public class LobbyRoomPlayerReader : ReaderBase
 {
     public LobbyRoomPlayerReader(GameClient gameClient, EEmemMemory eememMemory)
         : base(gameClient, eememMemory) { }

@@ -15,8 +15,12 @@ public class Program
         var eememMemory = new EEmemMemory(gameClient, memoryReader);
         var lobbyReader = new LobbySlotReader(gameClient, eememMemory);
         var lobbyRoomReader = new LobbyRoomReader(gameClient, eememMemory);
+        var lobbyRoomPlayerReader = new LobbyRoomPlayerReader(gameClient, eememMemory);
+        var doorReader = new DoorReader(gameClient, eememMemory);
 
         lobbyReader.UpdateLobbySlots(debug: true);
         lobbyRoomReader.UpdateLobbyRoom(debug: true);
+        lobbyRoomPlayerReader.UpdateRoomPlayers(debug: true);
+        doorReader.UpdateDoors(debug: true);
     }
 }

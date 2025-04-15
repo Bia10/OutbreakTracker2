@@ -14,16 +14,16 @@ internal enum CharacterBaseType : byte
     Jim = 2,
 
     [EnumMember(Value = "George")]
-    Rebecca = 3,
+    George = 3,
 
     [EnumMember(Value = "David")]
-    Chris = 4,
+    David = 4,
 
     [EnumMember(Value = "Alyssa")]
-    Jill = 5,
+    Alyssa = 5,
 
     [EnumMember(Value = "Yoko")]
-    Carlos = 6,
+    Yoko = 6,
 
     [EnumMember(Value = "Cindy")]
     Cindy = 7,
