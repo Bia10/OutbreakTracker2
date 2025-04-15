@@ -4,13 +4,13 @@ namespace OutbreakTracker2.Outbreak.Models;
 
 public sealed record DecodedLobbySlot
 {
-    public short SlotNumber { get; set; }
+    public short SlotNumber { get; set; } = 0x0000;
 
     public string Status { get; set; } = string.Empty;
 
     public string IsPassProtected { get; set; } = string.Empty;
 
-    public short CurPlayers { get; set; }
+    public short CurPlayers { get; set; } = 0x0000;
 
     public short MaxPlayers { get; set; } = Constants.MaxPlayers;
 

@@ -12,7 +12,7 @@ public class FileOnePtrs
 
     public static nint GetLobbyAddress(int slotIndex)
     {
-        if (slotIndex.IsSlotIndexValid())
+        if (!slotIndex.IsSlotIndexValid())
             throw new InvalidOperationException($"Invalid Slot Index: {slotIndex}");
 
         return BaseLobbySlot + slotIndex * LobbySlotStructSize;
@@ -32,4 +32,20 @@ public class FileOnePtrs
     public const nint LobbyRoomScenarioId = 0x62E236;
     public const nint LobbyRoomTime = 0x62EB80;
     public const nint LobbyRoomCurPlayer = 0x6547AA;
+
+    public const nint BaseLobbyRoomPlayer = 0x630E54; // Player slot in lobby room at index 0
+    public const int LobbyRoomPlayerStructSize = 0x3A8; // 936-byte structure size calculated from address differences
+
+    public static nint GetLobbyRoomPlayerAddress(int characterId)
+    {
+        if (!characterId.IsCharacterIdValid())
+            throw new InvalidOperationException($"Invalid Character ID: {characterId}");
+
+        return BaseLobbyRoomPlayer + characterId * LobbyRoomPlayerStructSize;
+    }
+
+    // Offsets for the lobby room player structure, offseting from BaseLobbyRoomPlayer
+    public const nint LobbyRoomPlayerEnabledOffset = 0x0;
+    public const nint LobbyRoomPlayerNameIdOffset = 0xE4;
+    public const nint LobbyRoomPlayerNPCTypeOffset = 0xE6;
 }

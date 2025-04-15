@@ -53,7 +53,7 @@ public abstract class ReaderBase
     protected T ReadSlotValue<T>(int slotIndex, nint[] offsetsFile1, nint[] offsetsFile2, string methodName, T errorValue)
         where T : struct
     {
-        if (!TryComputeAddress(slotIndex, offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
+        if (!TryComputeLobbyAddress(slotIndex, offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
         {
             Console.WriteLine(errorMessage);
             return errorValue;
@@ -73,7 +73,7 @@ public abstract class ReaderBase
 
     protected string ReadSlotValue(int slotIndex, nint[] offsetsFile1, nint[] offsetsFile2, string methodName, string errorValue)
     {
-        if (!TryComputeAddress(slotIndex, offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
+        if (!TryComputeLobbyAddress(slotIndex, offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
         {
             Console.WriteLine(errorMessage);
             return errorValue;
@@ -113,7 +113,7 @@ public abstract class ReaderBase
         };
     }
 
-    private bool TryComputeAddress(
+    protected bool TryComputeLobbyAddress(
         int slotIndex, 
         nint[] offsetsFile1, 
         nint[] offsetsFile2, 
@@ -131,7 +131,7 @@ public abstract class ReaderBase
         }
 
         nint[] offsets = GetOffsets(offsetsFile1, offsetsFile2);
-        nint basePtr = GetBasePointer(slotIndex);
+        nint basePtr = GetLobbyBasePointer(slotIndex);
 
         if (!basePtr.IsValidAddress())
         {
@@ -204,12 +204,22 @@ public abstract class ReaderBase
         };
     }
 
-    private nint GetBasePointer(int slotIndex)
+    protected nint GetLobbyBasePointer(int slotIndex)
     {
         return CurrentFile switch
         {
             GameFile.FileOne => FileOnePtrs.GetLobbyAddress(slotIndex),
             GameFile.FileTwo => FileTwoPtrs.GetLobbyAddress(slotIndex),
+            _ => nint.Zero
+        };
+    }
+
+    protected nint GetLobbyRoomPlayerBasePointer(int characterId)
+    {
+        return CurrentFile switch
+        {
+            GameFile.FileOne => FileOnePtrs.GetLobbyRoomPlayerAddress(characterId),
+            GameFile.FileTwo => FileTwoPtrs.GetLobbyRoomPlayerAddress(characterId),
             _ => nint.Zero
         };
     }
