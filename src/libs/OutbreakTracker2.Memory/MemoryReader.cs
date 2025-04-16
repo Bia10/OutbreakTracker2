@@ -57,7 +57,7 @@ public sealed class MemoryReader : IMemoryReader
                 if (!HandleReadResult(ref consecutiveFails, success, bytes.Count, bytesRead, address, out bool shouldBreak))
                     if (shouldBreak) break;
 
-                if (buffer[0] == 0)
+                if (buffer[0] is 0)
                 {
                     Console.WriteLine($"Null terminator found at offset {bytes.Count}");
                     break;
@@ -81,7 +81,7 @@ public sealed class MemoryReader : IMemoryReader
     private static void LogByteDetails(byte @byte, int offset, List<byte> bytes, Encoding encoding)
     {
         var multiByteInfo = new StringBuilder();
-        if (encoding.CodePage == 932 && offset > 0 && IsShiftJisLeadByte(bytes[offset - 1]))
+        if (encoding.CodePage is 932 && offset > 0 && IsShiftJisLeadByte(bytes[offset - 1]))
             try
             {
                 byte[] pair = [bytes[offset - 1], @byte];
@@ -101,7 +101,7 @@ public sealed class MemoryReader : IMemoryReader
 
     private static string ProcessFinalBytes(List<byte> bytes, Encoding encoding)
     {
-        if (bytes.Count == 0)
+        if (bytes.Count is 0)
         {
             Console.WriteLine("Empty string read from memory");
             return string.Empty;

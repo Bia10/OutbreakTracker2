@@ -15,7 +15,7 @@ public sealed class GameClient : IDisposable
     public void AttachToPCSX2(string processName = "pcsx2-qt")
     {
         Process[] processes = Process.GetProcessesByName(processName);
-        if (processes.Length == 0) throw new Exception("Process not found");
+        if (processes.Length is 0) throw new Exception("Process not found");
 
         Process = processes[0];
         Handle = NativeMethods.OpenProcess(

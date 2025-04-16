@@ -77,7 +77,7 @@ public class LobbyRoomPlayerReader : ReaderBase
 
     public void UpdateRoomPlayers(bool debug = false)
     {
-        if (CurrentFile == GameFile.Unknown) return;
+        if (CurrentFile is GameFile.Unknown) return;
 
         long start = Environment.TickCount64;
 

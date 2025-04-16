@@ -36,9 +36,9 @@ public abstract class ReaderBase
         byte f1Byte = Read<byte>(EEmemMemory.GetAddressFromPtr(FileOnePtrs.DiscStart));
         byte f2Byte = Read<byte>(EEmemMemory.GetAddressFromPtr(FileTwoPtrs.DiscStart));
 
-        if (f1Byte == 0x53) return GameFile.FileOne;
+        if (f1Byte is 0x53) return GameFile.FileOne;
 
-        return f2Byte == 0x53 ? GameFile.FileTwo : GameFile.Unknown;
+        return f2Byte is 0x53 ? GameFile.FileTwo : GameFile.Unknown;
     }
 
     protected T ReadValue<T>((nint[] File1, nint[] File2) offsets, string methodName, T errorValue) where T : struct
@@ -225,12 +225,12 @@ public abstract class ReaderBase
     }
 
     protected nint ComputeAddress(nint basePtr, nint[] offsets)
-        => offsets.Length == 0
+        => offsets.Length is 0
             ? EEmemMemory.GetAddressFromPtr(basePtr)
             : EEmemMemory.GetAddressFromPtrChain(basePtr, offsets);
 
     protected nint ComputeAddress(nint[] offsets)
-        => offsets.Length == 1
+        => offsets.Length is 1
             ? EEmemMemory.GetAddressFromPtr(offsets.First())
             : EEmemMemory.GetAddressFromPtrChain(offsets.First(), offsets);
 }

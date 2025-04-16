@@ -68,7 +68,7 @@ public class FileTwoPtrs
     const nint Door18HP = 0x477A62;//477AA0 Dog House
     const nint Door19HP = 0x477B00;//EOTR Hole HP
 
-    public static nint GetDoorHealthAddress(nint doorID)
+    public static nint GetDoorHealthAddress(int doorID)
     {
         return doorID switch
         {
@@ -115,7 +115,7 @@ public class FileTwoPtrs
     const nint Door18Flag = 0x4902C4;//4902B8/4902C4 Dog House
     const nint Door19Flag = 0x48FFF4;//EOTR Hole HP
 
-    public static nint GetDoorFlagAddress(nint doorID)
+    public static nint GetDoorFlagAddress(int doorID)
     {
         return doorID switch
         {
@@ -141,4 +141,43 @@ public class FileTwoPtrs
             _ => -1
         };
     }
+
+    private const nint BasePlayerStart = 0x47BD30; // The start address for the first player
+    private const int PlayerStructSize = 0x1100; // Size of 4352 bytes derived from address differences
+
+    public static nint GetPlayerStartAddress(int characterId)
+    {
+        if (!characterId.IsCharacterIdValid())
+            throw new InvalidOperationException($"Invalid character id: {characterId}");
+
+        return BasePlayerStart + characterId * PlayerStructSize;
+    }
+
+    public const nint CharacterEnabledOffset  = 0x0; //0
+    public const nint CharacterInGameOffset  = 0x1;  //1
+    public const nint PositionXOffset = 0x38;        //56
+    public const nint PositionYOffset  = 0x40;       //64
+    public const nint SizeOffset = 0xB4;             //180
+    public const nint RoomIdOffset = 0x1E2;          //482
+    public const nint CurHpOffset = 0x540;           //1344
+    public const nint MaxHpOffset = 0x542;           //1346
+    public const nint CharacterTypeOffset = 0xBB0;   //2992
+    public const nint CharacterStatusOffset = 0xBB8; //3000 
+    public const nint VirusOffset = 0xBC4;           //3012
+    public const nint NameTypeOffset = 0xBC8;        //3016
+    public const nint AntiVirusTimeOffset = 0xBCA;   //3018
+    public const nint AntiVirusGTimeOffset = 0xBCC;  //3020
+    public const nint HerbTimeOffset = 0xBCE;        //3022
+    public const nint CritBonusOffset = 0xBD4;       //3028
+    public const nint SpeedOffset = 0xBD8;           //3032
+    public const nint PowerOffset = 0xBDC;           //3036
+    public const nint BleedTimeOffset = 0xC6A;       //3178
+    public const nint EquippedItemOffset = 0xC8C;    //3212
+    public const nint InventoryOffset = 0xC94;       //3220
+
+    public const nint PickupSpaceStart = 0x397B7C; // 1 item - 60 bytes settings byte on offset ITEM_PTR+37?
+    public const nint DeadInventoryStart = 0x491146;
+    public const nint VirusMaxStart = 0x728500;
+    public const nint ScenarioIDAddr = 0x3137BA;
+    public const nint FrameCounter = 0x4912B8;
 }

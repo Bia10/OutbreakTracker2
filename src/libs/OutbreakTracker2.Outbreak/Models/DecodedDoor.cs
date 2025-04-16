@@ -1,6 +1,6 @@
 ﻿namespace OutbreakTracker2.Outbreak.Models;
 
-internal class DecodedDoor
+public sealed record DecodedDoor
 {
     public ushort HP = 0x0000;
 

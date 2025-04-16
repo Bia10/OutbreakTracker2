@@ -38,7 +38,7 @@ public sealed class EEmemMemory : IEEmemMemory
 
         // Get Export Directory
         PE32.ImageDataDirectory exportDir = ntHeaders.OptionalHeader.DataDirectory[0];
-        if (exportDir.VirtualAddress == 0)
+        if (exportDir.VirtualAddress is 0)
             return nint.Zero;
 
         nint exportDirPtr = baseAddress + (int)exportDir.VirtualAddress;

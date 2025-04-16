@@ -29,7 +29,7 @@ public class DoorReader : ReaderBase
 
     public string DecodeFlag(ushort doorHP, ushort flag)
     {
-        if (doorHP == 500)
+        if (doorHP is 500)
             return "unlocked";
             
         return flag switch
@@ -56,7 +56,7 @@ public class DoorReader : ReaderBase
 
     public void UpdateDoors(bool debug = false)
     {
-        if (CurrentFile == GameFile.Unknown) return;
+        if (CurrentFile is GameFile.Unknown) return;
 
         long start = Environment.TickCount64;
 

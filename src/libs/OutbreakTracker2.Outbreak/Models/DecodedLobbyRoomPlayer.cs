@@ -1,6 +1,6 @@
 ﻿namespace OutbreakTracker2.Outbreak.Models;
 
-internal class DecodedLobbyRoomPlayer
+public sealed record DecodedLobbyRoomPlayer
 {
     public bool IsEnabled { get; set; } = false;
 
