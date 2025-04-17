@@ -1,6 +1,6 @@
 ﻿namespace OutbreakTracker2.Outbreak.Models;
 
-public record DecodedScenario
+public sealed record DecodedScenario
 {
     public byte CurrentFile;
 

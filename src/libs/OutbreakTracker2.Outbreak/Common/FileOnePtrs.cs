@@ -49,18 +49,18 @@ public class FileOnePtrs
     public const nint LobbyRoomPlayerNameIdOffset = 0xE4;
     public const nint LobbyRoomPlayerNPCTypeOffset = 0xE6;
 
-    private const nint Door1HP = 0x472FC0;//472FC0/472FF0
-    private const nint Door2HP = 0x473086;//473086
-    private const nint Door3HP = 0x4731C0;//4731C0/473220
-    private const nint Door4HP = 0x473232;//473232/473260
-    private const nint Door5HP = 0x473504;//473504/4735F0
-    private const nint Door6HP = 0x473652;//room 102
-                             // +0xC0 192 bytes
-    private const nint Door7HP = 0x473712;//room 201
-                             // +0xC0 192 bytes        
-    private const nint Door8HP = 0x4737D2;//room 202
-    private const nint Door9HP = 0x4739B6;//4739B6/473A70 dd t-shaped
-    private const nint Door10HP = 0x473A40;//473A40/473A72 store room
+    private const nint Door1HP = 0x472FC0; //472FC0/472FF0
+    private const nint Door2HP = 0x473086; //473086
+    private const nint Door3HP = 0x4731C0; //4731C0/473220
+    private const nint Door4HP = 0x473232; //473232/473260
+    private const nint Door5HP = 0x473504; //473504/4735F0
+    private const nint Door6HP = 0x473652; //room 102
+    // + 0xC0 192 bytes
+    private const nint Door7HP = 0x473712; //room 201
+    // + 0xC0 192 bytes
+    private const nint Door8HP = 0x4737D2; //room 202
+    private const nint Door9HP = 0x4739B6; //4739B6/473A70 dd t-shaped
+    private const nint Door10HP = 0x473A40; //473A40/473A72 store room
 
     public static nint GetDoorHealthAddress(int doorId)
     {
@@ -80,18 +80,18 @@ public class FileOnePtrs
         };
     }
 
-    private const nint Door1Flag = 0x48AFBC;//48AFBC
-    private const nint Door2Flag = 0x48AFEC;//48AFEC
-    private const nint Door3Flag = 0x48AD90;//
-    private const nint Door4Flag = 0x48B058;//48B058
-    private const nint Door5Flag = 0x48B10C;//48B10C/48B148
-    private const nint Door6Flag = 0x48B160;//room 102
+    private const nint Door1Flag = 0x48AFBC; //48AFBC
+    private const nint Door2Flag = 0x48AFEC; //48AFEC
+    private const nint Door3Flag = 0x48AD90; //
+    private const nint Door4Flag = 0x48B058; //48B058
+    private const nint Door5Flag = 0x48B10C; //48B10C/48B148
+    private const nint Door6Flag = 0x48B160; //room 102
                                // +0x30 (48 bytes)
-    private const nint Door7Flag = 0x48B190;//room 201
+    private const nint Door7Flag = 0x48B190; //room 201
                                // +0x30 (48 bytes)
-    private const nint Door8Flag = 0x48B1C0;//room 202
-    private const nint Door9Flag = 0x48B238;//48B238/48B268 dd t-shaped
-    private const nint Door10Flag = 0x48B25C;//48B25C/48B268 store room
+    private const nint Door8Flag = 0x48B1C0; //room 202
+    private const nint Door9Flag = 0x48B238; //48B238/48B268 dd t-shaped
+    private const nint Door10Flag = 0x48B25C; //48B25C/48B268 store room
 
     public static nint GetDoorFlagAddress(int doorId)
     {
@@ -147,8 +147,8 @@ public class FileOnePtrs
     public const nint DeadInventoryStart = 0x48BDE2;
     public const nint VirusMaxStart = 0x6E6C70;
 
-    public const nint IngameScenarioId = 0x3065AA;
-    public const nint IngameFrameCounter = 0x48BF78;
+    public const nint InGameScenarioId = 0x3065AA;
+    public const nint InGameFrameCounter = 0x48BF78;
     public const nint Pass1 = 0x48AC13;
     public const nint Pass2 = 0x48AC17;
     public const nint Pass3 = 0x48AC14;
@@ -160,7 +160,7 @@ public class FileOnePtrs
     public const nint ItemRandom = 0x23BB20; //23BB28 23C055 23BD20 426AA9 23BBA0 23BD24
     public const nint ItemRandom2 = 0x23BBA1;
     public const nint PuzzleRandom = 0x23BBA0; // puzzle set
-    public const nint IngamePlayerNumber =  0x23BE14;//23C004
+    public const nint InGamePlayerNumber = 0x23BE14; //23C004
 
     public const nint Enemy1Start = 0x420000;
     public const nint Enemy2Start = 0x420D90;

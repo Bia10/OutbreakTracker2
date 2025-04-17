@@ -41,5 +41,5 @@ public enum InGameScenario : short
     Elimination2 = 30,
 
     [EnumMember(Value = "Wild things")]
-    WildThings = 40,
+    WildThings = 40
 }

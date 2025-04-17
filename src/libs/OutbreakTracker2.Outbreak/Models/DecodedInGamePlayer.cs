@@ -55,7 +55,7 @@ public sealed record DecodedInGamePlayer
     // TODO: this is actually either 4 bytes (each byte one item) or 8 bytes depending on the character
     public byte Inventory;
 
-    public byte SpecialItem; 
+    public byte SpecialItem;
 
     // TODO: this is actually 4 bytes (each byte one item)
     public byte SpecialInventory;

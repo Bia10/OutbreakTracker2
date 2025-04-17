@@ -485,6 +485,6 @@ internal enum CharacterNpcPower
     Unknown208 = 208,
 
     [EnumMember(Value = "Unknown")]
-    Unknown = 255,
+    Unknown = 255
 }
 

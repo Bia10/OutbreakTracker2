@@ -1,9 +1,9 @@
-﻿using OutbreakTracker2.Outbreak.Common;
+﻿using System.Text.Json;
+using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.PCSX2;
-using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
@@ -12,34 +12,34 @@ public class InGameScenarioReader : ReaderBase
     public InGameScenarioReader(GameClient gameClient, EEmemMemory memory)
         : base(gameClient, memory) { }
 
-    public string GetInGameScenarioString() 
+    public string GetInGameScenarioString()
         => GetEnumString(GetScenarioId(), InGameScenario.Unknown);
 
     public short GetScenarioId() => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<short>(FileOnePtrs.IngameScenarioId, nameof(GetScenarioId)),
-        GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.IngameScenarioId, nameof(GetScenarioId)),
+        GameFile.FileOne => ReadValue<short>(FileOnePtrs.InGameScenarioId),
+        GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.InGameScenarioId),
         _ => -1
     };
 
     public int GetFrameCount() => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<int>(FileOnePtrs.IngameFrameCounter, nameof(GetFrameCount)),
-        GameFile.FileTwo => ReadValue<int>(FileTwoPtrs.IngameFrameCounter, nameof(GetFrameCount)),
+        GameFile.FileOne => ReadValue<int>(FileOnePtrs.InGameFrameCounter),
+        GameFile.FileTwo => ReadValue<int>(FileTwoPtrs.InGameFrameCounter),
         _ => -1
     };
 
     public byte GetIsScenarioCleared() => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.IsScenarioCleared, nameof(GetIsScenarioCleared)),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.IsScenarioCleared, nameof(GetIsScenarioCleared)),
+        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.IsScenarioCleared),
+        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.IsScenarioCleared),
         _ => 0xFF
     };
 
     public byte GetPlayerCount() => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.IngamePlayerNumber, nameof(GetPlayerCount)),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.IngamePlayerNumber, nameof(GetPlayerCount)),
+        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.InGamePlayerNumber),
+        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.IngamePlayerNumber),
         _ => 0xFF
     };
 
@@ -82,12 +82,12 @@ public class InGameScenarioReader : ReaderBase
 
     public byte GetCoin()
     {
-        var coin1 = ReadValue<byte>(FileTwoPtrs.Coin);
-        var coin2 = ReadValue<byte>(FileTwoPtrs.Coin + 0x2);
-        var coin3 = ReadValue<byte>(FileTwoPtrs.Coin + 0x4);
-        var coin4 = ReadValue<byte>(FileTwoPtrs.Coin + 0x6);
+        byte coin1 = ReadValue<byte>(FileTwoPtrs.Coin);
+        byte coin2 = ReadValue<byte>(FileTwoPtrs.Coin + 0x2);
+        byte coin3 = ReadValue<byte>(FileTwoPtrs.Coin + 0x4);
+        byte coin4 = ReadValue<byte>(FileTwoPtrs.Coin + 0x6);
 
-	    return (byte)(coin1 + coin2 + coin3 + coin4);
+        return (byte)(coin1 + coin2 + coin3 + coin4);
     }
 
     public byte GetKilledZombies() => ReadValue<byte>(FileTwoPtrs.KilledZombie);
@@ -175,8 +175,8 @@ public class InGameScenarioReader : ReaderBase
         long duration = Environment.TickCount64 - start;
 
         if (!debug) return;
-        
+
         Console.WriteLine($"Decoded scenario in {duration}ms");
-        Console.WriteLine(JsonSerializer.Serialize(DecodedScenario, DecodedScenarioJsonContext.Default.DecodedScenario));  
+        Console.WriteLine(JsonSerializer.Serialize(DecodedScenario, DecodedScenarioJsonContext.Default.DecodedScenario));
     }
 }

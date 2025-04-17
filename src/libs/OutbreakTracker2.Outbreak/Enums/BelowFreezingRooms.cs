@@ -80,5 +80,5 @@ public enum BelowFreezingRooms : short
     B4F_CultureRoom = 30,
 
     [EnumMember(Value = "Marshaling yard")]
-    MarshalingYard = 32,
+    MarshalingYard = 32
 }

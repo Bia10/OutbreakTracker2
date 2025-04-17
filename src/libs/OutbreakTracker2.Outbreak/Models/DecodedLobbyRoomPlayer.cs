@@ -2,9 +2,9 @@
 
 public sealed record DecodedLobbyRoomPlayer
 {
-    public bool IsEnabled { get; set; } = false;
+    public bool IsEnabled { get; set; }
 
-    public byte NameId { get; set; } = 0x00;
+    public byte NameId { get; set; }
 
     public string NPCType { get; set; } = string.Empty;
 

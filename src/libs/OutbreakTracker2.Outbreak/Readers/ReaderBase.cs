@@ -1,12 +1,12 @@
-﻿using FastEnumUtility;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Text;
+using FastEnumUtility;
 using OutbreakTracker2.Memory;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Extensions;
 using OutbreakTracker2.PCSX2;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
@@ -26,11 +26,11 @@ public abstract class ReaderBase
         CurrentFile = GetGameFile();
     }
 
-    private T Read<T>(nint address) where T : struct =>
-        MemoryReader.Read<T>(GameClient.Handle, address);
+    private T Read<T>(nint address) where T : struct
+        => MemoryReader.Read<T>(GameClient.Handle, address);
 
-    private string ReadString(nint address, Encoding? encoding = null) =>
-        MemoryReader.ReadString(GameClient.Handle, address, encoding);
+    private string ReadString(nint address, Encoding? encoding = null)
+        => MemoryReader.ReadString(GameClient.Handle, address, encoding);
 
     private GameFile GetGameFile()
     {
@@ -43,32 +43,32 @@ public abstract class ReaderBase
     }
 
     protected T ReadValue<T>(
-        (nint[] File1, nint[] File2) offsets, 
-        T errorValue, 
+        (nint[] File1, nint[] File2) offsets,
+        T errorValue,
         [CallerMemberName] string methodName = ""
     ) where T : struct
         => ReadValueFromOffsets(offsets.File1, offsets.File2, methodName, errorValue);
 
     protected T ReadSlotValue<T>(
-        int slotIndex, 
-        (nint[] File1, nint[] File2) offsets, 
-        T errorValue, 
+        int slotIndex,
+        (nint[] File1, nint[] File2) offsets,
+        T errorValue,
         [CallerMemberName] string methodName = ""
     ) where T : struct
         => ReadSlotValue(slotIndex, offsets.File1, offsets.File2, errorValue, methodName);
 
     protected string ReadSlotString(
-        int slotIndex, 
-        (nint[] File1, nint[] File2) offsets, 
-        string errorValue, 
+        int slotIndex,
+        (nint[] File1, nint[] File2) offsets,
+        string errorValue,
         [CallerMemberName] string methodName = ""
     ) => ReadSlotValue(slotIndex, offsets.File1, offsets.File2, errorValue, methodName);
 
     protected T ReadSlotValue<T>(
-        int slotIndex, 
-        nint[] offsetsFile1, 
-        nint[] offsetsFile2, 
-        T errorValue, 
+        int slotIndex,
+        nint[] offsetsFile1,
+        nint[] offsetsFile2,
+        T errorValue,
         [CallerMemberName] string methodName = ""
     ) where T : struct
     {
@@ -84,7 +84,7 @@ public abstract class ReaderBase
     }
 
     protected T ReadValue<T>(
-        nint address, 
+        nint address,
         [CallerMemberName] string methodName = ""
     ) where T : struct
     {
@@ -94,10 +94,10 @@ public abstract class ReaderBase
     }
 
     protected string ReadSlotValue(
-        int slotIndex, 
-        nint[] offsetsFile1, 
-        nint[] offsetsFile2, 
-        string errorValue, 
+        int slotIndex,
+        nint[] offsetsFile1,
+        nint[] offsetsFile2,
+        string errorValue,
         [CallerMemberName] string methodName = ""
     )
     {
@@ -113,9 +113,9 @@ public abstract class ReaderBase
     }
 
     protected bool TryComputeLobbyAddress(
-        int slotIndex, 
-        nint[] offsetsFile1, 
-        nint[] offsetsFile2, 
+        int slotIndex,
+        nint[] offsetsFile1,
+        nint[] offsetsFile2,
         string methodName,
         out nint address,
         [NotNullWhen(false)] out string? errorMessage)
@@ -210,7 +210,7 @@ public abstract class ReaderBase
         return defaultValue.ToString();
     }
 
-    protected string GetScenarioString<TFileOne, TFileTwo>(short scenarioId, TFileOne defaultFileOne, TFileTwo defaultFileTwo) 
+    protected string GetScenarioString<TFileOne, TFileTwo>(short scenarioId, TFileOne defaultFileOne, TFileTwo defaultFileTwo)
         where TFileOne : struct, Enum
         where TFileTwo : struct, Enum
     {

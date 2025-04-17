@@ -60,7 +60,7 @@ public enum WildThingsRooms : short
 
     // Duplicate display string with different Id
     [EnumMember(Value = "Show animals' boarding house")]
-    ShowAnimalsBoardingHouse2 = 24,  
+    ShowAnimalsBoardingHouse2 = 24,
 
     [EnumMember(Value = "Stage")]
     Stage = 25,

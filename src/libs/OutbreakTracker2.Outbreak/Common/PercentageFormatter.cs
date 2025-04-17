@@ -21,7 +21,7 @@ public static class PercentageFormatter
     {
         if (IsZero(denominator))
             throw new DivideByZeroException($"Division by zero detected by denominator of type: {typeof(T).Name})");
-        
+
         double num = Convert.ToDouble(numerator);
         double den = Convert.ToDouble(denominator);
         double ratio = num / den;

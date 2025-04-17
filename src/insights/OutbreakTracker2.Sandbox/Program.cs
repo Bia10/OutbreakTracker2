@@ -6,7 +6,7 @@ namespace OutbreakTracker2.Sandbox;
 
 public class Program
 {
-    static void Main(string[] _)
+    private static void Main(string[] _)
     {
         using var gameClient = new GameClient();
         gameClient.AttachToPCSX2();

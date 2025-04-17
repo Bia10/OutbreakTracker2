@@ -1,15 +1,15 @@
-﻿using OutbreakTracker2.Outbreak.Enums;
+﻿using System.Text.Json;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Offsets;
 using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.PCSX2;
-using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
 public sealed class LobbyRoomReader : ReaderBase
 {
-    public LobbyRoomReader(GameClient gameClient, EEmemMemory eememMemory) 
+    public LobbyRoomReader(GameClient gameClient, EEmemMemory eememMemory)
         : base(gameClient, eememMemory) { }
 
     public DecodedLobbyRoom[] DecodedLobbyRooms { get; } = new DecodedLobbyRoom[1];
@@ -36,8 +36,8 @@ public sealed class LobbyRoomReader : ReaderBase
         => GetEnumString(GetDifficulty(), RoomDifficulty.Unknown);
 
     public string GetScenarioString()
-        => GetScenarioString(GetScenarioId(), 
-            FileOneLobbyScenario.Unknown, 
+        => GetScenarioString(GetScenarioId(),
+            FileOneLobbyScenario.Unknown,
             FileTwoLobbyScenario.Unknown);
 
     public string GetFormattedTimeString()
@@ -78,7 +78,7 @@ public sealed class LobbyRoomReader : ReaderBase
         Console.WriteLine($"Decoded lobby room in {duration}ms");
 
         Console.WriteLine(JsonSerializer.Serialize(
-            DecodedLobbyRooms[0], 
+            DecodedLobbyRooms[0],
             DecodedLobbyRoomJsonContext.Default.DecodedLobbyRoom));
     }
 }

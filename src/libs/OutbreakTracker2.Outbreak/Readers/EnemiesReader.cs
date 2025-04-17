@@ -1,9 +1,9 @@
-﻿using OutbreakTracker2.Outbreak.Common;
+﻿using System.Text.Json;
+using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.PCSX2;
-using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
@@ -67,7 +67,7 @@ public class EnemiesReader : ReaderBase
 
         for (var i = 0; i < Constants.MaxEnemies2; i++)
         {
-            var curMobOffset = 0x60 * i;
+            int curMobOffset = 0x60 * i;
 
                 switch (CurrentFile)
                 {
@@ -90,6 +90,8 @@ public class EnemiesReader : ReaderBase
                         DecodedEnemies2[i].RoomId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset + curMobOffset + 0x22);
                         DecodedEnemies2[i].Status = ReadValue<byte>(FileTwoPtrs.EnemyListOffset + curMobOffset + 0x45);
                         break;
+
+                    default: throw new ArgumentOutOfRangeException();
                 }
 
                 DecodedEnemies2[i].Name = GetEnumString(DecodedEnemies2[i].TypeId, EnemyType.Unknown);
@@ -101,10 +103,10 @@ public class EnemiesReader : ReaderBase
         long duration = Environment.TickCount64 - start;
 
         if (!debug) return;
-        
+
         Console.WriteLine($"Decoded enemies2 in {duration}ms");
 
-        foreach (var enemy in DecodedEnemies2)
+        foreach (DecodedEnemy? enemy in DecodedEnemies2)
             Console.WriteLine(JsonSerializer.Serialize(enemy, DecodedScenarioJsonContext.Default.DecodedScenario));
     }
 }

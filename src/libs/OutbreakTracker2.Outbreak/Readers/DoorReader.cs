@@ -1,13 +1,13 @@
-﻿using OutbreakTracker2.Outbreak.Common;
+﻿using System.Text.Json;
+using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.PCSX2;
-using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
-public class DoorReader : ReaderBase
+public sealed class DoorReader : ReaderBase
 {
     public DoorReader(GameClient gameClient, EEmemMemory eememMemory) : base(gameClient, eememMemory)
     {
@@ -15,15 +15,15 @@ public class DoorReader : ReaderBase
 
     public ushort GetHealthPoints(int doorId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetDoorHealthAddress(doorId), nameof(GetHealthPoints)),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetDoorHealthAddress(doorId), nameof(GetHealthPoints)),
+        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetDoorHealthAddress(doorId)),
+        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetDoorHealthAddress(doorId)),
         _ => 0xFF
     };
 
     public ushort GetFlag(int doorId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetDoorFlagAddress(doorId), nameof(GetFlag)),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetDoorFlagAddress(doorId), nameof(GetFlag)),
+        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetDoorFlagAddress(doorId)),
+        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetDoorFlagAddress(doorId)),
         _ => 0xFF
     };
 
@@ -31,7 +31,7 @@ public class DoorReader : ReaderBase
     {
         if (doorHP is 500)
             return "unlocked";
-            
+
         return flag switch
         {
             0 => "unlocked",
@@ -62,7 +62,7 @@ public class DoorReader : ReaderBase
 
         if (debug) Console.WriteLine("Decoding doors");
 
-        var maxDoors = CurrentFile switch
+        int maxDoors = CurrentFile switch
         {
             GameFile.FileOne => Constants.MaxDoors - 9,
             GameFile.FileTwo => Constants.MaxDoors,

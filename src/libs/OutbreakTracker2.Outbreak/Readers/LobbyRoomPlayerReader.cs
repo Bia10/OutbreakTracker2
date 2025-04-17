@@ -1,13 +1,13 @@
-﻿using OutbreakTracker2.Outbreak.Common;
+﻿using System.Text.Json;
+using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.PCSX2;
-using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
-public class LobbyRoomPlayerReader : ReaderBase
+public sealed class LobbyRoomPlayerReader : ReaderBase
 {
     public LobbyRoomPlayerReader(GameClient gameClient, EEmemMemory eememMemory)
         : base(gameClient, eememMemory) { }
@@ -25,7 +25,7 @@ public class LobbyRoomPlayerReader : ReaderBase
             _ => nint.Zero
         };
 
-        return ReadValue<bool>(basePlayerAddress + offset, nameof(GetPlayerCharEnabled));
+        return ReadValue<bool>(basePlayerAddress + offset);
     }
 
     public byte GetPlayerCharNPCType(int characterId)
@@ -38,7 +38,7 @@ public class LobbyRoomPlayerReader : ReaderBase
             _ => nint.Zero
         };
 
-        return ReadValue<byte>(basePlayerAddress + offset, nameof(GetPlayerCharNPCType));
+        return ReadValue<byte>(basePlayerAddress + offset);
     }
 
     public byte GetPlayerCharNameId(int characterId)
@@ -51,13 +51,13 @@ public class LobbyRoomPlayerReader : ReaderBase
             _ => nint.Zero
         };
 
-        return ReadValue<byte>(basePlayerAddress + offset, nameof(GetPlayerCharNameId));
+        return ReadValue<byte>(basePlayerAddress + offset);
     }
 
-    public string GetCharacterNpcTypeString(int characterId) 
+    public string GetCharacterNpcTypeString(int characterId)
         => GetEnumString(GetPlayerCharNPCType(characterId), CharacterNpcType.Unknown);
 
-    public string GetCharacterNameString(byte characterBaseType) 
+    public string GetCharacterNameString(byte characterBaseType)
         => GetEnumString(characterBaseType, CharacterBaseType.Unknown);
 
     public string GetCharacterHealthString(byte characterBaseType)
@@ -112,10 +112,10 @@ public class LobbyRoomPlayerReader : ReaderBase
         long duration = Environment.TickCount64 - start;
 
         if (!debug) return;
-        
+
         Console.WriteLine($"Decoded room players in {duration}ms");
 
         foreach (DecodedLobbyRoomPlayer player in DecodedLobbyRoomPlayers)
-            Console.WriteLine(JsonSerializer.Serialize(player, DecodedLobbyRoomPlayerJsonContext.Default.DecodedLobbyRoomPlayer));  
+            Console.WriteLine(JsonSerializer.Serialize(player, DecodedLobbyRoomPlayerJsonContext.Default.DecodedLobbyRoomPlayer));
     }
 }
