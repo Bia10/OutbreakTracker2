@@ -178,6 +178,33 @@ public class FileTwoPtrs
     public const nint PickupSpaceStart = 0x397B7C; // 1 item - 60 bytes settings byte on offset ITEM_PTR+37?
     public const nint DeadInventoryStart = 0x491146;
     public const nint VirusMaxStart = 0x728500;
-    public const nint ScenarioIDAddr = 0x3137BA;
-    public const nint FrameCounter = 0x4912B8;
+
+    public const nint IngameScenarioId = 0x3137BA;
+    public const nint IngameFrameCounter = 0x4912B8;
+    public const nint WildThingsTime = 0x491248;
+    public const nint PassWildThings = 0x48FE7B;
+    public const nint PassDesperateTimes = 0x490070;
+    public const nint PassDesperateTimes2 = 0x490072;
+    public const nint PassDesperateTimes3 = 0x48FE70;
+    public const nint PassUnderBelly1 = 0x490073;
+    public const nint PassUnderBelly2 = 0x490075;
+    public const nint PassUnderBelly3 = 0x48FE76;
+    public const nint EscapeTime = 0x491256;
+    public const nint FlashbackTime = 0x491254;
+    public const nint Pass4 = 0x491268;
+    public const nint Difficulty = 0x49135A;
+    public const nint DesperateTimesGasRandom = 0x491338;//24ADB0(offline) 491338(online)
+    public const nint DesperateTimesGasFlag = 0x48FFFC;
+    public const nint DesperateTimesGasTime = 0x491278;
+    public const nint DesperateTimesFightTime = 0x49126C;
+    public const nint DesperateTimesFightTime2 = 0x49124E;
+    public const nint DesperateTimesGarageTime = 0x491270;//48FE71 switch
+    public const nint ItemRandom = 0x24AD30;
+    public const nint ItemRandom2 = 0x24ADB1;//DE C2
+    public const nint PuzzleRandom = 0x24ADB0;// puzzle set
+    public const nint DesperateTimesStart = 0x490f6c;
+    public const nint IngamePlayerNumber =  0x24AFCC;
+    public const nint Coin = 0x491188;//wild things
+    public const nint KilledZombie = 0x491268;//47ca64,49010c,491268,desperate times
+    public const nint IsScenarioCleared = 0x4912A0;//4912A0 4912C9
 }

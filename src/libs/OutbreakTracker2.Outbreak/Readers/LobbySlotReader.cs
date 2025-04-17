@@ -17,28 +17,28 @@ public sealed class LobbySlotReader : ReaderBase
         = new DecodedLobbySlot[Constants.MaxLobbySlots];
 
     public short GetIndex(int slotIndex) 
-        => ReadSlotValue(slotIndex, LobbySlotOffsets.Index, nameof(GetIndex), (short)-1);
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.Index, (short)-1);
     
     public short GetCurPlayers(int slotIndex) 
-        => ReadSlotValue(slotIndex, LobbySlotOffsets.CurPlayers, nameof(GetCurPlayers), (short)-1);
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.CurPlayers, (short)-1);
     
     public short GetMaxPlayers(int slotIndex) 
-        => ReadSlotValue(slotIndex, LobbySlotOffsets.MaxPlayers, nameof(GetMaxPlayers), (short)-1);
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.MaxPlayers, (short)-1);
     
     public byte GetStatus(int slotIndex) 
-        => ReadSlotValue(slotIndex, LobbySlotOffsets.Status, nameof(GetStatus), (byte)SlotStatus.Unknown);
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.Status, (byte)SlotStatus.Unknown);
     
     public byte GetPass(int slotIndex) 
-        => ReadSlotValue(slotIndex, LobbySlotOffsets.Pass, nameof(GetPass), (byte)SlotPass.NoPass);
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.Pass, (byte)SlotPass.NoPass);
     
     public short GetScenarioId(int slotIndex) 
-        => ReadSlotValue(slotIndex, LobbySlotOffsets.ScenarioId, nameof(GetScenarioId), (short)FileTwoScenario.Unknown);
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.ScenarioId, (short)FileTwoLobbyScenario.Unknown);
     
     public short GetVersion(int slotIndex) 
-        => ReadSlotValue(slotIndex, LobbySlotOffsets.Version, nameof(GetVersion), (short)GameVersion.Unknown);
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.Version, (short)GameVersion.Unknown);
     
     public string GetTitle(int slotIndex) 
-        => ReadSlotString(slotIndex, LobbySlotOffsets.Title, nameof(GetTitle), string.Empty);
+        => ReadSlotString(slotIndex, LobbySlotOffsets.Title, string.Empty);
 
     public string GetStatusString(int slotIndex) 
         => GetEnumString(GetStatus(slotIndex), SlotStatus.Unknown);
@@ -51,8 +51,8 @@ public sealed class LobbySlotReader : ReaderBase
     
     public string GetScenarioString(int slotIndex) 
         => GetScenarioString(GetScenarioId(slotIndex), 
-            FileOneScenario.Unknown, 
-            FileTwoScenario.Unknown);
+            FileOneLobbyScenario.Unknown, 
+            FileTwoLobbyScenario.Unknown);
 
     public void UpdateLobbySlots(bool debug = false)
     {

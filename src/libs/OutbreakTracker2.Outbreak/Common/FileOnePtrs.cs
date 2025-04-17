@@ -146,6 +146,19 @@ public class FileOnePtrs
 
     public const nint DeadInventoryStart = 0x48BDE2;
     public const nint VirusMaxStart = 0x6E6C70;
-    public const nint ScenarioIDAddr = 0x3065AA;
-    public const nint FrameCounter = 0x48BF78;
+
+    public const nint IngameScenarioId = 0x3065AA;
+    public const nint IngameFrameCounter = 0x48BF78;
+    public const nint Pass1 = 0x48AC13;
+    public const nint Pass2 = 0x48AC17;
+    public const nint Pass3 = 0x48AC14;
+    public const nint Pass4 = 0x48AC1A; //48AC1A 48ADCE
+    public const nint Pass5 = 0x48AC1B; //48ADCF  on=48ADF3
+    public const nint Pass6 = 0x48AC15; //4927=7500 4032=7480 40 4284=0200
+    public const nint Difficulty = 0x48C01A;
+    public const nint IsScenarioCleared = 0x48BF60; //
+    public const nint ItemRandom = 0x23BB20; //23BB28 23C055 23BD20 426AA9 23BBA0 23BD24
+    public const nint ItemRandom2 = 0x23BBA1;
+    public const nint PuzzleRandom = 0x23BBA0; // puzzle set
+    public const nint IngamePlayerNumber =  0x23BE14;//23C004
 }

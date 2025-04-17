@@ -15,30 +15,30 @@ public sealed class LobbyRoomReader : ReaderBase
     public DecodedLobbyRoom[] DecodedLobbyRooms { get; } = new DecodedLobbyRoom[1];
 
     public short GetMaxPlayers()
-        => ReadValue(LobbyRoomOffsets.MaxPlayers, nameof(GetMaxPlayers), (short)-1);
+        => ReadValue(LobbyRoomOffsets.MaxPlayers, (short)-1);
 
     public short GetDifficulty()
-        => ReadValue(LobbyRoomOffsets.Difficulty, nameof(GetDifficulty), (short)-1);
+        => ReadValue(LobbyRoomOffsets.Difficulty, (short)-1);
 
     public byte GetStatus()
-        => ReadValue(LobbyRoomOffsets.Status, nameof(GetStatus), (byte)0xFF);
+        => ReadValue(LobbyRoomOffsets.Status, (byte)0xFF);
 
     public short GetScenarioId()
-        => ReadValue(LobbyRoomOffsets.ScenarioId, nameof(GetScenarioId), (short)-1);
+        => ReadValue(LobbyRoomOffsets.ScenarioId, (short)-1);
 
     public short GetTime()
-        => ReadValue(LobbyRoomOffsets.Time, nameof(GetTime), (short)-1);
+        => ReadValue(LobbyRoomOffsets.Time, (short)-1);
 
     public short GetCurPlayers()
-        => ReadValue(LobbyRoomOffsets.CurPlayers, nameof(GetCurPlayers), (short)-1);
+        => ReadValue(LobbyRoomOffsets.CurPlayers, (short)-1);
 
     public string GetDifficultyString()
         => GetEnumString(GetDifficulty(), RoomDifficulty.Unknown);
 
     public string GetScenarioString()
         => GetScenarioString(GetScenarioId(), 
-            FileOneScenario.Unknown, 
-            FileTwoScenario.Unknown);
+            FileOneLobbyScenario.Unknown, 
+            FileTwoLobbyScenario.Unknown);
 
     public string GetFormattedTimeString()
     {

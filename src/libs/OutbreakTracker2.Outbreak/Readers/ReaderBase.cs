@@ -5,6 +5,7 @@ using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Extensions;
 using OutbreakTracker2.PCSX2;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace OutbreakTracker2.Outbreak.Readers;
@@ -41,17 +42,35 @@ public abstract class ReaderBase
         return f2Byte is 0x53 ? GameFile.FileTwo : GameFile.Unknown;
     }
 
-    protected T ReadValue<T>((nint[] File1, nint[] File2) offsets, string methodName, T errorValue) where T : struct
+    protected T ReadValue<T>(
+        (nint[] File1, nint[] File2) offsets, 
+        T errorValue, 
+        [CallerMemberName] string methodName = ""
+    ) where T : struct
         => ReadValueFromOffsets(offsets.File1, offsets.File2, methodName, errorValue);
 
-    protected T ReadSlotValue<T>(int slotIndex, (nint[] File1, nint[] File2) offsets, string methodName, T errorValue) where T : struct
-        => ReadSlotValue(slotIndex, offsets.File1, offsets.File2, methodName, errorValue);
+    protected T ReadSlotValue<T>(
+        int slotIndex, 
+        (nint[] File1, nint[] File2) offsets, 
+        T errorValue, 
+        [CallerMemberName] string methodName = ""
+    ) where T : struct
+        => ReadSlotValue(slotIndex, offsets.File1, offsets.File2, errorValue, methodName);
 
-    protected string ReadSlotString(int slotIndex, (nint[] File1, nint[] File2) offsets, string methodName, string errorValue)
-        => ReadSlotValue(slotIndex, offsets.File1, offsets.File2, methodName, errorValue);
+    protected string ReadSlotString(
+        int slotIndex, 
+        (nint[] File1, nint[] File2) offsets, 
+        string errorValue, 
+        [CallerMemberName] string methodName = ""
+    ) => ReadSlotValue(slotIndex, offsets.File1, offsets.File2, errorValue, methodName);
 
-    protected T ReadSlotValue<T>(int slotIndex, nint[] offsetsFile1, nint[] offsetsFile2, string methodName, T errorValue)
-        where T : struct
+    protected T ReadSlotValue<T>(
+        int slotIndex, 
+        nint[] offsetsFile1, 
+        nint[] offsetsFile2, 
+        T errorValue, 
+        [CallerMemberName] string methodName = ""
+    ) where T : struct
     {
         if (!TryComputeLobbyAddress(slotIndex, offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
         {
@@ -64,14 +83,23 @@ public abstract class ReaderBase
         return result;
     }
 
-    protected T ReadValue<T>(nint address, string methodName) where T : struct
+    protected T ReadValue<T>(
+        nint address, 
+        [CallerMemberName] string methodName = ""
+    ) where T : struct
     {
         T result = Read<T>(address);
         Console.WriteLine($"[{methodName}] Successfully read type {typeof(T)} at 0x{address:X} obtained value {result}.");
         return result;
     }
 
-    protected string ReadSlotValue(int slotIndex, nint[] offsetsFile1, nint[] offsetsFile2, string methodName, string errorValue)
+    protected string ReadSlotValue(
+        int slotIndex, 
+        nint[] offsetsFile1, 
+        nint[] offsetsFile2, 
+        string errorValue, 
+        [CallerMemberName] string methodName = ""
+    )
     {
         if (!TryComputeLobbyAddress(slotIndex, offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
         {
@@ -82,35 +110,6 @@ public abstract class ReaderBase
         string result = ReadString(address);
         Console.WriteLine($"[{methodName}] Successfully read string at 0x{address:X} obtained value {result}.");
         return result;
-    }
-
-    protected static string GetEnumString<TEnum>(object value, TEnum defaultValue)
-        where TEnum : struct, Enum
-    {
-        if (FastEnum.TryParse(value.ToString(), out TEnum result))
-        {
-            string? enumValue = result.GetEnumMemberValue();
-            if (!string.IsNullOrEmpty(enumValue))
-                return enumValue;
-
-            Console.WriteLine($"[{nameof(GetEnumString)}] Enum value resolved to null or empty for type {typeof(TEnum).Name} and value {value}.");
-            throw new InvalidOperationException($"Enum value cannot be null or empty for type {typeof(TEnum).Name}.");
-        }
-
-        Console.WriteLine($"[{nameof(GetEnumString)}] Failed to parse enum for type {typeof(TEnum).Name} and value {value}. Defaulting to {defaultValue}.");
-        return defaultValue.ToString();
-    }
-
-    protected string GetScenarioString<TFileOne, TFileTwo>(short scenarioId, TFileOne defaultFileOne, TFileTwo defaultFileTwo) 
-        where TFileOne : struct, Enum
-        where TFileTwo : struct, Enum
-    {
-        return CurrentFile switch
-        {
-            GameFile.FileOne => GetEnumString(scenarioId, defaultFileOne),
-            GameFile.FileTwo => GetEnumString(scenarioId, defaultFileTwo),
-            _ => throw new InvalidOperationException($"[{nameof(GetScenarioString)}] Unrecognized game file: {CurrentFile}")
-        };
     }
 
     protected bool TryComputeLobbyAddress(
@@ -192,6 +191,35 @@ public abstract class ReaderBase
         string result = ReadString(address);
         Console.WriteLine($"[{methodName}] Successfully read string at 0x{address:X} obtained value {result}.");
         return result;
+    }
+
+    protected static string GetEnumString<TEnum>(object value, TEnum defaultValue)
+        where TEnum : struct, Enum
+    {
+        if (FastEnum.TryParse(value.ToString(), out TEnum result))
+        {
+            string? enumValue = result.GetEnumMemberValue();
+            if (!string.IsNullOrEmpty(enumValue))
+                return enumValue;
+
+            Console.WriteLine($"[{nameof(GetEnumString)}] Enum value resolved to null or empty for type {typeof(TEnum).Name} and value {value}.");
+            throw new InvalidOperationException($"Enum value cannot be null or empty for type {typeof(TEnum).Name}.");
+        }
+
+        Console.WriteLine($"[{nameof(GetEnumString)}] Failed to parse enum for type {typeof(TEnum).Name} and value {value}. Defaulting to {defaultValue}.");
+        return defaultValue.ToString();
+    }
+
+    protected string GetScenarioString<TFileOne, TFileTwo>(short scenarioId, TFileOne defaultFileOne, TFileTwo defaultFileTwo) 
+        where TFileOne : struct, Enum
+        where TFileTwo : struct, Enum
+    {
+        return CurrentFile switch
+        {
+            GameFile.FileOne => GetEnumString(scenarioId, defaultFileOne),
+            GameFile.FileTwo => GetEnumString(scenarioId, defaultFileTwo),
+            _ => throw new InvalidOperationException($"[{nameof(GetScenarioString)}] Unrecognized game file: {CurrentFile}")
+        };
     }
 
     protected nint[] GetOffsets(nint[] offsetsFile1, nint[] offsetsFile2)

@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Outbreak.Enums;
 
-public enum FileTwoScenario : short
+public enum FileTwoLobbyScenario : short
 {
     [EnumMember(Value = "Unknown")]
     Unknown = -1,
