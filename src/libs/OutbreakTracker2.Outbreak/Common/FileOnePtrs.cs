@@ -22,7 +22,7 @@ public class FileOnePtrs
     public const nint LobbySlotMaxPlayer = 0x4;
     public const nint LobbySlotStatus = 0xE;
     public const nint LobbySlotPass = 0xF;
-    public const nint LobbySlotScenarioID = 0x14;
+    public const nint LobbySlotScenarioId = 0x14;
     public const nint LobbySlotVersion = 0x16;
     public const nint LobbySlotTitle = 0x18;
 
@@ -62,9 +62,9 @@ public class FileOnePtrs
     private const nint Door9HP = 0x4739B6;//4739B6/473A70 dd t-shaped
     private const nint Door10HP = 0x473A40;//473A40/473A72 store room
 
-    public static nint GetDoorHealthAddress(int doorID)
+    public static nint GetDoorHealthAddress(int doorId)
     {
-        return doorID switch
+        return doorId switch
         {
             0 => Door1HP,
             1 => Door2HP,
@@ -93,9 +93,9 @@ public class FileOnePtrs
     private const nint Door9Flag = 0x48B238;//48B238/48B268 dd t-shaped
     private const nint Door10Flag = 0x48B25C;//48B25C/48B268 store room
 
-    public static nint GetDoorFlagAddress(int doorID)
+    public static nint GetDoorFlagAddress(int doorId)
     {
-        return doorID switch
+        return doorId switch
         {
             0 => Door1Flag,
             1 => Door2Flag,
@@ -161,4 +161,46 @@ public class FileOnePtrs
     public const nint ItemRandom2 = 0x23BBA1;
     public const nint PuzzleRandom = 0x23BBA0; // puzzle set
     public const nint IngamePlayerNumber =  0x23BE14;//23C004
+
+    public const nint Enemy1Start = 0x420000;
+    public const nint Enemy2Start = 0x420D90;
+    public const nint Enemy3Start = 0x421B20;
+    public const nint Enemy4Start = 0x4228B0;
+    public const nint Enemy5Start = 0x423640;
+    public const nint Enemy6Start = 0x4243D0;
+    public const nint Enemy7Start = 0x425160;
+    public const nint Enemy8Start = 0x425EF0;
+    public const nint Enemy9Start = 0x426C80;
+    public const nint Enemy10Start = 0x427A10;
+    public const nint Enemy11Start = 0x4287A0;
+    public const nint Enemy12Start = 0x429530;
+
+    public const nint EnemyEnabled = 0x0;
+    public const nint EnemyInGame = 0x1;
+    public const nint EnemyNameIdOffset = 0x3;
+    public const nint EnemyStatusOffset = 0x32;
+    public const nint EnemyHpOffset = 0x544;
+    public const nint EnemyMaxHpOffset = 0x546;
+    public const nint EnemyTypeOffset = 0xBBA;
+    public const nint EnemyListOffset = 0x71A030;
+
+    public static nint GetEnemyAddress(int enemyId)
+    {
+        return enemyId switch
+        {
+            0 => Enemy12Start,
+            1 => Enemy11Start,
+            2 => Enemy10Start,
+            3 => Enemy9Start,
+            4 => Enemy8Start,
+            5 => Enemy7Start,
+            6 => Enemy6Start,
+            7 => Enemy5Start,
+            8 => Enemy4Start,
+            9 => Enemy3Start,
+            10 => Enemy2Start,
+            11 => Enemy1Start,
+            _ => -1
+        };
+    }
 }

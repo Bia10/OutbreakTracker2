@@ -58,7 +58,7 @@ public enum WildThingsRooms : short
     [EnumMember(Value = "Service road")]
     ServiceRoad = 23,
 
-    // Duplicate display string with different ID
+    // Duplicate display string with different Id
     [EnumMember(Value = "Show animals' boarding house")]
     ShowAnimalsBoardingHouse2 = 24,  
 

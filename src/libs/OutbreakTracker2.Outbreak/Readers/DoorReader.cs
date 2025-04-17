@@ -13,17 +13,17 @@ public class DoorReader : ReaderBase
     {
     }
 
-    public ushort GetHealthPoints(int doorID) => CurrentFile switch
+    public ushort GetHealthPoints(int doorId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetDoorHealthAddress(doorID), nameof(GetHealthPoints)),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetDoorHealthAddress(doorID), nameof(GetHealthPoints)),
+        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetDoorHealthAddress(doorId), nameof(GetHealthPoints)),
+        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetDoorHealthAddress(doorId), nameof(GetHealthPoints)),
         _ => 0xFF
     };
 
-    public ushort GetFlag(int doorID) => CurrentFile switch
+    public ushort GetFlag(int doorId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetDoorFlagAddress(doorID), nameof(GetFlag)),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetDoorFlagAddress(doorID), nameof(GetFlag)),
+        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetDoorFlagAddress(doorId), nameof(GetFlag)),
+        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetDoorFlagAddress(doorId), nameof(GetFlag)),
         _ => 0xFF
     };
 
@@ -39,12 +39,12 @@ public class DoorReader : ReaderBase
             2 => "locked", //Fragile lock wild things
             3 => "locked", //Fragile lock underbelly
             4 => "locked", //Fragile lock underbelly
-            6 => "unknownState",
+            6 => "unknownState6",
             8 => "locked", //Fragile lock wild things
             10 => "unlocked",
             12 => "unlocked",
-            13 => "unknownState",
-            18 => "unknownState",
+            13 => "unknownState13",
+            18 => "unknownState14",
             44 => "unlocked",
             130 => "unlocked",
             2000 => "unlocked",

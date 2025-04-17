@@ -21,7 +21,7 @@ public class FileTwoPtrs
     public const nint LobbySlotMaxPlayer = 0x4;
     public const nint LobbySlotStatus = 0xE;
     public const nint LobbySlotPass = 0xF;
-    public const nint LobbySlotScenarioID = 0x14;
+    public const nint LobbySlotScenarioId = 0x14;
     public const nint LobbySlotVersion = 0x16;
     public const nint LobbySlotTitle = 0x18;
 
@@ -35,12 +35,12 @@ public class FileTwoPtrs
     public const nint BaseLobbyRoomPlayer = 0x630D40;  // Player slot at index 0
     public const int LobbyRoomPlayerStructSize = 0x3A8; // 936-byte structure size 
 
-    public static nint GetLobbyRoomPlayerAddress(int characterID)
+    public static nint GetLobbyRoomPlayerAddress(int characterId)
     {
-        if (!characterID.IsCharacterIdValid())
-            throw new InvalidOperationException($"Invalid Character ID: {characterID}");
+        if (!characterId.IsCharacterIdValid())
+            throw new InvalidOperationException($"Invalid Character Id: {characterId}");
 
-        return BaseLobbyRoomPlayer + characterID * LobbyRoomPlayerStructSize;
+        return BaseLobbyRoomPlayer + characterId * LobbyRoomPlayerStructSize;
     }
 
     // Offsets for the lobby room player structure, offseting from BaseLobbyRoomPlayer
@@ -68,9 +68,9 @@ public class FileTwoPtrs
     const nint Door18HP = 0x477A62;//477AA0 Dog House
     const nint Door19HP = 0x477B00;//EOTR Hole HP
 
-    public static nint GetDoorHealthAddress(int doorID)
+    public static nint GetDoorHealthAddress(int doorId)
     {
-        return doorID switch
+        return doorId switch
         {
             0 => Door1HP,
             1 => Door2HP,
@@ -115,9 +115,9 @@ public class FileTwoPtrs
     const nint Door18Flag = 0x4902C4;//4902B8/4902C4 Dog House
     const nint Door19Flag = 0x48FFF4;//EOTR Hole HP
 
-    public static nint GetDoorFlagAddress(int doorID)
+    public static nint GetDoorFlagAddress(int doorId)
     {
-        return doorID switch
+        return doorId switch
         {
             0 => Door1Flag,
             1 => Door2Flag,
@@ -207,4 +207,48 @@ public class FileTwoPtrs
     public const nint Coin = 0x491188;//wild things
     public const nint KilledZombie = 0x491268;//47ca64,49010c,491268,desperate times
     public const nint IsScenarioCleared = 0x4912A0;//4912A0 4912C9
+
+    public const nint EnemyHpPointer = 0x388314; //enemy HP
+
+    public const nint Enemy1Start = 0x4245D0;
+    public const nint Enemy2Start = 0x425380;
+    public const nint Enemy3Start = 0x426130;
+    public const nint Enemy4Start = 0x426EE0;
+    public const nint Enemy5Start = 0x427C90;
+    public const nint Enemy6Start = 0x428A40;
+    public const nint Enemy7Start = 0x4297F0;
+    public const nint Enemy8Start = 0x42A5A0;
+    public const nint Enemy9Start = 0x42B350;
+    public const nint Enemy10Start = 0x42C100;
+    public const nint Enemy11Start = 0x42CEB0;
+    public const nint Enemy12Start = 0x42DC60;
+
+    public static nint GetEnemyAddress(int enemyId)
+    {
+        return enemyId switch
+        {
+            0 => Enemy12Start,
+            1 => Enemy11Start,
+            2 => Enemy10Start,
+            3 => Enemy9Start,
+            4 => Enemy8Start,
+            5 => Enemy7Start,
+            6 => Enemy6Start,
+            7 => Enemy5Start,
+            8 => Enemy4Start,
+            9 => Enemy3Start,
+            10 => Enemy2Start,
+            11 => Enemy1Start,
+            _ => -1
+        };
+    }
+
+    public const nint EnemyEnabled = 0x0;
+    public const nint EnemyInGame = 0x1;
+    public const nint EnemyNameIdOffset = 0x3;
+    public const nint EnemyStatusOffset = 0x32; //8,32,cb0,1F3
+    public const nint EnemyHpOffset = 0x540;
+    public const nint EnemyMaxHpOffset = 0x542;
+    public const nint EnemyTypeOffset = 0xBD2;
+    public const nint EnemyListOffset = 0x760630;//760712;
 }

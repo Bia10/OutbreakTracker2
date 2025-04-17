@@ -11,193 +11,193 @@ public class InGamePlayerReader : ReaderBase
     {
     }
 
-    public bool GetIsEnabled(int characterID) => CurrentFile switch
+    public bool GetIsEnabled(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<bool>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.CharacterEnabledOffset, nameof(GetIsEnabled)),
-        GameFile.FileTwo => ReadValue<bool>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.CharacterEnabledOffset, nameof(GetIsEnabled)),
+        GameFile.FileOne => ReadValue<bool>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.CharacterEnabledOffset, nameof(GetIsEnabled)),
+        GameFile.FileTwo => ReadValue<bool>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.CharacterEnabledOffset, nameof(GetIsEnabled)),
         _ => false
     };
 
-    public bool GetIsInGame(int characterID) => CurrentFile switch
+    public bool GetIsInGame(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<bool>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.CharacterInGameOffset, nameof(GetIsInGame)),
-        GameFile.FileTwo => ReadValue<bool>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.CharacterInGameOffset, nameof(GetIsInGame)),
+        GameFile.FileOne => ReadValue<bool>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.CharacterInGameOffset, nameof(GetIsInGame)),
+        GameFile.FileTwo => ReadValue<bool>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.CharacterInGameOffset, nameof(GetIsInGame)),
         _ => false
     };
 
-    public  short GetRoomID(int characterID) => CurrentFile switch
+    public  short GetRoomId(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<short>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.RoomIdOffset, nameof(GetRoomID)),
-        GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.RoomIdOffset, nameof(GetRoomID)),
+        GameFile.FileOne => ReadValue<short>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.RoomIdOffset, nameof(GetRoomId)),
+        GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.RoomIdOffset, nameof(GetRoomId)),
         _ => 0xFF
     };
 
-    public  short GetCurHealth(int characterID) => CurrentFile switch
+    public  short GetCurHealth(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<short>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.CurHpOffset, nameof(GetCurHealth)),
-        GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.CurHpOffset, nameof(GetCurHealth)),
+        GameFile.FileOne => ReadValue<short>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.CurHpOffset, nameof(GetCurHealth)),
+        GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.CurHpOffset, nameof(GetCurHealth)),
         _ => 0xFF
     };
 
-    public  short GetMaxHealth(int characterID) => CurrentFile switch
+    public  short GetMaxHealth(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<short>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.MaxHpOffset, nameof(GetMaxHealth)),
-        GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.MaxHpOffset, nameof(GetMaxHealth)),
+        GameFile.FileOne => ReadValue<short>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.MaxHpOffset, nameof(GetMaxHealth)),
+        GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.MaxHpOffset, nameof(GetMaxHealth)),
         _ => 0xFF
     };
 
-    public  byte GetType(int characterID) => CurrentFile switch
+    public  byte GetType(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.CharacterTypeOffset, nameof(GetType)),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.CharacterTypeOffset, nameof(GetType)),
+        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.CharacterTypeOffset, nameof(GetType)),
+        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.CharacterTypeOffset, nameof(GetType)),
         _ => 0xFF
     };
 
-    public  byte GetInventory(int characterID) => CurrentFile switch
+    public  byte GetInventory(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.InventoryOffset, nameof(GetInventory)),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.InventoryOffset, nameof(GetInventory)),
+        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.InventoryOffset, nameof(GetInventory)),
+        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.InventoryOffset, nameof(GetInventory)),
         _ => 0xFF
     };
 
-    public byte GetSpecialItem(int characterID) => CurrentFile switch
+    public byte GetSpecialItem(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<byte>((FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.InventoryOffset + 4), nameof(GetSpecialItem)),
-        GameFile.FileTwo => ReadValue<byte>((FileOnePtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.InventoryOffset + 4), nameof(GetSpecialItem)),
+        GameFile.FileOne => ReadValue<byte>((FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.InventoryOffset + 4), nameof(GetSpecialItem)),
+        GameFile.FileTwo => ReadValue<byte>((FileOnePtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.InventoryOffset + 4), nameof(GetSpecialItem)),
         _ => 0xFF
     };
 
-    public byte GetSpecialInventory(int characterID) => CurrentFile switch
+    public byte GetSpecialInventory(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<byte>((FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.InventoryOffset + 5), nameof(GetSpecialItem)),
-        GameFile.FileTwo => ReadValue<byte>((FileOnePtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.InventoryOffset + 5), nameof(GetSpecialItem)),
+        GameFile.FileOne => ReadValue<byte>((FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.InventoryOffset + 5), nameof(GetSpecialItem)),
+        GameFile.FileTwo => ReadValue<byte>((FileOnePtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.InventoryOffset + 5), nameof(GetSpecialItem)),
         _ => 0xFF
     };
 
-    public byte GetDeadInventory(int characterID) => CurrentFile switch
+    public byte GetDeadInventory(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.DeadInventoryStart + 8 * characterID, nameof(GetDeadInventory)),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.DeadInventoryStart + 8 * characterID, nameof(GetDeadInventory)),
+        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.DeadInventoryStart + 8 * characterId, nameof(GetDeadInventory)),
+        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.DeadInventoryStart + 8 * characterId, nameof(GetDeadInventory)),
         _ => 0xFF
     };
 
-    public byte GetSpecialDeadInventory(int characterID) => CurrentFile switch
+    public byte GetSpecialDeadInventory(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.DeadInventoryStart + 8 * characterID + 4, nameof(GetSpecialDeadInventory)),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.DeadInventoryStart + 8 * characterID + 4, nameof(GetSpecialDeadInventory)),
+        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.DeadInventoryStart + 8 * characterId + 4, nameof(GetSpecialDeadInventory)),
+        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.DeadInventoryStart + 8 * characterId + 4, nameof(GetSpecialDeadInventory)),
         _ => 0xFF
     };
 
-    public ushort GetBleedTime(int characterID) => CurrentFile switch
+    public ushort GetBleedTime(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.BleedTimeOffset, nameof(GetBleedTime)),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.BleedTimeOffset, nameof(GetBleedTime)),
+        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.BleedTimeOffset, nameof(GetBleedTime)),
+        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.BleedTimeOffset, nameof(GetBleedTime)),
         _ => 0xFF
     };
 
     // TODO: fix this
-    public ushort GetAntiVirusGTime(int characterID) => CurrentFile switch
+    public ushort GetAntiVirusGTime(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.AntiVirusGTimeOffset, nameof(GetAntiVirusGTime)),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.AntiVirusGTimeOffset, nameof(GetAntiVirusGTime)),
+        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.AntiVirusGTimeOffset, nameof(GetAntiVirusGTime)),
+        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.AntiVirusGTimeOffset, nameof(GetAntiVirusGTime)),
         _ => 0xFF
     };
 
-    public ushort GetHerbTime(int characterID) => CurrentFile switch
+    public ushort GetHerbTime(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.HerbTimeOffset, nameof(GetHerbTime)),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.HerbTimeOffset, nameof(GetHerbTime)),
+        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.HerbTimeOffset, nameof(GetHerbTime)),
+        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.HerbTimeOffset, nameof(GetHerbTime)),
         _ => 0xFF
     };
 
-    public ushort GetAntiVirusTime(int characterID) => CurrentFile switch
+    public ushort GetAntiVirusTime(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.AntiVirusTimeOffset, nameof(GetAntiVirusTime)),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.AntiVirusTimeOffset, nameof(GetAntiVirusTime)),
+        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.AntiVirusTimeOffset, nameof(GetAntiVirusTime)),
+        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.AntiVirusTimeOffset, nameof(GetAntiVirusTime)),
         _ => 0xFF
     };
 
-    public float GetPower(int characterID) => CurrentFile switch
+    public float GetPower(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.PowerOffset, nameof(GetPower)),
-        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.PowerOffset, nameof(GetPower)),
+        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.PowerOffset, nameof(GetPower)),
+        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.PowerOffset, nameof(GetPower)),
         _ => 0xFF
     };
 
-    public float GetSize(int characterID) => CurrentFile switch
+    public float GetSize(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.SizeOffset, nameof(GetSize)),
-        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.SizeOffset, nameof(GetSize)),
+        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.SizeOffset, nameof(GetSize)),
+        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.SizeOffset, nameof(GetSize)),
         _ => 0xFF
     };
 
-    public float GetSpeed(int characterID) => CurrentFile switch
+    public float GetSpeed(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.SpeedOffset, nameof(GetSpeed)),
-        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.SpeedOffset, nameof(GetSpeed)),
+        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.SpeedOffset, nameof(GetSpeed)),
+        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.SpeedOffset, nameof(GetSpeed)),
         _ => 0xFF
     };
 
-    public float GetPositionX(int characterID) => CurrentFile switch
+    public float GetPositionX(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.PositionXOffset, nameof(GetPositionX)),
-        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.PositionXOffset, nameof(GetPositionX)),
+        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.PositionXOffset, nameof(GetPositionX)),
+        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.PositionXOffset, nameof(GetPositionX)),
         _ => 0xFF
     };
 
-    public float GetPositionY(int characterID) => CurrentFile switch
+    public float GetPositionY(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.PositionYOffset, nameof(GetPositionY)),
-        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.PositionYOffset, nameof(GetPositionY)),
+        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.PositionYOffset, nameof(GetPositionY)),
+        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.PositionYOffset, nameof(GetPositionY)),
         _ => 0xFF
     };
 
-    public int GetCurVirus(int characterID) => CurrentFile switch
+    public int GetCurVirus(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<int>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.VirusOffset, nameof(GetCurVirus)),
-        GameFile.FileTwo => ReadValue<int>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.VirusOffset, nameof(GetCurVirus)),
+        GameFile.FileOne => ReadValue<int>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.VirusOffset, nameof(GetCurVirus)),
+        GameFile.FileTwo => ReadValue<int>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.VirusOffset, nameof(GetCurVirus)),
         _ => 0xFF
     };
 
-    public int GetMaxVirus(int characterID) => CurrentFile switch
+    public int GetMaxVirus(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<int>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.VirusOffset + 4, nameof(GetMaxVirus)),
-        GameFile.FileTwo => ReadValue<int>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.VirusOffset + 4, nameof(GetMaxVirus)),
+        GameFile.FileOne => ReadValue<int>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.VirusOffset + 4, nameof(GetMaxVirus)),
+        GameFile.FileTwo => ReadValue<int>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.VirusOffset + 4, nameof(GetMaxVirus)),
         _ => 0xFF
     };
 
-    public int GetMaxVirus(int characterID, byte characterType) => CurrentFile switch
+    public int GetMaxVirus(int characterId, byte characterType) => CurrentFile switch
     {
         GameFile.FileOne => ReadValue<int>(FileOnePtrs.VirusMaxStart + 4 * characterType, nameof(GetMaxVirus)),
         GameFile.FileTwo => ReadValue<int>(FileTwoPtrs.VirusMaxStart + 4 * characterType, nameof(GetMaxVirus)),
         _ => 0xFF
     };
 
-    public float GetCritBonus(int characterID) => CurrentFile switch
+    public float GetCritBonus(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.CritBonusOffset, nameof(GetCritBonus)),
-        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.CritBonusOffset, nameof(GetCritBonus)),
+        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.CritBonusOffset, nameof(GetCritBonus)),
+        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.CritBonusOffset, nameof(GetCritBonus)),
         _ => 0xFF
     };
 
-    public byte GetNameId(int characterID) => CurrentFile switch
+    public byte GetNameId(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.NameTypeOffset, nameof(GetNameId)),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.NameTypeOffset, nameof(GetNameId)),
+        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.NameTypeOffset, nameof(GetNameId)),
+        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.NameTypeOffset, nameof(GetNameId)),
         _ => 0xFF
     };
 
-    public byte GetEquippedItem(int characterID) => CurrentFile switch
+    public byte GetEquippedItem(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.EquippedItemOffset, nameof(GetEquippedItem)),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.EquippedItemOffset, nameof(GetEquippedItem)),
+        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.EquippedItemOffset, nameof(GetEquippedItem)),
+        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.EquippedItemOffset, nameof(GetEquippedItem)),
         _ => 0xFF
     };
 
-    public byte GetStatus(int characterID) => CurrentFile switch
+    public byte GetStatus(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterID) + FileOnePtrs.CharacterStatusOffset, nameof(GetStatus)),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterID) + FileTwoPtrs.CharacterStatusOffset, nameof(GetStatus)),
+        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId) + FileOnePtrs.CharacterStatusOffset, nameof(GetStatus)),
+        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId) + FileTwoPtrs.CharacterStatusOffset, nameof(GetStatus)),
         _ => 0xFF
     };
 
@@ -277,7 +277,7 @@ public class InGamePlayerReader : ReaderBase
             // TODO: Decode byte -> name -> icon/img
             DecodedInGamePlayers[i].SpecialItem = GetSpecialItem(i);
             DecodedInGamePlayers[i].EquippedItem = GetEquippedItem(i);
-            DecodedInGamePlayers[i].RoomId = GetRoomID(i);
+            DecodedInGamePlayers[i].RoomId = GetRoomId(i);
 
             // TODO: room can only be parsed if we know what scenario we are playing
             // var scenarioId = DataManager.GetScenarioId();
