@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using OutbreakTracker2.App.Services;
 using OutbreakTracker2.App.Views.Logging;
 using Serilog.Core;
 using Serilog.Events;
@@ -8,6 +7,7 @@ using System.Linq;
 using System.Threading.Channels;
 using System.Threading;
 using System.Threading.Tasks;
+using OutbreakTracker2.App.Services.LogStorage;
 
 namespace OutbreakTracker2.App.SerilogSinks;
 

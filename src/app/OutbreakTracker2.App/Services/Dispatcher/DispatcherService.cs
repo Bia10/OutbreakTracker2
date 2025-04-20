@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 
-namespace OutbreakTracker2.App.Services;
+namespace OutbreakTracker2.App.Services.Dispatcher;
 
 public class DispatcherService : IDispatcherService
 {

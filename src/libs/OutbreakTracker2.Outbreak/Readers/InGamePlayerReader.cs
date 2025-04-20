@@ -308,7 +308,7 @@ public class InGamePlayerReader : ReaderBase
 
         Console.WriteLine($"Decoded enemies2 in {duration}ms");
 
-        foreach (DecodedInGamePlayer? inGamePlayer in DecodedInGamePlayers)
+        foreach (DecodedInGamePlayer inGamePlayer in DecodedInGamePlayers)
             Console.WriteLine(JsonSerializer.Serialize(inGamePlayer, DecodedInGamePlayersJsonContext.Default.DecodedInGamePlayer));
     }
 }

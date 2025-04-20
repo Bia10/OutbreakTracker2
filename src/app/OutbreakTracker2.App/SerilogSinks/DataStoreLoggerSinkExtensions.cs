@@ -1,7 +1,7 @@
-﻿using OutbreakTracker2.App.Services;
-using Serilog.Configuration;
+﻿using Serilog.Configuration;
 using Serilog;
 using System;
+using OutbreakTracker2.App.Services.LogStorage;
 
 namespace OutbreakTracker2.App.SerilogSinks;
 

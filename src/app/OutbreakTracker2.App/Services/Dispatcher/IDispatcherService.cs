@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OutbreakTracker2.App.Services;
+namespace OutbreakTracker2.App.Services.Dispatcher;
 
 public interface IDispatcherService
 {

@@ -1,12 +1,12 @@
+using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using SukiUI.Controls;
 using SukiUI.Enums;
 using SukiUI.Models;
-using System.Runtime.CompilerServices;
 
-namespace OutbreakTracker2.App;
+namespace OutbreakTracker2.App.Views;
 
 public partial class OutbreakTracker2View : SukiWindow
 {
@@ -23,6 +23,7 @@ public partial class OutbreakTracker2View : SukiWindow
         if (DataContext is not OutbreakTracker2ViewModel vm) return;
         if (e.Source is not MenuItem mItem) return;
         if (mItem.DataContext is not SukiColorTheme cTheme) return;
+
         vm.ChangeTheme(cTheme);
     }
 
@@ -31,6 +32,7 @@ public partial class OutbreakTracker2View : SukiWindow
         if (DataContext is not OutbreakTracker2ViewModel vm) return;
         if (e.Source is not MenuItem mItem) return;
         if (mItem.DataContext is not SukiBackgroundStyle cStyle) return;
+
         vm.BackgroundStyle = cStyle;
     }
 

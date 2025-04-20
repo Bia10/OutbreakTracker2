@@ -18,13 +18,13 @@ public class OutbreakTracker2Views
         where TView : ContentControl
         where TViewModel : ObservableObject
     {
-        Type? viewType = typeof(TView);
-        Type? viewModelType = typeof(TViewModel);
+        Type viewType = typeof(TView);
+        Type viewModelType = typeof(TViewModel);
 
         _vmToViewMap.Add(viewModelType, viewType);
 
         if (viewModelType.IsAssignableTo(typeof(PageBase)))
-            services.AddSingleton(typeof(PageBase), viewModelType);   
+            services.AddSingleton(typeof(PageBase), viewModelType);
         else
             services.AddSingleton(viewModelType);
 
@@ -33,7 +33,7 @@ public class OutbreakTracker2Views
 
     public bool TryCreateView(IServiceProvider provider, Type viewModelType, [NotNullWhen(true)] out Control? view)
     {
-        object? viewModel = provider.GetRequiredService(viewModelType);
+        object viewModel = provider.GetRequiredService(viewModelType);
 
         return TryCreateView(viewModel, out view);
     }
@@ -45,7 +45,7 @@ public class OutbreakTracker2Views
         if (viewModel is null)
             return false;
 
-        Type? viewModelType = viewModel.GetType();
+        Type viewModelType = viewModel.GetType();
 
         if (_vmToViewMap.TryGetValue(viewModelType, out Type? viewType))
         {
@@ -60,7 +60,7 @@ public class OutbreakTracker2Views
 
     public Control CreateView<TViewModel>(IServiceProvider provider) where TViewModel : ObservableObject
     {
-        Type? viewModelType = typeof(TViewModel);
+        Type viewModelType = typeof(TViewModel);
 
         if (TryCreateView(provider, viewModelType, out Control? view))
             return view;

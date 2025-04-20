@@ -130,7 +130,7 @@ public class InGameScenarioReader : ReaderBase
         _ => 0xFF
     };
 
-    public DecodedScenario DecodedScenario { get; } = new DecodedScenario();
+    public DecodedScenario DecodedScenario { get; } = new();
 
     public void UpdateScenario(bool debug = false)
     {

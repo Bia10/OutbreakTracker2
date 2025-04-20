@@ -12,7 +12,7 @@ public sealed class LobbyRoomReader : ReaderBase
     public LobbyRoomReader(GameClient gameClient, EEmemMemory eememMemory)
         : base(gameClient, eememMemory) { }
 
-    public DecodedLobbyRoom[] DecodedLobbyRooms { get; } = new DecodedLobbyRoom[1];
+    public DecodedLobbyRoom DecodedLobbyRoom { get; set; } = new();
 
     public short GetMaxPlayers()
         => ReadValue(LobbyRoomOffsets.MaxPlayers, (short)-1);
@@ -61,7 +61,7 @@ public sealed class LobbyRoomReader : ReaderBase
 
         if (debug) Console.WriteLine("Decoding lobby room");
 
-        DecodedLobbyRooms[0] = new DecodedLobbyRoom
+        DecodedLobbyRoom = new DecodedLobbyRoom
         {
             MaxPlayer = GetMaxPlayers(),
             Difficulty = GetDifficultyString(),
@@ -78,7 +78,7 @@ public sealed class LobbyRoomReader : ReaderBase
         Console.WriteLine($"Decoded lobby room in {duration}ms");
 
         Console.WriteLine(JsonSerializer.Serialize(
-            DecodedLobbyRooms[0],
+            DecodedLobbyRoom,
             DecodedLobbyRoomJsonContext.Default.DecodedLobbyRoom));
     }
 }

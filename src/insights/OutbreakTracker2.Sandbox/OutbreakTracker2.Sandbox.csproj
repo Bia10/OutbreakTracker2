@@ -12,4 +12,8 @@
     <ProjectReference Include="..\..\libs\OutbreakTracker2.PCSX2\OutbreakTracker2.PCSX2.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ZLinq" Version="1.3.0" />
+  </ItemGroup>
+
 </Project>

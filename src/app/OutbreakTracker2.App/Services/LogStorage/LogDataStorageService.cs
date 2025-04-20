@@ -4,8 +4,9 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
+using OutbreakTracker2.App.Services.Dispatcher;
 
-namespace OutbreakTracker2.App.Services;
+namespace OutbreakTracker2.App.Services.LogStorage;
 
 public class LogDataStorageService : ILogDataStorageService
 {

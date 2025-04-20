@@ -1,4 +1,7 @@
-﻿using Avalonia;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -12,12 +15,9 @@ using SukiUI.Enums;
 using SukiUI.Models;
 using SukiUI.Theme.Shadcn;
 using SukiUI.Toasts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using ZLinq;
 
-namespace OutbreakTracker2.App;
+namespace OutbreakTracker2.App.Views;
 
 internal partial class OutbreakTracker2ViewModel : ObservableObject
 {
@@ -78,7 +78,7 @@ internal partial class OutbreakTracker2ViewModel : ObservableObject
         // Subscribe to the navigation service (when a page navigation is requested)
         pageNavigationService.NavigationRequested += pageType =>
         {
-            PageBase? page = Pages?.AsValueEnumerable()
+            PageBase? page = Pages.AsValueEnumerable()
             .FirstOrDefault(pageBase => pageBase.GetType() == pageType);
 
             if (page is null || ActivePage?.GetType() == pageType)
@@ -137,17 +137,13 @@ internal partial class OutbreakTracker2ViewModel : ObservableObject
     [RelayCommand]
     private void ShadCnMode()
     {
-        if (Application.Current is not null && Application.Current.ActualThemeVariant is not null)
-        {
+        if (Application.Current is not null)
             Shadcn.Configure(Application.Current, Application.Current.ActualThemeVariant);
-        }
         else
-        {
             ToastManager.CreateToast()
                 .WithTitle("Configuration Error")
                 .WithContent("Application or ThemeVariant is null. Unable to configure Shadcn mode.")
                 .Queue();
-        }
     }
 
     [RelayCommand]

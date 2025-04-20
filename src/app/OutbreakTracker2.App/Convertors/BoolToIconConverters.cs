@@ -18,11 +18,10 @@ public class BoolToIconConverter(MaterialIconKind trueIcon, MaterialIconKind fal
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is not bool b) return null;
+
         return b ? trueIcon : falseIcon;
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
+        => throw new NotImplementedException();
 }

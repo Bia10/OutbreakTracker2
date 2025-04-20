@@ -95,7 +95,7 @@ public sealed class LobbySlotReader : ReaderBase
         if (errors.Count > 0)
         {
             Console.WriteLine($"Encountered {errors.Count} errors:");
-            foreach (string? error in errors) Console.WriteLine(error);
+            foreach (string error in errors) Console.WriteLine(error);
         }
 
         long duration = Environment.TickCount64 - start;

@@ -8,6 +8,16 @@ using Microsoft.Extensions.Logging;
 using OutbreakTracker2.App.Common;
 using OutbreakTracker2.App.SerilogSinks;
 using OutbreakTracker2.App.Services;
+using OutbreakTracker2.App.Services.Dispatcher;
+using OutbreakTracker2.App.Services.FileLocators;
+using OutbreakTracker2.App.Services.LogStorage;
+using OutbreakTracker2.App.Services.ProcessLauncher;
+using OutbreakTracker2.App.Services.ProcessLocator;
+using OutbreakTracker2.App.Services.Toasts;
+using OutbreakTracker2.App.Views.Dashboard;
+using OutbreakTracker2.App.Views.Dashboard.ClientNotRunning;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug;
 using OutbreakTracker2.App.Views.Log;
 using OutbreakTracker2.App.Views.Logging;
 using Serilog;
@@ -29,8 +39,8 @@ public class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             IConfigurationRoot configuration = new ConfigurationBuilder()
-                    .AddJsonFile("appsettings.json")
-                    .Build();
+                .AddJsonFile("appsettings.json")
+                .Build();
 
             var services = new ServiceCollection();
 
@@ -40,7 +50,7 @@ public class App : Application
             DataTemplates.Add(new ViewLocator(views));
 
             IServiceProvider serviceProvider = ConfigureServicesAndLogging(services, configuration);
-            desktop.MainWindow = views.CreateView<OutbreakTracker2ViewModel>(serviceProvider) as Window;
+            desktop.MainWindow = views.CreateView<Views.OutbreakTracker2ViewModel>(serviceProvider) as Window;
 
             Log.Information("Application initialized successfully!");
         }
@@ -51,10 +61,13 @@ public class App : Application
     private static OutbreakTracker2Views ConfigureViews(ServiceCollection services)
         => new OutbreakTracker2Views()
             // Add main view
-            .AddView<OutbreakTracker2View, OutbreakTracker2ViewModel>(services)
+            .AddView<Views.OutbreakTracker2View, Views.OutbreakTracker2ViewModel>(services)
             // Add pages
+            .AddView<DashboardView, DashboardViewModel>(services)
+            .AddView<ClientNotRunningView, ClientNotRunningViewModel>(services)
+            .AddView<ClientOverviewView, ClientOverviewViewModel>(services)
+            .AddView<DebugView, DebugViewModel>(services)
             .AddView<LogView, LogViewModel>(services);
-            //.AddView<DashboardView, DashboardViewModel>(services)
             //.AddView<SettingsView, SettingsViewModel>(services)
 
 
@@ -83,11 +96,14 @@ public class App : Application
     {
         services.AddSingleton(configuration);
 
+        //services.AddSingleton<DataManager>();
         services.AddSingleton<ClipboardService>();
         services.AddSingleton<PageNavigationService>();
         services.AddSingleton<ISukiToastManager, SukiToastManager>();
         services.AddSingleton<ISukiDialogManager, SukiDialogManager>();
+
         services.AddSingleton<IDispatcherService, DispatcherService>();
+        services.AddSingleton<IToastService, ToastService>();
 
         services.AddSingleton<ILogDataStorageService, LogDataStorageService>();
         services.AddSingleton<LogViewerViewModel>();
@@ -97,12 +113,16 @@ public class App : Application
             loggingBuilder.AddSerilog(Log.Logger, dispose: false);
         });
 
+        services.AddSingleton<IProcessLocator, ProcessLocator>();
+        services.AddSingleton<IProcessLauncher, ProcessLauncher>();
+        services.AddSingleton<IPCSX2Locator, PCSX2Locator>();
+
         var providerOptions = new ServiceProviderOptions
         {
             ValidateOnBuild = true,
             ValidateScopes = true
         };
 
-        return services.BuildServiceProvider();
+        return services.BuildServiceProvider(providerOptions);
     }
 }

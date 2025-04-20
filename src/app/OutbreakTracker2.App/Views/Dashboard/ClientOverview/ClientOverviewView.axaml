@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:debug="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug"
+             xmlns:clientOverview="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.ClientOverviewView"
+             x:DataType="clientOverview:ClientOverviewViewModel">
+    <Grid>
+        <TabControl>
+            <TabItem Header="Debug">
+                <debug:DebugView DataContext="{Binding DebugViewModel}" />
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

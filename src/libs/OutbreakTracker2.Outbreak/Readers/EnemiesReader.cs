@@ -106,7 +106,7 @@ public class EnemiesReader : ReaderBase
 
         Console.WriteLine($"Decoded enemies2 in {duration}ms");
 
-        foreach (DecodedEnemy? enemy in DecodedEnemies2)
+        foreach (DecodedEnemy enemy in DecodedEnemies2)
             Console.WriteLine(JsonSerializer.Serialize(enemy, DecodedScenarioJsonContext.Default.DecodedScenario));
     }
 }

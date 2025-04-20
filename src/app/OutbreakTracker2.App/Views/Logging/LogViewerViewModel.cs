@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.App.Services;
+using OutbreakTracker2.App.Services.LogStorage;
 using R3;
 using System.Collections.Generic;
 using System.Linq;
