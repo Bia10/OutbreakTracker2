@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
@@ -9,8 +10,13 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public sealed class DoorReader : ReaderBase
 {
-    public DoorReader(GameClient gameClient, EEmemMemory eememMemory) : base(gameClient, eememMemory)
+    public DecodedDoor[] DecodedDoors { get; }
+
+    public DoorReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
     {
+        DecodedDoors = new DecodedDoor[Constants.MaxDoors];
+        for (int i = 0; i < Constants.MaxDoors; i++)
+            DecodedDoors[i] = new DecodedDoor();
     }
 
     public ushort GetHealthPoints(int doorId) => CurrentFile switch
@@ -51,8 +57,6 @@ public sealed class DoorReader : ReaderBase
             _ => flag.ToString()
         };
     }
-
-    public DecodedDoor[] DecodedDoors { get; } = new DecodedDoor[Constants.MaxDoors];
 
     public void UpdateDoors(bool debug = false)
     {

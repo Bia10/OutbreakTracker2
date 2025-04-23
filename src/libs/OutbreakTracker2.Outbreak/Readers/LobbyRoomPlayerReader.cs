@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
@@ -9,11 +10,15 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public sealed class LobbyRoomPlayerReader : ReaderBase
 {
-    public LobbyRoomPlayerReader(GameClient gameClient, EEmemMemory eememMemory)
-        : base(gameClient, eememMemory) { }
-
     public DecodedLobbyRoomPlayer[] DecodedLobbyRoomPlayers { get; }
-        = new DecodedLobbyRoomPlayer[Constants.MaxPlayers];
+
+    public LobbyRoomPlayerReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger)
+        : base(gameClient, eememMemory, logger)
+    {
+        DecodedLobbyRoomPlayers = new DecodedLobbyRoomPlayer[Constants.MaxPlayers];
+        for (int i = 0; i < Constants.MaxPlayers; i++)
+            DecodedLobbyRoomPlayers[i] = new DecodedLobbyRoomPlayer();
+    }
 
     public bool GetPlayerCharEnabled(int characterId)
     {

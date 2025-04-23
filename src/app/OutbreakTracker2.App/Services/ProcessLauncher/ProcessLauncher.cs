@@ -8,15 +8,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using OutbreakTracker2.App.Services.Data;
+using OutbreakTracker2.PCSX2;
 
 namespace OutbreakTracker2.App.Services.ProcessLauncher;
 
 public class ProcessLauncher : IProcessLauncher, IDisposable
 {
-    // TODO: manage game client, manage attachement
-    // TODO: manage launch args
-
-    private readonly ILogger<ProcessLauncher> _logger;
+    private readonly ILogger _logger;
     //private readonly IOutputMonitoringService _outputMonitoringService;
 
     private readonly Subject<string> _processErrors = new();
@@ -28,11 +27,14 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
     public Observable<bool> IsCancelling => _isCancelling.AsObservable();
     public Observable<ProcessModel> ProcessUpdate => _processUpdate.AsObservable();
     public Process? ClientMonitoredProcess { get; private set; }
+    public GameClient? AttachedGameClient { get; private set; }
+    public IDataManager? DataManager { get; private set; }
 
-    public ProcessLauncher(ILogger<ProcessLauncher> logger)
+    public ProcessLauncher(ILogger<ProcessLauncher> logger, IDataManager dataManager)
         // IOutputMonitoringService outputMonitoringService)
     {
         _logger = logger;
+        DataManager = dataManager;
         // _outputMonitoringService = outputMonitoringService;
     }
 
@@ -79,6 +81,10 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
             ProcessX.GetDualAsyncEnumerable(processStartInfo);
 
         RegisterProcess(process);
+
+        AttachedGameClient = new GameClient();
+        AttachedGameClient.Attach(process);
+        DataManager?.Initialize(AttachedGameClient);
 
         var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
@@ -214,6 +220,10 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
 
         foreach (Process process in _processes.Values)
             process.Dispose();
+
+        AttachedGameClient?.Dispose();
+        AttachedGameClient = null;
+        DataManager = null;
 
         GC.SuppressFinalize(this);
     }

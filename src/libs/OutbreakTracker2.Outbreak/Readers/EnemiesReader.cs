@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
@@ -9,8 +10,13 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public class EnemiesReader : ReaderBase
 {
-    public EnemiesReader(GameClient gameClient, EEmemMemory eememMemory) : base(gameClient, eememMemory)
+    public DecodedEnemy[] DecodedEnemies2 { get; }
+
+    public EnemiesReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
     {
+        DecodedEnemies2 = new DecodedEnemy[Constants.MaxEnemies2];
+        for (int i = 0; i < Constants.MaxEnemies2; i++)
+            DecodedEnemies2[i] = new DecodedEnemy();
     }
 
     public byte GetNameId(int enemyId) => CurrentFile switch
@@ -54,8 +60,6 @@ public class EnemiesReader : ReaderBase
         GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.GetEnemyAddress(enemyId) + FileTwoPtrs.EnemyMaxHpOffset),
         _ => short.MaxValue
     };
-
-    public DecodedEnemy[] DecodedEnemies2 { get; } = new DecodedEnemy[Constants.MaxEnemies2];
 
     public void UpdateEnemies2(bool debug = false)
     {
@@ -107,6 +111,6 @@ public class EnemiesReader : ReaderBase
         Console.WriteLine($"Decoded enemies2 in {duration}ms");
 
         foreach (DecodedEnemy enemy in DecodedEnemies2)
-            Console.WriteLine(JsonSerializer.Serialize(enemy, DecodedScenarioJsonContext.Default.DecodedScenario));
+            Console.WriteLine(JsonSerializer.Serialize(enemy, DecodedEnemyJonContext.Default.DecodedEnemy));
     }
 }

@@ -27,8 +27,14 @@
                     <Button
                         Margin="0,5,0,0"
                         Classes="Flat Rounded"
-                        Command="{Binding LaunchAsync}"
-                        Content="Launching PCSX2 client ..."
+                        Command="{Binding LaunchFile1Async}"
+                        Content="Launch Outbreak File 1"
+                        Foreground="White" />
+                    <Button
+                        Margin="0,5,0,0"
+                        Classes="Flat Rounded"
+                        Command="{Binding LaunchFile2Async}"
+                        Content="Launch Outbreak File 2"
                         Foreground="White" />
                 </StackPanel>
             </controls:BusyArea>

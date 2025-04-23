@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
@@ -9,8 +10,13 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public class InGameScenarioReader : ReaderBase
 {
-    public InGameScenarioReader(GameClient gameClient, EEmemMemory memory)
-        : base(gameClient, memory) { }
+    public DecodedScenario DecodedScenario { get; }
+
+    public InGameScenarioReader(GameClient gameClient, EEmemMemory memory, ILogger logger)
+        : base(gameClient, memory, logger)
+    {
+        DecodedScenario = new DecodedScenario();
+    }
 
     public string GetInGameScenarioString()
         => GetEnumString(GetScenarioId(), InGameScenario.Unknown);
@@ -129,8 +135,6 @@ public class InGameScenarioReader : ReaderBase
         GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.Difficulty),
         _ => 0xFF
     };
-
-    public DecodedScenario DecodedScenario { get; } = new();
 
     public void UpdateScenario(bool debug = false)
     {

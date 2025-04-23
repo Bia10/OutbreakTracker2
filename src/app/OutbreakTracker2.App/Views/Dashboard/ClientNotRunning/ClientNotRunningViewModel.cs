@@ -43,7 +43,35 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    public async Task LaunchAsync()
+    public async Task LaunchFile1Async()
+    {
+        string? isoPath = await _pcsx2Locator.FindOutbreakFile1Async();
+        if (isoPath is null)
+        {
+            await _toastService.InvokeErrorToastAsync(
+                "Outbreak File 1 ISO not found! Please check your game installations.");
+            return;
+        }
+
+        await LaunchGameAsync(isoPath);
+    }
+
+    [RelayCommand]
+    public async Task LaunchFile2Async()
+    {
+        string? isoPath = await _pcsx2Locator.FindOutbreakFile2Async();
+        if (isoPath is null)
+        {
+            await _toastService.InvokeErrorToastAsync(
+                "Outbreak File 2 ISO not found! Please check your game installations.");
+            return;
+        }
+
+        await LaunchGameAsync(isoPath);
+    }
+
+    [RelayCommand]
+    public async Task LaunchGameAsync(string isoPath)
     {
         _logger.LogInformation("Launching client");
         IsClientLaunching = true;
@@ -90,16 +118,17 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
         try
         {
             string? pcsx2ExePath = await _pcsx2Locator.FindExeAsync(ct: cts.Token);
-            if (pcsx2ExePath is not null)
+            if (pcsx2ExePath is null)
             {
-                if (string.IsNullOrEmpty(pcsx2ExePath))
-                    _logger.LogError("Failed to find PCSX2 exe!");
-
-                _logger.LogInformation("PCSX2 exe found at path: {Pcsx2ExePath}", pcsx2ExePath);
-                await _processLauncher.LaunchAsync(pcsx2ExePath, arguments: null, cts.Token)
-                    .WaitAsync(TimeSpan.FromSeconds(LaunchTimeout), cts.Token)
-                    .ConfigureAwait(true);
+                _logger.LogError("Failed to find PCSX2 executable!");
+                await _toastService.InvokeErrorToastAsync("PCSX2 executable not found!");
+                return;
             }
+
+            var arguments = $"-fastboot -nofullscreen -- \"{isoPath}\"";
+            await _processLauncher.LaunchAsync(pcsx2ExePath, arguments, cts.Token)
+                .WaitAsync(TimeSpan.FromSeconds(LaunchTimeout), cts.Token)
+                .ConfigureAwait(true);
         }
         catch (TimeoutException) when (IsClientLaunching)
         {

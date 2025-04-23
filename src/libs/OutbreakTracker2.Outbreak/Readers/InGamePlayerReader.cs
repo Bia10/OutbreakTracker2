@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
@@ -9,8 +10,13 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public class InGamePlayerReader : ReaderBase
 {
-    public InGamePlayerReader(GameClient gameClient, EEmemMemory eememMemory) : base(gameClient, eememMemory)
+    public DecodedInGamePlayer[] DecodedInGamePlayers { get; }
+
+    public InGamePlayerReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
     {
+        DecodedInGamePlayers = new DecodedInGamePlayer[Constants.MaxPlayers];
+        for (int i = 0; i < Constants.MaxPlayers; i++)
+            DecodedInGamePlayers[i] = new DecodedInGamePlayer();
     }
 
     public bool GetIsEnabled(int characterId) => CurrentFile switch
@@ -241,8 +247,6 @@ public class InGamePlayerReader : ReaderBase
             _ => string.Empty
         };
     }
-
-    public DecodedInGamePlayer[] DecodedInGamePlayers { get; } = new DecodedInGamePlayer[Constants.MaxPlayers];
 
     public void UpdateInGamePlayers(bool debug = false)
     {

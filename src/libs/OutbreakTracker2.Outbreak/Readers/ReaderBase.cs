@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using FastEnumUtility;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Memory;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
@@ -16,12 +17,14 @@ public abstract class ReaderBase
     protected readonly EEmemMemory EEmemMemory;
     protected readonly IMemoryReader MemoryReader;
     protected readonly GameFile CurrentFile;
+    protected readonly ILogger Logger;
 
-    protected ReaderBase(GameClient gameClient, EEmemMemory eememMemory)
+    protected ReaderBase(GameClient gameClient, EEmemMemory eememMemory, ILogger logger)
     {
         GameClient = gameClient;
         EEmemMemory = eememMemory;
         MemoryReader = eememMemory.MemoryReader;
+        Logger = logger;
 
         CurrentFile = GetGameFile();
     }
@@ -37,9 +40,24 @@ public abstract class ReaderBase
         byte f1Byte = Read<byte>(EEmemMemory.GetAddressFromPtr(FileOnePtrs.DiscStart));
         byte f2Byte = Read<byte>(EEmemMemory.GetAddressFromPtr(FileTwoPtrs.DiscStart));
 
-        if (f1Byte is 0x53) return GameFile.FileOne;
+        if (f1Byte is 0x53)
+        {
+            Logger.LogDebug("Detected GameFile.FileOne");
+            return GameFile.FileOne;
+        }
 
-        return f2Byte is 0x53 ? GameFile.FileTwo : GameFile.Unknown;
+        if (f2Byte is 0x53)
+        {
+            Logger.LogDebug("Detected GameFile.FileTwo");
+            return GameFile.FileTwo;
+        }
+
+        Logger.LogWarning(
+            "Failed to detect GameFile. f1Byte: {F1Byte}, f2Byte: {F2Byte}",
+            f1Byte, f2Byte
+        );
+
+        return GameFile.Unknown;
     }
 
     protected T ReadValue<T>(

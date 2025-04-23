@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using OutbreakTracker2.App.Services.Data;
+using OutbreakTracker2.PCSX2;
 
 namespace OutbreakTracker2.App.Services.ProcessLauncher;
 
@@ -12,6 +14,10 @@ public interface IProcessLauncher
     Observable<bool> IsCancelling { get; }
 
     Process? ClientMonitoredProcess { get; }
+
+    GameClient? AttachedGameClient { get; }
+
+    IDataManager? DataManager { get; }
 
     Task LaunchAsync(string fileName, string? arguments, CancellationToken cancellationToken = default);
 

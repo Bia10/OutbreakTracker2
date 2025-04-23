@@ -7,8 +7,8 @@ public enum InGameScenario : short
     [EnumMember(Value = "Unknown")]
     Unknown = -1,
 
-    //[EnumMember(Value = "Training ground")]
-    //TrainingGround = 0,
+    [EnumMember(Value = "Training ground")]
+    TrainingGround = 0,
 
     [EnumMember(Value = "End of the road")]
     EndOfTheRoad = 6,

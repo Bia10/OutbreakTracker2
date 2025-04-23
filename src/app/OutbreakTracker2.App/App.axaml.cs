@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using OutbreakTracker2.App.Common;
 using OutbreakTracker2.App.SerilogSinks;
 using OutbreakTracker2.App.Services;
+using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.App.Services.Dispatcher;
 using OutbreakTracker2.App.Services.FileLocators;
 using OutbreakTracker2.App.Services.LogStorage;
@@ -96,7 +97,6 @@ public class App : Application
     {
         services.AddSingleton(configuration);
 
-        //services.AddSingleton<DataManager>();
         services.AddSingleton<ClipboardService>();
         services.AddSingleton<PageNavigationService>();
         services.AddSingleton<ISukiToastManager, SukiToastManager>();
@@ -114,6 +114,7 @@ public class App : Application
         });
 
         services.AddSingleton<IProcessLocator, ProcessLocator>();
+        services.AddSingleton<IDataManager, DataManager>();
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
         services.AddSingleton<IPCSX2Locator, PCSX2Locator>();
 

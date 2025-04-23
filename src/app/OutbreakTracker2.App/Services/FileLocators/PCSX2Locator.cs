@@ -15,6 +15,9 @@ public class PCSX2Locator : IPCSX2Locator
     private readonly ILogger<PCSX2Locator> _logger;
     private const string PCSX2FolderName = "PCSX2";
     private const string PCSX2ExeName = "pcsx2-qt.exe";
+    private const string IsosSubdir = "ISOs";
+    private const string File1Name = "Biohazard - Outbreak.iso";
+    private const string File2Name = "Biohazard - Outbreak - File 2.iso";
 
     public PCSX2Locator(ILogger<PCSX2Locator> logger)
     {
@@ -29,6 +32,86 @@ public class PCSX2Locator : IPCSX2Locator
         Environment.SpecialFolder.ApplicationData,
         Environment.SpecialFolder.LocalApplicationData
     ];
+
+    public async ValueTask<string?> FindOutbreakFile1Async(CancellationToken ct = default)
+        => await LocateIsoFile(File1Name, ct);
+
+    public async ValueTask<string?> FindOutbreakFile2Async(CancellationToken ct = default)
+        => await LocateIsoFile(File2Name, ct);
+
+    private async ValueTask<string?> LocateIsoFile(string fileName, CancellationToken ct)
+    {
+        try
+        {
+            string? exePath = await FindExeAsync(ct: ct);
+            if (exePath != null)
+            {
+                string isoPath = Path.Combine(
+                    Path.GetDirectoryName(exePath)!,
+                    IsosSubdir,
+                    fileName
+                );
+
+                if (File.Exists(isoPath))
+                {
+                    _logger.LogInformation("Found ISO {FileName} at {Path}", fileName, isoPath);
+                    return isoPath;
+                }
+            }
+
+            return await SystemWideIsoSearch(fileName, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error locating ISO file {FileName}", fileName);
+            return null;
+        }
+    }
+
+    private async ValueTask<string?> SystemWideIsoSearch(string fileName, CancellationToken ct)
+    {
+        var options = new EnumerationOptions
+        {
+            RecurseSubdirectories = true,
+            IgnoreInaccessible = true,
+            MatchCasing = MatchCasing.CaseInsensitive,
+            BufferSize = 1024 * 64,
+            AttributesToSkip = FileAttributes.System | FileAttributes.Hidden
+        };
+
+        IEnumerable<string> drives = DriveInfo.GetDrives()
+            .Where(d => d is { DriveType: DriveType.Fixed, IsReady: true })
+            .Select(d => d.RootDirectory.FullName);
+
+        foreach (string drive in drives)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            try
+            {
+                string? result = await Task.Run(() =>
+                    Directory.EnumerateFiles(drive, fileName, options)
+                        .FirstOrDefault(File.Exists), ct);
+
+                if (result != null)
+                {
+                    _logger.LogInformation("Found ISO {FileName} at {Path} via system search", fileName, result);
+                    return result;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to search drive {Drive} for ISO {FileName}", drive, fileName);
+            }
+        }
+
+        _logger.LogWarning("ISO file {FileName} not found in system-wide search", fileName);
+        return null;
+    }
 
     public async ValueTask<string?> FindExeAsync(
         TimeSpan timeout = default,

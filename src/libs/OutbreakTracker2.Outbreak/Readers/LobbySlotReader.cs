@@ -1,20 +1,24 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Offsets;
-using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.PCSX2;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
 public sealed class LobbySlotReader : ReaderBase
 {
-    public LobbySlotReader(GameClient gameClient, EEmemMemory memory)
-        : base(gameClient, memory) { }
-
     public DecodedLobbySlot[] DecodedLobbySlots { get; }
-        = new DecodedLobbySlot[Constants.MaxLobbySlots];
+
+    public LobbySlotReader(GameClient gameClient, EEmemMemory memory, ILogger logger) : base(
+        gameClient, memory, logger)
+    {
+        DecodedLobbySlots = new DecodedLobbySlot[Constants.MaxLobbySlots];
+        for (int i = 0; i < Constants.MaxLobbySlots; i++)
+            DecodedLobbySlots[i] = new DecodedLobbySlot();
+    }
 
     public short GetIndex(int slotIndex)
         => ReadSlotValue(slotIndex, LobbySlotOffsets.Index, (short)-1);
@@ -50,21 +54,18 @@ public sealed class LobbySlotReader : ReaderBase
         => GetEnumString(GetVersion(slotIndex), GameVersion.Unknown);
 
     public string GetScenarioString(int slotIndex)
-        => GetScenarioString(GetScenarioId(slotIndex),
-            FileOneLobbyScenario.Unknown,
-            FileTwoLobbyScenario.Unknown);
+        => GetScenarioString(GetScenarioId(slotIndex), FileOneLobbyScenario.Unknown, FileTwoLobbyScenario.Unknown);
 
     public void UpdateLobbySlots(bool debug = false)
     {
         if (CurrentFile is GameFile.Unknown) return;
 
         long start = Environment.TickCount64;
-
         var errors = new List<string>();
 
         for (var i = 0; i < Constants.MaxLobbySlots; i++)
         {
-            if (debug) Console.WriteLine($"Decoding lobby at slot index: {i}");
+            if (debug) Logger.LogDebug("Decoding lobby at slot index: {SlotIndex}", i);
 
             try
             {
@@ -83,28 +84,22 @@ public sealed class LobbySlotReader : ReaderBase
             catch (Exception ex)
             {
                 errors.Add($"Slot {i} error: {ex.Message}");
-                DecodedLobbySlots[i] = new DecodedLobbySlot
-                {
-                    Status = "Error",
-                    ScenarioId = "Error",
-                    Version = "Error"
-                };
+                Logger.LogError(ex, "Error decoding slot {SlotIndex}", i);
             }
         }
 
         if (errors.Count > 0)
         {
-            Console.WriteLine($"Encountered {errors.Count} errors:");
-            foreach (string error in errors) Console.WriteLine(error);
+            Logger.LogError("Encountered {ErrorCount} errors", errors.Count);
+            foreach (string error in errors)
+                Logger.LogError(error);
         }
 
         long duration = Environment.TickCount64 - start;
-
         if (!debug) return;
 
-        Console.WriteLine($"Decoded lobby slots in {duration}ms");
-
+        Logger.LogDebug("Decoded lobby slots in {Duration}ms", duration);
         foreach (DecodedLobbySlot lobbySlot in DecodedLobbySlots)
-            Console.WriteLine(JsonSerializer.Serialize(lobbySlot, DecodedLobbySlotJsonContext.Default.DecodedLobbySlot));
+            Logger.LogDebug("Lobby slot data: {Data}", JsonSerializer.Serialize(lobbySlot));
     }
 }

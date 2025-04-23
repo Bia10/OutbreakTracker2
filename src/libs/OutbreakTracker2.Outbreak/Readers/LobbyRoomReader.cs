@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Offsets;
@@ -9,10 +10,13 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public sealed class LobbyRoomReader : ReaderBase
 {
-    public LobbyRoomReader(GameClient gameClient, EEmemMemory eememMemory)
-        : base(gameClient, eememMemory) { }
+    public DecodedLobbyRoom DecodedLobbyRoom { get; set; }
 
-    public DecodedLobbyRoom DecodedLobbyRoom { get; set; } = new();
+    public LobbyRoomReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger)
+        : base(gameClient, eememMemory, logger)
+    {
+        DecodedLobbyRoom = new DecodedLobbyRoom();
+    }
 
     public short GetMaxPlayers()
         => ReadValue(LobbyRoomOffsets.MaxPlayers, (short)-1);

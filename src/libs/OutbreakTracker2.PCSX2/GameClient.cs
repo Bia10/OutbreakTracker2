@@ -12,12 +12,9 @@ public sealed class GameClient : IDisposable
     public nint MainModuleBase { get; private set; }
     public Process? Process { get; private set; }
 
-    public void AttachToPCSX2(string processName = "pcsx2-qt")
+    public void Attach(Process process)
     {
-        Process[] processes = Process.GetProcessesByName(processName);
-        if (processes.Length is 0) throw new Exception("Process not found");
-
-        Process = processes[0];
+        Process = process ?? throw new ArgumentNullException(nameof(process));
         Handle = NativeMethods.OpenProcess(
             ProcessAccessFlags.VmRead | ProcessAccessFlags.QueryInformation,
             false,
@@ -26,7 +23,8 @@ public sealed class GameClient : IDisposable
 
         if (Handle == nint.Zero) throw new Win32Exception();
 
-        MainModuleBase = Process.MainModule?.BaseAddress ?? throw new InvalidOperationException("MainModule not found");
+        MainModuleBase = Process.MainModule?.BaseAddress
+                         ?? throw new InvalidOperationException("MainModule not found");
     }
 
     public void Dispose()
