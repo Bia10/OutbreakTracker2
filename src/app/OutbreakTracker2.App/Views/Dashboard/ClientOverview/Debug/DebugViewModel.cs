@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OutbreakTracker2.App.Services.Data;
 
@@ -14,29 +15,34 @@ public partial class DebugViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public void UpdateDoor() => _dataManager.UpdateDoors();
+    public void UpdateDoor()
+        => _dataManager.UpdateDoors();
 
     [RelayCommand]
-    public void UpdateEnemies() => _dataManager.UpdateEnemies();
+    public void UpdateEnemies()
+        => _dataManager.UpdateEnemies();
 
     [RelayCommand]
-    public void UpdateInGamePlayer() => _dataManager.UpdateInGamePlayer();
+    public void UpdateInGamePlayer()
+        => _dataManager.UpdateInGamePlayer();
 
     [RelayCommand]
-    public void UpdateInGameScenario() => _dataManager.UpdateInGameScenario();
+    public void UpdateInGameScenario()
+        => _dataManager.UpdateInGameScenario();
 
     [RelayCommand]
-    public void UpdateLobbyRoom() => _dataManager.UpdateLobbyRoom();
+    public void UpdateLobbyRoom()
+        => _dataManager.UpdateLobbyRoom();
 
     [RelayCommand]
-    public void UpdateLobbyRoomPlayers() => _dataManager.UpdateLobbyRoomPlayers();
+    public void UpdateLobbyRoomPlayers()
+        => _dataManager.UpdateLobbyRoomPlayers();
 
     [RelayCommand]
     public void UpdateLobbySlots()
-    {
-        _dataManager.UpdateLobbySlots();
-    }
+        => _dataManager.UpdateLobbySlots();
 
     [RelayCommand]
-    public void UpdateAll() => _dataManager.UpdateAll(null);
+    public async Task UpdateAll()
+        => await _dataManager.UpdateAllAsync();
 }

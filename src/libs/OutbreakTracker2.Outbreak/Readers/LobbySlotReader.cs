@@ -4,6 +4,7 @@ using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Offsets;
+using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.PCSX2;
 
 namespace OutbreakTracker2.Outbreak.Readers;
@@ -99,7 +100,8 @@ public sealed class LobbySlotReader : ReaderBase
         if (!debug) return;
 
         Logger.LogDebug("Decoded lobby slots in {Duration}ms", duration);
+
         foreach (DecodedLobbySlot lobbySlot in DecodedLobbySlots)
-            Logger.LogDebug("Lobby slot data: {Data}", JsonSerializer.Serialize(lobbySlot));
+            Console.WriteLine(JsonSerializer.Serialize(lobbySlot, DecodedLobbySlotJsonContext.Default.DecodedLobbySlot));
     }
 }

@@ -89,34 +89,45 @@ public class InGameScenarioReader : ReaderBase
     public byte GetCoin()
     {
         byte coin1 = ReadValue<byte>(FileTwoPtrs.Coin);
-        byte coin2 = ReadValue<byte>(FileTwoPtrs.Coin + 0x2);
-        byte coin3 = ReadValue<byte>(FileTwoPtrs.Coin + 0x4);
-        byte coin4 = ReadValue<byte>(FileTwoPtrs.Coin + 0x6);
+        byte coin2 = ReadValue<byte>(FileTwoPtrs.Coin, [0x2]);
+        byte coin3 = ReadValue<byte>(FileTwoPtrs.Coin, [0x4]);
+        byte coin4 = ReadValue<byte>(FileTwoPtrs.Coin, [0x6]);
 
         return (byte)(coin1 + coin2 + coin3 + coin4);
     }
 
-    public byte GetKilledZombies() => ReadValue<byte>(FileTwoPtrs.KilledZombie);
+    public byte GetKilledZombies()
+        => ReadValue<byte>(FileTwoPtrs.KilledZombie);
 
-    public byte GetPassWildThings() => ReadValue<byte>(FileTwoPtrs.PassWildThings);
+    public byte GetPassWildThings()
+        => ReadValue<byte>(FileTwoPtrs.PassWildThings);
 
-    public short GetPassDesperateTimes() => ReadValue<short>(FileTwoPtrs.PassDesperateTimes);
+    public short GetPassDesperateTimes()
+        => ReadValue<short>(FileTwoPtrs.PassDesperateTimes);
 
-    public byte GetPassDesperateTimes2() => ReadValue<byte>(FileTwoPtrs.PassDesperateTimes2);
+    public byte GetPassDesperateTimes2()
+        => ReadValue<byte>(FileTwoPtrs.PassDesperateTimes2);
 
-    public byte GetPassDesperateTimes3() => ReadValue<byte>(FileTwoPtrs.PassDesperateTimes3);
+    public byte GetPassDesperateTimes3()
+        => ReadValue<byte>(FileTwoPtrs.PassDesperateTimes3);
 
-    public short GetPassUnderBelly1() => ReadValue<byte>(FileTwoPtrs.PassUnderBelly1);
+    public short GetPassUnderBelly1()
+        => ReadValue<byte>(FileTwoPtrs.PassUnderBelly1);
 
-    public byte GetPassUnderBelly2() => ReadValue<byte>(FileTwoPtrs.PassUnderBelly2);
+    public byte GetPassUnderBelly2()
+        => ReadValue<byte>(FileTwoPtrs.PassUnderBelly2);
 
-    public byte GetPassUnderBelly3() => ReadValue<byte>(FileTwoPtrs.PassUnderBelly3);
+    public byte GetPassUnderBelly3()
+        => ReadValue<byte>(FileTwoPtrs.PassUnderBelly3);
 
-    public byte GetPass1() => ReadValue<byte>(FileOnePtrs.Pass1);
+    public byte GetPass1()
+        => ReadValue<byte>(FileOnePtrs.Pass1);
 
-    public byte GetPass2() => ReadValue<byte>(FileOnePtrs.Pass2);
+    public byte GetPass2()
+        => ReadValue<byte>(FileOnePtrs.Pass2);
 
-    public byte GetPass3() => ReadValue<byte>(FileOnePtrs.Pass3);
+    public byte GetPass3()
+        => ReadValue<byte>(FileOnePtrs.Pass3);
 
     public short GetPass4() => CurrentFile switch
     {
@@ -125,9 +136,11 @@ public class InGameScenarioReader : ReaderBase
         _ => 0xFF
     };
 
-    public byte GetPass5() => ReadValue<byte>(FileOnePtrs.Pass5);
+    public byte GetPass5()
+        => ReadValue<byte>(FileOnePtrs.Pass5);
 
-    public byte GetPass6() => ReadValue<byte>(FileOnePtrs.Pass6);
+    public byte GetPass6()
+        => ReadValue<byte>(FileOnePtrs.Pass6);
 
     public byte GetDifficulty() => CurrentFile switch
     {

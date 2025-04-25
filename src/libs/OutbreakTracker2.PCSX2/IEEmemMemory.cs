@@ -12,5 +12,5 @@ public interface IEEmemMemory
 
     public nint GetAddressFromPtr(nint ptrOffset);
 
-    public nint GetAddressFromPtrChain(nint ptrOffset, params nint[] offsets);
+    public nint GetAddressFromPtrChain(nint ptrOffset, params ReadOnlySpan<nint> offsets);
 }

@@ -97,7 +97,7 @@ public class ProcessLocator : IProcessLocator
     {
         try
         {
-            return [.. Process.GetProcessesByName(processName).Select(p => p.Id)];
+            return [.. GetProcessesByName(processName).Select(p => p.Id)];
         }
         catch (Exception ex)
         {
@@ -105,4 +105,7 @@ public class ProcessLocator : IProcessLocator
             return [];
         }
     }
+
+    public IEnumerable<Process> GetProcessesByName(string processName)
+        => Process.GetProcessesByName(processName);
 }

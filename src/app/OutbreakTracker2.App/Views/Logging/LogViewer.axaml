@@ -7,7 +7,7 @@
     xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
     x:DataType="logging:LogViewerViewModel">
 
-    <Grid RowDefinitions="Auto, Auto">
+    <Grid RowDefinitions="Auto, *">
         <!--  Top Section: Filters and Behaviors  -->
         <StackPanel
             Grid.Row="0"
@@ -155,43 +155,39 @@
             Grid.Row="1"
             Margin="10"
             Header="Log">
-            <ScrollViewer
-                MaxHeight="550"
-                HorizontalScrollBarVisibility="Auto"
-                VerticalScrollBarVisibility="Auto">
-                <DataGrid
-                    Name="LogDataGrid"
-                    Margin="0,5"
-                    VerticalAlignment="Top"
-                    GridLinesVisibility="None"
-                    IsReadOnly="True"
-                    ItemsSource="{Binding FilteredEntries}"
-                    SelectedItem="{Binding SelectedLogItem}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn
-                            Width="130"
-                            Binding="{Binding Timestamp}"
-                            Header="Time" />
-                        <DataGridTextColumn
-                            Width="90"
-                            Binding="{Binding LogLevel}"
-                            Header="Level" />
-                        <DataGridTextColumn
-                            Width="180"
-                            Binding="{Binding EventId}"
-                            Header="Event Id" />
-                        <DataGridTextColumn
-                            Width="800"
-                            Binding="{Binding State}"
-                            ClipboardContentBinding=""
-                            Header="State" />
-                        <DataGridTextColumn
-                            Width="500"
-                            Binding="{Binding Exception}"
-                            Header="Exception" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </ScrollViewer>
+            <DataGrid
+                Name="LogDataGrid"
+                Margin="0,5"
+                VerticalAlignment="Stretch"
+                GridLinesVisibility="None"
+                IsReadOnly="True"
+                ItemsSource="{Binding FilteredEntries}"
+                SelectedItem="{Binding SelectedLogItem}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn
+                        Width="130"
+                        Binding="{Binding Timestamp}"
+                        Header="Time" />
+                    <DataGridTextColumn
+                        Width="90"
+                        Binding="{Binding LogLevel}"
+                        Header="Level" />
+                    <DataGridTextColumn
+                        Width="180"
+                        Binding="{Binding EventId}"
+                        Header="Event Id" />
+                    <DataGridTextColumn
+                        Width="*"
+                        MaxWidth="600"
+                        Binding="{Binding State}"
+                        Header="State" />
+                    <DataGridTextColumn
+                        Width="*"
+                        MaxWidth="400"
+                        Binding="{Binding Exception}"
+                        Header="Exception" />
+                </DataGrid.Columns>
+            </DataGrid>
         </suki:GroupBox>
     </Grid>
 </UserControl>

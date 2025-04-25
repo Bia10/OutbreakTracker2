@@ -2,7 +2,7 @@
 
 public class Program
 {
-    private static async Task Main(string[] _)
+    private static void Main(string[] _)
     {
     }
 }

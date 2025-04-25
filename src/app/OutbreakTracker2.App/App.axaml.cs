@@ -16,9 +16,11 @@ using OutbreakTracker2.App.Services.ProcessLauncher;
 using OutbreakTracker2.App.Services.ProcessLocator;
 using OutbreakTracker2.App.Services.Toasts;
 using OutbreakTracker2.App.Views.Dashboard;
+using OutbreakTracker2.App.Views.Dashboard.ClientAlreadyRunning;
 using OutbreakTracker2.App.Views.Dashboard.ClientNotRunning;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
 using OutbreakTracker2.App.Views.Log;
 using OutbreakTracker2.App.Views.Logging;
 using Serilog;
@@ -66,11 +68,11 @@ public class App : Application
             // Add pages
             .AddView<DashboardView, DashboardViewModel>(services)
             .AddView<ClientNotRunningView, ClientNotRunningViewModel>(services)
+            .AddView<ClientAlreadyRunningView, ClientAlreadyRunningViewModel>(services)
             .AddView<ClientOverviewView, ClientOverviewViewModel>(services)
             .AddView<DebugView, DebugViewModel>(services)
+            .AddView<InGamePlayersView, InGamePlayersViewModel>(services)
             .AddView<LogView, LogViewModel>(services);
-            //.AddView<SettingsView, SettingsViewModel>(services)
-
 
     private static IServiceProvider ConfigureServicesAndLogging(IServiceCollection services, IConfiguration configuration)
     {

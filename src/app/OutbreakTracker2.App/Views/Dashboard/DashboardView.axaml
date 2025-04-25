@@ -2,15 +2,16 @@
     x:Class="OutbreakTracker2.App.Views.Dashboard.DashboardView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:clientAlreadyRunning="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientAlreadyRunning"
     xmlns:clientNotRunning="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientNotRunning"
     xmlns:clientOverview="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:dashboard="clr-namespace:OutbreakTracker2.App.Views.Dashboard"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    mc:Ignorable="d"
-    x:DataType="dashboard:DashboardViewModel">
+    x:DataType="dashboard:DashboardViewModel"
+    mc:Ignorable="d">
     <ContentControl Content="{Binding CurrentView}">
         <ContentControl.DataTemplates>
             <DataTemplate DataType="{x:Type clientNotRunning:ClientNotRunningViewModel}">
@@ -19,9 +20,9 @@
             <DataTemplate DataType="{x:Type clientOverview:ClientOverviewViewModel}">
                 <clientOverview:ClientOverviewView />
             </DataTemplate>
-            <!--<DataTemplate DataType="{x:Type previousClientInstance:PreviousClientInstanceViewModel}">
-                <previousClientInstance:PreviousClientInstanceView />
-            </DataTemplate>-->
+            <DataTemplate DataType="{x:Type clientAlreadyRunning:ClientAlreadyRunningViewModel}">
+                <clientAlreadyRunning:ClientAlreadyRunningView />
+            </DataTemplate>
         </ContentControl.DataTemplates>
     </ContentControl>
 </UserControl>

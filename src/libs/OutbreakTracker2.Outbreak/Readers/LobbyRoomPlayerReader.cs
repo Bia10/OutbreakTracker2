@@ -30,7 +30,7 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
             _ => nint.Zero
         };
 
-        return ReadValue<bool>(basePlayerAddress + offset);
+        return ReadValue<bool>(basePlayerAddress, [offset]);
     }
 
     public byte GetPlayerCharNPCType(int characterId)
@@ -43,7 +43,7 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
             _ => nint.Zero
         };
 
-        return ReadValue<byte>(basePlayerAddress + offset);
+        return ReadValue<byte>(basePlayerAddress, [offset]);
     }
 
     public byte GetPlayerCharNameId(int characterId)
@@ -56,7 +56,7 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
             _ => nint.Zero
         };
 
-        return ReadValue<byte>(basePlayerAddress + offset);
+        return ReadValue<byte>(basePlayerAddress, [offset]);
     }
 
     public string GetCharacterNpcTypeString(int characterId)

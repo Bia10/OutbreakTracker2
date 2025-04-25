@@ -80,7 +80,7 @@ public sealed class EEmemMemory : IEEmemMemory
     }
 
     // TODO: rebasing multiple offsets this will currently work only for 1 offset added on top of BaseAddress + ptrOffset;
-    public nint GetAddressFromPtrChain(nint ptrOffset, params nint[] offsets)
+    public nint GetAddressFromPtrChain(nint ptrOffset, params ReadOnlySpan<nint> offsets)
     {
         nint addrNew = nint.Zero;
         nint addrOld = GetAddressFromPtr(ptrOffset);

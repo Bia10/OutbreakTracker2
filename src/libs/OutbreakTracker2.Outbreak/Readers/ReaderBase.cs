@@ -1,13 +1,13 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Text;
-using FastEnumUtility;
+﻿using FastEnumUtility;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Memory;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Extensions;
 using OutbreakTracker2.PCSX2;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
@@ -18,6 +18,7 @@ public abstract class ReaderBase
     protected readonly IMemoryReader MemoryReader;
     protected readonly GameFile CurrentFile;
     protected readonly ILogger Logger;
+    protected const bool _enableLogging = false;
 
     protected ReaderBase(GameClient gameClient, EEmemMemory eememMemory, ILogger logger)
     {
@@ -92,24 +93,35 @@ public abstract class ReaderBase
     {
         if (!TryComputeLobbyAddress(slotIndex, offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
         {
-            Console.WriteLine(errorMessage);
+            Logger.LogError(errorMessage);
             return errorValue;
         }
 
         T result = Read<T>(address);
-        Console.WriteLine($"[{methodName}] Successfully read type {typeof(T)} at 0x{address:X} obtained value {result}.");
+        if (_enableLogging)
+            Logger.LogDebug($"[{methodName}] Successfully read type {typeof(T)} at 0x{address:X} obtained value {result}.");
+
         return result;
     }
 
     protected T ReadValue<T>(
-        nint address,
+        nint basePtr,
+        ReadOnlySpan<nint> offsets = default,
         [CallerMemberName] string methodName = ""
     ) where T : struct
     {
+        nint address = basePtr;
+        if (!offsets.IsEmpty)
+            address = ComputeAddress(basePtr, offsets);
+
         T result = Read<T>(address);
-        Console.WriteLine($"[{methodName}] Successfully read type {typeof(T)} at 0x{address:X} obtained value {result}.");
+
+        if (_enableLogging)
+            Logger.LogDebug($"[{methodName}] Read {typeof(T)} at 0x{address:X}: {result}");
+
         return result;
     }
+
 
     protected string ReadSlotValue(
         int slotIndex,
@@ -121,12 +133,15 @@ public abstract class ReaderBase
     {
         if (!TryComputeLobbyAddress(slotIndex, offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
         {
-            Console.WriteLine(errorMessage);
+            Logger.LogError(errorMessage);
             return errorValue;
         }
 
         string result = ReadString(address);
-        Console.WriteLine($"[{methodName}] Successfully read string at 0x{address:X} obtained value {result}.");
+
+        if (_enableLogging)
+            Logger.LogDebug($"[{methodName}] Successfully read string at 0x{address:X} obtained value {result}.");
+
         return result;
     }
 
@@ -189,12 +204,14 @@ public abstract class ReaderBase
     {
         if (!TryComputeAddress(offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
         {
-            Console.WriteLine(errorMessage);
+            Logger.LogError(errorMessage);
             return errorValue;
         }
 
         T result = Read<T>(address);
-        Console.WriteLine($"[{methodName}] Successfully read type {typeof(T)} at 0x{address:X} obtained value {result}.");
+        if (_enableLogging)
+            Logger.LogDebug($"[{methodName}] Successfully read type {typeof(T)} at 0x{address:X} obtained value {result}.");
+
         return result;
     }
 
@@ -202,30 +219,40 @@ public abstract class ReaderBase
     {
         if (!TryComputeAddress(offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
         {
-            Console.WriteLine(errorMessage);
+            Logger.LogError(errorMessage);
             return errorValue;
         }
 
         string result = ReadString(address);
-        Console.WriteLine($"[{methodName}] Successfully read string at 0x{address:X} obtained value {result}.");
+        if (_enableLogging)
+            Logger.LogDebug($"[{methodName}] Successfully read string at 0x{address:X} obtained value {result}.");
+
         return result;
     }
 
-    protected static string GetEnumString<TEnum>(object value, TEnum defaultValue)
+    protected string GetEnumString<TEnum>(object value, TEnum defaultValue)
         where TEnum : struct, Enum
     {
-        if (FastEnum.TryParse(value.ToString(), out TEnum result))
+        try
         {
-            string? enumValue = result.GetEnumMemberValue();
-            if (!string.IsNullOrEmpty(enumValue))
-                return enumValue;
+            if (FastEnum.TryParse(value.ToString(), out TEnum result))
+            {
+                string? enumValue = result.GetEnumMemberValue();
+                if (!string.IsNullOrEmpty(enumValue))
+                    return enumValue;
 
-            Console.WriteLine($"[{nameof(GetEnumString)}] Enum value resolved to null or empty for type {typeof(TEnum).Name} and value {value}.");
-            throw new InvalidOperationException($"Enum value cannot be null or empty for type {typeof(TEnum).Name}.");
+                Logger.LogDebug($"[{nameof(GetEnumString)}] Enum value resolved to null or empty for type {typeof(TEnum).Name} and value {value}.");
+                return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
+            }
+
+            Logger.LogDebug($"[{nameof(GetEnumString)}] Failed to parse enum for type {typeof(TEnum).Name} and value {value}. Defaulting to {defaultValue}.");
+            return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
         }
-
-        Console.WriteLine($"[{nameof(GetEnumString)}] Failed to parse enum for type {typeof(TEnum).Name} and value {value}. Defaulting to {defaultValue}.");
-        return defaultValue.ToString();
+        catch (Exception ex)
+        {
+            Logger.LogDebug($"[{nameof(GetEnumString)}] Exception handling enum value '{value}' for type {typeof(TEnum).Name}: {ex.Message}");
+            return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
+        }
     }
 
     protected string GetScenarioString<TFileOne, TFileTwo>(short scenarioId, TFileOne defaultFileOne, TFileTwo defaultFileTwo)
@@ -270,13 +297,13 @@ public abstract class ReaderBase
         };
     }
 
-    protected nint ComputeAddress(nint basePtr, nint[] offsets)
+    protected nint ComputeAddress(nint basePtr, params ReadOnlySpan<nint> offsets)
         => offsets.Length is 0
             ? EEmemMemory.GetAddressFromPtr(basePtr)
             : EEmemMemory.GetAddressFromPtrChain(basePtr, offsets);
 
-    protected nint ComputeAddress(nint[] offsets)
+    protected nint ComputeAddress(params ReadOnlySpan<nint> offsets)
         => offsets.Length is 1
-            ? EEmemMemory.GetAddressFromPtr(offsets.First())
-            : EEmemMemory.GetAddressFromPtrChain(offsets.First(), offsets);
+            ? EEmemMemory.GetAddressFromPtr(offsets[0])
+            : EEmemMemory.GetAddressFromPtrChain(offsets[0], offsets);
 }

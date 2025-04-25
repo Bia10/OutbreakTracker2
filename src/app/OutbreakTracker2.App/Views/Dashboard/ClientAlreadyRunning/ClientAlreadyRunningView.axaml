@@ -1,0 +1,42 @@
+<UserControl
+    x:Class="OutbreakTracker2.App.Views.Dashboard.ClientAlreadyRunning.ClientAlreadyRunningView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:clientAlreadyRunning="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientAlreadyRunning"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="clientAlreadyRunning:ClientAlreadyRunningViewModel"
+    mc:Ignorable="d">
+    <StackPanel Margin="10">
+        <TextBlock
+            Margin="0,0,0,10"
+            FontSize="16"
+            Text="Existing PCSX2 Processes Found" />
+        <ItemsControl x:Name="ProcessesItemsControl" ItemsSource="{Binding RunningProcesses}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border
+                        Margin="0,5"
+                        Padding="10"
+                        BorderBrush="Gray"
+                        BorderThickness="1"
+                        CornerRadius="5">
+                        <StackPanel>
+                            <TextBlock FontWeight="Bold" Text="{Binding Name}" />
+                            <TextBlock Text="{Binding Id, StringFormat='Process ID: {0}'}" />
+                            <TextBlock Text="{Binding StartTime, StringFormat='Started: {0:g}'}" />
+                            <Button
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Right"
+                                Command="{Binding $parent[UserControl].((clientAlreadyRunning:ClientAlreadyRunningViewModel)DataContext).AttachToProcessAsync}"
+                                CommandParameter="{Binding Id}"
+                                Content="Attach to Process" />
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>

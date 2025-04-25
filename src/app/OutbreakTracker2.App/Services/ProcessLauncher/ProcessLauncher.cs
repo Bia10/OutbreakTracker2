@@ -201,6 +201,29 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
         }
     }
 
+    public Task AttachAsync(int processId)
+    {
+        if (ClientMonitoredProcess?.Id == processId)
+        {
+            _logger.LogInformation("Already attached to process {ProcessId}", processId);
+            return Task.CompletedTask;
+        }
+
+        var process = Process.GetProcessById(processId);
+        if (process.HasExited)
+            throw new InvalidOperationException("Process has already exited");
+
+        RegisterProcess(process);
+
+        AttachedGameClient?.Dispose();
+        AttachedGameClient = new GameClient();
+        AttachedGameClient.Attach(process);
+        DataManager?.Initialize(AttachedGameClient);
+
+        _logger.LogInformation("Attached to existing process ID: {ProcessId}", processId);
+        return Task.CompletedTask;
+    }
+
     public Observable<string> GetErrorObservable()
         => _processErrors.AsObservable();
 

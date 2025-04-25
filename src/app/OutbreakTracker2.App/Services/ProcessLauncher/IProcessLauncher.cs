@@ -21,6 +21,8 @@ public interface IProcessLauncher
 
     Task LaunchAsync(string fileName, string? arguments, CancellationToken cancellationToken = default);
 
+    Task AttachAsync(int processId);
+
     Task TerminateAsync(int? processId = null);
 
     Observable<string> GetErrorObservable();

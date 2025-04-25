@@ -1,16 +1,23 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:debug="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug"
-             xmlns:clientOverview="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.ClientOverviewView"
-             x:DataType="clientOverview:ClientOverviewViewModel">
+<UserControl
+    x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.ClientOverviewView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:clientOverview="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:debug="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug"
+    xmlns:inGamePlayers="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="clientOverview:ClientOverviewViewModel"
+    mc:Ignorable="d">
     <Grid>
         <TabControl>
             <TabItem Header="Debug">
                 <debug:DebugView DataContext="{Binding DebugViewModel}" />
+            </TabItem>
+            <TabItem Header="In-Game Players">
+                <inGamePlayers:InGamePlayersView DataContext="{Binding InGamePlayersViewModel}" />
             </TabItem>
         </TabControl>
     </Grid>

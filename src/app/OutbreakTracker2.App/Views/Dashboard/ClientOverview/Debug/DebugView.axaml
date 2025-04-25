@@ -1,19 +1,49 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:debug="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug.DebugView"
-             x:DataType="debug:DebugViewModel">
-    <UniformGrid Columns="3" Margin="10" Rows="3">
-        <Button Command="{Binding UpdateDoor}" Content="Update Doors" Margin="2"/>
-        <Button Command="{Binding UpdateEnemies}" Content="Update Enemies" Margin="2"/>
-        <Button Command="{Binding UpdateInGamePlayer}" Content="Update In-Game Player" Margin="2"/>
-        <Button Command="{Binding UpdateInGameScenario}" Content="Update Scenario" Margin="2"/>
-        <Button Command="{Binding UpdateLobbyRoom}" Content="Update Lobby Room" Margin="2"/>
-        <Button Command="{Binding UpdateLobbyRoomPlayers}" Content="Update Lobby Players" Margin="2"/>
-        <Button Command="{Binding UpdateLobbySlots}" Content="Update Lobby Slots" Margin="2"/>
-        <Button Command="{Binding UpdateAll}" Content="Update All" Margin="2"/>
+<UserControl
+    x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug.DebugView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:debug="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="debug:DebugViewModel"
+    mc:Ignorable="d">
+    <UniformGrid
+        Margin="10"
+        Columns="3"
+        Rows="3">
+        <Button
+            Margin="2"
+            Command="{Binding UpdateDoor}"
+            Content="Update Doors" />
+        <Button
+            Margin="2"
+            Command="{Binding UpdateEnemies}"
+            Content="Update Enemies" />
+        <Button
+            Margin="2"
+            Command="{Binding UpdateInGamePlayer}"
+            Content="Update In-Game Player" />
+        <Button
+            Margin="2"
+            Command="{Binding UpdateInGameScenario}"
+            Content="Update Scenario" />
+        <Button
+            Margin="2"
+            Command="{Binding UpdateLobbyRoom}"
+            Content="Update Lobby Room" />
+        <Button
+            Margin="2"
+            Command="{Binding UpdateLobbyRoomPlayers}"
+            Content="Update Lobby Players" />
+        <Button
+            Margin="2"
+            Command="{Binding UpdateLobbySlots}"
+            Content="Update Lobby Slots" />
+        <Button
+            Margin="2"
+            Command="{Binding UpdateAll}"
+            Content="Update All" />
     </UniformGrid>
 </UserControl>
