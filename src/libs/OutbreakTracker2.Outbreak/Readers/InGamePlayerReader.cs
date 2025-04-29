@@ -60,25 +60,32 @@ public class InGamePlayerReader : ReaderBase
         GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.CharacterTypeOffset]),
         _ => 0xFF
     };
-
-    public byte GetInventory(int characterId) => CurrentFile switch
+    
+    public byte[] GetInventory(int characterId)
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.InventoryOffset]),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.InventoryOffset]),
-        _ => 0xFF
-    };
+        byte[] inventory = new byte[4];
+        for (int i = 0; i < 4; i++)
+            inventory[i] = CurrentFile switch
+            {
+                GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), new[] { FileOnePtrs.InventoryOffset + i }),
+                GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), new[] { FileTwoPtrs.InventoryOffset + i }),
+                _ => 0
+            };
+        
+        return inventory;
+    }
 
     public byte GetSpecialItem(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.InventoryOffset, 4]),
-        GameFile.FileTwo => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.InventoryOffset, 4]),
+        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.InventoryOffset + 4]),
+        GameFile.FileTwo => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.InventoryOffset + 4]),
         _ => 0xFF
     };
-
+    
     public byte GetSpecialInventory(int characterId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.InventoryOffset, 5]),
-        GameFile.FileTwo => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.InventoryOffset, 5]),
+        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.InventoryOffset + 5]),
+        GameFile.FileTwo => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.InventoryOffset + 5]),
         _ => 0xFF
     };
 
@@ -167,19 +174,17 @@ public class InGamePlayerReader : ReaderBase
         _ => 0xFF
     };
 
-    public int GetMaxVirus(int characterId) => CurrentFile switch
+    public int GetMaxVirus(int characterId)
     {
-        GameFile.FileOne => ReadValue<int>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.VirusOffset, 4]),
-        GameFile.FileTwo => ReadValue<int>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.VirusOffset, 4]),
-        _ => 0xFF
-    };
+        int charTypeOffset = 4 * GetType(characterId);
 
-    public int GetMaxVirus(int characterId, byte characterType) => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<int>(FileOnePtrs.VirusMaxStart, [4 * characterType]),
-        GameFile.FileTwo => ReadValue<int>(FileTwoPtrs.VirusMaxStart, [4 * characterType]),
-        _ => 0xFF
-    };
+        return CurrentFile switch
+        {
+            GameFile.FileOne => ReadValue<int>(FileOnePtrs.VirusMaxStart, [charTypeOffset]),
+            GameFile.FileTwo => ReadValue<int>(FileTwoPtrs.VirusMaxStart, [charTypeOffset]),
+            _ => 0xFF
+        };
+    }
 
     public float GetCritBonus(int characterId) => CurrentFile switch
     {
@@ -262,10 +267,9 @@ public class InGamePlayerReader : ReaderBase
             if (!DecodedInGamePlayers[i].Enabled) continue;
 
             DecodedInGamePlayers[i].InGame = GetIsInGame(i);
-            DecodedInGamePlayers[i].CurrentHealthPoints = GetCurHealth(i);
-            DecodedInGamePlayers[i].MaximumHealthPoints = GetMaxHealth(i);
-            DecodedInGamePlayers[i].HealthPointsPercentage = PercentageFormatter.GetPercentage(
-                DecodedInGamePlayers[i].CurrentHealthPoints, DecodedInGamePlayers[i].MaximumHealthPoints, decimalPlaces: 4);
+            DecodedInGamePlayers[i].CurrentHealth = GetCurHealth(i);
+            DecodedInGamePlayers[i].MaximumHealth = GetMaxHealth(i);
+            DecodedInGamePlayers[i].HealthPercentage = PercentageFormatter.GetPercentage(DecodedInGamePlayers[i].CurrentHealth, DecodedInGamePlayers[i].MaximumHealth, 3);
             DecodedInGamePlayers[i].Size = GetSize(i);
             DecodedInGamePlayers[i].Speed = GetSpeed(i);
             DecodedInGamePlayers[i].Power = GetPower(i);
@@ -276,14 +280,15 @@ public class InGamePlayerReader : ReaderBase
             DecodedInGamePlayers[i].CharacterName = DecodedInGamePlayers[i].NameId is 0
                 ? DecodedInGamePlayers[i].CharacterType
                 : GetEnumString(DecodedInGamePlayers[i].NameId, CharacterNpcName.Unknown);
-            DecodedInGamePlayers[i].Condition = DecodeCondition(DecodedInGamePlayers[i].CurrentHealthPoints, DecodedInGamePlayers[i].MaximumHealthPoints);
+            DecodedInGamePlayers[i].Condition = DecodeCondition(DecodedInGamePlayers[i].CurrentHealth, DecodedInGamePlayers[i].MaximumHealth);
             DecodedInGamePlayers[i].Status = DecodeStatusText(GetStatus(i));
             DecodedInGamePlayers[i].CurVirus = GetCurVirus(i);
             DecodedInGamePlayers[i].MaxVirus = GetMaxVirus(i);
-            DecodedInGamePlayers[i].VirusPercentage = PercentageFormatter.GetPercentage(
-                DecodedInGamePlayers[i].CurVirus, DecodedInGamePlayers[i].MaxVirus, decimalPlaces: 4);
+            DecodedInGamePlayers[i].VirusPercentage = PercentageFormatter.GetPercentage(DecodedInGamePlayers[i].CurVirus, DecodedInGamePlayers[i].MaxVirus, 3);
+
             // TODO: bugged?
             DecodedInGamePlayers[i].CritBonus = GetCritBonus(i);
+
             // TODO: Decode byte -> name -> icon/img
             DecodedInGamePlayers[i].SpecialItem = GetSpecialItem(i);
             DecodedInGamePlayers[i].EquippedItem = GetEquippedItem(i);

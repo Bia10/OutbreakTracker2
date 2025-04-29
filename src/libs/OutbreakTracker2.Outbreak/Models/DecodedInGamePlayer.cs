@@ -12,11 +12,11 @@ public sealed record DecodedInGamePlayer
 
     public string CharacterName = string.Empty;
 
-    public short CurrentHealthPoints;
+    public short CurrentHealth;
 
-    public short MaximumHealthPoints;
+    public short MaximumHealth;
 
-    public string HealthPointsPercentage = string.Empty;
+    public double HealthPercentage;
 
     public string Condition = string.Empty;
 
@@ -32,7 +32,7 @@ public sealed record DecodedInGamePlayer
 
     public int MaxVirus;
 
-    public string VirusPercentage = string.Empty;
+    public double VirusPercentage;
 
     public float CritBonus;
 
@@ -51,10 +51,9 @@ public sealed record DecodedInGamePlayer
     public string RoomName = string.Empty;
 
     public string Status = string.Empty;
-
-    // TODO: this is actually either 4 bytes (each byte one item) or 8 bytes depending on the character
-    public byte Inventory;
-
+    
+    public byte[] Inventory = new byte[4];
+    
     public byte SpecialItem;
 
     // TODO: this is actually 4 bytes (each byte one item)

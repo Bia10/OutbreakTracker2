@@ -1,5 +1,8 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using Avalonia.Controls.Notifications;
+using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
+using SukiUI.Controls;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer;
 
@@ -18,13 +21,13 @@ public partial class InGamePlayerViewModel : ObservableObject
     private string characterType = null!;
 
     [ObservableProperty]
-    private short currentHealthPoints;
+    private short currentHealth;
 
     [ObservableProperty]
-    private short maximumHealthPoints;
+    private short maximumHealth;
 
     [ObservableProperty]
-    private string healthPointsPercentage = null!;
+    private double healthPercentage;
 
     [ObservableProperty]
     private string condition = null!;
@@ -48,7 +51,7 @@ public partial class InGamePlayerViewModel : ObservableObject
     private int maxVirus;
 
     [ObservableProperty]
-    private string virusPercentage = null!;
+    private double virusPercentage;
 
     [ObservableProperty]
     private float critBonus;
@@ -70,10 +73,19 @@ public partial class InGamePlayerViewModel : ObservableObject
 
     [ObservableProperty]
     private string roomName = null!;
+    
+    [ObservableProperty]
+    private byte _inventorySlot1;
 
     [ObservableProperty]
-    private byte inventory;
+    private byte _inventorySlot2;
 
+    [ObservableProperty]
+    private byte _inventorySlot3;
+
+    [ObservableProperty]
+    private byte _inventorySlot4;
+    
     [ObservableProperty]
     private byte specialItem;
 
@@ -95,8 +107,17 @@ public partial class InGamePlayerViewModel : ObservableObject
     [ObservableProperty]
     private bool isInGame;
 
+    [ObservableProperty]
+    private InfoBar _conditionBadge;
+
+    [ObservableProperty]
+    private InfoBar _statusBadge;
+
     public InGamePlayerViewModel(DecodedInGamePlayer player)
     {
+        _conditionBadge = CreateInfoBar("Condition:", "");
+        _statusBadge = CreateInfoBar("Status:", "");
+
         Update(player);
     }
 
@@ -106,9 +127,9 @@ public partial class InGamePlayerViewModel : ObservableObject
         NameId = player.NameId;
         CharacterName = player.CharacterName;
         CharacterType = player.CharacterType;
-        CurrentHealthPoints = player.CurrentHealthPoints;
-        MaximumHealthPoints = player.MaximumHealthPoints;
-        HealthPointsPercentage = player.HealthPointsPercentage;
+        CurrentHealth = player.CurrentHealth;
+        MaximumHealth = player.MaximumHealth;
+        HealthPercentage = player.HealthPercentage;
         Condition = player.Condition;
         Status = player.Status;
         BleedTime = player.BleedTime;
@@ -124,7 +145,10 @@ public partial class InGamePlayerViewModel : ObservableObject
         PositionX = player.PositionX;
         PositionY = player.PositionY;
         RoomName = player.RoomName;
-        Inventory = player.Inventory;
+        InventorySlot1 = player.Inventory[0];
+        InventorySlot2 = player.Inventory[1];
+        InventorySlot3 = player.Inventory[2];
+        InventorySlot4 = player.Inventory[3];
         SpecialItem = player.SpecialItem;
         SpecialInventory = player.SpecialInventory;
         DeadInventory = player.DeadInventory;
@@ -132,5 +156,59 @@ public partial class InGamePlayerViewModel : ObservableObject
         EquippedItem = player.EquippedItem;
         IsEnabled = player.Enabled;
         IsInGame = player.InGame;
+
+        UpdateBadge(ConditionBadge,
+            player.Condition,
+            ConvertCondition(player.Condition),
+            "Condition:");
+
+        UpdateBadge(StatusBadge,
+            player.Status,
+            ConvertStatus(player.Status),
+            "Status:");
+    }
+
+    private static InfoBar CreateInfoBar(string title, string initialMessage)
+        => new()
+        {
+            Title = title,
+            IsOpen = true,
+            IsClosable = false,
+            Message = initialMessage,
+            Severity = NotificationType.Information
+        };
+
+    private static void UpdateBadge(InfoBar badge, string message, NotificationType severity, string title)
+    {
+        badge.Message = message;
+        badge.Severity = severity;
+        badge.Title = title;
+    }
+
+    private static NotificationType ConvertCondition(string value)
+    {
+        return value switch
+        {
+            "fine" => NotificationType.Success,
+            "danger" => NotificationType.Error,
+            "caution2" => NotificationType.Warning,
+            "caution" => NotificationType.Warning,
+            "down" => NotificationType.Error,
+            _ => throw new InvalidOperationException("Current condition type is not recognized:  " + value)
+        };
+    }
+
+    private static NotificationType ConvertStatus(string value)
+    {
+        return value switch
+        {
+            "OK" => NotificationType.Success,
+            "Dead" => NotificationType.Error,
+            "Zombie" => NotificationType.Error,
+            "Down" => NotificationType.Warning,
+            "Gas" => NotificationType.Warning,
+            "Bleed" => NotificationType.Warning,
+            _ => throw new InvalidOperationException("Current status type is not recognized:  " + value)
+        };
     }
 }

@@ -2,213 +2,95 @@
     x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer.InGamePlayerView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="clr-namespace:SukiUI.Controls;assembly=SukiUI"
-    xmlns:convertors="clr-namespace:OutbreakTracker2.App.Convertors"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:inGamePlayer="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    xmlns:inGamePlayer="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="inGamePlayer:InGamePlayerViewModel"
     mc:Ignorable="d">
 
-	<!-- TODO: generated need fixing both in layout/functionality  -->
-	
-    <UserControl.Resources>
-        <convertors:StatusToConverter x:Key="StatusConverter" />
-        <convertors:ConditionConverter x:Key="ConditionConverter" />
-    </UserControl.Resources>
+    <suki:GlassCard Margin="5" Padding="10">
+        <suki:GroupBox Header="{Binding CharacterName}">
+            <StackPanel Spacing="10">
+                
+                <!-- Health & Virus Section -->
+                <Grid ColumnDefinitions="Auto, Auto" Margin="0,0,0,10">
+                    
+                    <!-- Health -->
+                    <suki:GroupBox Grid.Column="0" Header="Health Gauge" Margin="5">
+                        <suki:WaveProgress
+                            Margin="5"
+                            Classes="Success"
+                            IsTextVisible="True"
+                            Value="{Binding HealthPercentage}" />
+                    </suki:GroupBox>
+                    
+                    <!-- Virus -->
+                    <suki:GroupBox Grid.Column="1" Header="Virus Gauge" Margin="5">
+                        <suki:WaveProgress
+                            Margin="5"
+                            Classes="Danger"
+                            IsTextVisible="True"
+                            Value="{Binding VirusPercentage}" />
+                    </suki:GroupBox>
+                </Grid>
 
-    <controls:GroupBox
-        Margin="5"
-        Padding="10"
-        Header="{Binding CharacterName}">
-        <Grid
-            ColumnDefinitions="*,*"
-            RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-            RowSpan="10">
+                <!-- Status Badges -->
+                <WrapPanel HorizontalAlignment="Left" Margin="5">
+                    <ContentControl Content="{Binding ConditionBadge}" />
+                    <ContentControl Content="{Binding StatusBadge}" />
+                </WrapPanel>
 
-            <!--  Health Section  -->
-            <Border
-                Grid.Row="0"
-                Grid.ColumnSpan="2"
-                Padding="10"
-                Background="{DynamicResource SukiSecondaryHueMidBrush}"
-                CornerRadius="4">
-                <StackPanel>
-                    <TextBlock
-                        Margin="0,0,0,5"
-                        FontSize="14"
-                        FontWeight="Bold"
-                        Text="Health Status" />
-                    <Grid VerticalAlignment="Center">
-                        <ProgressBar
-                            Height="25"
-                            Foreground="{Binding Condition, Converter={StaticResource ConditionConverter}}"
-                            Maximum="{Binding MaximumHealthPoints}"
-                            ShowProgressText="True"
-                            Value="{Binding CurrentHealthPoints}" />
+                <!-- Core Stats -->
+                <suki:GroupBox Header="Character Status">
+                    <Grid ColumnDefinitions="Auto" Margin="10" RowDefinitions="Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding BleedTime, StringFormat='Bleed Time: {0}'}" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding AntiVirusTime, StringFormat='Antivirus Time: {0}'}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding HerbTime, StringFormat='Herb Time: {0}'}" />
                     </Grid>
-                    <StackPanel
-                        HorizontalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="5">
-                        <TextBlock Text="{Binding HealthPointsPercentage}" />
+                </suki:GroupBox>
 
-                        <!--  Health Indicator Badge  -->
-                        <controls:InfoBadge
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Bottom"
-                            Appearance="{Binding Condition, Converter={StaticResource ConditionConverter}}"
-                            CornerPosition="BottomRight"
-                            Header="{Binding Condition}"
-                            IsDot="True" />
-                    </StackPanel>
-                </StackPanel>
-            </Border>
+                <!-- Attributes & Combat -->
+                <suki:GroupBox Header="Attributes" >               
+                    <Grid ColumnDefinitions="Auto" Margin="10" RowDefinitions="Auto">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Power, StringFormat='Power: {0:F1}'}"/>
+                            <TextBlock Text="{Binding CritBonus, StringFormat='Crit Bonus: {0:F2}x'}"/>                           
+                            <TextBlock Text="{Binding Speed, StringFormat='Speed: {0:F1}'}"/>
+                            <TextBlock Text="{Binding Size, StringFormat='Size: {0:F1}'}"/>
+                        </StackPanel>
+                    </Grid>                   
+                </suki:GroupBox>
 
-            <!--  Status Section  -->
-            <Expander
-                Grid.Row="1"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Header="Character Status">
-                <StackPanel Spacing="5">
-
-                    <!--  Status Badge Implementation  -->
-                    <controls:InfoBadge
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
-                        Appearance="{Binding Status, Converter={StaticResource StatusConverter}}"
-                        CornerPosition="TopRight"
-                        Header="{Binding Status}"
-                        IsDot="False"
-                        Overflow="0" />
-
-                    <Grid Margin="0,5" ColumnDefinitions="Auto,*,Auto,*">
-                        <TextBlock Grid.Column="0" Text="Bleed:" />
-                        <TextBlock
-                            Grid.Column="1"
-                            Margin="5,0"
-                            Text="{Binding BleedTime}" />
-
-                        <TextBlock Grid.Column="2" Text="Antivirus:" />
-                        <TextBlock
-                            Grid.Column="3"
-                            Margin="5,0"
-                            Text="{Binding AntiVirusTime}" />
+                <!-- Inventory -->
+                <suki:GroupBox Header="Inventory">
+                    <Grid ColumnDefinitions="Auto" Margin="10">
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Main" FontWeight="Bold"/>
+                                <UniformGrid Columns="7" Margin="5">
+                                    <TextBlock Text="{Binding InventorySlot1, StringFormat='Slot 1: 0x{0:X2}'}"/>
+                                    <TextBlock Text="{Binding InventorySlot2, StringFormat='Slot 2: 0x{0:X2}'}"/>
+                                    <TextBlock Text="{Binding InventorySlot3, StringFormat='Slot 3: 0x{0:X2}'}"/>
+                                    <TextBlock Text="{Binding InventorySlot4, StringFormat='Slot 4: 0x{0:X2}'}"/>
+                                    <TextBlock Text="{Binding EquippedItem, StringFormat='Equipped item: 0x{0:X2}'}"/>
+                                    <TextBlock Text="{Binding SpecialItem, StringFormat='Special: 0x{0:X2}'}"/>
+                                    <TextBlock Text="{Binding CindyBag, StringFormat='Cindy Bag: 0x{0:X2}'}"/>
+                                </UniformGrid>
+                            </StackPanel>
                     </Grid>
-                </StackPanel>
-            </Expander>
+                </suki:GroupBox>
 
-            <!--  Attributes  -->
-            <controls:GroupBox
-                Grid.Row="2"
-                Grid.Column="0"
-                Header="Attributes">
-                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto">
-                    <TextBlock
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        Text="Power:" />
-                    <TextBlock
-                        Grid.Row="0"
-                        Grid.Column="1"
-                        Text="{Binding Power, StringFormat={}{0:F1}}" />
-
-                    <TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Text="Speed:" />
-                    <TextBlock
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        Text="{Binding Speed, StringFormat={}{0:F1}}" />
-
-                    <TextBlock
-                        Grid.Row="2"
-                        Grid.Column="0"
-                        Text="Size:" />
-                    <TextBlock
-                        Grid.Row="2"
-                        Grid.Column="1"
-                        Text="{Binding Size, StringFormat={}{0:F1}}" />
-                </Grid>
-            </controls:GroupBox>
-
-            <!--  Virus & Crit  -->
-            <controls:GroupBox
-                Grid.Row="2"
-                Grid.Column="1"
-                Header="Combat Stats">
-                <StackPanel>
-                    <TextBlock
-                        Margin="0,0,0,5"
-                        HorizontalAlignment="Center"
-                        Text="{Binding VirusPercentage}" />
-                    <ProgressBar
-                        Height="20"
-                        Foreground="{DynamicResource SukiDangerHueMidBrush}"
-                        Maximum="{Binding MaxVirus}"
-                        ShowProgressText="True"
-                        Value="{Binding CurVirus}" />
-                    <TextBlock
-                        Margin="0,5"
-                        HorizontalAlignment="Center"
-                        Text="{Binding CritBonus, StringFormat='Crit: {0:F2}x'}" />
-                </StackPanel>
-            </controls:GroupBox>
-
-            <!--  Inventory  -->
-            <controls:GroupBox
-                Grid.Row="3"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Header="Inventory">
-                <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto">
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Main Inventory" />
-                        <TextBlock Text="{Binding Inventory, StringFormat='0x{0:X2}'}" />
-                    </StackPanel>
-
-                    <StackPanel Grid.Row="0" Grid.Column="1">
-                        <TextBlock Text="Special Item" />
-                        <TextBlock Text="{Binding SpecialItem, StringFormat='0x{0:X2}'}" />
-                    </StackPanel>
-
-                    <StackPanel Grid.Row="0" Grid.Column="2">
-                        <TextBlock Text="Cindy Bag" />
-                        <TextBlock Text="{Binding CindyBag, StringFormat='0x{0:X2}'}" />
-                    </StackPanel>
-                </Grid>
-            </controls:GroupBox>
-
-            <!--  Position  -->
-            <controls:GroupBox
-                Grid.Row="4"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Header="Position">
-                <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto">
-                    <TextBlock
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        Text="X:" />
-                    <TextBlock
-                        Grid.Row="0"
-                        Grid.Column="1"
-                        Text="{Binding PositionX, StringFormat={}{0:F2}}" />
-
-                    <TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Text="Y:" />
-                    <TextBlock
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        Text="{Binding PositionY, StringFormat={}{0:F2}}" />
-                </Grid>
-            </controls:GroupBox>
-        </Grid>
-    </controls:GroupBox>
+                <!-- Position -->
+                <suki:GroupBox Header="Position">
+                    <Grid ColumnDefinitions="Auto" RowDefinitions="Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding PositionX, StringFormat='X: {0}'}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding PositionY, StringFormat='Y: {0}'}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding RoomName, StringFormat='Location: {0}'}"/>
+                    </Grid>
+                </suki:GroupBox>
+            </StackPanel>
+        </suki:GroupBox>
+    </suki:GlassCard>
 </UserControl>
