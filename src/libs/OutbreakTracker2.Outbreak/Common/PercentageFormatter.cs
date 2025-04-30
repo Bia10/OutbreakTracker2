@@ -19,7 +19,7 @@ public static class PercentageFormatter
             percentage = Math.Round(percentage, decimalPlaces.Value);
 
         var convertedResult = (T)Convert.ChangeType(percentage, typeof(T));
-        
+
         return convertedResult;
     }
 

@@ -5,4 +5,4 @@ namespace OutbreakTracker2.Outbreak.Serialization;
 
 [JsonSerializable(typeof(DecodedDoor))]
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
-internal sealed partial class DecodedDoorJonContext : JsonSerializerContext;
+internal sealed partial class DecodedDoorJsonContext : JsonSerializerContext;

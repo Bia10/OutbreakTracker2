@@ -64,7 +64,7 @@ public sealed class DoorReader : ReaderBase
 
         long start = Environment.TickCount64;
 
-        if (debug) Console.WriteLine("Decoding doors");
+        if (debug) Logger.LogDebug("Decoding doors");
 
         int maxDoors = CurrentFile switch
         {
@@ -84,9 +84,12 @@ public sealed class DoorReader : ReaderBase
 
         if (!debug) return;
 
-        Console.WriteLine($"Decoded doors in {duration}ms");
+        Logger.LogDebug("Decoded doors in {Duration}ms", duration);
 
         foreach (DecodedDoor door in DecodedDoors)
-            Console.WriteLine(JsonSerializer.Serialize(door, DecodedDoorJonContext.Default.DecodedDoor));
+        {
+            string jsonObject = JsonSerializer.Serialize(door, DecodedDoorJsonContext.Default.DecodedDoor);
+            Logger.LogDebug("Decoded door: {jsonObject}", jsonObject);
+        }
     }
 }

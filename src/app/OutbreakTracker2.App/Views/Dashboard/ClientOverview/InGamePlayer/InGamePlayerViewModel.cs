@@ -42,6 +42,9 @@ public partial class InGamePlayerViewModel : ObservableObject
     private ushort antiVirusTime;
 
     [ObservableProperty]
+    private ushort antiVirusGTime;
+
+    [ObservableProperty]
     private ushort herbTime;
 
     [ObservableProperty]
@@ -73,7 +76,7 @@ public partial class InGamePlayerViewModel : ObservableObject
 
     [ObservableProperty]
     private string roomName = null!;
-    
+
     [ObservableProperty]
     private byte _inventorySlot1;
 
@@ -85,18 +88,24 @@ public partial class InGamePlayerViewModel : ObservableObject
 
     [ObservableProperty]
     private byte _inventorySlot4;
-    
+
     [ObservableProperty]
     private byte specialItem;
 
     [ObservableProperty]
-    private byte specialInventory;
+    private byte specialInventorySlot1;
+
+    [ObservableProperty]
+    private byte specialInventorySlot2;
+
+    [ObservableProperty]
+    private byte specialInventorySlot3;
+
+    [ObservableProperty]
+    private byte specialInventorySlot4;
 
     [ObservableProperty]
     private byte deadInventory;
-
-    [ObservableProperty]
-    private byte cindyBag;
 
     [ObservableProperty]
     private byte equippedItem;
@@ -134,6 +143,7 @@ public partial class InGamePlayerViewModel : ObservableObject
         Status = player.Status;
         BleedTime = player.BleedTime;
         AntiVirusTime = player.AntiVirusTime;
+        AntiVirusGTime = player.AntiVirusGTime;
         HerbTime = player.HerbTime;
         CurVirus = player.CurVirus;
         MaxVirus = player.MaxVirus;
@@ -150,9 +160,11 @@ public partial class InGamePlayerViewModel : ObservableObject
         InventorySlot3 = player.Inventory[2];
         InventorySlot4 = player.Inventory[3];
         SpecialItem = player.SpecialItem;
-        SpecialInventory = player.SpecialInventory;
+        SpecialInventorySlot1 = player.SpecialInventory[0];
+        SpecialInventorySlot2 = player.SpecialInventory[1];
+        SpecialInventorySlot3 = player.SpecialInventory[2];
+        SpecialInventorySlot4 = player.SpecialInventory[3];
         DeadInventory = player.DeadInventory;
-        CindyBag = player.CindyBag;
         EquippedItem = player.EquippedItem;
         IsEnabled = player.Enabled;
         IsInGame = player.InGame;

@@ -60,34 +60,60 @@ public class InGamePlayerReader : ReaderBase
         GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.CharacterTypeOffset]),
         _ => 0xFF
     };
-    
+
+    public byte GetEquippedItem(int characterId) => CurrentFile switch
+    {
+        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.EquippedItemOffset]),
+        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.EquippedItemOffset]),
+        _ => 0xFF
+    };
+
     public byte[] GetInventory(int characterId)
     {
         byte[] inventory = new byte[4];
         for (int i = 0; i < 4; i++)
+        {
             inventory[i] = CurrentFile switch
             {
-                GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), new[] { FileOnePtrs.InventoryOffset + i }),
-                GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), new[] { FileTwoPtrs.InventoryOffset + i }),
+                GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.InventoryOffset + i]),
+                GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.InventoryOffset + i]),
                 _ => 0
             };
-        
+        }
+
         return inventory;
     }
 
     public byte GetSpecialItem(int characterId) => CurrentFile switch
     {
         GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.InventoryOffset + 4]),
-        GameFile.FileTwo => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.InventoryOffset + 4]),
+        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.InventoryOffset + 4]),
         _ => 0xFF
     };
-    
-    public byte GetSpecialInventory(int characterId) => CurrentFile switch
+
+    public byte[] GetSpecialInventory(int characterId)
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.InventoryOffset + 5]),
-        GameFile.FileTwo => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.InventoryOffset + 5]),
-        _ => 0xFF
-    };
+        var specialInventory = new byte[4];
+        for (var i = 0; i < 4; i++)
+        {
+            nint curItemOffset;
+            switch (CurrentFile)
+            {
+                case GameFile.FileOne:
+                    curItemOffset = FileOnePtrs.InventoryOffset + 5 + i;
+                    specialInventory[i] = ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [curItemOffset]);
+                    break;
+                case GameFile.FileTwo:
+                    curItemOffset = FileTwoPtrs.InventoryOffset + 5 + i;
+                    specialInventory[i] = ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [curItemOffset]);
+                    break;
+                case GameFile.Unknown: break;
+                default: specialInventory[i] = 0; break;
+            }
+        }
+
+        return specialInventory;
+    }
 
     public byte GetDeadInventory(int characterId) => CurrentFile switch
     {
@@ -200,13 +226,6 @@ public class InGamePlayerReader : ReaderBase
         _ => 0xFF
     };
 
-    public byte GetEquippedItem(int characterId) => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.EquippedItemOffset]),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.EquippedItemOffset]),
-        _ => 0xFF
-    };
-
     public byte GetStatus(int characterId) => CurrentFile switch
     {
         GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.CharacterStatusOffset]),
@@ -259,7 +278,7 @@ public class InGamePlayerReader : ReaderBase
 
         long start = Environment.TickCount64;
 
-        if (debug) Console.WriteLine("Decoding in-game players");
+        if (debug) Logger.LogDebug("Decoding in-game players");
 
         for (var i = 0; i < Constants.MaxPlayers; i++)
         {
@@ -304,7 +323,6 @@ public class InGamePlayerReader : ReaderBase
             DecodedInGamePlayers[i].AntiVirusGTime = GetAntiVirusGTime(i);
             DecodedInGamePlayers[i].HerbTime = GetHerbTime(i);
 
-            // Players[i].CindyBag = Character.GetCindyBag(i);
             DecodedInGamePlayers[i].Inventory = GetInventory(i);
             DecodedInGamePlayers[i].SpecialInventory = GetSpecialInventory(i);
             DecodedInGamePlayers[i].DeadInventory = GetDeadInventory(i);
@@ -315,9 +333,9 @@ public class InGamePlayerReader : ReaderBase
 
         if (!debug) return;
 
-        Console.WriteLine($"Decoded enemies2 in {duration}ms");
+        Logger.LogDebug("Decoded enemies2 in {Duration}ms", duration);
 
         foreach (DecodedInGamePlayer inGamePlayer in DecodedInGamePlayers)
-            Console.WriteLine(JsonSerializer.Serialize(inGamePlayer, DecodedInGamePlayersJsonContext.Default.DecodedInGamePlayer));
+            Logger.LogDebug(JsonSerializer.Serialize(inGamePlayer, DecodedInGamePlayersJsonContext.Default.DecodedInGamePlayer));
     }
 }

@@ -1,14 +1,17 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using FastEnumUtility;
+using Microsoft.Extensions.Logging;
+using OutbreakTracker2.App.Services.Data;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer;
+using OutbreakTracker2.Outbreak.Enums;
+using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Readers;
+using R3;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.Extensions.Logging;
-using OutbreakTracker2.App.Services.Data;
-using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer;
-using OutbreakTracker2.Outbreak.Models;
-using R3;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
 
@@ -17,15 +20,17 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
     private readonly IDisposable _subscription;
     private readonly Dictionary<byte, InGamePlayerViewModel> _viewModelCache = new();
     private readonly ILogger<InGamePlayersViewModel> _logger;
+    private readonly IDataManager _dataManager;
 
     public ObservableCollection<InGamePlayerViewModel> Players { get; } = new();
 
     public InGamePlayersViewModel(IDataManager dataManager, ILogger<InGamePlayersViewModel> logger)
     {
+        _dataManager = dataManager;
         _logger = logger;
         _logger.LogInformation("Initializing InGamePlayersViewModel");
 
-        _subscription = dataManager.InGamePlayersObservable
+        _subscription = _dataManager.InGamePlayersObservable
             .Select(players =>
             {
                 var seenIds = new HashSet<byte>(players.Length);
@@ -50,6 +55,11 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
         int targetIndex = 0;
         foreach (DecodedInGamePlayer player in updatedPlayers)
         {
+            string curScenarioName = _dataManager.InGameScenario.ScenarioName;
+            if (!string.IsNullOrEmpty(curScenarioName))
+                if (FastEnum.TryParse(curScenarioName, out InGameScenario scenarioEnum))
+                    player.RoomName = GetRoomName(scenarioEnum, player.RoomId);
+
             if (_viewModelCache.TryGetValue(player.NameId, out InGamePlayerViewModel? existingVm))
             {
                 existingVm.Update(player);
@@ -68,6 +78,30 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
 
             targetIndex++;
         }
+    }
+
+    // TODO: move elsewhere
+    private static string GetRoomName(InGameScenario scenarioName, short roomID)
+    {
+        string result = scenarioName switch
+        {
+            InGameScenario.Unknown => ReaderBase.GetEnumString(roomID, TrainingGroundRooms.Spawning),
+            InGameScenario.TrainingGround => ReaderBase.GetEnumString(roomID, TrainingGroundRooms.Spawning),
+            InGameScenario.EndOfTheRoad => ReaderBase.GetEnumString(roomID, EndOfTheRoadRooms.Spawning),
+            InGameScenario.Underbelly => ReaderBase.GetEnumString(roomID, UnderbellyRooms.Spawning),
+            InGameScenario.DesperateTimes => ReaderBase.GetEnumString(roomID, DesperateTimesRooms.Spawning),
+            InGameScenario.Showdown1 => ReaderBase.GetEnumString(roomID, ShowdownRooms.Spawning),
+            InGameScenario.Showdown2 => ReaderBase.GetEnumString(roomID, ShowdownRooms.Spawning),
+            InGameScenario.Showdown3 => ReaderBase.GetEnumString(roomID, ShowdownRooms.Spawning),
+            InGameScenario.Flashback => ReaderBase.GetEnumString(roomID, FlashbackRooms.Spawning),
+            InGameScenario.Elimination3 => ReaderBase.GetEnumString(roomID, Elimination3Rooms.Spawning),
+            InGameScenario.Elimination1 => ReaderBase.GetEnumString(roomID, Elimination1Rooms.Spawning),
+            InGameScenario.Elimination2 => ReaderBase.GetEnumString(roomID, Elimination2Rooms.Spawning),
+            InGameScenario.WildThings => ReaderBase.GetEnumString(roomID, WildThingsRooms.Spawning),
+            _ => throw new ArgumentOutOfRangeException(nameof(scenarioName), scenarioName, null)
+        };
+
+        return result;
     }
 
     public void Dispose()

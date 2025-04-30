@@ -1,10 +1,18 @@
-﻿namespace OutbreakTracker2.Outbreak.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace OutbreakTracker2.Outbreak.Models;
 
 public sealed record DecodedDoor
 {
-    public ushort HP = 0x0000;
+    [JsonInclude]
+    [JsonPropertyName(nameof(HP))]
+    public ushort HP { get; set; }
 
-    public ushort Flag = 0x0000;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Flag))]
+    public ushort Flag { get; set; }
 
-    public string Status = string.Empty;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Status))]
+    public string Status { get; set; } = string.Empty;
 }

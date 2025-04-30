@@ -63,7 +63,7 @@ public sealed class LobbyRoomReader : ReaderBase
 
         long start = Environment.TickCount64;
 
-        if (debug) Console.WriteLine("Decoding lobby room");
+        if (debug) Logger.LogDebug("Decoding lobby room");
 
         DecodedLobbyRoom = new DecodedLobbyRoom
         {
@@ -79,9 +79,8 @@ public sealed class LobbyRoomReader : ReaderBase
 
         if (!debug) return;
 
-        Console.WriteLine($"Decoded lobby room in {duration}ms");
-
-        Console.WriteLine(JsonSerializer.Serialize(
+        Logger.LogDebug("Decoded lobby room in {Duration}ms", duration);
+        Logger.LogDebug(JsonSerializer.Serialize(
             DecodedLobbyRoom,
             DecodedLobbyRoomJsonContext.Default.DecodedLobbyRoom));
     }

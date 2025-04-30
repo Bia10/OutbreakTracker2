@@ -102,6 +102,6 @@ public sealed class LobbySlotReader : ReaderBase
         Logger.LogDebug("Decoded lobby slots in {Duration}ms", duration);
 
         foreach (DecodedLobbySlot lobbySlot in DecodedLobbySlots)
-            Console.WriteLine(JsonSerializer.Serialize(lobbySlot, DecodedLobbySlotJsonContext.Default.DecodedLobbySlot));
+            Logger.LogDebug(JsonSerializer.Serialize(lobbySlot, DecodedLobbySlotJsonContext.Default.DecodedLobbySlot));
     }
 }

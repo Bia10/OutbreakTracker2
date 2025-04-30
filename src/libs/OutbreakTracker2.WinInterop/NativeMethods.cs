@@ -14,7 +14,7 @@ public static partial class NativeMethods
 
     [LibraryImport("kernel32.dll", EntryPoint = "WriteProcessMemory", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static partial bool WriteProcessMemory(nint hProcess, nint lpBaseAddress, [In] byte[] lpBuffer, int nSize, out nint lpNumberOfBytesWritten);
+    public static partial bool WriteProcessMemory(nint hProcess, nint lpBaseAddress, [In] byte[] lpBuffer, int nSize, out int lpNumberOfBytesWritten);
 
     [LibraryImport("kernel32.dll", EntryPoint = "CloseHandle", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]

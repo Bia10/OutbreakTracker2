@@ -67,7 +67,7 @@ public class EnemiesReader : ReaderBase
 
         long start = Environment.TickCount64;
 
-        if (debug) Console.WriteLine("Decoding enemies2");
+        if (debug) Logger.LogDebug("Decoding enemies2");
 
         for (var i = 0; i < Constants.MaxEnemies2; i++)
         {
@@ -108,9 +108,12 @@ public class EnemiesReader : ReaderBase
 
         if (!debug) return;
 
-        Console.WriteLine($"Decoded enemies2 in {duration}ms");
+        Logger.LogDebug("Decoded enemies2 in {Duration}ms", duration);
 
         foreach (DecodedEnemy enemy in DecodedEnemies2)
-            Console.WriteLine(JsonSerializer.Serialize(enemy, DecodedEnemyJonContext.Default.DecodedEnemy));
+        {
+            string jsonObject = JsonSerializer.Serialize(enemy, DecodedEnemyJsonContext.Default.DecodedEnemy);
+            Logger.LogDebug("Decoded enemy: {jsonObject}", jsonObject);
+        }
     }
 }

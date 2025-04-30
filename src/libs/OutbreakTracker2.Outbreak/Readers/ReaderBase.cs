@@ -18,7 +18,7 @@ public abstract class ReaderBase
     protected readonly IMemoryReader MemoryReader;
     protected readonly GameFile CurrentFile;
     protected readonly ILogger Logger;
-    protected const bool _enableLogging = false;
+    protected const bool _enableLogging = true;
 
     protected ReaderBase(GameClient gameClient, EEmemMemory eememMemory, ILogger logger)
     {
@@ -99,7 +99,7 @@ public abstract class ReaderBase
 
         T result = Read<T>(address);
         if (_enableLogging)
-            Logger.LogDebug($"[{methodName}] Successfully read type {typeof(T)} at 0x{address:X} obtained value {result}.");
+            Logger.LogTrace("[{MethodName}] Successfully read type {Type} at 0x{Address:X} obtained value {Result}.", methodName, typeof(T), address, result);
 
         return result;
     }
@@ -110,14 +110,11 @@ public abstract class ReaderBase
         [CallerMemberName] string methodName = ""
     ) where T : struct
     {
-        nint address = basePtr;
-        if (!offsets.IsEmpty)
-            address = ComputeAddress(basePtr, offsets);
-
+        nint address = ComputeAddress(basePtr, offsets);
         T result = Read<T>(address);
 
         if (_enableLogging)
-            Logger.LogDebug($"[{methodName}] Read {typeof(T)} at 0x{address:X}: {result}");
+            Logger.LogTrace("[{MethodName}] Read {Type} at 0x{Address:X}: {Result}", methodName, typeof(T), address, result);
 
         return result;
     }
@@ -140,7 +137,7 @@ public abstract class ReaderBase
         string result = ReadString(address);
 
         if (_enableLogging)
-            Logger.LogDebug($"[{methodName}] Successfully read string at 0x{address:X} obtained value {result}.");
+            Logger.LogTrace("[{MethodName}] Successfully read string at 0x{Address:X} obtained value {Result}.", methodName, address, result);
 
         return result;
     }
@@ -210,7 +207,7 @@ public abstract class ReaderBase
 
         T result = Read<T>(address);
         if (_enableLogging)
-            Logger.LogDebug($"[{methodName}] Successfully read type {typeof(T)} at 0x{address:X} obtained value {result}.");
+            Logger.LogTrace("[{MethodName}] Successfully read type {Type} at 0x{Address:X} obtained value {Result}.", methodName, typeof(T), address, result);
 
         return result;
     }
@@ -225,12 +222,12 @@ public abstract class ReaderBase
 
         string result = ReadString(address);
         if (_enableLogging)
-            Logger.LogDebug($"[{methodName}] Successfully read string at 0x{address:X} obtained value {result}.");
+            Logger.LogTrace("[{MethodName}] Successfully read string at 0x{Address:X} obtained value {Result}.", methodName, address, result);
 
         return result;
     }
 
-    protected string GetEnumString<TEnum>(object value, TEnum defaultValue)
+    public static string GetEnumString<TEnum>(object value, TEnum defaultValue)
         where TEnum : struct, Enum
     {
         try
@@ -241,16 +238,16 @@ public abstract class ReaderBase
                 if (!string.IsNullOrEmpty(enumValue))
                     return enumValue;
 
-                Logger.LogDebug($"[{nameof(GetEnumString)}] Enum value resolved to null or empty for type {typeof(TEnum).Name} and value {value}.");
+                //Logger.LogDebug("[{GetEnumStringName}] Enum value resolved to null or empty for type {Name} and value {Value}.", nameof(GetEnumString), typeof(TEnum).Name, value);
                 return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
             }
 
-            Logger.LogDebug($"[{nameof(GetEnumString)}] Failed to parse enum for type {typeof(TEnum).Name} and value {value}. Defaulting to {defaultValue}.");
+            //Logger.LogDebug("[{GetEnumStringName}] Failed to parse enum for type {Name} and value {Value}. Defaulting to {DefaultValue}.", nameof(GetEnumString), typeof(TEnum).Name, value, defaultValue);
             return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
         }
         catch (Exception ex)
         {
-            Logger.LogDebug($"[{nameof(GetEnumString)}] Exception handling enum value '{value}' for type {typeof(TEnum).Name}: {ex.Message}");
+            //Logger.LogDebug("[{GetEnumStringName}] Exception handling enum value '{Value}' for type {Name}: {ExMessage}", nameof(GetEnumString), value, typeof(TEnum).Name, ex.Message);
             return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
         }
     }

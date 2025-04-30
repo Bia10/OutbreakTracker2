@@ -1,68 +1,134 @@
-﻿namespace OutbreakTracker2.Outbreak.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace OutbreakTracker2.Outbreak.Models;
 
 public sealed record DecodedScenario
 {
-    public byte CurrentFile;
+    [JsonInclude]
+    [JsonPropertyName(nameof(CurrentFile))]
+    public byte CurrentFile { get; set; }
 
-    public string ScenarioName = string.Empty;
+    [JsonInclude]
+    [JsonPropertyName(nameof(ScenarioName))]
+    public string ScenarioName { get; set; } = string.Empty;
 
-    public int FrameCounter;
+    [JsonInclude]
+    [JsonPropertyName(nameof(FrameCounter))]
+    public int FrameCounter { get; set; }
 
-    public byte Cleared;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Cleared))]
+    public byte Cleared { get; set; }
 
-    public short WildThingsTime;
+    [JsonInclude]
+    [JsonPropertyName(nameof(WildThingsTime))]
+    public short WildThingsTime { get; set; }
 
-    public short EscapeTime;
+    [JsonInclude]
+    [JsonPropertyName(nameof(EscapeTime))]
+    public short EscapeTime { get; set; }
 
-    public int FightTime;
+    [JsonInclude]
+    [JsonPropertyName(nameof(FightTime))]
+    public int FightTime { get; set; }
 
-    public short FightTime2;
+    [JsonInclude]
+    [JsonPropertyName(nameof(FightTime2))]
+    public short FightTime2 { get; set; }
 
-    public int GarageTime;
+    [JsonInclude]
+    [JsonPropertyName(nameof(GarageTime))]
+    public int GarageTime { get; set; }
 
-    public int GasTime;
+    [JsonInclude]
+    [JsonPropertyName(nameof(GasTime))]
+    public int GasTime { get; set; }
 
-    public int GasFlag;
+    [JsonInclude]
+    [JsonPropertyName(nameof(GasFlag))]
+    public int GasFlag { get; set; }
 
-    public byte GasRandom;
+    [JsonInclude]
+    [JsonPropertyName(nameof(GasRandom))]
+    public byte GasRandom { get; set; }
 
-    public byte ItemRandom;
+    [JsonInclude]
+    [JsonPropertyName(nameof(ItemRandom))]
+    public byte ItemRandom { get; set; }
 
-    public byte ItemRandom2;
+    [JsonInclude]
+    [JsonPropertyName(nameof(ItemRandom2))]
+    public byte ItemRandom2 { get; set; }
 
-    public byte PuzzleRandom;
+    [JsonInclude]
+    [JsonPropertyName(nameof(PuzzleRandom))]
+    public byte PuzzleRandom { get; set; }
 
-    public byte Coin;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Coin))]
+    public byte Coin { get; set; }
 
-    public byte KilledZombie;
+    [JsonInclude]
+    [JsonPropertyName(nameof(KilledZombie))]
+    public byte KilledZombie { get; set; }
 
-    public byte PlayerCount;
+    [JsonInclude]
+    [JsonPropertyName(nameof(PlayerCount))]
+    public byte PlayerCount { get; set; }
 
-    public short PassDesperateTimes1;
+    [JsonInclude]
+    [JsonPropertyName(nameof(PassDesperateTimes1))]
+    public short PassDesperateTimes1 { get; set; }
 
-    public byte PassWildThings;
+    [JsonInclude]
+    [JsonPropertyName(nameof(PassWildThings))]
+    public byte PassWildThings { get; set; }
 
-    public byte PassDesperateTimes2;
+    [JsonInclude]
+    [JsonPropertyName(nameof(PassDesperateTimes2))]
+    public byte PassDesperateTimes2 { get; set; }
 
-    public byte PassDesperateTimes3;
+    [JsonInclude]
+    [JsonPropertyName(nameof(PassDesperateTimes3))]
+    public byte PassDesperateTimes3 { get; set; }
 
-    public byte Pass1;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Pass1))]
+    public byte Pass1 { get; set; }
 
-    public byte Pass2;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Pass2))]
+    public byte Pass2 { get; set; }
 
-    public byte Pass3;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Pass3))]
+    public byte Pass3 { get; set; }
 
-    public short PassUnderbelly1;
+    [JsonInclude]
+    [JsonPropertyName(nameof(PassUnderbelly1))]
+    public short PassUnderbelly1 { get; set; }
 
-    public byte PassUnderbelly2;
+    [JsonInclude]
+    [JsonPropertyName(nameof(PassUnderbelly2))]
+    public byte PassUnderbelly2 { get; set; }
 
-    public byte PassUnderbelly3;
+    [JsonInclude]
+    [JsonPropertyName(nameof(PassUnderbelly3))]
+    public byte PassUnderbelly3 { get; set; }
 
-    public short Pass4;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Pass4))]
+    public short Pass4 { get; set; }
 
-    public byte Pass5;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Pass5))]
+    public byte Pass5 { get; set; }
 
-    public byte Pass6;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Pass6))]
+    public byte Pass6 { get; set; }
 
-    public string Difficulty = string.Empty;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Difficulty))]
+    public string Difficulty { get; set; } = string.Empty;
 }

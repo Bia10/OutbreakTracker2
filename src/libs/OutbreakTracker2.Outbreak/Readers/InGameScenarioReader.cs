@@ -18,7 +18,7 @@ public class InGameScenarioReader : ReaderBase
         DecodedScenario = new DecodedScenario();
     }
 
-    public string GetInGameScenarioString()
+    public string GetScenarioName()
         => GetEnumString(GetScenarioId(), InGameScenario.Unknown);
 
     public short GetScenarioId() => CurrentFile switch
@@ -155,9 +155,9 @@ public class InGameScenarioReader : ReaderBase
 
         long start = Environment.TickCount64;
 
-        if (debug) Console.WriteLine("Decoding scenario");
+        if (debug) Logger.LogDebug("Decoding scenario");
 
-        DecodedScenario.ScenarioName = GetInGameScenarioString();
+        DecodedScenario.ScenarioName = GetScenarioName();
         DecodedScenario.FrameCounter = GetFrameCount();
         DecodedScenario.Cleared = GetIsScenarioCleared();
         DecodedScenario.PlayerCount = GetPlayerCount();
@@ -193,7 +193,7 @@ public class InGameScenarioReader : ReaderBase
 
         if (!debug) return;
 
-        Console.WriteLine($"Decoded scenario in {duration}ms");
-        Console.WriteLine(JsonSerializer.Serialize(DecodedScenario, DecodedScenarioJsonContext.Default.DecodedScenario));
+        Logger.LogDebug("Decoded scenario in {Duration}ms", duration);
+        Logger.LogDebug(JsonSerializer.Serialize(DecodedScenario, DecodedScenarioJsonContext.Default.DecodedScenario));
     }
 }

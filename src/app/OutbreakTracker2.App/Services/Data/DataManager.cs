@@ -117,7 +117,8 @@ public sealed class DataManager : IDataManager, IDisposable
     // TODO: this will need to be rewriten later if we manage to figure way to orient in client state
     public ValueTask UpdateAllAsync()
     {
-        if (_isUpdating) return default;
+        if (_isUpdating)
+            return ValueTask.CompletedTask;
 
         DateTime now = DateTime.UtcNow;
         if (now - _lastUpdateTime < _minUpdateInterval)
@@ -125,11 +126,10 @@ public sealed class DataManager : IDataManager, IDisposable
 
         _isUpdating = true;
         _lastUpdateTime = now;
+        _logger.LogInformation("Periodic update started.");
 
         try
         {
-            _logger.LogInformation("Periodic update started.");
-
             UpdateDoors();
             UpdateEnemies();
             UpdateInGamePlayer();
@@ -143,7 +143,7 @@ public sealed class DataManager : IDataManager, IDisposable
                 UpdateLobbySlots();
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
         finally
         {

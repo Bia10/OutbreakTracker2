@@ -1,71 +1,132 @@
-﻿namespace OutbreakTracker2.Outbreak.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace OutbreakTracker2.Outbreak.Models;
 
 public sealed record DecodedInGamePlayer
 {
-    public bool Enabled;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Enabled))]
+    public bool Enabled { get; set; }
 
-    public bool InGame;
+    [JsonInclude]
+    [JsonPropertyName(nameof(InGame))]
+    public bool InGame { get; set; }
 
-    public string CharacterType = string.Empty;
+    [JsonInclude]
+    [JsonPropertyName(nameof(CharacterType))]
+    public string CharacterType { get; set; } = string.Empty;
 
-    public byte NameId;
+    [JsonInclude]
+    [JsonPropertyName(nameof(NameId))]
+    public byte NameId { get; set; }
 
-    public string CharacterName = string.Empty;
+    [JsonInclude]
+    [JsonPropertyName(nameof(CharacterName))]
+    public string CharacterName { get; set; } = string.Empty;
 
-    public short CurrentHealth;
+    [JsonInclude]
+    [JsonPropertyName(nameof(CurrentHealth))]
+    public short CurrentHealth { get; set; }
 
-    public short MaximumHealth;
+    [JsonInclude]
+    [JsonPropertyName(nameof(MaximumHealth))]
+    public short MaximumHealth { get; set; }
 
-    public double HealthPercentage;
+    [JsonInclude]
+    [JsonPropertyName(nameof(HealthPercentage))]
+    public double HealthPercentage { get; set; }
 
-    public string Condition = string.Empty;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Condition))]
+    public string Condition { get; set; } = string.Empty;
 
-    public ushort BleedTime;
+    [JsonInclude]
+    [JsonPropertyName(nameof(BleedTime))]
+    public ushort BleedTime { get; set; }
 
-    public ushort AntiVirusTime;
+    [JsonInclude]
+    [JsonPropertyName(nameof(AntiVirusTime))]
+    public ushort AntiVirusTime { get; set; }
 
-    public ushort AntiVirusGTime;
+    [JsonInclude]
+    [JsonPropertyName(nameof(AntiVirusGTime))]
+    public ushort AntiVirusGTime { get; set; }
 
-    public ushort HerbTime;
+    [JsonInclude]
+    [JsonPropertyName(nameof(HerbTime))]
+    public ushort HerbTime { get; set; }
 
-    public int CurVirus;
+    [JsonInclude]
+    [JsonPropertyName(nameof(CurVirus))]
+    public int CurVirus { get; set; }
 
-    public int MaxVirus;
+    [JsonInclude]
+    [JsonPropertyName(nameof(MaxVirus))]
+    public int MaxVirus { get; set; }
 
-    public double VirusPercentage;
+    [JsonInclude]
+    [JsonPropertyName(nameof(VirusPercentage))]
+    public double VirusPercentage { get; set; }
 
-    public float CritBonus;
+    [JsonInclude]
+    [JsonPropertyName(nameof(CritBonus))]
+    public float CritBonus { get; set; }
 
-    public float Size;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Size))]
+    public float Size { get; set; }
 
-    public float Power;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Power))]
+    public float Power { get; set; }
 
-    public float Speed;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Speed))]
+    public float Speed { get; set; }
 
-    public float PositionX;
+    [JsonInclude]
+    [JsonPropertyName(nameof(PositionX))]
+    public float PositionX { get; set; }
 
-    public float PositionY;
+    [JsonInclude]
+    [JsonPropertyName(nameof(PositionY))]
+    public float PositionY { get; set; }
 
-    public short RoomId;
+    [JsonInclude]
+    [JsonPropertyName(nameof(RoomId))]
+    public short RoomId { get; set; }
 
-    public string RoomName = string.Empty;
+    [JsonInclude]
+    [JsonPropertyName(nameof(RoomName))]
+    public string RoomName { get; set; } = string.Empty;
 
-    public string Status = string.Empty;
-    
-    public byte[] Inventory = new byte[4];
-    
-    public byte SpecialItem;
+    [JsonInclude]
+    [JsonPropertyName(nameof(Status))]
+    public string Status { get; set; } = string.Empty;
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(Inventory))]
+    public byte[] Inventory { get; set; } = new byte[4];
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(SpecialItem))]
+    public byte SpecialItem { get; set; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(SpecialInventory))]
+    public byte[] SpecialInventory { get; set; } = new byte[4];
 
     // TODO: this is actually 4 bytes (each byte one item)
-    public byte SpecialInventory;
+    [JsonInclude]
+    [JsonPropertyName(nameof(DeadInventory))]
+    public byte DeadInventory { get; set; }
 
     // TODO: this is actually 4 bytes (each byte one item)
-    public byte DeadInventory;
+    [JsonInclude]
+    [JsonPropertyName(nameof(SpecialDeadInventory))]
+    public byte SpecialDeadInventory { get; set; }
 
-    // TODO: this is actually 4 bytes (each byte one item)
-    public byte SpecialDeadInventory;
-
-    public byte CindyBag;
-
-    public byte EquippedItem;
+    [JsonInclude]
+    [JsonPropertyName(nameof(EquippedItem))]
+    public byte EquippedItem { get; set; }
 }

@@ -86,7 +86,7 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
 
         long start = Environment.TickCount64;
 
-        if (debug) Console.WriteLine("Decoding lobby room players");
+        if (debug) Logger.LogDebug("Decoding lobby room players");
 
         for (var i = 0; i < Constants.MaxPlayers; i++)
         {
@@ -109,7 +109,7 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
                     DecodedLobbyRoomPlayers[i].NPCPower = GetCharacterNpcPowerString(DecodedLobbyRoomPlayers[i].NameId);
                     break;
                 case "Unknown":
-                    Console.WriteLine($"[{nameof(UpdateRoomPlayers)}] NPCType unknown: {DecodedLobbyRoomPlayers[i].NPCType} for character at index {i}.");
+                    Logger.LogDebug("[{UpdateRoomPlayersName}] NPCType unknown: {NpcType} for character at index {I}.", nameof(UpdateRoomPlayers), DecodedLobbyRoomPlayers[i].NPCType, i);
                     break;
             }
         }
@@ -118,9 +118,9 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
 
         if (!debug) return;
 
-        Console.WriteLine($"Decoded room players in {duration}ms");
+        Logger.LogDebug("Decoded room players in {Duration}ms", duration);
 
         foreach (DecodedLobbyRoomPlayer player in DecodedLobbyRoomPlayers)
-            Console.WriteLine(JsonSerializer.Serialize(player, DecodedLobbyRoomPlayerJsonContext.Default.DecodedLobbyRoomPlayer));
+            Logger.LogDebug(JsonSerializer.Serialize(player, DecodedLobbyRoomPlayerJsonContext.Default.DecodedLobbyRoomPlayer));
     }
 }
