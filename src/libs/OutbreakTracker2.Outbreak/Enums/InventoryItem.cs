@@ -59,6 +59,9 @@ public enum InventoryItem : byte
     [EnumMember(Value = "Stun gun")]
     StunGun = 173,
 
+    [EnumMember(Value = "Capsule shooter blue")]
+    CapsuleShooter = 173,
+    
     [EnumMember(Value = "HerbCase")]
     HerbCase = 174,
 
@@ -70,7 +73,10 @@ public enum InventoryItem : byte
 
     [EnumMember(Value = "Picking tool")]
     PickingTool = 174,
-
+    
+    [EnumMember(Value = "Medical set")]
+    MedicalSet = 174,
+    
     [EnumMember(Value = "Folding knife")]
     FoldingKnife = 175,
 

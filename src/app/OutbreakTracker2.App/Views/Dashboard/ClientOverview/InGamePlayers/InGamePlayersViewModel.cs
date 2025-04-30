@@ -31,12 +31,7 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
         _logger.LogInformation("Initializing InGamePlayersViewModel");
 
         _subscription = _dataManager.InGamePlayersObservable
-            .Select(players =>
-            {
-                var seenIds = new HashSet<byte>(players.Length);
-                return players.Where(player => seenIds.Add(player.NameId))
-                    .ToList();
-            })
+            .Select(players => players.ToList())
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(UpdatePlayers);
     }
@@ -47,18 +42,33 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
 
         var currentIds = new HashSet<byte>(_viewModelCache.Keys);
         var newIds = new HashSet<byte>(updatedPlayers.Select(p => p.NameId));
-
         foreach (byte id in currentIds.Where(id => !newIds.Contains(id)).ToList())
             if (_viewModelCache.Remove(id, out InGamePlayerViewModel? vm))
                 Players.Remove(vm);
 
         int targetIndex = 0;
-        foreach (DecodedInGamePlayer player in updatedPlayers)
+        foreach (DecodedInGamePlayer player in updatedPlayers.Where(player => !string.IsNullOrEmpty(player.CharacterName)))
         {
+            _logger.LogInformation("Updating player {Name}", player.CharacterName);
+
             string curScenarioName = _dataManager.InGameScenario.ScenarioName;
             if (!string.IsNullOrEmpty(curScenarioName))
-                if (FastEnum.TryParse(curScenarioName, out InGameScenario scenarioEnum))
+            {
+                bool parseSuccess = FastEnum.TryParse(curScenarioName, out InGameScenario scenarioEnum);
+                if (!parseSuccess)
+                    foreach (InGameScenario value in FastEnum.GetValues<InGameScenario>())
+                    {
+                        if (!curScenarioName.Equals(value.GetEnumMemberValue(), StringComparison.OrdinalIgnoreCase))
+                            continue;
+
+                        scenarioEnum = value;
+                        parseSuccess = true;
+                        break;
+                    }
+                
+                if (parseSuccess)
                     player.RoomName = GetRoomName(scenarioEnum, player.RoomId);
+            }
 
             if (_viewModelCache.TryGetValue(player.NameId, out InGamePlayerViewModel? existingVm))
             {
@@ -66,11 +76,15 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
 
                 int currentIndex = Players.IndexOf(existingVm);
                 if (currentIndex != targetIndex)
-                    Players.Move(currentIndex, targetIndex);
+                {
+                    if (currentIndex >= 0 && currentIndex < Players.Count && targetIndex >= 0 && targetIndex < Players.Count)
+                        Players.Move(currentIndex, targetIndex);
+                    else
+                        _logger.LogError("Invalid move indices. Current: {Current}, Target: {Target}, Count: {Count}", currentIndex, targetIndex, Players.Count);
+                }
             }
             else
             {
-                // Add new ViewModel
                 var newVm = new InGamePlayerViewModel(player);
                 _viewModelCache[player.NameId] = newVm;
                 Players.Insert(targetIndex, newVm);

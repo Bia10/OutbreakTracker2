@@ -115,19 +115,49 @@ public class InGamePlayerReader : ReaderBase
         return specialInventory;
     }
 
-    public byte GetDeadInventory(int characterId) => CurrentFile switch
+    public byte[] GetDeadInventory(int characterId)
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.DeadInventoryStart, [8 * characterId]),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.DeadInventoryStart, [8 * characterId]),
-        _ => 0xFF
-    };
+        var specialInventory = new byte[4];
+        for (var i = 0; i < 4; i++)
+        {
+            nint curItemOffset = 8 * characterId + i;
+            switch (CurrentFile)
+            {
+                case GameFile.FileOne:
+                    specialInventory[i] = ReadValue<byte>(FileOnePtrs.DeadInventoryStart, [curItemOffset]);
+                    break;
+                case GameFile.FileTwo:
+                    specialInventory[i] = ReadValue<byte>(FileTwoPtrs.DeadInventoryStart, [curItemOffset]);
+                    break;
+                case GameFile.Unknown: break;
+                default: specialInventory[i] = 0; break;
+            }
+        }
 
-    public byte GetSpecialDeadInventory(int characterId) => CurrentFile switch
+        return specialInventory;
+    }
+
+    public byte[] GetSpecialDeadInventory(int characterId)
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.DeadInventoryStart, [8 * characterId, 4]),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.DeadInventoryStart, [8 * characterId, 4]),
-        _ => 0xFF
-    };
+        var specialInventory = new byte[4];
+        for (var i = 0; i < 4; i++)
+        {
+            nint curItemOffset = 8 * characterId + 4 + i;
+            switch (CurrentFile)
+            {
+                case GameFile.FileOne:
+                    specialInventory[i] = ReadValue<byte>(FileOnePtrs.DeadInventoryStart, [curItemOffset]);
+                    break;
+                case GameFile.FileTwo:
+                    specialInventory[i] = ReadValue<byte>(FileTwoPtrs.DeadInventoryStart, [curItemOffset]);
+                    break;
+                case GameFile.Unknown: break;
+                default: specialInventory[i] = 0; break;
+            }
+        }
+
+        return specialInventory;
+    }
 
     public ushort GetBleedTime(int characterId) => CurrentFile switch
     {
@@ -312,10 +342,6 @@ public class InGamePlayerReader : ReaderBase
             DecodedInGamePlayers[i].SpecialItem = GetSpecialItem(i);
             DecodedInGamePlayers[i].EquippedItem = GetEquippedItem(i);
             DecodedInGamePlayers[i].RoomId = GetRoomId(i);
-
-            // TODO: room can only be parsed if we know what scenario we are playing
-            // var scenarioId = DataManager.GetScenarioId();
-            // DecodedInGamePlayers[i].RoomName = DecodeRoomName(scenarioId, DecodedInGamePlayers[i].RoomId);
 
             // TODO: untested, formatting?
             DecodedInGamePlayers[i].BleedTime = GetBleedTime(i);

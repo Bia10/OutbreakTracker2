@@ -115,16 +115,14 @@ public sealed record DecodedInGamePlayer
     [JsonInclude]
     [JsonPropertyName(nameof(SpecialInventory))]
     public byte[] SpecialInventory { get; set; } = new byte[4];
-
-    // TODO: this is actually 4 bytes (each byte one item)
+    
     [JsonInclude]
     [JsonPropertyName(nameof(DeadInventory))]
-    public byte DeadInventory { get; set; }
-
-    // TODO: this is actually 4 bytes (each byte one item)
+    public byte[] DeadInventory { get; set; } = new byte[4];
+    
     [JsonInclude]
     [JsonPropertyName(nameof(SpecialDeadInventory))]
-    public byte SpecialDeadInventory { get; set; }
+    public byte[] SpecialDeadInventory { get; set; } = new byte[4];
 
     [JsonInclude]
     [JsonPropertyName(nameof(EquippedItem))]

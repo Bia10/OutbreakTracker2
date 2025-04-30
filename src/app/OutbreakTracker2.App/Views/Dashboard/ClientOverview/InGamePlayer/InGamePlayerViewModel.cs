@@ -105,8 +105,29 @@ public partial class InGamePlayerViewModel : ObservableObject
     private byte specialInventorySlot4;
 
     [ObservableProperty]
-    private byte deadInventory;
+    private byte deadInventorySlot1;
+    
+    [ObservableProperty]
+    private byte deadInventorySlot2;
 
+    [ObservableProperty]
+    private byte deadInventorySlot3;
+    
+    [ObservableProperty]
+    private byte deadInventorySlot4;
+    
+    [ObservableProperty]
+    private byte specialDeadInventorySlot1;
+    
+    [ObservableProperty]
+    private byte specialDeadInventorySlot2;
+
+    [ObservableProperty]
+    private byte specialDeadInventorySlot3;
+    
+    [ObservableProperty]
+    private byte specialDeadInventorySlot4;
+    
     [ObservableProperty]
     private byte equippedItem;
 
@@ -164,7 +185,14 @@ public partial class InGamePlayerViewModel : ObservableObject
         SpecialInventorySlot2 = player.SpecialInventory[1];
         SpecialInventorySlot3 = player.SpecialInventory[2];
         SpecialInventorySlot4 = player.SpecialInventory[3];
-        DeadInventory = player.DeadInventory;
+        DeadInventorySlot1 = player.DeadInventory[0];
+        DeadInventorySlot2 = player.DeadInventory[1];
+        DeadInventorySlot3 = player.DeadInventory[2];
+        DeadInventorySlot4 = player.DeadInventory[3];
+        SpecialDeadInventorySlot1 = player.SpecialDeadInventory[0];
+        SpecialDeadInventorySlot2 = player.SpecialDeadInventory[1];
+        SpecialDeadInventorySlot3 = player.SpecialDeadInventory[2];
+        SpecialDeadInventorySlot4 = player.SpecialDeadInventory[3];
         EquippedItem = player.EquippedItem;
         IsEnabled = player.Enabled;
         IsInGame = player.InGame;
@@ -199,13 +227,16 @@ public partial class InGamePlayerViewModel : ObservableObject
 
     private static NotificationType ConvertCondition(string value)
     {
-        return value switch
+        return value.ToLower() switch
         {
             "fine" => NotificationType.Success,
-            "danger" => NotificationType.Error,
             "caution2" => NotificationType.Warning,
             "caution" => NotificationType.Warning,
+            "gas" => NotificationType.Warning,
+            "danger" => NotificationType.Error,
             "down" => NotificationType.Error,
+            "down+gas" => NotificationType.Error,
+            "" => NotificationType.Error,
             _ => throw new InvalidOperationException("Current condition type is not recognized:  " + value)
         };
     }
@@ -220,6 +251,7 @@ public partial class InGamePlayerViewModel : ObservableObject
             "Down" => NotificationType.Warning,
             "Gas" => NotificationType.Warning,
             "Bleed" => NotificationType.Warning,
+            "" => NotificationType.Error,
             _ => throw new InvalidOperationException("Current status type is not recognized:  " + value)
         };
     }
