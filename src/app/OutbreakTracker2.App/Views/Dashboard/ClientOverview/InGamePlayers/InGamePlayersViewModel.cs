@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
+using ZLinq;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
 
@@ -50,9 +51,8 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
         {
             _logger.LogInformation("Updating player {Name}", player.CharacterName);
 
-            string curScenarioName = _dataManager.InGameScenario.ScenarioName;
-            if (!string.IsNullOrEmpty(curScenarioName) && EnumUtility.TryParseByValueOrMember(curScenarioName, out InGameScenario scenarioEnum))
-                player.RoomName = GetRoomName(scenarioEnum, player.RoomId);
+            UpdateRoomName(player);
+            UpdateInventoryNames(player);
 
             if (_viewModelCache.TryGetValue(player.NameId, out InGamePlayerViewModel? existingVm))
             {
@@ -77,6 +77,92 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
             targetIndex++;
         }
     }
+
+    private void UpdateRoomName(DecodedInGamePlayer player)
+    {
+        string curScenarioName = _dataManager.InGameScenario.ScenarioName;
+        if (!string.IsNullOrEmpty(curScenarioName) && EnumUtility.TryParseByValueOrMember(curScenarioName, out InGameScenario scenarioEnum))
+            player.RoomName = GetRoomName(scenarioEnum, player.RoomId);
+    }
+
+    private void UpdateInventoryNames(DecodedInGamePlayer player)
+    {
+        if (!player.Enabled) return;
+
+        if (HasDeadInventory(player))
+        {
+            UpdateDeadInventory(player);
+            if (HasSpecialInventory(player))
+                UpdateSpecialDeadInventory(player);
+        }
+
+        if (HasSpecialInventory(player))
+        {
+            UpdateSpecialItem(player);
+            UpdateSpecialInventory(player);
+        }
+
+        UpdateEquippedItem(player);
+        UpdateInventory(player);
+    }
+
+    private static bool HasDeadInventory(DecodedInGamePlayer player)
+        => player.Status is "Zombie" or "Dead";
+
+    private static bool HasSpecialInventory(DecodedInGamePlayer player)
+        => player.CharacterName is "Yoko" or "David" or "Cindy";
+
+    private void UpdateInventoryInternal(byte[] sourceInventory, string[] targetNamedInventory)
+    {
+        if (_dataManager.InGameScenario?.Items is null)
+        {
+            Array.Fill(targetNamedInventory, "Scenario data not loaded");
+            return;
+        }
+
+        for (int i = 0; i < sourceInventory.Length; i++)
+        {
+            byte itemId = sourceInventory[i];
+            if (itemId is 0x0)
+            {
+                targetNamedInventory[i] = "Empty|[0x00](0)|";
+                continue;
+            }
+
+            targetNamedInventory[i] = LookupItemName(itemId);
+        }
+    }
+
+    private string LookupItemName(byte itemId)
+    {
+        string? itemName = _dataManager.InGameScenario.Items
+            .AsValueEnumerable()
+            .Where(item => item.Id.Equals(itemId))
+            .Select(item => item.TypeName)
+            .FirstOrDefault();
+
+        return itemName is not null
+            ? $"{itemName}|[0x{itemId:X2}]({itemId})|"
+            : $"Unknown item|[0x{itemId:X2}]({itemId})|";
+    }
+
+    private void UpdateEquippedItem(DecodedInGamePlayer player)
+        => player.EquippedItemNamed = LookupItemName(player.EquippedItem);
+
+    private void UpdateSpecialItem(DecodedInGamePlayer player)
+        => player.SpecialItemNamed = LookupItemName(player.SpecialItem);
+
+    private void UpdateInventory(DecodedInGamePlayer player)
+        => UpdateInventoryInternal(player.Inventory, player.InventoryNamed);
+
+    private void UpdateSpecialInventory(DecodedInGamePlayer player)
+        => UpdateInventoryInternal(player.SpecialInventory, player.SpecialInventoryNamed);
+
+    private void UpdateDeadInventory(DecodedInGamePlayer player)
+        => UpdateInventoryInternal(player.DeadInventory, player.DeadInventoryNamed);
+
+    private void UpdateSpecialDeadInventory(DecodedInGamePlayer player)
+        => UpdateInventoryInternal(player.SpecialDeadInventory, player.SpecialDeadInventoryNamed);
 
     // TODO: move elsewhere
     private static string GetRoomName(InGameScenario scenarioName, short roomID)

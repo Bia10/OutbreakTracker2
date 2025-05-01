@@ -15,10 +15,10 @@ public partial class InGamePlayerViewModel : ObservableObject
     private byte nameId;
 
     [ObservableProperty]
-    private string characterName = null!;
+    private string characterName = string.Empty;
 
     [ObservableProperty]
-    private string characterType = null!;
+    private string characterType = string.Empty;
 
     [ObservableProperty]
     private short currentHealth;
@@ -30,10 +30,10 @@ public partial class InGamePlayerViewModel : ObservableObject
     private double healthPercentage;
 
     [ObservableProperty]
-    private string condition = null!;
+    private string condition = string.Empty;
 
     [ObservableProperty]
-    private string status = null!;
+    private string status = string.Empty;
 
     [ObservableProperty]
     private ushort bleedTime;
@@ -75,59 +75,59 @@ public partial class InGamePlayerViewModel : ObservableObject
     private float positionY;
 
     [ObservableProperty]
-    private string roomName = null!;
+    private string roomName = string.Empty;
 
     [ObservableProperty]
-    private byte _inventorySlot1;
+    private string _inventorySlot1 = string.Empty;
 
     [ObservableProperty]
-    private byte _inventorySlot2;
+    private string _inventorySlot2 = string.Empty;
 
     [ObservableProperty]
-    private byte _inventorySlot3;
+    private string _inventorySlot3 = string.Empty;
 
     [ObservableProperty]
-    private byte _inventorySlot4;
+    private string _inventorySlot4 = string.Empty;
 
     [ObservableProperty]
-    private byte specialItem;
+    private string specialItem = string.Empty;
 
     [ObservableProperty]
-    private byte specialInventorySlot1;
+    private string specialInventorySlot1 = string.Empty;
 
     [ObservableProperty]
-    private byte specialInventorySlot2;
+    private string specialInventorySlot2 = string.Empty;
 
     [ObservableProperty]
-    private byte specialInventorySlot3;
+    private string specialInventorySlot3 = string.Empty;
 
     [ObservableProperty]
-    private byte specialInventorySlot4;
+    private string specialInventorySlot4 = string.Empty;
 
     [ObservableProperty]
-    private byte deadInventorySlot1;
-    
-    [ObservableProperty]
-    private byte deadInventorySlot2;
+    private string deadInventorySlot1 = string.Empty;
 
     [ObservableProperty]
-    private byte deadInventorySlot3;
-    
-    [ObservableProperty]
-    private byte deadInventorySlot4;
-    
-    [ObservableProperty]
-    private byte specialDeadInventorySlot1;
-    
-    [ObservableProperty]
-    private byte specialDeadInventorySlot2;
+    private string deadInventorySlot2 = string.Empty;
 
     [ObservableProperty]
-    private byte specialDeadInventorySlot3;
-    
+    private string deadInventorySlot3 = string.Empty;
+
     [ObservableProperty]
-    private byte specialDeadInventorySlot4;
-    
+    private string deadInventorySlot4 = string.Empty;
+
+    [ObservableProperty]
+    private string specialDeadInventorySlot1 = string.Empty;
+
+    [ObservableProperty]
+    private string specialDeadInventorySlot2 = string.Empty;
+
+    [ObservableProperty]
+    private string specialDeadInventorySlot3 = string.Empty;
+
+    [ObservableProperty]
+    private string specialDeadInventorySlot4 = string.Empty;
+
     [ObservableProperty]
     private byte equippedItem;
 
@@ -145,8 +145,8 @@ public partial class InGamePlayerViewModel : ObservableObject
 
     public InGamePlayerViewModel(DecodedInGamePlayer player)
     {
-        _conditionBadge = CreateInfoBar("Condition:", "");
-        _statusBadge = CreateInfoBar("Status:", "");
+        _conditionBadge = CreateInfoBar("Condition:", string.Empty);
+        _statusBadge = CreateInfoBar("Status:", string.Empty);
 
         Update(player);
     }
@@ -176,23 +176,23 @@ public partial class InGamePlayerViewModel : ObservableObject
         PositionX = player.PositionX;
         PositionY = player.PositionY;
         RoomName = player.RoomName;
-        InventorySlot1 = player.Inventory[0];
-        InventorySlot2 = player.Inventory[1];
-        InventorySlot3 = player.Inventory[2];
-        InventorySlot4 = player.Inventory[3];
-        SpecialItem = player.SpecialItem;
-        SpecialInventorySlot1 = player.SpecialInventory[0];
-        SpecialInventorySlot2 = player.SpecialInventory[1];
-        SpecialInventorySlot3 = player.SpecialInventory[2];
-        SpecialInventorySlot4 = player.SpecialInventory[3];
-        DeadInventorySlot1 = player.DeadInventory[0];
-        DeadInventorySlot2 = player.DeadInventory[1];
-        DeadInventorySlot3 = player.DeadInventory[2];
-        DeadInventorySlot4 = player.DeadInventory[3];
-        SpecialDeadInventorySlot1 = player.SpecialDeadInventory[0];
-        SpecialDeadInventorySlot2 = player.SpecialDeadInventory[1];
-        SpecialDeadInventorySlot3 = player.SpecialDeadInventory[2];
-        SpecialDeadInventorySlot4 = player.SpecialDeadInventory[3];
+        InventorySlot1 = player.InventoryNamed[0];
+        InventorySlot2 = player.InventoryNamed[1];
+        InventorySlot3 = player.InventoryNamed[2];
+        InventorySlot4 = player.InventoryNamed[3];
+        SpecialItem = player.SpecialItemNamed;
+        SpecialInventorySlot1 = player.SpecialInventoryNamed[0];
+        SpecialInventorySlot2 = player.SpecialInventoryNamed[1];
+        SpecialInventorySlot3 = player.SpecialInventoryNamed[2];
+        SpecialInventorySlot4 = player.SpecialInventoryNamed[3];
+        DeadInventorySlot1 = player.DeadInventoryNamed[0];
+        DeadInventorySlot2 = player.DeadInventoryNamed[1];
+        DeadInventorySlot3 = player.DeadInventoryNamed[2];
+        DeadInventorySlot4 = player.DeadInventoryNamed[3];
+        SpecialDeadInventorySlot1 = player.SpecialDeadInventoryNamed[0];
+        SpecialDeadInventorySlot2 = player.SpecialDeadInventoryNamed[1];
+        SpecialDeadInventorySlot3 = player.SpecialDeadInventoryNamed[2];
+        SpecialDeadInventorySlot4 = player.SpecialDeadInventoryNamed[3];
         EquippedItem = player.EquippedItem;
         IsEnabled = player.Enabled;
         IsInGame = player.InGame;

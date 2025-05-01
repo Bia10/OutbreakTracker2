@@ -184,7 +184,7 @@ public class FileTwoPtrs
     public const nint PresentOffset = 0x20;
     public const nint PickupCountOffset = 0x24;
     public const nint PickupOffset = 0x28;
-    
+
     public const nint DeadInventoryStart = 0x491146;
     public const nint VirusMaxStart = 0x728500;
     public const nint InGameScenarioId = 0x3137BA;

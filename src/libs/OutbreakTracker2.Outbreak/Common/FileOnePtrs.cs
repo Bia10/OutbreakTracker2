@@ -156,7 +156,7 @@ public class FileOnePtrs
     public const nint PresentOffset = 0x20;
     public const nint PickupCountOffset = 0x24;
     public const nint PickupOffset = 0x28;
-    
+
     public const nint InGameScenarioId = 0x3065AA;
     public const nint InGameFrameCounter = 0x48BF78;
     public const nint Pass1 = 0x48AC13;
@@ -184,7 +184,7 @@ public class FileOnePtrs
     public const nint Enemy10Start = 0x427A10;
     public const nint Enemy11Start = 0x4287A0;
     public const nint Enemy12Start = 0x429530;
-    
+
     public const nint EnemyEnabled = 0x0;
     public const nint EnemyInGame = 0x1;
     public const nint EnemyNameIdOffset = 0x3;

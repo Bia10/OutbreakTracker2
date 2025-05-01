@@ -87,39 +87,39 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock FontWeight="Bold" Text="Equipped item" />
                             <UniformGrid Margin="5" Columns="1">
-                                <TextBlock Text="{Binding EquippedItem, StringFormat='Slot 1: 0x{0:X2} ({0})'}" />
+                                <TextBlock Text="{Binding EquippedItem, StringFormat='Slot 1: {0}'}" />
                             </UniformGrid>
                             <TextBlock FontWeight="Bold" Text="Main" />
                             <UniformGrid Margin="5" Columns="4">
-                                <TextBlock Text="{Binding InventorySlot1, StringFormat='Slot 1: 0x{0:X2} ({0})'}" />
-                                <TextBlock Text="{Binding InventorySlot2, StringFormat='Slot 2: 0x{0:X2} ({0})'}" />
-                                <TextBlock Text="{Binding InventorySlot3, StringFormat='Slot 3: 0x{0:X2} ({0})'}" />
-                                <TextBlock Text="{Binding InventorySlot4, StringFormat='Slot 4: 0x{0:X2} ({0})'}" />
+                                <TextBlock Text="{Binding InventorySlot1, StringFormat='Slot 1: {0}'}" />
+                                <TextBlock Text="{Binding InventorySlot2, StringFormat='Slot 2: {0}'}" />
+                                <TextBlock Text="{Binding InventorySlot3, StringFormat='Slot 3: {0}'}" />
+                                <TextBlock Text="{Binding InventorySlot4, StringFormat='Slot 4: {0}'}" />
                             </UniformGrid>
                             <TextBlock FontWeight="Bold" Text="Special item" />
                             <UniformGrid Margin="5" Columns="1">
-                                <TextBlock Text="{Binding SpecialItem, StringFormat='Slot 1: 0x{0:X2} ({0})'}" />
+                                <TextBlock Text="{Binding SpecialItem, StringFormat='Slot 1: 0'}" />
                             </UniformGrid>
                             <TextBlock FontWeight="Bold" Text="Special" />
                             <UniformGrid Margin="5" Columns="4">
-                                <TextBlock Text="{Binding SpecialInventorySlot1, StringFormat='Slot 1: 0x{0:X2} ({0})'}" />
-                                <TextBlock Text="{Binding SpecialInventorySlot2, StringFormat='Slot 2: 0x{0:X2} ({0})'}" />
-                                <TextBlock Text="{Binding SpecialInventorySlot3, StringFormat='Slot 3: 0x{0:X2} ({0})'}" />
-                                <TextBlock Text="{Binding SpecialInventorySlot4, StringFormat='Slot 4: 0x{0:X2} ({0})'}" />
+                                <TextBlock Text="{Binding SpecialInventorySlot1, StringFormat='Slot 1: {0}'}" />
+                                <TextBlock Text="{Binding SpecialInventorySlot2, StringFormat='Slot 2: {0}'}" />
+                                <TextBlock Text="{Binding SpecialInventorySlot3, StringFormat='Slot 3: {0}'}" />
+                                <TextBlock Text="{Binding SpecialInventorySlot4, StringFormat='Slot 4: {0}'}" />
                             </UniformGrid>
                             <TextBlock FontWeight="Bold" Text="Dead" />
                             <UniformGrid Margin="5" Columns="4">
-                                <TextBlock Text="{Binding DeadInventorySlot1, StringFormat='Slot 1: 0x{0:X2} ({0})'}" />
-                                <TextBlock Text="{Binding DeadInventorySlot2, StringFormat='Slot 2: 0x{0:X2} ({0})'}" />
-                                <TextBlock Text="{Binding DeadInventorySlot3, StringFormat='Slot 3: 0x{0:X2} ({0})'}" />
-                                <TextBlock Text="{Binding DeadInventorySlot4, StringFormat='Slot 4: 0x{0:X2} ({0})'}" />
+                                <TextBlock Text="{Binding DeadInventorySlot1, StringFormat='Slot 1: {0}'}" />
+                                <TextBlock Text="{Binding DeadInventorySlot2, StringFormat='Slot 2: {0}'}" />
+                                <TextBlock Text="{Binding DeadInventorySlot3, StringFormat='Slot 3: {0}'}" />
+                                <TextBlock Text="{Binding DeadInventorySlot4, StringFormat='Slot 4: {0}'}" />
                             </UniformGrid>
                             <TextBlock FontWeight="Bold" Text="Special dead" />
                             <UniformGrid Margin="5" Columns="4">
-                                <TextBlock Text="{Binding SpecialDeadInventorySlot1, StringFormat='Slot 1: 0x{0:X2} ({0})'}" />
-                                <TextBlock Text="{Binding SpecialDeadInventorySlot2, StringFormat='Slot 2: 0x{0:X2} ({0})'}" />
-                                <TextBlock Text="{Binding SpecialDeadInventorySlot3, StringFormat='Slot 3: 0x{0:X2} ({0})'}" />
-                                <TextBlock Text="{Binding SpecialDeadInventorySlot4, StringFormat='Slot 4: 0x{0:X2} ({0})'}" />
+                                <TextBlock Text="{Binding SpecialDeadInventorySlot1, StringFormat='Slot 1: {0}'}" />
+                                <TextBlock Text="{Binding SpecialDeadInventorySlot2, StringFormat='Slot 2: {0}'}" />
+                                <TextBlock Text="{Binding SpecialDeadInventorySlot3, StringFormat='Slot 3: {0}'}" />
+                                <TextBlock Text="{Binding SpecialDeadInventorySlot4, StringFormat='Slot 4: {0}'}" />
                             </UniformGrid>    
                         </StackPanel>
                     </Grid>

@@ -109,22 +109,59 @@ public sealed record DecodedInGamePlayer
     public byte[] Inventory { get; set; } = new byte[4];
 
     [JsonInclude]
+    [JsonPropertyName(nameof(InventoryNamed))]
+    public string[] InventoryNamed { get; set; }  =
+    [
+        "Empty|[0x00](0)|", "Empty|[0x00](0)|", "Empty|[0x00](0)|", "Empty|[0x00](0)|"
+    ];
+
+    [JsonInclude]
     [JsonPropertyName(nameof(SpecialItem))]
     public byte SpecialItem { get; set; }
 
     [JsonInclude]
+    [JsonPropertyName(nameof(SpecialItemNamed))]
+    public string SpecialItemNamed { get; set; } = "Empty|[0x00](0)|";
+
+    [JsonInclude]
     [JsonPropertyName(nameof(SpecialInventory))]
     public byte[] SpecialInventory { get; set; } = new byte[4];
-    
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(SpecialInventoryNamed))]
+    public string[] SpecialInventoryNamed { get; set; }  =
+    [
+        "Empty|[0x00](0)|", "Empty|[0x00](0)|", "Empty|[0x00](0)|", "Empty|[0x00](0)|"
+    ];
+
     [JsonInclude]
     [JsonPropertyName(nameof(DeadInventory))]
     public byte[] DeadInventory { get; set; } = new byte[4];
-    
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(DeadInventoryNamed))]
+    public string[] DeadInventoryNamed { get; set; }  =
+    [
+        "Empty|[0x00](0)|", "Empty|[0x00](0)|", "Empty|[0x00](0)|", "Empty|[0x00](0)|"
+    ];
+
     [JsonInclude]
     [JsonPropertyName(nameof(SpecialDeadInventory))]
     public byte[] SpecialDeadInventory { get; set; } = new byte[4];
 
     [JsonInclude]
+    [JsonPropertyName(nameof(SpecialDeadInventoryNamed))]
+    public string[] SpecialDeadInventoryNamed { get; set; } =
+    [
+        "Empty|[0x00](0)|", "Empty|[0x00](0)|", "Empty|[0x00](0)|", "Empty|[0x00](0)|"
+    ];
+
+    [JsonInclude]
     [JsonPropertyName(nameof(EquippedItem))]
     public byte EquippedItem { get; set; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(EquippedItemNamed))]
+    public string EquippedItemNamed { get; set; } = "Empty|[0x00](0)|";
+
 }

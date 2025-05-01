@@ -337,108 +337,108 @@ public enum ItemType : short
 
     [EnumMember(Value = "Coin holder(Jim's)(unused)")]
     CoinHolderJimsUnused = 402,
-    
+
     [EnumMember(Value = "Jim's Coin")]
     JimsCoin = 403,
-    
+
     [EnumMember(Value = "Lock Pick (unused)")]
     LockPickUnused = 404,
-    
+
     [EnumMember(Value = "Medical Set")]
     MedicalSet = 405,
-    
+
     [EnumMember(Value = "Tool Box")]
     ToolBox = 406,
-    
+
     [EnumMember(Value = "Folding Knife(David's)")]
     FoldingKnifeDavids = 407,
-    
+
     [EnumMember(Value = "Monkey Wrench")]
     MonkeyWrench = 408,
-    
+
     [EnumMember(Value = "Vinyl Tape")]
     VinylTape = 409,
-    
+
     [EnumMember(Value = "Junk Parts")]
     JunkParts = 410,
-    
+
     [EnumMember(Value = "Picking Tool")]
     PickingTool = 411,
-    
+
     [EnumMember(Value = "Knapsack")]
     Knapsack = 412,
-    
+
     [EnumMember(Value = "Herb Case")]
     HerbCase = 413,
-    
+
     [EnumMember(Value = "I-Shaped Pick")]
     IShapedPick = 414,
-    
+
     [EnumMember(Value = "S-Shaped Pick")]
     SShapedPick = 415,
-    
+
     [EnumMember(Value = "W-Shaped Pick")]
     WShapedPick = 416,
-    
+
     [EnumMember(Value = "P-Shaped Pick")]
     PShapedPick = 417,
-    
+
     [EnumMember(Value = "Bandage")]
     Bandage = 418,
-    
+
     [EnumMember(Value = "Lucky Coin")]
     LuckyCoin = 419,
-    
+
     [EnumMember(Value = "Charm")]
     Charm = 420,
 
     // 450-456: Miscellaneous Items
     [EnumMember(Value = "Lighter")]
     Lighter = 450,
-    
+
     [EnumMember(Value = "Alcohol Bottle")]
     AlcoholBottle = 451,
-    
+
     [EnumMember(Value = "Bottle + Newspaper")]
     BottleNewspaper = 452,
-    
+
     [EnumMember(Value = "Broken Handgun")]
     BrokenHandgun = 453,
-    
+
     [EnumMember(Value = "Broken Shotgun")]
     BrokenShotgun = 454,
-    
+
     [EnumMember(Value = "Battery")]
     Battery = 455,
-    
+
     [EnumMember(Value = "Broken Handgun SG")]
     BrokenHandgunSG = 456,
 
     // 10100-10108: Keys/Story Items
     [EnumMember(Value = "Staff Room Key")]
     StaffRoomKey = 10100,
-    
+
     [EnumMember(Value = "Key with a Red Tag (?? OB)")]
     KeyWithRedTagOB = 10101,
-    
+
     [EnumMember(Value = "Key with a Blue Tag (?? OB)")]
     KeyWithBlueTagOB = 10102,
-    
+
     [EnumMember(Value = "Forklift Key")]
     ForkliftKey = 10103,
-    
+
     [EnumMember(Value = "Unknown10104")]
     Unknown10104 = 10104,
-    
+
     [EnumMember(Value = "Storage Key")]
     StorageKey = 10105,
-    
+
     [EnumMember(Value = "Detonator Handle")]
     DetonatorHandle = 10106,
-    
+
     [EnumMember(Value = "Detonator Main Unit")]
     DetonatorMainUnit = 10107,
-    
+
     [EnumMember(Value = "Detonator")]
     Detonator = 10108,
 
@@ -449,75 +449,75 @@ public enum ItemType : short
     // 10206-10211: Keys/Story Items
     [EnumMember(Value = "Charlie's ID tag")]
     CharliesIDTag = 10206,
-    
+
     [EnumMember(Value = "Len's ID tag")]
     LensIDTag = 10207,
-    
+
     [EnumMember(Value = "Gold Key")]
     GoldKey = 10208,
-    
+
     [EnumMember(Value = "Silver Key")]
     SilverKey = 10209,
-    
+
     [EnumMember(Value = "Security Room Card Key")]
     SecurityRoomCardKey = 10210,
-    
+
     [EnumMember(Value = "Red Jewel (?? HF)")]
     RedJewelHF = 10211,
 
     // 10600-10614: Keys/Story Items
     [EnumMember(Value = "Examination Room Key")]
     ExaminationRoomKey = 10600,
-    
+
     [EnumMember(Value = "ID Card Lv1")]
     IDCardLv1 = 10601,
-    
+
     [EnumMember(Value = "ID Card Lv2")]
     IDCardLv2 = 10602,
-    
+
     [EnumMember(Value = "MO Disk")]
     MODisk = 10603,
-    
+
     [EnumMember(Value = "MO Disk(Code A)")]
     MODiskCodeA = 10604,
-    
+
     [EnumMember(Value = "MO Disk(Code G)")]
     MODiskCodeG = 10605,
-    
+
     [EnumMember(Value = "Unknown10606")]
     Unknown10606 = 10606,
-    
+
     [EnumMember(Value = "Unknown10607")]
     Unknown10607 = 10607,
-    
+
     [EnumMember(Value = "Unknown10608")]
     Unknown10608 = 10608,
-    
+
     [EnumMember(Value = "Valve Handle (6 Sided)")]
     ValveHandle6Sided = 10609,
-    
+
     [EnumMember(Value = "Valve Handle (4 Sided)")]
     ValveHandle4Sided = 10610,
-    
+
     [EnumMember(Value = "Crowbar")]
     Crowbar = 10611,
-    
+
     [EnumMember(Value = "Model Grenade Launcher")]
     ModelGrenadeLauncher = 10612,
-    
+
     [EnumMember(Value = "Unknown10613")]
     Unknown10613 = 10613,
-    
+
     [EnumMember(Value = "??")]
     UnknownItem10614 = 10614,
 
     // 10650-10652: Notes
     [EnumMember(Value = "Newspaper 1 (?? EOTR)")]
     Newspaper1EOTR = 10650,
-    
+
     [EnumMember(Value = "Newspaper 2 (?? EOTR)")]
     Newspaper2EOTR = 10651,
-    
+
     [EnumMember(Value = "Newspaper 3 (?? EOTR)")]
     Newspaper3EOTR = 10652,
 
@@ -568,49 +568,49 @@ public enum ItemType : short
     // 11500-11515: Keys/Story Items
     [EnumMember(Value = "Joker Key")]
     JokerKey = 11500,
-    
+
     [EnumMember(Value = "Onyx Plate")]
     OnyxPlate = 11501,
-    
+
     [EnumMember(Value = "Sapphire Plate")]
     SapphirePlate = 11502,
-    
+
     [EnumMember(Value = "Ruby Plate")]
     RubyPlate = 11503,
-    
+
     [EnumMember(Value = "Emerald Plate")]
     EmeraldPlate = 11504,
-    
+
     [EnumMember(Value = "Amethyst Plate")]
     AmethystPlate = 11505,
-    
+
     [EnumMember(Value = "Padlock Key")]
     PadlockKey = 11506,
-    
+
     [EnumMember(Value = "Ace Key")]
     AceKey = 11507,
-    
+
     [EnumMember(Value = "Gas Canister")]
     GasCanister = 11508,
-    
+
     [EnumMember(Value = "Plywood Board")]
     PlywoodBoard = 11509,
-    
+
     [EnumMember(Value = "Film A")]
     FilmA = 11510,
-    
+
     [EnumMember(Value = "Used Gas Canister")]
     UsedGasCanister = 11511,
-    
+
     [EnumMember(Value = "Unicorn Medal")]
     UnicornMedal = 11512,
-    
+
     [EnumMember(Value = "Film B")]
     FilmB = 11513,
-    
+
     [EnumMember(Value = "Film C")]
     FilmC = 11514,
-    
+
     [EnumMember(Value = "Film D")]
     FilmD = 11515,
 
@@ -621,82 +621,82 @@ public enum ItemType : short
     // 12600-12605: Keys/Story Items
     [EnumMember(Value = "Auxiliary Building Key")]
     AuxiliaryBuildingKey = 12600,
-    
+
     [EnumMember(Value = "Administrator's Office Key")]
     AdministratorsOfficeKey = 12601,
-    
+
     [EnumMember(Value = "Rusty Key")]
     RustyKey = 12602,
-    
+
     [EnumMember(Value = "Syringe (empty)")]
     SyringeEmpty = 12603,
-    
+
     [EnumMember(Value = "Syringe (solvent)")]
     SyringeSolvent = 12604,
-    
+
     [EnumMember(Value = "Pendant")]
     Pendant = 12605,
 
     // 12800-12807: Keys/Story Items
     [EnumMember(Value = "Blood pack (?? TH)(already used)")]
     BloodPackTHAlreadyUsed = 12800,
-    
+
     [EnumMember(Value = "Blood pack (?? TH)")]
     BloodPackTH = 12801,
-    
+
     [EnumMember(Value = "Unknown12802")]
     Unknown12802 = 12802,
-    
+
     [EnumMember(Value = "Unknown12803")]
     Unknown12803 = 12803,
-    
+
     [EnumMember(Value = "Unknown12804")]
     Unknown12804 = 12804,
-    
+
     [EnumMember(Value = "Level 1 Card Key (?? TH)")]
     Level1CardKeyTH = 12805,
-    
+
     [EnumMember(Value = "Level 2 Card Key (?? TH)")]
     Level2CardKeyTH = 12806,
-    
+
     [EnumMember(Value = "Chain Key")]
     ChainKey = 12807,
 
     // 12850-12852: Notes
     [EnumMember(Value = "Male Nurse's Diary")]
     MaleNursesDiary = 12850,
-    
+
     [EnumMember(Value = "Researcher's Diary")]
     ResearchersDiary = 12851,
-    
+
     [EnumMember(Value = "Research Request")]
     ResearchRequest = 12852,
 
     // 13500-13508: Keys/Story Items
     [EnumMember(Value = "UMB No.3")]
     UMBNo3 = 13500,
-    
+
     [EnumMember(Value = "VP-017")]
     VP017 = 13501,
-    
+
     [EnumMember(Value = "V-JOLT")]
     VJOLT = 13502,
-    
+
     [EnumMember(Value = "Wrench")]
     Wrench = 13503,
-    
+
     [EnumMember(Value = "Frozen Wrench")]
     FrozenWrench = 13504,
-    
+
     [EnumMember(Value = "Lab Cardkey")]
     LabCardkey = 13505,
-    
+
     [EnumMember(Value = "Turntable Key")]
     TurntableKey = 13506,
-    
+
     [EnumMember(Value = "Valve Handle (?? BFP)")]
     ValveHandleBFP = 13507,
-    
+
     [EnumMember(Value = "Hand Burner")]
     HandBurner = 13508,
 
@@ -707,68 +707,68 @@ public enum ItemType : short
     // 14000-14009: Keys/Story Items
     [EnumMember(Value = "Bolt Cutters")]
     BoltCutters = 14000,
-    
+
     [EnumMember(Value = "Elephant Key")]
     ElephantKey = 14001,
-    
+
     [EnumMember(Value = "Alligator Key")]
     AlligatorKey = 14002,
-    
+
     [EnumMember(Value = "Lion Key")]
     LionKey = 14003,
-    
+
     [EnumMember(Value = "Office Key")]
     OfficeKey = 14004,
-    
+
     [EnumMember(Value = "Mr. Racoon Medal")]
     MrRacoonMedal = 14005,
-    
+
     [EnumMember(Value = "Lion Emblem (RED)")]
     LionEmblemRED = 14006,
-    
+
     [EnumMember(Value = "Lion Emblem (BLUE)")]
     LionEmblemBLUE = 14007,
-    
+
     [EnumMember(Value = "Blank Tape")]
     BlankTape = 14008,
-    
+
     [EnumMember(Value = "Parade BGM Tape")]
     ParadeBGMTape = 14009,
 
     // 14100-14111: Keys/Story Items
     [EnumMember(Value = "Brass Spectacles")]
     BrassSpectacles = 14100,
-    
+
     [EnumMember(Value = "Card Key (?? DD)")]
     CardKeyDD = 14101,
-    
+
     [EnumMember(Value = "V-Poison")]
     VPoison = 14102,
-    
+
     [EnumMember(Value = "P-Base")]
     PBase = 14103,
-    
+
     [EnumMember(Value = "Reagent Case")]
     ReagentCase = 14104,
-    
+
     [EnumMember(Value = "Sealed Reagent Case")]
     SealedReagentCase = 14105,
-    
+
     [EnumMember(Value = "P-Base(sealed)")]
     PBaseSealed = 14106,
-    
+
     [EnumMember(Value = "T-Blood")]
     TBlood = 14107,
-    
+
     [EnumMember(Value = "Red Jewel (?? DD)")]
     RedJewelDD = 14108,
-    
+
     [EnumMember(Value = "Blue Jewel (?? DD)")]
     BlueJewelDD = 14109,
-    
+
     [EnumMember(Value = "P-Base(depleted)")]
     PBaseDepleted = 14110,
-    
+
     [EnumMember(Value = "Key with a Red Tag (?? DD)")]
     KeyWithRedTagDD = 14111
 }
