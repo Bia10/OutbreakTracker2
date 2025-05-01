@@ -1,10 +1,11 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Serialization;
+using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2;
+using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
@@ -18,9 +19,12 @@ public class InGameScenarioReader : ReaderBase
         DecodedScenario = new DecodedScenario();
     }
 
-    public string GetScenarioName()
-        => GetEnumString(GetScenarioId(), InGameScenario.Unknown);
+    public static string GetScenarioName(short scenarioId)
+        => EnumUtility.GetEnumString(scenarioId, InGameScenario.Unknown);
 
+    public static string GetDifficultyName(byte difficulty)
+        => EnumUtility.GetEnumString(difficulty, RoomDifficulty.Unknown);
+    
     public short GetScenarioId() => CurrentFile switch
     {
         GameFile.FileOne => ReadValue<short>(FileOnePtrs.InGameScenarioId),
@@ -149,6 +153,58 @@ public class InGameScenarioReader : ReaderBase
         _ => 0xFF
     };
 
+    public DecodedItem[] GetItems()
+    {
+        var Items = new DecodedItem[GameConstants.MaxItems - 1];
+        byte roomId = 0;
+        byte number = 0;
+        short typeId = 0;
+        byte mix = 0;
+        int present = 0;
+        short pickupCount = 0;
+        short pickup = 0;
+
+        for (int i = 0; i < GameConstants.MaxItems - 1; i++)
+         {
+             if (CurrentFile == GameFile.FileOne)
+             {
+                 nint itemBaseOffset = FileOnePtrs.PickupStructSize * i;
+                 roomId = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.RoomIdOffset]);
+                 number = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.NumberOffset]);
+                 typeId  = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.IdOffset]);
+                 mix = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.MixOffset]);
+                 present = ReadValue<int>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PresentOffset]);
+                 pickupCount = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PickupCountOffset]);
+                 pickup = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PickupOffset]);
+             }
+             else if (CurrentFile == GameFile.FileTwo)
+             {
+                 nint itemBaseOffset = FileTwoPtrs.PickupStructSize * i;
+                 roomId = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.RoomIdOffset]);
+                 number = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.NumberOffset]);
+                 typeId  = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.IdOffset]);
+                 mix = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.MixOffset]);
+                 present = ReadValue<int>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PresentOffset]);
+                 pickupCount = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PickupCountOffset]);
+                 pickup = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PickupOffset]);
+             }
+
+             Items[i] = new DecodedItem
+             {
+                 Id = (short)(i + 1),
+                 RoomID = roomId,
+                 Number = number,
+                 Type = typeId,
+                 Mix = mix,
+                 Present = present,
+                 Count = pickupCount,
+                 Pick = pickup
+             };
+         }
+
+        return Items;
+    }
+
     public void UpdateScenario(bool debug = false)
     {
         if (CurrentFile is GameFile.Unknown) return;
@@ -157,7 +213,7 @@ public class InGameScenarioReader : ReaderBase
 
         if (debug) Logger.LogDebug("Decoding scenario");
 
-        DecodedScenario.ScenarioName = GetScenarioName();
+        DecodedScenario.ScenarioName = GetScenarioName(GetScenarioId());
         DecodedScenario.FrameCounter = GetFrameCount();
         DecodedScenario.Cleared = GetIsScenarioCleared();
         DecodedScenario.PlayerCount = GetPlayerCount();
@@ -187,13 +243,15 @@ public class InGameScenarioReader : ReaderBase
         DecodedScenario.Pass4 = GetPass4();
         DecodedScenario.Pass5 = GetPass5();
         DecodedScenario.Pass6 = GetPass6();
-        DecodedScenario.Difficulty = GetEnumString(GetDifficulty(), RoomDifficulty.Unknown);
+        DecodedScenario.Difficulty = GetDifficultyName(GetDifficulty());
+        DecodedScenario.Items = GetItems();
 
         long duration = Environment.TickCount64 - start;
 
         if (!debug) return;
 
         Logger.LogDebug("Decoded scenario in {Duration}ms", duration);
-        Logger.LogDebug(JsonSerializer.Serialize(DecodedScenario, DecodedScenarioJsonContext.Default.DecodedScenario));
+        string jsonObject = JsonSerializer.Serialize(DecodedScenario, DecodedScenarioJsonContext.Default.DecodedScenario);
+        Logger.LogDebug("Decoded scenario: {jsonObject}", jsonObject);
     }
 }

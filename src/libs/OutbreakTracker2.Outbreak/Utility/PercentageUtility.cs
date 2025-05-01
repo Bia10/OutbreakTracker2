@@ -1,6 +1,6 @@
-﻿namespace OutbreakTracker2.Outbreak.Common;
+﻿namespace OutbreakTracker2.Outbreak.Utility;
 
-public static class PercentageFormatter
+public static class PercentageUtility
 {
     public static T GetPercentage<T>(T numerator, T denominator, int? decimalPlaces = 2) where T : struct
     {

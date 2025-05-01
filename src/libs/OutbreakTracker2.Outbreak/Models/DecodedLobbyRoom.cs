@@ -1,5 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using OutbreakTracker2.Outbreak.Common;
+﻿using OutbreakTracker2.Outbreak.Common;
+using System.Text.Json.Serialization;
 
 namespace OutbreakTracker2.Outbreak.Models;
 
@@ -15,7 +15,7 @@ public sealed record DecodedLobbyRoom
 
     [JsonInclude]
     [JsonPropertyName(nameof(MaxPlayer))]
-    public short MaxPlayer { get; set; } = Constants.MaxPlayers;
+    public short MaxPlayer { get; set; } = GameConstants.MaxPlayers;
 
     [JsonInclude]
     [JsonPropertyName(nameof(CurPlayer))]

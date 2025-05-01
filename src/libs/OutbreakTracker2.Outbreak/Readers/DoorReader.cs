@@ -1,10 +1,10 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.PCSX2;
+using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
@@ -14,8 +14,8 @@ public sealed class DoorReader : ReaderBase
 
     public DoorReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
     {
-        DecodedDoors = new DecodedDoor[Constants.MaxDoors];
-        for (int i = 0; i < Constants.MaxDoors; i++)
+        DecodedDoors = new DecodedDoor[GameConstants.MaxDoors];
+        for (int i = 0; i < GameConstants.MaxDoors; i++)
             DecodedDoors[i] = new DecodedDoor();
     }
 
@@ -68,8 +68,8 @@ public sealed class DoorReader : ReaderBase
 
         int maxDoors = CurrentFile switch
         {
-            GameFile.FileOne => Constants.MaxDoors - 9,
-            GameFile.FileTwo => Constants.MaxDoors,
+            GameFile.FileOne => GameConstants.MaxDoors - 9,
+            GameFile.FileTwo => GameConstants.MaxDoors,
             _ => 0
         };
 
@@ -85,11 +85,8 @@ public sealed class DoorReader : ReaderBase
         if (!debug) return;
 
         Logger.LogDebug("Decoded doors in {Duration}ms", duration);
-
-        foreach (DecodedDoor door in DecodedDoors)
-        {
-            string jsonObject = JsonSerializer.Serialize(door, DecodedDoorJsonContext.Default.DecodedDoor);
+        foreach (string jsonObject in DecodedDoors.Select(door
+                     => JsonSerializer.Serialize(door, DecodedDoorJsonContext.Default.DecodedDoor)))
             Logger.LogDebug("Decoded door: {jsonObject}", jsonObject);
-        }
     }
 }

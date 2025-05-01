@@ -1,10 +1,11 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Serialization;
+using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2;
+using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
@@ -15,8 +16,8 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
     public LobbyRoomPlayerReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger)
         : base(gameClient, eememMemory, logger)
     {
-        DecodedLobbyRoomPlayers = new DecodedLobbyRoomPlayer[Constants.MaxPlayers];
-        for (int i = 0; i < Constants.MaxPlayers; i++)
+        DecodedLobbyRoomPlayers = new DecodedLobbyRoomPlayer[GameConstants.MaxPlayers];
+        for (int i = 0; i < GameConstants.MaxPlayers; i++)
             DecodedLobbyRoomPlayers[i] = new DecodedLobbyRoomPlayer();
     }
 
@@ -59,26 +60,26 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
         return ReadValue<byte>(basePlayerAddress, [offset]);
     }
 
-    public string GetCharacterNpcTypeString(int characterId)
-        => GetEnumString(GetPlayerCharNPCType(characterId), CharacterNpcType.Unknown);
+    public static string GetCharacterNpcTypeName(byte characterType)
+        => EnumUtility.GetEnumString(characterType, CharacterNpcType.Unknown);
 
-    public string GetCharacterNameString(byte characterBaseType)
-        => GetEnumString(characterBaseType, CharacterBaseType.Unknown);
+    public static string GetCharacterName(byte characterBaseType)
+        => EnumUtility.GetEnumString(characterBaseType, CharacterBaseType.Unknown);
 
-    public string GetCharacterHealthString(byte characterBaseType)
-        => GetEnumString(characterBaseType, CharacterHealth.Unknown);
+    public static string GetCharacterHealthName(byte characterBaseType)
+        => EnumUtility.GetEnumString(characterBaseType, CharacterHealth.Unknown);
 
-    public string GetCharacterPowerString(byte characterBaseType)
-        => GetEnumString(characterBaseType, CharacterPower.Unknown);
+    public static string GetCharacterPowerName(byte characterBaseType)
+        => EnumUtility.GetEnumString(characterBaseType, CharacterPower.Unknown);
 
-    public string GetCharacterNpcNameString(byte characterBaseType)
-        => GetEnumString(characterBaseType, CharacterNpcName.Unknown);
+    public static string GetCharacterNpcName(byte characterBaseType)
+        => EnumUtility.GetEnumString(characterBaseType, CharacterNpcName.Unknown);
 
-    public string GetCharacterNpcHealthString(byte characterBaseType)
-        => GetEnumString(characterBaseType, CharacterNpcHealth.Unknown);
+    public static string GetCharacterNpcHealthName(byte characterBaseType)
+        => EnumUtility.GetEnumString(characterBaseType, CharacterNpcHealth.Unknown);
 
-    public string GetCharacterNpcPowerString(byte characterBaseType)
-        => GetEnumString(characterBaseType, CharacterNpcPower.Unknown);
+    public static string GetCharacterNpcPowerName(byte characterBaseType)
+        => EnumUtility.GetEnumString(characterBaseType, CharacterNpcPower.Unknown);
 
     public void UpdateRoomPlayers(bool debug = false)
     {
@@ -88,25 +89,25 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
 
         if (debug) Logger.LogDebug("Decoding lobby room players");
 
-        for (var i = 0; i < Constants.MaxPlayers; i++)
+        for (var i = 0; i < GameConstants.MaxPlayers; i++)
         {
             DecodedLobbyRoomPlayers[i].IsEnabled = GetPlayerCharEnabled(i);
             if (!DecodedLobbyRoomPlayers[i].IsEnabled) continue;
 
             DecodedLobbyRoomPlayers[i].NameId = GetPlayerCharNameId(i);
-            DecodedLobbyRoomPlayers[i].NPCType = GetCharacterNpcTypeString(i);
+            DecodedLobbyRoomPlayers[i].NPCType = GetCharacterNpcTypeName(GetPlayerCharNPCType(i));
 
             switch (DecodedLobbyRoomPlayers[i].NPCType)
             {
                 case "Main Characters":
-                    DecodedLobbyRoomPlayers[i].CharacterName = GetCharacterNameString(DecodedLobbyRoomPlayers[i].NameId);
-                    DecodedLobbyRoomPlayers[i].CharacterHP = GetCharacterHealthString(DecodedLobbyRoomPlayers[i].NameId);
-                    DecodedLobbyRoomPlayers[i].CharacterPower = GetCharacterPowerString(DecodedLobbyRoomPlayers[i].NameId);
+                    DecodedLobbyRoomPlayers[i].CharacterName = GetCharacterName(DecodedLobbyRoomPlayers[i].NameId);
+                    DecodedLobbyRoomPlayers[i].CharacterHP = GetCharacterHealthName(DecodedLobbyRoomPlayers[i].NameId);
+                    DecodedLobbyRoomPlayers[i].CharacterPower = GetCharacterPowerName(DecodedLobbyRoomPlayers[i].NameId);
                     break;
                 case "Other NPCs":
-                    DecodedLobbyRoomPlayers[i].NPCName = GetCharacterNpcNameString(DecodedLobbyRoomPlayers[i].NameId);
-                    DecodedLobbyRoomPlayers[i].NPCHP = GetCharacterNpcHealthString(DecodedLobbyRoomPlayers[i].NameId);
-                    DecodedLobbyRoomPlayers[i].NPCPower = GetCharacterNpcPowerString(DecodedLobbyRoomPlayers[i].NameId);
+                    DecodedLobbyRoomPlayers[i].NPCName = GetCharacterNpcName(DecodedLobbyRoomPlayers[i].NameId);
+                    DecodedLobbyRoomPlayers[i].NPCHP = GetCharacterNpcHealthName(DecodedLobbyRoomPlayers[i].NameId);
+                    DecodedLobbyRoomPlayers[i].NPCPower = GetCharacterNpcPowerName(DecodedLobbyRoomPlayers[i].NameId);
                     break;
                 case "Unknown":
                     Logger.LogDebug("[{UpdateRoomPlayersName}] NPCType unknown: {NpcType} for character at index {I}.", nameof(UpdateRoomPlayers), DecodedLobbyRoomPlayers[i].NPCType, i);
@@ -119,8 +120,8 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
         if (!debug) return;
 
         Logger.LogDebug("Decoded room players in {Duration}ms", duration);
-
-        foreach (DecodedLobbyRoomPlayer player in DecodedLobbyRoomPlayers)
-            Logger.LogDebug(JsonSerializer.Serialize(player, DecodedLobbyRoomPlayerJsonContext.Default.DecodedLobbyRoomPlayer));
+        foreach (string jsonObject in DecodedLobbyRoomPlayers.Select(inGamePlayer
+                     => JsonSerializer.Serialize(inGamePlayer, DecodedLobbyRoomPlayerJsonContext.Default.DecodedLobbyRoomPlayer)))
+            Logger.LogDebug("Decoded room player: {jsonObject}", jsonObject);
     }
 }

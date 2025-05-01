@@ -1,9 +1,9 @@
-﻿using FastEnumUtility;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Memory;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Extensions;
+using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -155,7 +155,7 @@ public abstract class ReaderBase
 
         if (!slotIndex.IsSlotIndexValid())
         {
-            errorMessage = $"[{methodName}] Invalid slot index: {slotIndex}. Valid range is 0 to {Constants.MaxLobbySlots - 1}.";
+            errorMessage = $"[{methodName}] Invalid slot index: {slotIndex}. Valid range is 0 to {GameConstants.MaxLobbySlots - 1}.";
             return false;
         }
 
@@ -227,39 +227,14 @@ public abstract class ReaderBase
         return result;
     }
 
-    public static string GetEnumString<TEnum>(object value, TEnum defaultValue)
-        where TEnum : struct, Enum
-    {
-        try
-        {
-            if (FastEnum.TryParse(value.ToString(), out TEnum result))
-            {
-                string? enumValue = result.GetEnumMemberValue();
-                if (!string.IsNullOrEmpty(enumValue))
-                    return enumValue;
-
-                //Logger.LogDebug("[{GetEnumStringName}] Enum value resolved to null or empty for type {Name} and value {Value}.", nameof(GetEnumString), typeof(TEnum).Name, value);
-                return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
-            }
-
-            //Logger.LogDebug("[{GetEnumStringName}] Failed to parse enum for type {Name} and value {Value}. Defaulting to {DefaultValue}.", nameof(GetEnumString), typeof(TEnum).Name, value, defaultValue);
-            return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
-        }
-        catch (Exception ex)
-        {
-            //Logger.LogDebug("[{GetEnumStringName}] Exception handling enum value '{Value}' for type {Name}: {ExMessage}", nameof(GetEnumString), value, typeof(TEnum).Name, ex.Message);
-            return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
-        }
-    }
-
     protected string GetScenarioString<TFileOne, TFileTwo>(short scenarioId, TFileOne defaultFileOne, TFileTwo defaultFileTwo)
         where TFileOne : struct, Enum
         where TFileTwo : struct, Enum
     {
         return CurrentFile switch
         {
-            GameFile.FileOne => GetEnumString(scenarioId, defaultFileOne),
-            GameFile.FileTwo => GetEnumString(scenarioId, defaultFileTwo),
+            GameFile.FileOne => EnumUtility.GetEnumString(scenarioId, defaultFileOne),
+            GameFile.FileTwo => EnumUtility.GetEnumString(scenarioId, defaultFileTwo),
             _ => throw new InvalidOperationException($"[{nameof(GetScenarioString)}] Unrecognized game file: {CurrentFile}")
         };
     }

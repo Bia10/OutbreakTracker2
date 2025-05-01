@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using OutbreakTracker2.Outbreak.Common;
+using System.Text.Json.Serialization;
 
 namespace OutbreakTracker2.Outbreak.Models;
 
@@ -131,4 +132,8 @@ public sealed record DecodedScenario
     [JsonInclude]
     [JsonPropertyName(nameof(Difficulty))]
     public string Difficulty { get; set; } = string.Empty;
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(Items))]
+    public DecodedItem[] Items { get; set; } = new DecodedItem[GameConstants.MaxItems];
 }

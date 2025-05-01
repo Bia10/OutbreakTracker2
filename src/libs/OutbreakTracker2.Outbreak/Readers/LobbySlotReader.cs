@@ -1,11 +1,12 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Offsets;
 using OutbreakTracker2.Outbreak.Serialization;
+using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2;
+using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
@@ -16,8 +17,8 @@ public sealed class LobbySlotReader : ReaderBase
     public LobbySlotReader(GameClient gameClient, EEmemMemory memory, ILogger logger) : base(
         gameClient, memory, logger)
     {
-        DecodedLobbySlots = new DecodedLobbySlot[Constants.MaxLobbySlots];
-        for (int i = 0; i < Constants.MaxLobbySlots; i++)
+        DecodedLobbySlots = new DecodedLobbySlot[GameConstants.MaxLobbySlots];
+        for (int i = 0; i < GameConstants.MaxLobbySlots; i++)
             DecodedLobbySlots[i] = new DecodedLobbySlot();
     }
 
@@ -45,17 +46,17 @@ public sealed class LobbySlotReader : ReaderBase
     public string GetTitle(int slotIndex)
         => ReadSlotString(slotIndex, LobbySlotOffsets.Title, string.Empty);
 
-    public string GetStatusString(int slotIndex)
-        => GetEnumString(GetStatus(slotIndex), SlotStatus.Unknown);
+    public static string GetStatusName(byte status)
+        => EnumUtility.GetEnumString(status, SlotStatus.Unknown);
 
-    public string GetPassString(int slotIndex)
-        => GetEnumString(GetPass(slotIndex), SlotPass.NoPass);
+    public static string GetPassName(byte pass)
+        => EnumUtility.GetEnumString(pass, SlotPass.NoPass);
 
-    public string GetVersionString(int slotIndex)
-        => GetEnumString(GetVersion(slotIndex), GameVersion.Unknown);
+    public static string GetVersionName(short version)
+        => EnumUtility.GetEnumString(version, GameVersion.Unknown);
 
-    public string GetScenarioString(int slotIndex)
-        => GetScenarioString(GetScenarioId(slotIndex), FileOneLobbyScenario.Unknown, FileTwoLobbyScenario.Unknown);
+    public string GetScenarioName(short scenarioId)
+        => GetScenarioString(scenarioId, FileOneLobbyScenario.Unknown, FileTwoLobbyScenario.Unknown);
 
     public void UpdateLobbySlots(bool debug = false)
     {
@@ -64,7 +65,7 @@ public sealed class LobbySlotReader : ReaderBase
         long start = Environment.TickCount64;
         var errors = new List<string>();
 
-        for (var i = 0; i < Constants.MaxLobbySlots; i++)
+        for (var i = 0; i < GameConstants.MaxLobbySlots; i++)
         {
             if (debug) Logger.LogDebug("Decoding lobby at slot index: {SlotIndex}", i);
 
@@ -75,10 +76,10 @@ public sealed class LobbySlotReader : ReaderBase
                     SlotNumber = GetIndex(i),
                     CurPlayers = GetCurPlayers(i),
                     MaxPlayers = GetMaxPlayers(i),
-                    Status = GetStatusString(i),
-                    IsPassProtected = GetPassString(i),
-                    ScenarioId = GetScenarioString(i),
-                    Version = GetVersionString(i),
+                    Status = GetStatusName(GetStatus(i)),
+                    IsPassProtected = GetPassName(GetPass(i)),
+                    ScenarioId = GetScenarioName(GetScenarioId(i)),
+                    Version = GetVersionName(GetVersion(i)),
                     Title = GetTitle(i)
                 };
             }
@@ -100,8 +101,8 @@ public sealed class LobbySlotReader : ReaderBase
         if (!debug) return;
 
         Logger.LogDebug("Decoded lobby slots in {Duration}ms", duration);
-
-        foreach (DecodedLobbySlot lobbySlot in DecodedLobbySlots)
-            Logger.LogDebug(JsonSerializer.Serialize(lobbySlot, DecodedLobbySlotJsonContext.Default.DecodedLobbySlot));
+        foreach (string jsonObject in DecodedLobbySlots.Select(lobbySlot
+                     => JsonSerializer.Serialize(lobbySlot, DecodedLobbySlotJsonContext.Default.DecodedLobbySlot)))
+            Logger.LogDebug("Decoded lobby slot: {jsonObject}", jsonObject);
     }
 }

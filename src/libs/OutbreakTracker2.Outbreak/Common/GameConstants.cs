@@ -1,6 +1,6 @@
 ﻿namespace OutbreakTracker2.Outbreak.Common;
 
-internal static class Constants
+internal static class GameConstants
 {
     public const int MaxPlayers = 4;
     public const int MaxMainCharacters = 8;

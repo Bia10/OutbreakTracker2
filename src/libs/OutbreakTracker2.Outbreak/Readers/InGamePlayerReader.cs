@@ -1,10 +1,11 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Serialization;
+using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2;
+using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
@@ -14,8 +15,8 @@ public class InGamePlayerReader : ReaderBase
 
     public InGamePlayerReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
     {
-        DecodedInGamePlayers = new DecodedInGamePlayer[Constants.MaxPlayers];
-        for (int i = 0; i < Constants.MaxPlayers; i++)
+        DecodedInGamePlayers = new DecodedInGamePlayer[GameConstants.MaxPlayers];
+        for (int i = 0; i < GameConstants.MaxPlayers; i++)
             DecodedInGamePlayers[i] = new DecodedInGamePlayer();
     }
 
@@ -263,6 +264,21 @@ public class InGamePlayerReader : ReaderBase
         _ => 0xFF
     };
 
+    public static string GetCharacterTypeFromTypeId(byte typeId)
+        => EnumUtility.GetEnumString(typeId, CharacterBaseType.Unknown);
+
+    public static string GetCharacterNpcNameFromNameId(byte nameId)
+        => EnumUtility.GetEnumString(nameId, CharacterNpcName.Unknown);
+
+    public static string GetCharacterName(byte nameId, string charType)
+        => nameId is 0 ? charType : GetCharacterNpcNameFromNameId(nameId);
+
+    public static double GetHealthPercentage(short curHealth, short maxHealth)
+        => PercentageUtility.GetPercentage(curHealth, maxHealth, 3);
+
+    public static double GetVirusPercentage(int curVirus, int maxVirus)
+        => PercentageUtility.GetPercentage(curVirus, maxVirus, 3);
+
     public string DecodeStatusText(byte status)
     {
         return status switch
@@ -291,7 +307,7 @@ public class InGamePlayerReader : ReaderBase
 
     public static string DecodeCondition(short curHP, short maxHP)
     {
-        return PercentageFormatter.GetPercentage(curHP, maxHP) switch
+        return PercentageUtility.GetPercentage(curHP, maxHP) switch
         {
             >= 75 => "fine",
             >= 50 => "caution",
@@ -310,7 +326,7 @@ public class InGamePlayerReader : ReaderBase
 
         if (debug) Logger.LogDebug("Decoding in-game players");
 
-        for (var i = 0; i < Constants.MaxPlayers; i++)
+        for (var i = 0; i < GameConstants.MaxPlayers; i++)
         {
             DecodedInGamePlayers[i].Enabled = GetIsEnabled(i);
             if (!DecodedInGamePlayers[i].Enabled) continue;
@@ -318,22 +334,20 @@ public class InGamePlayerReader : ReaderBase
             DecodedInGamePlayers[i].InGame = GetIsInGame(i);
             DecodedInGamePlayers[i].CurrentHealth = GetCurHealth(i);
             DecodedInGamePlayers[i].MaximumHealth = GetMaxHealth(i);
-            DecodedInGamePlayers[i].HealthPercentage = PercentageFormatter.GetPercentage(DecodedInGamePlayers[i].CurrentHealth, DecodedInGamePlayers[i].MaximumHealth, 3);
+            DecodedInGamePlayers[i].HealthPercentage = GetHealthPercentage(DecodedInGamePlayers[i].CurrentHealth, DecodedInGamePlayers[i].MaximumHealth);
             DecodedInGamePlayers[i].Size = GetSize(i);
             DecodedInGamePlayers[i].Speed = GetSpeed(i);
             DecodedInGamePlayers[i].Power = GetPower(i);
             DecodedInGamePlayers[i].PositionX = GetPositionX(i);
             DecodedInGamePlayers[i].PositionY = GetPositionY(i);
-            DecodedInGamePlayers[i].CharacterType = GetEnumString(GetType(i), CharacterBaseType.Unknown);
+            DecodedInGamePlayers[i].CharacterType = GetCharacterTypeFromTypeId(GetType(i));
             DecodedInGamePlayers[i].NameId = GetNameId(i);
-            DecodedInGamePlayers[i].CharacterName = DecodedInGamePlayers[i].NameId is 0
-                ? DecodedInGamePlayers[i].CharacterType
-                : GetEnumString(DecodedInGamePlayers[i].NameId, CharacterNpcName.Unknown);
+            DecodedInGamePlayers[i].CharacterName = GetCharacterName(DecodedInGamePlayers[i].NameId, DecodedInGamePlayers[i].CharacterType);
             DecodedInGamePlayers[i].Condition = DecodeCondition(DecodedInGamePlayers[i].CurrentHealth, DecodedInGamePlayers[i].MaximumHealth);
             DecodedInGamePlayers[i].Status = DecodeStatusText(GetStatus(i));
             DecodedInGamePlayers[i].CurVirus = GetCurVirus(i);
             DecodedInGamePlayers[i].MaxVirus = GetMaxVirus(i);
-            DecodedInGamePlayers[i].VirusPercentage = PercentageFormatter.GetPercentage(DecodedInGamePlayers[i].CurVirus, DecodedInGamePlayers[i].MaxVirus, 3);
+            DecodedInGamePlayers[i].VirusPercentage = GetVirusPercentage(DecodedInGamePlayers[i].CurVirus, DecodedInGamePlayers[i].MaxVirus);
 
             // TODO: bugged?
             DecodedInGamePlayers[i].CritBonus = GetCritBonus(i);
@@ -360,8 +374,8 @@ public class InGamePlayerReader : ReaderBase
         if (!debug) return;
 
         Logger.LogDebug("Decoded enemies2 in {Duration}ms", duration);
-
-        foreach (DecodedInGamePlayer inGamePlayer in DecodedInGamePlayers)
-            Logger.LogDebug(JsonSerializer.Serialize(inGamePlayer, DecodedInGamePlayersJsonContext.Default.DecodedInGamePlayer));
+        foreach (string jsonObject in DecodedInGamePlayers.Select(inGamePlayer
+                     => JsonSerializer.Serialize(inGamePlayer, DecodedInGamePlayersJsonContext.Default.DecodedInGamePlayer)))
+            Logger.LogDebug("Decoded inGame player: {jsonObject}", jsonObject);
     }
 }

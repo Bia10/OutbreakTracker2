@@ -1,10 +1,11 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Offsets;
 using OutbreakTracker2.Outbreak.Serialization;
+using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2;
+using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
@@ -36,11 +37,11 @@ public sealed class LobbyRoomReader : ReaderBase
     public short GetCurPlayers()
         => ReadValue(LobbyRoomOffsets.CurPlayers, (short)-1);
 
-    public string GetDifficultyString()
-        => GetEnumString(GetDifficulty(), RoomDifficulty.Unknown);
+    public static string GetDifficultyName(short difficulty)
+        => EnumUtility.GetEnumString(difficulty, RoomDifficulty.Unknown);
 
-    public string GetScenarioString()
-        => GetScenarioString(GetScenarioId(),
+    public string GetScenarioName(short scenarioId)
+        => GetScenarioString(scenarioId,
             FileOneLobbyScenario.Unknown,
             FileTwoLobbyScenario.Unknown);
 
@@ -68,9 +69,9 @@ public sealed class LobbyRoomReader : ReaderBase
         DecodedLobbyRoom = new DecodedLobbyRoom
         {
             MaxPlayer = GetMaxPlayers(),
-            Difficulty = GetDifficultyString(),
+            Difficulty = GetDifficultyName(GetDifficulty()),
             Status = GetStatus(),
-            ScenarioName = GetScenarioString(),
+            ScenarioName = GetScenarioName(GetScenarioId()),
             TimeLeft = GetFormattedTimeString(),
             CurPlayer = GetCurPlayers()
         };
@@ -80,8 +81,7 @@ public sealed class LobbyRoomReader : ReaderBase
         if (!debug) return;
 
         Logger.LogDebug("Decoded lobby room in {Duration}ms", duration);
-        Logger.LogDebug(JsonSerializer.Serialize(
-            DecodedLobbyRoom,
-            DecodedLobbyRoomJsonContext.Default.DecodedLobbyRoom));
+        string jsonObject = JsonSerializer.Serialize(DecodedLobbyRoom, DecodedLobbyRoomJsonContext.Default.DecodedLobbyRoom);
+        Logger.LogDebug("Decoded lobby room: {jsonObject}", jsonObject);
     }
 }

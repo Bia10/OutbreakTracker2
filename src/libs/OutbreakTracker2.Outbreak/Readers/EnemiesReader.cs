@@ -1,10 +1,11 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Serialization;
+using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2;
+using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
@@ -14,8 +15,8 @@ public class EnemiesReader : ReaderBase
 
     public EnemiesReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
     {
-        DecodedEnemies2 = new DecodedEnemy[Constants.MaxEnemies2];
-        for (int i = 0; i < Constants.MaxEnemies2; i++)
+        DecodedEnemies2 = new DecodedEnemy[GameConstants.MaxEnemies2];
+        for (int i = 0; i < GameConstants.MaxEnemies2; i++)
             DecodedEnemies2[i] = new DecodedEnemy();
     }
 
@@ -61,6 +62,9 @@ public class EnemiesReader : ReaderBase
         _ => short.MaxValue
     };
 
+    public static string GetEnemyNameFromTypeId(byte typeId)
+        => EnumUtility.GetEnumString(typeId, EnemyType.Unknown);
+
     public void UpdateEnemies2(bool debug = false)
     {
         if (CurrentFile is GameFile.Unknown) return;
@@ -69,7 +73,7 @@ public class EnemiesReader : ReaderBase
 
         if (debug) Logger.LogDebug("Decoding enemies2");
 
-        for (var i = 0; i < Constants.MaxEnemies2; i++)
+        for (var i = 0; i < GameConstants.MaxEnemies2; i++)
         {
             int curMobOffset = 0x60 * i;
 
@@ -98,7 +102,7 @@ public class EnemiesReader : ReaderBase
                     default: throw new ArgumentOutOfRangeException();
                 }
 
-                DecodedEnemies2[i].Name = GetEnumString(DecodedEnemies2[i].TypeId, EnemyType.Unknown);
+                DecodedEnemies2[i].Name = GetEnemyNameFromTypeId(DecodedEnemies2[i].TypeId);
 
                 // TODO: Add logic to get the room name based on current scenario
                 // DecodedEnemies2[i].RoomName = ;
@@ -109,11 +113,8 @@ public class EnemiesReader : ReaderBase
         if (!debug) return;
 
         Logger.LogDebug("Decoded enemies2 in {Duration}ms", duration);
-
-        foreach (DecodedEnemy enemy in DecodedEnemies2)
-        {
-            string jsonObject = JsonSerializer.Serialize(enemy, DecodedEnemyJsonContext.Default.DecodedEnemy);
+        foreach (string jsonObject in DecodedEnemies2.Select(enemy
+                     => JsonSerializer.Serialize(enemy, DecodedEnemyJsonContext.Default.DecodedEnemy)))
             Logger.LogDebug("Decoded enemy: {jsonObject}", jsonObject);
-        }
     }
 }
