@@ -24,7 +24,10 @@ public class InGameScenarioReader : ReaderBase
 
     public static string GetDifficultyName(byte difficulty)
         => EnumUtility.GetEnumString(difficulty, RoomDifficulty.Unknown);
-    
+
+    public static string GetItemTypeName(short typeId)
+        => EnumUtility.GetEnumString(typeId, ItemType.Unknown);
+
     public short GetScenarioId() => CurrentFile switch
     {
         GameFile.FileOne => ReadValue<short>(FileOnePtrs.InGameScenarioId),
@@ -53,21 +56,29 @@ public class InGameScenarioReader : ReaderBase
         _ => 0xFF
     };
 
-    public short GetWildThingsTime() => ReadValue<short>(FileTwoPtrs.WildThingsTime);
+    public short GetWildThingsTime()
+        => ReadValue<short>(FileTwoPtrs.WildThingsTime);
 
-    public short GetEscapeTime() => ReadValue<short>(FileTwoPtrs.EscapeTime);
+    public short GetEscapeTime()
+        => ReadValue<short>(FileTwoPtrs.EscapeTime);
 
-    public int GetDesperateTimesFightTime() => ReadValue<int>(FileTwoPtrs.DesperateTimesFightTime);
+    public int GetDesperateTimesFightTime()
+        => ReadValue<int>(FileTwoPtrs.DesperateTimesFightTime);
 
-    public short GetDesperateTimesFightTime2() => ReadValue<short>(FileTwoPtrs.DesperateTimesFightTime2);
+    public short GetDesperateTimesFightTime2()
+        => ReadValue<short>(FileTwoPtrs.DesperateTimesFightTime2);
 
-    public int GetDesperateTimesGarageTime() => ReadValue<short>(FileTwoPtrs.DesperateTimesGarageTime);
+    public int GetDesperateTimesGarageTime()
+        => ReadValue<short>(FileTwoPtrs.DesperateTimesGarageTime);
 
-    public int GetDesperateTimesGasTime() => ReadValue<short>(FileTwoPtrs.DesperateTimesGasTime);
+    public int GetDesperateTimesGasTime()
+        => ReadValue<short>(FileTwoPtrs.DesperateTimesGasTime);
 
-    public int GetDesperateTimesGasFlag() => ReadValue<short>(FileTwoPtrs.DesperateTimesGasFlag);
+    public int GetDesperateTimesGasFlag()
+        => ReadValue<short>(FileTwoPtrs.DesperateTimesGasFlag);
 
-    public byte GetDesperateTimesGasRandom() => ReadValue<byte>(FileTwoPtrs.DesperateTimesGasRandom);
+    public byte GetDesperateTimesGasRandom()
+        => ReadValue<byte>(FileTwoPtrs.DesperateTimesGasRandom);
 
     public byte GetItemRandom() => CurrentFile switch
     {
@@ -157,12 +168,12 @@ public class InGameScenarioReader : ReaderBase
     {
         var Items = new DecodedItem[GameConstants.MaxItems - 1];
         byte roomId = 0;
-        byte number = 0;
+        byte slotIndex = 0;
         short typeId = 0;
         byte mix = 0;
         int present = 0;
-        short pickupCount = 0;
-        short pickup = 0;
+        short quantity = 0;
+        short pickedUp = 0;
 
         for (int i = 0; i < GameConstants.MaxItems - 1; i++)
          {
@@ -170,35 +181,38 @@ public class InGameScenarioReader : ReaderBase
              {
                  nint itemBaseOffset = FileOnePtrs.PickupStructSize * i;
                  roomId = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.RoomIdOffset]);
-                 number = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.NumberOffset]);
+                 slotIndex = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.NumberOffset]);
                  typeId  = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.IdOffset]);
                  mix = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.MixOffset]);
                  present = ReadValue<int>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PresentOffset]);
-                 pickupCount = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PickupCountOffset]);
-                 pickup = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PickupOffset]);
+                 quantity = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PickupCountOffset]);
+                 pickedUp = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PickupOffset]);
              }
              else if (CurrentFile == GameFile.FileTwo)
              {
                  nint itemBaseOffset = FileTwoPtrs.PickupStructSize * i;
+
+                 // TODO: this seems bugged
                  roomId = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.RoomIdOffset]);
-                 number = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.NumberOffset]);
+
+                 slotIndex = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.NumberOffset]);
                  typeId  = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.IdOffset]);
                  mix = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.MixOffset]);
                  present = ReadValue<int>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PresentOffset]);
-                 pickupCount = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PickupCountOffset]);
-                 pickup = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PickupOffset]);
+                 quantity = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PickupCountOffset]);
+                 pickedUp = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PickupOffset]);
              }
 
              Items[i] = new DecodedItem
              {
                  Id = (short)(i + 1),
-                 RoomID = roomId,
-                 Number = number,
-                 Type = typeId,
+                 RoomId = roomId,
+                 SlotIndex = slotIndex,
+                 TypeName = GetItemTypeName(typeId),
                  Mix = mix,
                  Present = present,
-                 Count = pickupCount,
-                 Pick = pickup
+                 Quantity = quantity,
+                 PickedUp = pickedUp
              };
          }
 

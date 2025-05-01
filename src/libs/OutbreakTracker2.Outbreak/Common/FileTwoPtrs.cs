@@ -176,14 +176,14 @@ public class FileTwoPtrs
     public const nint InventoryOffset = 0xC94;       //3220
 
     public const nint PickupSpaceStart = 0x397B7C; // 1 item - 60 bytes settings byte on offset ITEM_PTR+37?
-    public const int PickupStructSize = 0x3C;
-    public const int ItemRoomIdOffset = 0x1;
-    public const int NumberOffset = 0x4;
-    public const int IdOffset = 0x6;
-    public const int MixOffset = 0x1B;
-    public const int PresentOffset = 0x20;
-    public const int PickupCountOffset = 0x24;
-    public const int PickupOffset = 0x28;
+    public const nint PickupStructSize = 0x3C;
+    public const nint ItemRoomIdOffset = 0x1;
+    public const nint NumberOffset = 0x4;
+    public const nint IdOffset = 0x6;
+    public const nint MixOffset = 0x1B;
+    public const nint PresentOffset = 0x20;
+    public const nint PickupCountOffset = 0x24;
+    public const nint PickupOffset = 0x28;
     
     public const nint DeadInventoryStart = 0x491146;
     public const nint VirusMaxStart = 0x728500;

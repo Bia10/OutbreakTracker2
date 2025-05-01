@@ -5,8 +5,8 @@ namespace OutbreakTracker2.Outbreak.Models;
 public sealed record DecodedItem
 {
     [JsonInclude]
-    [JsonPropertyName(nameof(Number))]
-    public byte Number { get; set; }
+    [JsonPropertyName(nameof(SlotIndex))]
+    public byte SlotIndex { get; set; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Id))]
@@ -17,16 +17,16 @@ public sealed record DecodedItem
     public short En { get; set; }
 
     [JsonInclude]
-    [JsonPropertyName(nameof(Type))]
-    public short Type { get; set; }
+    [JsonPropertyName(nameof(TypeName))]
+    public string TypeName { get; set; } = string.Empty;
 
     [JsonInclude]
-    [JsonPropertyName(nameof(Count))]
-    public short Count { get; set; }
+    [JsonPropertyName(nameof(Quantity))]
+    public short Quantity { get; set; }
 
     [JsonInclude]
-    [JsonPropertyName(nameof(Pick))]
-    public short Pick { get; set; }
+    [JsonPropertyName(nameof(PickedUp))]
+    public short PickedUp { get; set; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Present))]
@@ -37,6 +37,6 @@ public sealed record DecodedItem
     public byte Mix { get; set; }
 
     [JsonInclude]
-    [JsonPropertyName(nameof(RoomID))]
-    public byte RoomID { get; set; }
+    [JsonPropertyName(nameof(RoomId))]
+    public byte RoomId { get; set; }
 }

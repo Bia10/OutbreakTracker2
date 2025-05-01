@@ -147,15 +147,15 @@ public class FileOnePtrs
     public const nint DeadInventoryStart = 0x48BDE2;
     public const nint VirusMaxStart = 0x6E6C70;
 
-    public const int PickupSpaceStart = 0x39680C; // 1 item - 60 bytes
-    public const int PickupStructSize = 0x3C;
-    public const int ItemRoomIdOffset = 0x1;
-    public const int NumberOffset = 0x4;
-    public const int IdOffset = 0x6;
-    public const int MixOffset = 0x1B;
-    public const int PresentOffset = 0x20;
-    public const int PickupCountOffset = 0x24;
-    public const int PickupOffset = 0x28;
+    public const nint PickupSpaceStart = 0x39680C; // 1 item - 60 bytes
+    public const nint PickupStructSize = 0x3C;
+    public const nint ItemRoomIdOffset = 0x1;
+    public const nint NumberOffset = 0x4;
+    public const nint IdOffset = 0x6;
+    public const nint MixOffset = 0x1B;
+    public const nint PresentOffset = 0x20;
+    public const nint PickupCountOffset = 0x24;
+    public const nint PickupOffset = 0x28;
     
     public const nint InGameScenarioId = 0x3065AA;
     public const nint InGameFrameCounter = 0x48BF78;
