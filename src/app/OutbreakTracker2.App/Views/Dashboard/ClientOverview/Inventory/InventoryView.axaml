@@ -1,0 +1,298 @@
+<UserControl
+    x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory.InventoryView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:inventory="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="inventory:InventoryViewModel"
+    mc:Ignorable="d">
+
+    <Grid Margin="5" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+        <!--  Row 0: Equipped Item and Special Item  -->
+        <Grid
+            Grid.Row="0"
+            Margin="0,0,0,15"
+            ColumnDefinitions="*,*">
+            <!--  Equipped Item  -->
+            <StackPanel Grid.Column="0">
+                <TextBlock
+                    Margin="0,0,0,5"
+                    FontWeight="Bold"
+                    Text="Equipped item" />
+                <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding EquippedItems}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="1" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button
+                                Width="160"
+                                Height="100"
+                                Margin="2">
+                                <Grid RowDefinitions="Auto,*,Auto">
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        Margin="0,0,5,2"
+                                        HorizontalAlignment="Right"
+                                        FontSize="12"
+                                        Text="{Binding SlotNumber}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        MaxWidth="140"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        Text="{Binding ItemName}"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Margin="0,2,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="10"
+                                        Text="{Binding DebugInfo}" />
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <!--  Special Item  -->
+            <StackPanel Grid.Column="1">
+                <TextBlock
+                    Margin="0,0,0,5"
+                    FontWeight="Bold"
+                    Text="Special item" />
+                <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding SpecialItems}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="1" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button
+                                Width="160"
+                                Height="100"
+                                Margin="2">
+                                <Grid RowDefinitions="Auto,*,Auto">
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        Margin="0,0,5,2"
+                                        HorizontalAlignment="Right"
+                                        FontSize="12"
+                                        Text="{Binding SlotNumber}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        MaxWidth="140"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="14"
+                                        Text="{Binding ItemName}"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Margin="0,2,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="10"
+                                        Text="{Binding DebugInfo}" />
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Grid>
+
+        <!--  Row 1: Main Inventory  -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,15">
+            <TextBlock
+                Margin="0,0,0,5"
+                FontWeight="Bold"
+                Text="Main" />
+            <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding MainSlots}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="4" Rows="2" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button
+                            Width="160"
+                            Height="100"
+                            Margin="2">
+                            <Grid RowDefinitions="Auto,*,Auto">
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Margin="0,0,3,2"
+                                    HorizontalAlignment="Right"
+                                    FontSize="10"
+                                    Text="{Binding SlotNumber}" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    MaxWidth="110"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Text="{Binding ItemName}"
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Margin="0,2,0,0"
+                                    HorizontalAlignment="Center"
+                                    FontSize="9"
+                                    Text="{Binding DebugInfo}" />
+                            </Grid>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+
+        <!--  Row 2: Special Inventory  -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,15">
+            <TextBlock
+                Margin="0,0,0,5"
+                FontWeight="Bold"
+                Text="Special" />
+            <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding SpecialSlots}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button
+                            Width="160"
+                            Height="100"
+                            Margin="2">
+                            <Grid RowDefinitions="Auto,*,Auto">
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Margin="0,0,3,2"
+                                    HorizontalAlignment="Right"
+                                    FontSize="10"
+                                    Text="{Binding SlotNumber}" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    MaxWidth="110"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Text="{Binding ItemName}"
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Margin="0,2,0,0"
+                                    HorizontalAlignment="Center"
+                                    FontSize="9"
+                                    Text="{Binding DebugInfo}" />
+                            </Grid>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+
+        <!--  Row 3: Dead Inventories  -->
+        <Grid Grid.Row="3" ColumnDefinitions="*,*">
+            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                <TextBlock
+                    Margin="0,0,0,5"
+                    FontWeight="Bold"
+                    Text="Dead" />
+                <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding DeadSlots}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button
+                                Width="160"
+                                Height="100"
+                                Margin="2">
+                                <Grid RowDefinitions="Auto,*,Auto">
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        Margin="0,0,3,2"
+                                        HorizontalAlignment="Right"
+                                        FontSize="10"
+                                        Text="{Binding SlotNumber}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        MaxWidth="110"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        Text="{Binding ItemName}"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Margin="0,2,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="9"
+                                        Text="{Binding DebugInfo}" />
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                <TextBlock
+                    Margin="0,0,0,5"
+                    FontWeight="Bold"
+                    Text="Special dead" />
+                <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding SpecialDeadSlots}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button
+                                Width="160"
+                                Height="100"
+                                Margin="2">
+                                <Grid RowDefinitions="Auto,*,Auto">
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        Margin="0,0,3,2"
+                                        HorizontalAlignment="Right"
+                                        FontSize="10"
+                                        Text="{Binding SlotNumber}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        MaxWidth="110"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        Text="{Binding ItemName}"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Margin="0,2,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="9"
+                                        Text="{Binding DebugInfo}" />
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

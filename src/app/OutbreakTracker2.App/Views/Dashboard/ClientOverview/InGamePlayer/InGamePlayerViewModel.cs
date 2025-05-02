@@ -1,15 +1,17 @@
-﻿using System;
-using Avalonia.Controls.Notifications;
+﻿using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.ComponentModel;
+using OutbreakTracker2.App.Services.Data;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
 using OutbreakTracker2.Outbreak.Models;
 using SukiUI.Controls;
+using System;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer;
 
 public partial class InGamePlayerViewModel : ObservableObject
 {
     [ObservableProperty]
-    private DecodedInGamePlayer _Player = null!;
+    private DecodedInGamePlayer _player = null!;
 
     [ObservableProperty]
     private byte nameId;
@@ -78,57 +80,6 @@ public partial class InGamePlayerViewModel : ObservableObject
     private string roomName = string.Empty;
 
     [ObservableProperty]
-    private string _inventorySlot1 = string.Empty;
-
-    [ObservableProperty]
-    private string _inventorySlot2 = string.Empty;
-
-    [ObservableProperty]
-    private string _inventorySlot3 = string.Empty;
-
-    [ObservableProperty]
-    private string _inventorySlot4 = string.Empty;
-
-    [ObservableProperty]
-    private string specialItem = string.Empty;
-
-    [ObservableProperty]
-    private string specialInventorySlot1 = string.Empty;
-
-    [ObservableProperty]
-    private string specialInventorySlot2 = string.Empty;
-
-    [ObservableProperty]
-    private string specialInventorySlot3 = string.Empty;
-
-    [ObservableProperty]
-    private string specialInventorySlot4 = string.Empty;
-
-    [ObservableProperty]
-    private string deadInventorySlot1 = string.Empty;
-
-    [ObservableProperty]
-    private string deadInventorySlot2 = string.Empty;
-
-    [ObservableProperty]
-    private string deadInventorySlot3 = string.Empty;
-
-    [ObservableProperty]
-    private string deadInventorySlot4 = string.Empty;
-
-    [ObservableProperty]
-    private string specialDeadInventorySlot1 = string.Empty;
-
-    [ObservableProperty]
-    private string specialDeadInventorySlot2 = string.Empty;
-
-    [ObservableProperty]
-    private string specialDeadInventorySlot3 = string.Empty;
-
-    [ObservableProperty]
-    private string specialDeadInventorySlot4 = string.Empty;
-
-    [ObservableProperty]
     private byte equippedItem;
 
     [ObservableProperty]
@@ -143,10 +94,16 @@ public partial class InGamePlayerViewModel : ObservableObject
     [ObservableProperty]
     private InfoBar _statusBadge;
 
-    public InGamePlayerViewModel(DecodedInGamePlayer player)
+    [ObservableProperty]
+    private InventoryViewModel _inventory;
+
+    public InGamePlayerViewModel(DecodedInGamePlayer player, IDataManager dataManager)
     {
         _conditionBadge = CreateInfoBar("Condition:", string.Empty);
         _statusBadge = CreateInfoBar("Status:", string.Empty);
+
+        Player = player;
+        _inventory = new InventoryViewModel(dataManager);
 
         Update(player);
     }
@@ -176,23 +133,6 @@ public partial class InGamePlayerViewModel : ObservableObject
         PositionX = player.PositionX;
         PositionY = player.PositionY;
         RoomName = player.RoomName;
-        InventorySlot1 = player.InventoryNamed[0];
-        InventorySlot2 = player.InventoryNamed[1];
-        InventorySlot3 = player.InventoryNamed[2];
-        InventorySlot4 = player.InventoryNamed[3];
-        SpecialItem = player.SpecialItemNamed;
-        SpecialInventorySlot1 = player.SpecialInventoryNamed[0];
-        SpecialInventorySlot2 = player.SpecialInventoryNamed[1];
-        SpecialInventorySlot3 = player.SpecialInventoryNamed[2];
-        SpecialInventorySlot4 = player.SpecialInventoryNamed[3];
-        DeadInventorySlot1 = player.DeadInventoryNamed[0];
-        DeadInventorySlot2 = player.DeadInventoryNamed[1];
-        DeadInventorySlot3 = player.DeadInventoryNamed[2];
-        DeadInventorySlot4 = player.DeadInventoryNamed[3];
-        SpecialDeadInventorySlot1 = player.SpecialDeadInventoryNamed[0];
-        SpecialDeadInventorySlot2 = player.SpecialDeadInventoryNamed[1];
-        SpecialDeadInventorySlot3 = player.SpecialDeadInventoryNamed[2];
-        SpecialDeadInventorySlot4 = player.SpecialDeadInventoryNamed[3];
         EquippedItem = player.EquippedItem;
         IsEnabled = player.Enabled;
         IsInGame = player.InGame;
@@ -206,6 +146,20 @@ public partial class InGamePlayerViewModel : ObservableObject
             player.Status,
             ConvertStatus(player.Status),
             "Status:");
+
+        UpdateInventory(player);
+    }
+
+    public void UpdateInventory(DecodedInGamePlayer player)
+    {
+        Inventory.UpdateFromPlayerData(
+            player.EquippedItem,
+            player.Inventory,
+            player.SpecialItem,
+            player.SpecialInventory,
+            player.DeadInventory,
+            player.SpecialDeadInventory
+        );
     }
 
     private static InfoBar CreateInfoBar(string title, string initialMessage)
