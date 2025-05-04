@@ -8,7 +8,6 @@ using OutbreakTracker2.App.Services.LogStorage;
 using R3;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,13 +18,17 @@ namespace OutbreakTracker2.App.Views.Logging;
 public partial class LogViewerViewModel : ObservableObject, IDisposable
 {
     private readonly IDisposable? _updateSubscription;
+    private readonly IDisposable? _filterSubscription;
     private readonly ClipboardService _clipboardService;
     private readonly IDispatcherService _dispatcherService;
+    private readonly ILogger<LogViewerViewModel> _logger;
     private readonly Lock _syncLock = new();
     private LogModel? _selectedLogItem;
-    private bool _isFilteringInProgress;
     private const int _maxLogEntries = 10000;
-    private CancellationTokenSource? _filterCancellationSource;
+
+    private readonly Subject<Unit> _filterUpdateSubject = new();
+    [ObservableProperty]
+    private LogModel? _logEntryToScrollTo;
 
     [ObservableProperty]
     private int _errorsCount;
@@ -40,8 +43,15 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
     private int _criticalCount;
 
     [ObservableProperty]
-    private ObservableList<LogModel>? _filteredEntries;
+    private int _traceCount;
 
+    [ObservableProperty]
+    private int _debugCount;
+
+    [ObservableProperty]
+    private ObservableList<LogModel> _filteredEntries = [];
+    public NotifyCollectionChangedSynchronizedViewList<LogModel> FilteredEntriesView { get; set; }
+    
     [ObservableProperty]
     private HashSet<LogLevel> _selectedLogLevels = [];
 
@@ -50,6 +60,18 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     private bool _copyOnSelect;
+
+    public bool IsTraceSelected
+    {
+        get => SelectedLogLevels.Contains(LogLevel.Trace);
+        set => UpdateSelectedLogLevel(LogLevel.Trace, value);
+    }
+
+    public bool IsDebugSelected
+    {
+        get => SelectedLogLevels.Contains(LogLevel.Debug);
+        set => UpdateSelectedLogLevel(LogLevel.Debug, value);
+    }
 
     public bool IsInformationSelected
     {
@@ -75,7 +97,7 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
         set => UpdateSelectedLogLevel(LogLevel.Critical, value);
     }
 
-    private ILogDataStorageService DataStore { get; set; }
+    private readonly ILogDataStorageService DataStore;
 
     public LogModel? SelectedLogItem
     {
@@ -89,96 +111,66 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
         }
     }
 
-    public Observable<LogModel?>? ScrollToItem { get; set; }
-
     public LogViewerViewModel(
         ILogDataStorageService dataStore,
         ClipboardService clipboardService,
-        IDispatcherService dispatcherService)
+        IDispatcherService dispatcherService,
+        ILogger<LogViewerViewModel> logger)
     {
         _clipboardService = clipboardService;
         _dispatcherService = dispatcherService;
+        _logger = logger;
         DataStore = dataStore;
-        FilteredEntries = [];
+        
+        FilteredEntriesView = _filteredEntries.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
-        _updateSubscription = Observable.Interval(TimeSpan.FromMilliseconds(100))
-            .Select(async _ =>
-            {
-                await UpdateLogCounts();
-                return Task.FromResult(Unit.Default);
-            })
-            .Subscribe();
+        _filterSubscription = _filterUpdateSubject
+            .ThrottleFirst(TimeSpan.FromMilliseconds(100))
+            .SubscribeOnThreadPool()
+            .Subscribe(async void (_) => await ApplyLogFiltersAsync());
 
-        if (DataStore.Entries is null) return;
-
-        Task.Run(() => ApplyLogFiltersAsync(CancellationToken.None));
+        if (DataStore.Entries is null)
+            return;
 
         DataStore.Entries.CollectionChanged += OnLogCollectionChanged;
+
+        _filterUpdateSubject.OnNext(Unit.Default);
     }
 
-    private ValueTask UpdateLogCounts()
+    private async ValueTask UpdateLogCountsAsync(List<LogModel> allEntries)
     {
-        if (DataStore.Entries is null) return default;
+        int errors = 0, warnings = 0, info = 0, critical = 0, trace = 0, debug = 0;
 
-        int errors = 0, warnings = 0, info = 0, critical = 0;
-
-        foreach (LogModel log in DataStore.Entries)
+        foreach (LogModel log in allEntries)
             switch (log.LogLevel)
             {
-                case LogLevel.Error: errors++; break;
-                case LogLevel.Warning: warnings++; break;
+                case LogLevel.Trace: trace++; break;
+                case LogLevel.Debug: debug++; break;
                 case LogLevel.Information: info++; break;
+                case LogLevel.Warning: warnings++; break;
+                case LogLevel.Error: errors++; break;
                 case LogLevel.Critical: critical++; break;
-                case LogLevel.Trace:
-                case LogLevel.Debug:
                 case LogLevel.None: break;
                 default: throw new ArgumentOutOfRangeException();
             }
 
-        _dispatcherService.InvokeOnUIAsync(() =>
+        await _dispatcherService.InvokeOnUIAsync(() =>
         {
-            ErrorsCount = errors;
-            WarningsCount = warnings;
+            TraceCount = trace;
+            DebugCount = debug;
             MessagesCount = info;
+            WarningsCount = warnings;
+            ErrorsCount = errors;
             CriticalCount = critical;
         });
-
-        return new ValueTask(Task.CompletedTask);
     }
 
     private void OnLogCollectionChanged(in NotifyCollectionChangedEventArgs<LogModel> e)
     {
-        if (e.Action is NotifyCollectionChangedAction.Add)
-        {
-            if (SelectedLogLevels.Count is 0 || e.NewItems.ToArray().Any(log => SelectedLogLevels.Contains(log.LogLevel)))
-                QueueFilterUpdate();
-        }
-        else
-        {
-            QueueFilterUpdate();
-        }
+        _filterUpdateSubject.OnNext(Unit.Default);
     }
 
-    private void QueueFilterUpdate()
-    {
-        lock (_syncLock)
-        {
-            if (_isFilteringInProgress)
-            {
-                _filterCancellationSource?.Cancel();
-                _filterCancellationSource = new CancellationTokenSource();
-            }
-            else
-            {
-                _filterCancellationSource = new CancellationTokenSource();
-                _isFilteringInProgress = true;
-
-                Task.Run(() => ApplyLogFiltersAsync(_filterCancellationSource.Token));
-            }
-        }
-    }
-
-    private async Task ApplyLogFiltersAsync(CancellationToken cancellationToken)
+    private async Task ApplyLogFiltersAsync()
     {
         try
         {
@@ -186,45 +178,39 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
 
             List<LogModel> currentEntriesSnapshot;
             lock (_syncLock)
-            { 
-                 currentEntriesSnapshot = [.. DataStore.Entries];
+            {
+                currentEntriesSnapshot = [.. DataStore.Entries];
             }
+
+            await UpdateLogCountsAsync(currentEntriesSnapshot);
 
             var selectedLevels = SelectedLogLevels.ToHashSet();
             List<LogModel> filtered;
 
             if (selectedLevels.Count > 0)
-                filtered = currentEntriesSnapshot.AsValueEnumerable()
+                filtered =
+                [
+                    .. currentEntriesSnapshot.AsValueEnumerable()
                     .Where(log => selectedLevels.Contains(log.LogLevel))
-                    .TakeLast(_maxLogEntries)
-                    .ToList();
+                    .Take(_maxLogEntries)
+                ];
             else
-                filtered = currentEntriesSnapshot.AsValueEnumerable()
-                    .TakeLast(_maxLogEntries)
-                    .ToList();
+                filtered = [.. currentEntriesSnapshot.Take(_maxLogEntries)];
 
-            //cancellationToken.ThrowIfCancellationRequested();
-
-            //await _dispatcherService.InvokeOnUIAsync(() =>
-            //{
-            //    FilteredEntries = [.. filtered];
-
-            //    if (AutoScroll && FilteredEntries.Count > 0)
-            //    {
-            //        //ScrollToItem.OnNext(FilteredEntries[^1]);
-            //    }
-            //}, cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            // Operation was cancelled, do nothing
-        }
-        finally
-        {
-            lock (_syncLock)
+            await _dispatcherService.InvokeOnUIAsync(() =>
             {
-                _isFilteringInProgress = false;
-            }
+                FilteredEntries.Clear();
+                FilteredEntries.AddRange(filtered);
+
+                if (AutoScroll && FilteredEntries.Count > 0)
+                    LogEntryToScrollTo = FilteredEntries.Last();
+                else
+                    LogEntryToScrollTo = null;
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during log filtering");
         }
     }
 
@@ -239,10 +225,18 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ToggleLogLevelFilter(LogLevel logLevel)
     {
-        if (!SelectedLogLevels.Add(logLevel))
-            SelectedLogLevels.Remove(logLevel);
+        if (!SelectedLogLevels.Remove(logLevel))
+            SelectedLogLevels.Add(logLevel);
 
-        QueueFilterUpdate();
+        OnPropertyChanged(nameof(IsTraceSelected));
+        OnPropertyChanged(nameof(IsDebugSelected));
+        OnPropertyChanged(nameof(IsInformationSelected));
+        OnPropertyChanged(nameof(IsWarningSelected));
+        OnPropertyChanged(nameof(IsErrorSelected));
+        OnPropertyChanged(nameof(IsCriticalSelected));
+        OnPropertyChanged(nameof(SelectedLogLevels));
+
+        _filterUpdateSubject.OnNext(Unit.Default);
     }
 
     private void UpdateSelectedLogLevel(LogLevel logLevel, bool isSelected)
@@ -251,20 +245,28 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
             ? SelectedLogLevels.Add(logLevel)
             : SelectedLogLevels.Remove(logLevel);
 
+        OnPropertyChanged(nameof(IsTraceSelected));
+        OnPropertyChanged(nameof(IsDebugSelected));
+        OnPropertyChanged(nameof(IsInformationSelected));
+        OnPropertyChanged(nameof(IsWarningSelected));
+        OnPropertyChanged(nameof(IsErrorSelected));
+        OnPropertyChanged(nameof(IsCriticalSelected));
+        OnPropertyChanged(nameof(SelectedLogLevels));
+
         if (changed)
-            QueueFilterUpdate();
+            _filterUpdateSubject.OnNext(Unit.Default);
     }
 
     public void Dispose()
     {
         _updateSubscription?.Dispose();
-        _filterCancellationSource?.Cancel();
-        _filterCancellationSource?.Dispose();
+        _filterSubscription?.Dispose();
+        _filterUpdateSubject.Dispose();
 
         if (DataStore.Entries is not null)
             DataStore.Entries.CollectionChanged -= OnLogCollectionChanged;
 
-        FilteredEntries?.Clear();
+        FilteredEntries.Clear();
         SelectedLogLevels.Clear();
 
         GC.SuppressFinalize(this);

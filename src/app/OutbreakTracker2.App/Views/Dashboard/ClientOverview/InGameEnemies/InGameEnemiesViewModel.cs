@@ -24,20 +24,20 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
 
     public InGameEnemiesViewModel(IDataManager dataManager, ILogger<InGameEnemiesViewModel> logger)
     {
-        _logger = logger;
-        _logger.LogInformation("Initializing InGameEnemiesViewModel");
+        //_logger = logger;
+        //_logger.LogInformation("Initializing InGameEnemiesViewModel");
 
-        ISynchronizedView<DecodedEnemy, InGameEnemyViewModel> enemiesViewSource
-            = _sourceEnemiesList.CreateView(enemy => new InGameEnemyViewModel(enemy, dataManager));
-        EnemiesView = enemiesViewSource.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
+        //ISynchronizedView<DecodedEnemy, InGameEnemyViewModel> enemiesViewSource
+        //    = _sourceEnemiesList.CreateView(enemy => new InGameEnemyViewModel(enemy, dataManager));
+        //EnemiesView = enemiesViewSource.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
-        _subscription = dataManager.EnemiesObservable
-            .Select(enemies => enemies.ToList())
-            .ObserveOn(SynchronizationContext.Current!)
-            .Subscribe(onNext: HandleEnemyDataUpdate,
-                onErrorResume: ex => _logger.LogError(ex, "Error receiving enemy data update from observable."),
-                onCompleted: _ => _logger.LogInformation("EnemiesObservable completed.")
-            );
+        //_subscription = dataManager.EnemiesObservable
+        //    .Select(enemies => enemies.ToList())
+        //    .ObserveOn(SynchronizationContext.Current!)
+        //    .Subscribe(onNext: HandleEnemyDataUpdate,
+        //        onErrorResume: ex => _logger.LogError(ex, "Error receiving enemy data update from observable."),
+        //        onCompleted: _ => _logger.LogInformation("EnemiesObservable completed.")
+        //    );
     }
 
     private void HandleEnemyDataUpdate(List<DecodedEnemy> updatedEnemiesData)
