@@ -14,17 +14,13 @@
 
     <suki:GroupBox Header="{Binding CharacterName}">
         <StackPanel Spacing="10">
-            <!--  Health & Virus Section  -->
             <StackPanel>
-                <!--  Health  -->
                 <suki:GroupBox Margin="5" Header="Health Gauge">
                     <ProgressBar
                         IsIndeterminate="False"
                         ShowProgressText="True"
                         Value="{Binding HealthPercentage}" />
                 </suki:GroupBox>
-
-                <!--  Virus  -->
                 <suki:GroupBox Margin="5" Header="Virus Gauge">
                     <ProgressBar
                         IsIndeterminate="False"
@@ -33,44 +29,42 @@
                 </suki:GroupBox>
             </StackPanel>
 
-            <!--  Status Badges  -->
             <WrapPanel Margin="5" HorizontalAlignment="Left">
-                <ContentControl Content="{Binding ConditionBadge}" />
-                <ContentControl Content="{Binding StatusBadge}" />
+                 <suki:InfoBar
+                     Title="{Binding ConditionTitle}"
+                     Message="{Binding ConditionMessage}"
+                     Severity="{Binding ConditionSeverity}"
+                     IsOpen="{Binding IsConditionVisible}"
+                     IsClosable="False"
+                     Margin="0,0,5,0"/> <suki:InfoBar
+                     Title="{Binding StatusTitle}"
+                     Message="{Binding StatusMessage}"
+                     Severity="{Binding StatusSeverity}"
+                     IsOpen="{Binding IsStatusVisible}"
+                     IsClosable="False"/>
             </WrapPanel>
 
-            <!--  Status effects  -->
             <Expander ExpandDirection="Down" Header="Status">
                 <Grid
                     Margin="10"
                     ColumnDefinitions="Auto"
                     RowDefinitions="Auto,Auto,Auto,Auto">
                     <TextBlock
-                        Grid.Row="0"
-                        Grid.Column="0"
+                        Grid.Row="0" Grid.Column="0"
                         Text="{Binding BleedTime, StringFormat='Bleed effect time: {0}'}" />
                     <TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
+                         Grid.Row="1" Grid.Column="0"
                         Text="{Binding AntiVirusTime, StringFormat='Antivirus T effect time: {0}'}" />
                     <TextBlock
-                        Grid.Row="2"
-                        Grid.Column="0"
+                         Grid.Row="2" Grid.Column="0"
                         Text="{Binding AntiVirusGTime, StringFormat='Antivirus G effect time: {0}'}" />
                     <TextBlock
-                        Grid.Row="3"
-                        Grid.Column="0"
+                         Grid.Row="3" Grid.Column="0"
                         Text="{Binding HerbTime, StringFormat='Healing item effect time: {0}'}" />
                 </Grid>
             </Expander>
-
-            <!--  Attributes  -->
-
             <Expander ExpandDirection="Down" Header="Attributes">
-                <Grid
-                    Margin="10"
-                    ColumnDefinitions="Auto"
-                    RowDefinitions="Auto">
+                <Grid Margin="10" ColumnDefinitions="Auto" RowDefinitions="Auto">
                     <StackPanel>
                         <TextBlock Text="{Binding Power, StringFormat='Power: {0:F1}'}" />
                         <TextBlock Text="{Binding CritBonus, StringFormat='Crit Bonus: {0:F2}x'}" />
@@ -79,8 +73,6 @@
                     </StackPanel>
                 </Grid>
             </Expander>
-
-            <!--  Inventory  -->
             <Expander ExpandDirection="Down" Header="Inventory">
                 <ContentControl Content="{Binding Inventory}">
                     <ContentControl.DataTemplates>
@@ -90,25 +82,13 @@
                     </ContentControl.DataTemplates>
                 </ContentControl>
             </Expander>
-
-            <!--  Position  -->
             <Expander ExpandDirection="Down" Header="Position">
                 <Grid ColumnDefinitions="Auto" RowDefinitions="Auto,Auto,Auto">
-                    <TextBlock
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        Text="{Binding PositionX, StringFormat='X: {0}'}" />
-                    <TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Text="{Binding PositionY, StringFormat='Y: {0}'}" />
-                    <TextBlock
-                        Grid.Row="2"
-                        Grid.Column="0"
-                        Text="{Binding RoomName, StringFormat='Room name: {0}'}" />
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding PositionX, StringFormat='X: {0}'}" />
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding PositionY, StringFormat='Y: {0}'}" />
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding RoomName, StringFormat='Room name: {0}'}" />
                 </Grid>
             </Expander>
-
         </StackPanel>
     </suki:GroupBox>
 </UserControl>

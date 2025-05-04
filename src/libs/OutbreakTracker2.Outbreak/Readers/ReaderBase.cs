@@ -18,7 +18,7 @@ public abstract class ReaderBase
     protected readonly IMemoryReader MemoryReader;
     protected readonly GameFile CurrentFile;
     protected readonly ILogger Logger;
-    protected const bool _enableLogging = true;
+    protected const bool _enableLogging = false;
 
     protected ReaderBase(GameClient gameClient, EEmemMemory eememMemory, ILogger logger)
     {

@@ -4,9 +4,12 @@ public static class PercentageUtility
 {
     public static T GetPercentage<T>(T numerator, T denominator, int? decimalPlaces = 2) where T : struct
     {
+        if (IsZero(numerator) && IsZero(denominator))
+            return default;
+
         if (IsZero(denominator))
         {
-            Console.WriteLine($"Division by zero detected by denominator of type: {typeof(T).Name})");
+            Console.WriteLine($"Division by zero detected by denominator of type: {typeof(T).Name}), numerator: {numerator}, denominator: {denominator}. Returning default value.");
             return default;
         }
 

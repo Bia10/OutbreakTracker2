@@ -1,0 +1,59 @@
+﻿<UserControl
+    x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameEnemy.InGameEnemyView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:inGameEnemy="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameEnemy"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    x:DataType="inGameEnemy:InGameEnemyViewModel"
+    mc:Ignorable="d">
+
+    <suki:GlassCard
+        Margin="10"
+        Padding="15"
+        CornerRadius="10">
+        <StackPanel Spacing="10">
+            <!--  Header  -->
+            <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding Name}" />
+            <!--  Health  -->
+            <suki:GroupBox Header="Health">
+                <Grid ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto">
+                <!-- <ProgressBar -->
+                <!--     Grid.Row="0" Grid.Column="0" -->
+                <!--     Maximum="100" -->
+                <!--     Minimum="0" -->
+                <!--     ShowProgressText="True" -->
+                <!--     Value="{Binding HealthPercentage}"/> -->
+                <TextBlock Grid.Row="1" Grid.Column="0" FontSize="12" Text="{Binding CurrentHp, StringFormat='CurHp: {0}'}" />
+                <TextBlock Grid.Row="1" Grid.Column="1" FontSize="12" Text="{Binding MaxHp, StringFormat='MaxHp: {0}'}" />
+                </Grid>
+            </suki:GroupBox>
+            <!--  Status  -->
+            <WrapPanel>
+                <ContentControl Content="{Binding StatusBadge}" />
+            </WrapPanel>
+            <!--  Details  -->
+            <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto">
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Text="Boss Type:" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Text="{Binding BossType}" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Text="Room:" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Text="{Binding RoomName}" />
+            </Grid>
+        </StackPanel>
+    </suki:GlassCard>
+</UserControl>

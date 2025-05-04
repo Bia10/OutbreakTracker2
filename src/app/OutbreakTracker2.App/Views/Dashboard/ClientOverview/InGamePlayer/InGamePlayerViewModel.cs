@@ -2,16 +2,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
-using SukiUI.Controls;
-using System;
+using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer;
 
 public partial class InGamePlayerViewModel : ObservableObject
 {
-    [ObservableProperty]
-    private DecodedInGamePlayer _player = null!;
 
     [ObservableProperty]
     private byte nameId;
@@ -32,10 +30,28 @@ public partial class InGamePlayerViewModel : ObservableObject
     private double healthPercentage;
 
     [ObservableProperty]
-    private string condition = string.Empty;
+    private string conditionTitle = "Condition:";
 
     [ObservableProperty]
-    private string status = string.Empty;
+    private string conditionMessage = string.Empty;
+
+    [ObservableProperty]
+    private NotificationType conditionSeverity = NotificationType.Information;
+
+    [ObservableProperty]
+    private bool isConditionVisible = false;
+
+    [ObservableProperty]
+    private string statusTitle = "Status:";
+
+    [ObservableProperty]
+    private string statusMessage = string.Empty;
+
+    [ObservableProperty]
+    private NotificationType statusSeverity = NotificationType.Information;
+
+    [ObservableProperty]
+    private bool isStatusVisible = false;
 
     [ObservableProperty]
     private ushort bleedTime;
@@ -89,36 +105,31 @@ public partial class InGamePlayerViewModel : ObservableObject
     private bool isInGame;
 
     [ObservableProperty]
-    private InfoBar _conditionBadge;
-
-    [ObservableProperty]
-    private InfoBar _statusBadge;
-
-    [ObservableProperty]
     private InventoryViewModel _inventory;
 
+    private readonly IDataManager _dataManager;
+    private DecodedInGamePlayer _playerModel = null!;
+    
     public InGamePlayerViewModel(DecodedInGamePlayer player, IDataManager dataManager)
     {
-        _conditionBadge = CreateInfoBar("Condition:", string.Empty);
-        _statusBadge = CreateInfoBar("Status:", string.Empty);
-
-        Player = player;
+        _dataManager = dataManager;
         _inventory = new InventoryViewModel(dataManager);
-
+        
         Update(player);
     }
 
+    /// <summary>
+    /// Updates the ViewModel's properties based on the latest player data model.
+    /// </summary>
     public void Update(DecodedInGamePlayer player)
     {
-        Player = player;
+        _playerModel = player;
         NameId = player.NameId;
         CharacterName = player.CharacterName;
         CharacterType = player.CharacterType;
         CurrentHealth = player.CurrentHealth;
         MaximumHealth = player.MaximumHealth;
         HealthPercentage = player.HealthPercentage;
-        Condition = player.Condition;
-        Status = player.Status;
         BleedTime = player.BleedTime;
         AntiVirusTime = player.AntiVirusTime;
         AntiVirusGTime = player.AntiVirusGTime;
@@ -132,25 +143,43 @@ public partial class InGamePlayerViewModel : ObservableObject
         Speed = player.Speed;
         PositionX = player.PositionX;
         PositionY = player.PositionY;
-        RoomName = player.RoomName;
         EquippedItem = player.EquippedItem;
         IsEnabled = player.Enabled;
         IsInGame = player.InGame;
+        
+        string rawCondition = player.Condition;
+        IsConditionVisible = !string.IsNullOrEmpty(rawCondition);
+        if (IsConditionVisible)
+        {
+            ConditionTitle = "Condition:";
+            ConditionMessage = rawCondition;
+            ConditionSeverity = ConvertCondition(rawCondition);
+        }
 
-        UpdateBadge(ConditionBadge,
-            player.Condition,
-            ConvertCondition(player.Condition),
-            "Condition:");
-
-        UpdateBadge(StatusBadge,
-            player.Status,
-            ConvertStatus(player.Status),
-            "Status:");
-
+        string rawStatus = player.Status;
+        IsStatusVisible = !string.IsNullOrEmpty(rawStatus);
+        if (IsStatusVisible)
+        {
+            StatusTitle = "Status:";
+            StatusMessage = rawStatus;
+            StatusSeverity = ConvertStatus(rawStatus);
+        }
+        
+        RoomName = UpdateRoomName(player);
+        
         UpdateInventory(player);
     }
 
-    public void UpdateInventory(DecodedInGamePlayer player)
+    public string UpdateRoomName(DecodedInGamePlayer player)
+    {
+        string curScenarioName = _dataManager.InGameScenario.ScenarioName;
+        if (!string.IsNullOrEmpty(curScenarioName) && EnumUtility.TryParseByValueOrMember(curScenarioName, out InGameScenario scenarioEnum))
+            player.RoomName = scenarioEnum.GetRoomName(player.RoomId);
+
+        return player.RoomName;
+    }
+
+    private void UpdateInventory(DecodedInGamePlayer player)
     {
         Inventory.UpdateFromPlayerData(
             player.EquippedItem,
@@ -161,24 +190,7 @@ public partial class InGamePlayerViewModel : ObservableObject
             player.SpecialDeadInventory
         );
     }
-
-    private static InfoBar CreateInfoBar(string title, string initialMessage)
-        => new()
-        {
-            Title = title,
-            IsOpen = true,
-            IsClosable = false,
-            Message = initialMessage,
-            Severity = NotificationType.Information
-        };
-
-    private static void UpdateBadge(InfoBar badge, string message, NotificationType severity, string title)
-    {
-        badge.Message = message;
-        badge.Severity = severity;
-        badge.Title = title;
-    }
-
+    
     private static NotificationType ConvertCondition(string value)
     {
         return value.ToLower() switch
@@ -191,7 +203,7 @@ public partial class InGamePlayerViewModel : ObservableObject
             "down" => NotificationType.Error,
             "down+gas" => NotificationType.Error,
             "" => NotificationType.Error,
-            _ => throw new InvalidOperationException("Current condition type is not recognized:  " + value)
+            _ => NotificationType.Error 
         };
     }
 
@@ -205,8 +217,8 @@ public partial class InGamePlayerViewModel : ObservableObject
             "Down" => NotificationType.Warning,
             "Gas" => NotificationType.Warning,
             "Bleed" => NotificationType.Warning,
-            "" => NotificationType.Error,
-            _ => throw new InvalidOperationException("Current status type is not recognized:  " + value)
+            "" => NotificationType.Error, 
+            _ => NotificationType.Error 
         };
     }
 }

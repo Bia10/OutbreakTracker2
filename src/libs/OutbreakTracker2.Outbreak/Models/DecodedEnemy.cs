@@ -6,11 +6,11 @@ public sealed record DecodedEnemy
 {
     [JsonInclude]
     [JsonPropertyName(nameof(Enabled))]
-    public bool Enabled;
+    public byte Enabled;
 
     [JsonInclude]
     [JsonPropertyName(nameof(InGame))]
-    public bool InGame;
+    public byte InGame;
 
     [JsonInclude]
     [JsonPropertyName(nameof(SlotId))]
@@ -34,7 +34,7 @@ public sealed record DecodedEnemy
 
     [JsonInclude]
     [JsonPropertyName(nameof(NameId))]
-    public short NameId;
+    public byte NameId;
 
     [JsonInclude]
     [JsonPropertyName(nameof(Name))]

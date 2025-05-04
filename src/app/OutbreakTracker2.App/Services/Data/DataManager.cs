@@ -69,50 +69,59 @@ public sealed class DataManager : IDataManager, IDisposable
 
     public void UpdateDoors()
     {
-        _doorReader?.UpdateDoors(true);
+        _doorReader?.UpdateDoors(false);
         _doorsSubject.OnNext(_doorReader?.DecodedDoors ?? []);
     }
 
     public void UpdateEnemies()
     {
-        _enemiesReader?.UpdateEnemies2(true);
+        _enemiesReader?.UpdateEnemies(false);
+        _enemiesReader?.UpdateEnemies2(false);
         _enemiesSubject.OnNext(_enemiesReader?.DecodedEnemies2 ?? []);
     }
 
     public void UpdateInGamePlayer()
     {
-        _inGamePlayerReader?.UpdateInGamePlayers(true);
+        _inGamePlayerReader?.UpdateInGamePlayers(false);
+
+        _logger.LogDebug("DataManager is about to emit {Count} players.", _inGamePlayerReader?.DecodedInGamePlayers.Length);
+        foreach (DecodedInGamePlayer player in _inGamePlayerReader?.DecodedInGamePlayers)
+        {
+            _logger.LogTrace("DataManager Emitting Player - Name: '{Name}', Pos({X:F2}, {Y:F2}), Health:{Health}/{MaxHealth}({HealthPct:F2}%), Status:'{Status}', Condition:'{Condition}'",
+                player.CharacterName, player.PositionX, player.PositionY, player.CurrentHealth, player.MaximumHealth, player.HealthPercentage * 100, player.Status, player.Condition);
+        }
+
         _inGamePlayersSubject.OnNext(_inGamePlayerReader?.DecodedInGamePlayers ?? []);
     }
 
     public void UpdateInGameScenario()
     {
-        _inGameScenarioReader?.UpdateScenario(true);
+        _inGameScenarioReader?.UpdateScenario(false);
         _inGameScenarioSubject.OnNext(_inGameScenarioReader?.DecodedScenario ?? new DecodedScenario());
     }
 
     public void UpdateLobbyRoom()
     {
-        _lobbyRoomReader?.UpdateLobbyRoom(true);
+        _lobbyRoomReader?.UpdateLobbyRoom(false);
         _lobbyRoomSubject.OnNext(_lobbyRoomReader?.DecodedLobbyRoom ?? new DecodedLobbyRoom());
     }
 
     public void UpdateLobbyRoomPlayers()
     {
-        _lobbyRoomPlayerReader?.UpdateRoomPlayers(true);
+        _lobbyRoomPlayerReader?.UpdateRoomPlayers(false);
         _lobbyRoomPlayersSubject.OnNext(_lobbyRoomPlayerReader?.DecodedLobbyRoomPlayers ?? []);
     }
 
     public void UpdateLobbySlots()
     {
-        _lobbySlotReader?.UpdateLobbySlots(true);
+        _lobbySlotReader?.UpdateLobbySlots(false);
         _lobbySlotsSubject.OnNext(_lobbySlotReader?.DecodedLobbySlots ?? []);
     }
 
     private DateTime _lastUpdateTime = DateTime.MinValue;
     private DateTime _lastFullUpdateTime = DateTime.MaxValue;
-    private readonly TimeSpan _minUpdateInterval = TimeSpan.FromMilliseconds(500); // 2 updates/sec max
-    private readonly TimeSpan _fullUpdateInterval = TimeSpan.FromMilliseconds(1000); // 1 updates/sec max
+    private readonly TimeSpan _minUpdateInterval = TimeSpan.FromMilliseconds(333); // 2 updates/sec max
+    private readonly TimeSpan _fullUpdateInterval = TimeSpan.FromMilliseconds(666); // 1 updates/sec max
 
     // TODO: this will need to be rewriten later if we manage to figure way to orient in client state
     public ValueTask UpdateAllAsync()
@@ -126,15 +135,15 @@ public sealed class DataManager : IDataManager, IDisposable
 
         _isUpdating = true;
         _lastUpdateTime = now;
-        _logger.LogInformation("Periodic update started.");
+        //_logger.LogInformation("Periodic update started.");
 
         try
         {
+            UpdateInGameScenario();   
             UpdateDoors();
             UpdateEnemies();
             UpdateInGamePlayer();
-            UpdateInGameScenario();
-
+            
             if (now - _lastFullUpdateTime > _fullUpdateInterval)
             {
                 _lastFullUpdateTime = now;
@@ -148,7 +157,7 @@ public sealed class DataManager : IDataManager, IDisposable
         finally
         {
             _isUpdating = false;
-            _logger.LogInformation("Periodic update completed.");
+            //_logger.LogInformation("Periodic update completed.");
         }
     }
 
@@ -169,7 +178,7 @@ public sealed class DataManager : IDataManager, IDisposable
         _lobbyRoomReader = new LobbyRoomReader(attachedGameClient, eememMemory, _logger);
         _lobbySlotReader = new LobbySlotReader(attachedGameClient, eememMemory, _logger);
 
-        _updateSubscription = Observable.Interval(TimeSpan.FromMilliseconds(333))
+        _updateSubscription = Observable.Interval(TimeSpan.FromMilliseconds(100))
             .Select(async _ =>
             {
                 await UpdateAllAsync();

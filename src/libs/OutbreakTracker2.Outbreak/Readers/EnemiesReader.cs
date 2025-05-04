@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
+using OutbreakTracker2.Outbreak.Enums.Enemy;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.Outbreak.Utility;
@@ -13,8 +14,14 @@ public class EnemiesReader : ReaderBase
 {
     public DecodedEnemy[] DecodedEnemies2 { get; }
 
+    public DecodedEnemy[] DecodedEnemies1 { get; }
+
     public EnemiesReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
     {
+        DecodedEnemies1 = new DecodedEnemy[GameConstants.MaxEnemies1];
+        for (int i = 0; i < GameConstants.MaxEnemies1; i++)
+            DecodedEnemies1[i] = new DecodedEnemy();
+
         DecodedEnemies2 = new DecodedEnemy[GameConstants.MaxEnemies2];
         for (int i = 0; i < GameConstants.MaxEnemies2; i++)
             DecodedEnemies2[i] = new DecodedEnemy();
@@ -62,8 +69,44 @@ public class EnemiesReader : ReaderBase
         _ => short.MaxValue
     };
 
-    public static string GetEnemyNameFromTypeId(byte typeId)
-        => EnumUtility.GetEnumString(typeId, EnemyType.Unknown);
+    public static string GetEnemyName(byte nameId)
+        => EnumUtility.GetEnumString(nameId, EnemyType.Unknown);
+
+    public static string GetZombieName(byte typeId)
+        => EnumUtility.GetEnumString(typeId, ZombieType.Unknown0);
+
+    public static string GetDogName(byte typeId)
+        => EnumUtility.GetEnumString(typeId, DogType.Unknown0);
+
+    public static string GetScissorTailName(byte typeId)
+        => EnumUtility.GetEnumString(typeId, ScissorTailType.ScissorTail);
+
+    public static string GetLionName(byte typeId)
+        => EnumUtility.GetEnumString(typeId, LionType.Stalker);
+
+    public static string GetGiantName(byte typeId)
+        => EnumUtility.GetEnumString(typeId, TyrantType.Tyrant);
+
+    public static string GetThanatosName(byte typeId)
+        => EnumUtility.GetEnumString(typeId, ThanatosType.Thanatos);
+
+    public static string GetTyrantName(byte typeId)
+        => EnumUtility.GetEnumString(typeId, TyrantType.Tyrant);
+
+    public void UpdateEnemies(bool debug = false)
+    {
+        for (int i = 0; i < GameConstants.MaxEnemies1; i++)
+        {
+            DecodedEnemies1[i].Enabled = GetEnabled(i);
+            DecodedEnemies1[i].InGame = GetInGame(i);
+            //if (DecodedEnemies1[i].InGame == 0)  continue;
+
+            DecodedEnemies1[i].CurHp = GetCurHealth(i);
+            DecodedEnemies1[i].MaxHp = GetMaxHealth(i);
+            DecodedEnemies1[i].TypeId = GetType(i);
+            DecodedEnemies1[i].NameId = GetNameId(i);
+        }
+    }
 
     public void UpdateEnemies2(bool debug = false)
     {
@@ -80,32 +123,55 @@ public class EnemiesReader : ReaderBase
                 switch (CurrentFile)
                 {
                     case GameFile.FileOne:
-                        DecodedEnemies2[i].SlotId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset, 0x1]);
-                        DecodedEnemies2[i].TypeId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset, 0x2]);
-                        DecodedEnemies2[i].NameId = ReadValue<short>(FileOnePtrs.EnemyListOffset, [curMobOffset, 0x3]);
-                        DecodedEnemies2[i].CurHp = ReadValue<short>(FileOnePtrs.EnemyListOffset, [curMobOffset, 0x1C]);
-                        DecodedEnemies2[i].MaxHp = ReadValue<short>(FileOnePtrs.EnemyListOffset, [curMobOffset, 0x1E]);
-                        DecodedEnemies2[i].RoomId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset, 0x22]);
-                        DecodedEnemies2[i].Status = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset, 0x45]);
+                        DecodedEnemies2[i].SlotId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x1]);
+                        DecodedEnemies2[i].NameId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x2]);
+                        DecodedEnemies2[i].TypeId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x3]);
+                        DecodedEnemies2[i].CurHp = ReadValue<short>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x1C]);
+                        DecodedEnemies2[i].MaxHp = ReadValue<short>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x1E]);
+                        DecodedEnemies2[i].RoomId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x22]);
+                        DecodedEnemies2[i].Status = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x45]);
                         break;
 
                     case GameFile.FileTwo:
-                        DecodedEnemies2[i].SlotId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset, 0x1]);
-                        DecodedEnemies2[i].TypeId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset, 0x2]);
-                        DecodedEnemies2[i].NameId = ReadValue<short>(FileTwoPtrs.EnemyListOffset, [curMobOffset, 0x3]);
-                        DecodedEnemies2[i].CurHp = ReadValue<short>(FileTwoPtrs.EnemyListOffset, [curMobOffset, 0x1C]);
-                        DecodedEnemies2[i].MaxHp = ReadValue<short>(FileTwoPtrs.EnemyListOffset, [curMobOffset, 0x1E]);
-                        DecodedEnemies2[i].RoomId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset, 0x22]);
-                        DecodedEnemies2[i].Status = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset, 0x45]);
+                        DecodedEnemies2[i].SlotId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x1]);
+                        DecodedEnemies2[i].NameId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x2]);
+                        DecodedEnemies2[i].TypeId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x3]);
+                        DecodedEnemies2[i].CurHp = ReadValue<short>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x1C]);
+                        DecodedEnemies2[i].MaxHp = ReadValue<short>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x1E]);
+                        DecodedEnemies2[i].RoomId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x22]);
+                        DecodedEnemies2[i].Status = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x45]);
                         break;
 
+                    case GameFile.Unknown: break;
                     default: throw new ArgumentOutOfRangeException();
                 }
 
-                DecodedEnemies2[i].Name = GetEnemyNameFromTypeId(DecodedEnemies2[i].TypeId);
+                string enemyName = GetEnemyName(DecodedEnemies2[i].NameId);
+                string actualName = enemyName;
 
-                // TODO: Add logic to get the room name based on current scenario
-                // DecodedEnemies2[i].RoomName = ;
+                if (DecodedEnemies2[i].NameId <= 1 && DecodedEnemies2[i].TypeId > 1)
+                {
+                    string zombieName = GetZombieName(DecodedEnemies2[i].TypeId);
+                    string dogName = GetDogName(DecodedEnemies2[i].TypeId);
+                    string scissorTailName = GetScissorTailName(DecodedEnemies2[i].TypeId);
+                    string lionName = GetLionName(DecodedEnemies2[i].TypeId);
+                    string tyrantName = GetTyrantName(DecodedEnemies2[i].TypeId);
+                    string thanatosName = GetThanatosName(DecodedEnemies2[i].TypeId);
+
+                    actualName = actualName switch
+                    {
+                        null => zombieName,
+                        "Zombie" when !string.IsNullOrEmpty(zombieName) => zombieName,
+                        "Dog" when !string.IsNullOrEmpty(dogName) => dogName,
+                        "Sci.Tail" when !string.IsNullOrEmpty(scissorTailName) => scissorTailName,
+                        "Lion" when !string.IsNullOrEmpty(lionName) => lionName,
+                        "Tyrant" when !string.IsNullOrEmpty(tyrantName) => tyrantName,
+                        "Thanatos" when !string.IsNullOrEmpty(thanatosName) => thanatosName,
+                        _ => enemyName
+                    };
+                }
+
+                DecodedEnemies2[i].Name = actualName;
         }
 
         long duration = Environment.TickCount64 - start;

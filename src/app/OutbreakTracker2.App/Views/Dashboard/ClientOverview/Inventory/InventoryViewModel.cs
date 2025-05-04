@@ -78,7 +78,8 @@ public partial class InventoryViewModel : ObservableObject
         if (itemId is 0x0)
             return ("Empty", "0x00 | 0");
 
-        DecodedItem? item = _dataManager.InGameScenario?.Items?
+        DecodedItem? item = _dataManager.InGameScenario.Items
+            .Where(item => item is not null)
             .FirstOrDefault(item => item.Id.Equals(itemId));
 
         return item is not null

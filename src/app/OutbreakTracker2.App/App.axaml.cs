@@ -20,6 +20,7 @@ using OutbreakTracker2.App.Views.Dashboard.ClientAlreadyRunning;
 using OutbreakTracker2.App.Views.Dashboard.ClientNotRunning;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameEnemies;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
 using OutbreakTracker2.App.Views.Log;
 using OutbreakTracker2.App.Views.Logging;
@@ -72,6 +73,7 @@ public class App : Application
             .AddView<ClientOverviewView, ClientOverviewViewModel>(services)
             .AddView<DebugView, DebugViewModel>(services)
             .AddView<InGamePlayersView, InGamePlayersViewModel>(services)
+            .AddView<InGameEnemiesView, InGameEnemiesViewModel>(services)
             .AddView<LogView, LogViewModel>(services);
 
     private static IServiceProvider ConfigureServicesAndLogging(IServiceCollection services, IConfiguration configuration)

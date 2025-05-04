@@ -5,6 +5,7 @@
     xmlns:clientOverview="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:debug="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug"
+    xmlns:inGameEnemies="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameEnemies"
     xmlns:inGamePlayers="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="450"
@@ -18,6 +19,9 @@
             </TabItem>
             <TabItem Header="In-Game Players">
                 <inGamePlayers:InGamePlayersView DataContext="{Binding InGamePlayersViewModel}" />
+            </TabItem>
+            <TabItem Header="In-Game Enemies">
+                <inGameEnemies:InGameEnemiesView DataContext="{Binding InGameEnemiesViewModel}" />
             </TabItem>
         </TabControl>
     </Grid>

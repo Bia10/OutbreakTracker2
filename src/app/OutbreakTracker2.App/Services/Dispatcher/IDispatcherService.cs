@@ -6,7 +6,7 @@ namespace OutbreakTracker2.App.Services.Dispatcher;
 
 public interface IDispatcherService
 {
-    public void PostOnUI(Action action);
+    public void PostOnUI(Action action, CancellationToken cancellationToken = default);
 
     public Task InvokeOnUIAsync(Action action, CancellationToken cancellationToken = default);
 

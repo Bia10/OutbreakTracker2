@@ -18,7 +18,7 @@ public partial class ClientAlreadyRunningViewModel : ObservableObject, IDisposab
     private readonly ILogger<ClientAlreadyRunningViewModel> _logger;
 
     [ObservableProperty]
-    private ObservableCollection<ProcessModel> _runningProcesses = new();
+    private ObservableCollection<ProcessModel> _runningProcesses = [];
 
     public ClientAlreadyRunningViewModel(
         IProcessLauncher processLauncher,

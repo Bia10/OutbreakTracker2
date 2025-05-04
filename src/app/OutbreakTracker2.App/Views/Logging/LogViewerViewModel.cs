@@ -184,30 +184,36 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
         {
             if (DataStore.Entries is null) return;
 
-            var selectedLevels = SelectedLogLevels.ToHashSet(); // Thread-safe copy
+            List<LogModel> currentEntriesSnapshot;
+            lock (_syncLock)
+            { 
+                 currentEntriesSnapshot = [.. DataStore.Entries];
+            }
+
+            var selectedLevels = SelectedLogLevels.ToHashSet();
             List<LogModel> filtered;
 
             if (selectedLevels.Count > 0)
-                filtered = DataStore.Entries.AsValueEnumerable()
+                filtered = currentEntriesSnapshot.AsValueEnumerable()
                     .Where(log => selectedLevels.Contains(log.LogLevel))
                     .TakeLast(_maxLogEntries)
                     .ToList();
             else
-                filtered = DataStore.Entries.AsValueEnumerable()
+                filtered = currentEntriesSnapshot.AsValueEnumerable()
                     .TakeLast(_maxLogEntries)
                     .ToList();
 
-            cancellationToken.ThrowIfCancellationRequested();
+            //cancellationToken.ThrowIfCancellationRequested();
 
-            await _dispatcherService.InvokeOnUIAsync(() =>
-            {
-                FilteredEntries = new ObservableList<LogModel>(filtered);
+            //await _dispatcherService.InvokeOnUIAsync(() =>
+            //{
+            //    FilteredEntries = [.. filtered];
 
-                if (AutoScroll && FilteredEntries.Count > 0)
-                {
-                    //ScrollToItem.OnNext(FilteredEntries[^1]);
-                }
-            }, cancellationToken);
+            //    if (AutoScroll && FilteredEntries.Count > 0)
+            //    {
+            //        //ScrollToItem.OnNext(FilteredEntries[^1]);
+            //    }
+            //}, cancellationToken);
         }
         catch (OperationCanceledException)
         {

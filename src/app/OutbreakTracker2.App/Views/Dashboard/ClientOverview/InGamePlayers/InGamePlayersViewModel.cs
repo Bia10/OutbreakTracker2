@@ -51,12 +51,10 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
         {
             _logger.LogInformation("Updating player {Name}", player.CharacterName);
 
-            UpdateRoomName(player);
 
             if (_viewModelCache.TryGetValue(player.NameId, out InGamePlayerViewModel? existingVm))
             {
                 existingVm.Update(player);
-                existingVm.UpdateInventory(player);
 
                 int currentIndex = Players.IndexOf(existingVm);
                 if (currentIndex != targetIndex)
@@ -78,36 +76,6 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void UpdateRoomName(DecodedInGamePlayer player)
-    {
-        string curScenarioName = _dataManager.InGameScenario.ScenarioName;
-        if (!string.IsNullOrEmpty(curScenarioName) && EnumUtility.TryParseByValueOrMember(curScenarioName, out InGameScenario scenarioEnum))
-            player.RoomName = GetRoomName(scenarioEnum, player.RoomId);
-    }
-    
-    // TODO: move elsewhere
-    private static string GetRoomName(InGameScenario scenarioName, short roomID)
-    {
-        string result = scenarioName switch
-        {
-            InGameScenario.Unknown => EnumUtility.GetEnumString(roomID, TrainingGroundRooms.Spawning),
-            InGameScenario.TrainingGround => EnumUtility.GetEnumString(roomID, TrainingGroundRooms.Spawning),
-            InGameScenario.EndOfTheRoad => EnumUtility.GetEnumString(roomID, EndOfTheRoadRooms.Spawning),
-            InGameScenario.Underbelly => EnumUtility.GetEnumString(roomID, UnderbellyRooms.Spawning),
-            InGameScenario.DesperateTimes => EnumUtility.GetEnumString(roomID, DesperateTimesRooms.Spawning),
-            InGameScenario.Showdown1 => EnumUtility.GetEnumString(roomID, ShowdownRooms.Spawning),
-            InGameScenario.Showdown2 => EnumUtility.GetEnumString(roomID, ShowdownRooms.Spawning),
-            InGameScenario.Showdown3 => EnumUtility.GetEnumString(roomID, ShowdownRooms.Spawning),
-            InGameScenario.Flashback => EnumUtility.GetEnumString(roomID, FlashbackRooms.Spawning),
-            InGameScenario.Elimination3 => EnumUtility.GetEnumString(roomID, Elimination3Rooms.Spawning),
-            InGameScenario.Elimination1 => EnumUtility.GetEnumString(roomID, Elimination1Rooms.Spawning),
-            InGameScenario.Elimination2 => EnumUtility.GetEnumString(roomID, Elimination2Rooms.Spawning),
-            InGameScenario.WildThings => EnumUtility.GetEnumString(roomID, WildThingsRooms.Spawning),
-            _ => throw new ArgumentOutOfRangeException(nameof(scenarioName), scenarioName, null)
-        };
-
-        return result;
-    }
 
     public void Dispose()
     {
