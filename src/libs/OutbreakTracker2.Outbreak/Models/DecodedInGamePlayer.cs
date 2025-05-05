@@ -115,12 +115,10 @@ public sealed record DecodedInGamePlayer : IEquatable<DecodedInGamePlayer>
     [JsonInclude]
     [JsonPropertyName(nameof(SpecialInventory))]
     public byte[] SpecialInventory { get; set; } = new byte[4];
-
-
+    
     [JsonInclude]
     [JsonPropertyName(nameof(DeadInventory))]
     public byte[] DeadInventory { get; set; } = new byte[4];
-
 
     [JsonInclude]
     [JsonPropertyName(nameof(SpecialDeadInventory))]
@@ -129,7 +127,7 @@ public sealed record DecodedInGamePlayer : IEquatable<DecodedInGamePlayer>
     [JsonInclude]
     [JsonPropertyName(nameof(EquippedItem))]
     public byte EquippedItem { get; set; }
-    
+
     public bool Equals(DecodedInGamePlayer? other)
     {
         if (other is null) return false;
@@ -151,7 +149,7 @@ public sealed record DecodedInGamePlayer : IEquatable<DecodedInGamePlayer>
         if (MaxVirus != other.MaxVirus) return false;
         if (!VirusPercentage.Equals(other.VirusPercentage)) return false;
         if (!CritBonus.Equals(other.CritBonus)) return false;
-        if (!Size.Equals(other.Size)) return false; 
+        if (!Size.Equals(other.Size)) return false;
         if (!Power.Equals(other.Power)) return false;
         if (!Speed.Equals(other.Speed)) return false;
         if (!PositionX.Equals(other.PositionX)) return false;
@@ -165,6 +163,7 @@ public sealed record DecodedInGamePlayer : IEquatable<DecodedInGamePlayer>
         if (!SpecialInventory.SequenceEqual(other.SpecialInventory)) return false;
         if (!DeadInventory.SequenceEqual(other.DeadInventory)) return false;
         if (!SpecialDeadInventory.SequenceEqual(other.SpecialDeadInventory)) return false;
+
         return true;
     }
 

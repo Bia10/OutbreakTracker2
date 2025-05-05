@@ -15,6 +15,9 @@ using ZLinq;
 
 namespace OutbreakTracker2.App.Views.Logging;
 
+// TODO: this has been finally improved so much that the main performance bottleneck is the DataGrid itself.
+// mainly the lack of virtualization and having to constantly remeasure/redraw thousands of rows per second + the autoscroll render priority ui work
+// the next step at scaling the UI rendering performance would be some control supporting virtualization or caching of rows
 public partial class LogViewerViewModel : ObservableObject, IDisposable
 {
     private readonly IDisposable? _filterSubscription;
@@ -25,7 +28,9 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
     private readonly Subject<Unit> _filterUpdateSubject = new();
     private readonly Lock _syncLock = new();
     private LogModel? _selectedLogItem;
-    private const int _maxLogEntries = 10000;
+
+    // Note: this basicaly acts as throttle on the ui thread pressure for now
+    private const int _maxLogEntries = 100;
 
     private readonly ObservableList<LogModel> _filteredEntries = [];
     public NotifyCollectionChangedSynchronizedViewList<LogModel> FilteredEntriesView { get; set; }
@@ -54,8 +59,9 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private HashSet<LogLevel> _selectedLogLevels = [];
 
+    // Note: this will que tiny work on ui thread the more items there are the more time it takes
     [ObservableProperty]
-    private bool _autoScroll = true;
+    private bool _autoScroll;
 
     [ObservableProperty]
     private bool _copyOnSelect;
@@ -105,8 +111,9 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
                 return;
 
             _selectedLogItem = value;
+            OnPropertyChanged();
             if (CopyOnSelect)
-                CopySelectedLogAsync();
+                CopySelectedLog();
         }
     }
 
@@ -125,15 +132,17 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
             .ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
         _filterSubscription = _filterUpdateSubject
-            .ThrottleFirst(TimeSpan.FromMilliseconds(100))
+            .Debounce(TimeSpan.FromMilliseconds(50))
             .SubscribeOnThreadPool()
-            .Subscribe(async void (_) => await ApplyLogFiltersAsync());
+            .SubscribeAwait(async (_, ct) => await ApplyLogFiltersAsync(ct), AwaitOperation.Drop);
 
         if (_dataStorageService.Entries is null)
+        {
+            _logger.LogError("Log data storage service entries are null.");
             return;
+        }
 
         _dataStorageService.Entries.CollectionChanged += OnLogCollectionChanged;
-
         _filterUpdateSubject.OnNext(Unit.Default);
     }
 
@@ -151,7 +160,7 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
                 case LogLevel.Error: errors++; break;
                 case LogLevel.Critical: critical++; break;
                 case LogLevel.None: break;
-                default: throw new ArgumentOutOfRangeException();
+                default: _logger.LogWarning("Unknown LogLevel encountered: {LogLogLevel}", log.LogLevel); break;
             }
 
         await _dispatcherService.InvokeOnUIAsync(() =>
@@ -166,11 +175,9 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
     }
 
     private void OnLogCollectionChanged(in NotifyCollectionChangedEventArgs<LogModel> e)
-    {
-        _filterUpdateSubject.OnNext(Unit.Default);
-    }
+        => _filterUpdateSubject.OnNext(Unit.Default);
 
-    private async Task ApplyLogFiltersAsync()
+    private async ValueTask ApplyLogFiltersAsync(CancellationToken ct)
     {
         try
         {
@@ -183,31 +190,40 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
                 currentEntriesSnapshot = [.. _dataStorageService.Entries];
             }
 
+            ct.ThrowIfCancellationRequested();
+
             await UpdateLogCountsAsync(currentEntriesSnapshot);
 
+            ct.ThrowIfCancellationRequested();
+
             var selectedLevels = SelectedLogLevels.ToHashSet();
-            List<LogModel> filtered;
+            IEnumerable<LogModel> filteredQuery = currentEntriesSnapshot;
 
             if (selectedLevels.Count > 0)
-                filtered =
-                [
-                    .. currentEntriesSnapshot.AsValueEnumerable()
-                    .Where(log => selectedLevels.Contains(log.LogLevel))
-                    .TakeLast(_maxLogEntries)
-                ];
-            else
-                filtered = [.. currentEntriesSnapshot.TakeLast(_maxLogEntries)];
+                filteredQuery = filteredQuery.Where(log => selectedLevels.Contains(log.LogLevel));
+
+            var formattedAndFiltered = filteredQuery
+                .AsValueEnumerable()
+                .Select(LogModel.ToDisplayForm)
+                .TakeLast(_maxLogEntries)
+                .ToList();
+
+            ct.ThrowIfCancellationRequested();
 
             await _dispatcherService.InvokeOnUIAsync(() =>
             {
                 _filteredEntries.Clear();
-                _filteredEntries.AddRange(filtered);
+                _filteredEntries.AddRange(formattedAndFiltered);
 
                 if (AutoScroll && _filteredEntries.Count > 0)
                     LogEntryToScrollTo = _filteredEntries.Last();
                 else
                     LogEntryToScrollTo = null;
-            });
+            }, ct);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Log filtering operation was cancelled.");
         }
         catch (Exception ex)
         {
@@ -215,20 +231,24 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void CopySelectedLogAsync()
+    private void CopySelectedLog()
     {
-        if (SelectedLogItem?.State is null)
+        if (SelectedLogItem is null)
             return;
 
-        var text = $"{SelectedLogItem.LogLevel}: {SelectedLogItem.State}";
+        var text = $"{SelectedLogItem.LogLevel}: {SelectedLogItem.DisplayMessage}";
+        if (!string.IsNullOrEmpty(SelectedLogItem.DisplayException))
+            text += Environment.NewLine + SelectedLogItem.DisplayException;
+
         _clipboardService.CopyToClipboard(text);
     }
 
     [RelayCommand]
     private void ToggleLogLevelFilter(LogLevel logLevel)
     {
-        if (!SelectedLogLevels.Remove(logLevel))
-            SelectedLogLevels.Add(logLevel);
+        bool changed = SelectedLogLevels.Remove(logLevel);
+        if (!changed)
+            changed = SelectedLogLevels.Add(logLevel);
 
         OnPropertyChanged(nameof(IsTraceSelected));
         OnPropertyChanged(nameof(IsDebugSelected));
@@ -237,7 +257,8 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(IsErrorSelected));
         OnPropertyChanged(nameof(IsCriticalSelected));
 
-        _filterUpdateSubject.OnNext(Unit.Default);
+        if (changed)
+            _filterUpdateSubject.OnNext(Unit.Default);
     }
 
     private void UpdateSelectedLogLevel(LogLevel logLevel, bool isSelected)
@@ -267,7 +288,5 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
 
         _filteredEntries.Clear();
         SelectedLogLevels.Clear();
-
-        GC.SuppressFinalize(this);
     }
 }

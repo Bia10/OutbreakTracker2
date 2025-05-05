@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OutbreakTracker2.App.Services.Data;
+using System.Threading.Tasks;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug;
 
@@ -44,5 +44,5 @@ public partial class DebugViewModel : ObservableObject
 
     [RelayCommand]
     public async Task UpdateAll()
-        => await _dataManager.UpdateAllAsync();
+        => await Task.CompletedTask;
 }

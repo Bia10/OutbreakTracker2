@@ -6,7 +6,7 @@ namespace OutbreakTracker2.App.Services.Dispatcher;
 
 public interface IDispatcherService
 {
-    bool IsOnUIThread();
+    public bool IsOnUIThread();
 
     public void PostOnUI(Action action);
 

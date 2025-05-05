@@ -1,7 +1,6 @@
-﻿using System.ComponentModel;
+﻿using OutbreakTracker2.WinInterop;
 using System.Runtime.InteropServices;
 using System.Text;
-using OutbreakTracker2.WinInterop;
 
 namespace OutbreakTracker2.Memory;
 
@@ -29,11 +28,11 @@ public sealed class MemoryReader : IMemoryReader
     {
         // Under some bizzare scenario, if the null terminator is not found, we can read up to MAX of 1MB of data
         const int maxSafeLength = 1048576;
-        Console.WriteLine($"Starting ReadString at address 0x{address:X8}");
+        //Console.WriteLine($"Starting ReadString at address 0x{address:X8}");
 
         if (address == nint.Zero)
         {
-            Console.WriteLine("Attempted to read from NULL pointer");
+            //Console.WriteLine("Attempted to read from NULL pointer");
             return string.Empty;
         }
 
@@ -59,7 +58,7 @@ public sealed class MemoryReader : IMemoryReader
 
                 if (buffer[0] is 0)
                 {
-                    Console.WriteLine($"Null terminator found at offset {bytes.Count}");
+                    //Console.WriteLine($"Null terminator found at offset {bytes.Count}");
                     break;
                 }
 
@@ -71,7 +70,7 @@ public sealed class MemoryReader : IMemoryReader
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Critical error during memory read: {ex.Message}");
+            //Console.WriteLine($"Critical error during memory read: {ex.Message}");
             result = string.Empty;
         }
 
@@ -93,7 +92,7 @@ public sealed class MemoryReader : IMemoryReader
                 /* Ignore decoding errors */
             }
 
-        Console.WriteLine($"Byte 0x{@byte:X2} @ {offset} - {GetByteInterpretations(@byte)}{multiByteInfo}");
+        //Console.WriteLine($"Byte 0x{@byte:X2} @ {offset} - {GetByteInterpretations(@byte)}{multiByteInfo}");
     }
 
     private static bool IsShiftJisLeadByte(byte @byte)
@@ -103,7 +102,7 @@ public sealed class MemoryReader : IMemoryReader
     {
         if (bytes.Count is 0)
         {
-            Console.WriteLine("Empty string read from memory");
+            //Console.WriteLine("Empty string read from memory");
             return string.Empty;
         }
 
@@ -111,11 +110,11 @@ public sealed class MemoryReader : IMemoryReader
 
         if (result.Contains('\ufffd'))
         {
-            Console.WriteLine("Encoding issues detected. Trying fallback encodings...");
+            //Console.WriteLine("Encoding issues detected. Trying fallback encodings...");
             TryFallbackEncodings(bytes);
         }
 
-        Console.WriteLine($"Read {bytes.Count} bytes: \"{result}\"");
+        //Console.WriteLine($"Read {bytes.Count} bytes: \"{result}\"");
         return result;
     }
 
@@ -133,7 +132,7 @@ public sealed class MemoryReader : IMemoryReader
             try
             {
                 string decoded = encoding.GetString([.. bytes]);
-                Console.WriteLine($"Fallback {encoding.EncodingName}: {decoded} | Bytes: {BitConverter.ToString([.. bytes])}");
+                //Console.WriteLine($"Fallback {encoding.EncodingName}: {decoded} | Bytes: {BitConverter.ToString([.. bytes])}");
             }
             catch
             {
@@ -147,14 +146,14 @@ public sealed class MemoryReader : IMemoryReader
         if (!success)
         {
             int lastError = Marshal.GetLastWin32Error();
-            Console.WriteLine($"ReadProcessMemory failed at offset {offset} " +
-                              $"(Address: 0x{address + offset:X8}) " +
-                              $"Error: 0x{lastError:X8} ({new Win32Exception(lastError).Message})");
+            //Console.WriteLine($"ReadProcessMemory failed at offset {offset} " +
+                              //$"(Address: 0x{address + offset:X8}) " +
+                              //$"Error: 0x{lastError:X8} ({new Win32Exception(lastError).Message})");
             consecutiveFails++;
 
             if (consecutiveFails >= 3)
             {
-                Console.WriteLine("Aborting read after 3 consecutive failures");
+                //Console.WriteLine("Aborting read after 3 consecutive failures");
                 shouldBreak = true;
             }
 
@@ -165,7 +164,7 @@ public sealed class MemoryReader : IMemoryReader
 
         if (bytesRead != 1)
         {
-            Console.WriteLine($"Partial read at offset {offset} Requested: 1, Got: {bytesRead}");
+            //Console.WriteLine($"Partial read at offset {offset} Requested: 1, Got: {bytesRead}");
             return false;
         }
 

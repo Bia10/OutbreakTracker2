@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using OutbreakTracker2.Outbreak.Models;
+﻿using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.PCSX2;
 using R3;
 
@@ -48,8 +47,6 @@ public interface IDataManager
     public void UpdateLobbyRoomPlayers();
 
     public void UpdateLobbySlots();
-
-    public ValueTask UpdateAllAsync();
 
     void Initialize(GameClient attachedGameClient);
 }

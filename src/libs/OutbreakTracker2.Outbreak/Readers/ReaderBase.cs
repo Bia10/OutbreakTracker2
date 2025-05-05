@@ -13,12 +13,12 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public abstract class ReaderBase
 {
-    protected readonly GameClient GameClient;
-    protected readonly EEmemMemory EEmemMemory;
-    protected readonly IMemoryReader MemoryReader;
-    protected readonly GameFile CurrentFile;
+    private readonly GameClient GameClient;
+    private readonly EEmemMemory EEmemMemory;
+    private readonly IMemoryReader MemoryReader;
     protected readonly ILogger Logger;
-    protected const bool _enableLogging = false;
+    private const bool _enableLogging = false;
+    protected GameFile CurrentFile { get; }
 
     protected ReaderBase(GameClient gameClient, EEmemMemory eememMemory, ILogger logger)
     {

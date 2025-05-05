@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
+using OutbreakTracker2.App.Services.LogStorage;
 using OutbreakTracker2.App.Views.Logging;
 using Serilog.Core;
 using Serilog.Events;
 using System;
 using System.Linq;
-using System.Threading.Channels;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
-using OutbreakTracker2.App.Services.LogStorage;
 
 namespace OutbreakTracker2.App.SerilogSinks;
 
@@ -112,14 +112,8 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
     {
         try
         {
-            await _dataStore.AddEntryAsync(new LogModel
-            {
-                Timestamp = DateTime.UtcNow,
-                LogLevel = logLevel,
-                EventId = eventId,
-                State = message,
-                Exception = exception,
-            }, cancellationToken).ConfigureAwait(false);
+            var logModel = new LogModel(logLevel, eventId, message, exception);
+            await _dataStore.AddEntryAsync(logModel, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
