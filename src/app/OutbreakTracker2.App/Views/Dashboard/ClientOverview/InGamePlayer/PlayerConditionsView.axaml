@@ -1,0 +1,31 @@
+﻿<UserControl
+    x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer.PlayerConditionsView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    xmlns:vm="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer"
+    d:DesignHeight="50"
+    d:DesignWidth="400"
+    x:DataType="vm:PlayerConditionsViewModel"
+    mc:Ignorable="d">
+    <WrapPanel
+        Margin="0"
+        HorizontalAlignment="Left"
+        Orientation="Horizontal">
+        <suki:InfoBar
+            Title="{Binding ConditionTitle}"
+            Margin="0,0,5,0"
+            IsClosable="False"
+            IsOpen="{Binding IsConditionVisible}"
+            Message="{Binding ConditionMessage}"
+            Severity="{Binding ConditionSeverity}" />
+        <suki:InfoBar
+            Title="{Binding StatusTitle}"
+            IsClosable="False"
+            IsOpen="{Binding IsStatusVisible}"
+            Message="{Binding StatusMessage}"
+            Severity="{Binding StatusSeverity}" />
+    </WrapPanel>
+</UserControl>

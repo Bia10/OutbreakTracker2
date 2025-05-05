@@ -1,17 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.App.Services.Data;
+using OutbreakTracker2.App.Services.Dispatcher;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer;
-using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
-using OutbreakTracker2.Outbreak.Utility;
 using R3;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
-using ZLinq;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
 
@@ -24,10 +22,13 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
 
     public ObservableCollection<InGamePlayerViewModel> Players { get; } = new();
 
-    public InGamePlayersViewModel(IDataManager dataManager, ILogger<InGamePlayersViewModel> logger)
+    private readonly IDispatcherService _dispatcherService;
+    
+    public InGamePlayersViewModel(IDataManager dataManager, ILogger<InGamePlayersViewModel> logger, IDispatcherService dispatcherService)
     {
         _dataManager = dataManager;
         _logger = logger;
+        _dispatcherService = dispatcherService;
         _logger.LogInformation("Initializing InGamePlayersViewModel");
 
         _subscription = _dataManager.InGamePlayersObservable
@@ -67,7 +68,7 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
             }
             else
             {
-                var newVm = new InGamePlayerViewModel(player, _dataManager);
+                var newVm = new InGamePlayerViewModel(player, _dataManager, _dispatcherService);
                 _viewModelCache[player.NameId] = newVm;
                 Players.Insert(targetIndex, newVm);
             }

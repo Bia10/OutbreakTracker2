@@ -1,19 +1,14 @@
 ﻿using Avalonia.Threading;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace OutbreakTracker2.App.Services.Dispatcher;
 
-public class DispatcherService : IDispatcherService
+public sealed class DispatcherService : IDispatcherService
 {
-    private readonly ILogger<DispatcherService> _logger;
-
-    public DispatcherService(ILogger<DispatcherService> logger)
-    {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    public bool IsOnUIThread()
+        => Avalonia.Threading.Dispatcher.UIThread.CheckAccess();
 
     public void PostOnUI(Action action)
     {

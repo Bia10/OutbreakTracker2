@@ -1,0 +1,27 @@
+﻿<UserControl
+    x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer.PlayerGaugesView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    xmlns:vm="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer"
+    d:DesignHeight="50"
+    d:DesignWidth="200"
+    x:DataType="vm:PlayerGaugesViewModel"
+    mc:Ignorable="d">
+    <StackPanel Spacing="5">
+        <suki:GroupBox Margin="0" Header="Health Gauge">
+            <ProgressBar
+                IsIndeterminate="False"
+                ShowProgressText="True"
+                Value="{Binding HealthPercentage}" />
+        </suki:GroupBox>
+        <suki:GroupBox Margin="0" Header="Virus Gauge">
+            <ProgressBar
+                IsIndeterminate="False"
+                ShowProgressText="True"
+                Value="{Binding VirusPercentage}" />
+        </suki:GroupBox>
+    </StackPanel>
+</UserControl>

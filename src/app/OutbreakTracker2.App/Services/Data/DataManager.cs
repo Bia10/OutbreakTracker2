@@ -69,52 +69,60 @@ public sealed class DataManager : IDataManager, IDisposable
 
     public void UpdateDoors()
     {
-        _doorReader?.UpdateDoors(false);
+        _doorReader?.UpdateDoors();
         _doorsSubject.OnNext(_doorReader?.DecodedDoors ?? []);
     }
 
     public void UpdateEnemies()
     {
-        _enemiesReader?.UpdateEnemies(false);
-        _enemiesReader?.UpdateEnemies2(false);
+        _enemiesReader?.UpdateEnemies();
+        _enemiesReader?.UpdateEnemies2();
         _enemiesSubject.OnNext(_enemiesReader?.DecodedEnemies2 ?? []);
     }
 
     public void UpdateInGamePlayer()
     {
-        _inGamePlayerReader?.UpdateInGamePlayers(false);
+        _inGamePlayerReader?.UpdateInGamePlayers();
 
-        _logger.LogDebug("DataManager is about to emit {Count} players.", _inGamePlayerReader?.DecodedInGamePlayers.Length);
-        foreach (DecodedInGamePlayer player in _inGamePlayerReader?.DecodedInGamePlayers)
+        DecodedInGamePlayer[]? decodedPlayers = _inGamePlayerReader?.DecodedInGamePlayers;
+        if (decodedPlayers is null)
         {
-            _logger.LogTrace("DataManager Emitting Player - Name: '{Name}', Pos({X:F2}, {Y:F2}), Health:{Health}/{MaxHealth}({HealthPct:F2}%), Status:'{Status}', Condition:'{Condition}'",
-                player.CharacterName, player.PositionX, player.PositionY, player.CurrentHealth, player.MaximumHealth, player.HealthPercentage * 100, player.Status, player.Condition);
+            _logger.LogWarning("DataManager is about to emit 0 players because the decoded players array is null.");
+            _inGamePlayersSubject.OnNext([]);
+            return;
         }
 
-        _inGamePlayersSubject.OnNext(_inGamePlayerReader?.DecodedInGamePlayers ?? []);
+        _logger.LogDebug("DataManager is about to emit {Count} players.", decodedPlayers.Length);
+        foreach (DecodedInGamePlayer player in decodedPlayers)
+            _logger.LogTrace(
+                "DataManager Emitting Player - Name: '{Name}', Pos({X:F2}, {Y:F2}), Health:{Health}/{MaxHealth}({HealthPct:F2}%), Status:'{Status}', Condition:'{Condition}'",
+                player.CharacterName, player.PositionX, player.PositionY, player.CurrentHealth,
+                player.MaximumHealth, player.HealthPercentage * 100, player.Status, player.Condition);
+
+        _inGamePlayersSubject.OnNext(decodedPlayers);
     }
 
     public void UpdateInGameScenario()
     {
-        _inGameScenarioReader?.UpdateScenario(false);
+        _inGameScenarioReader?.UpdateScenario();
         _inGameScenarioSubject.OnNext(_inGameScenarioReader?.DecodedScenario ?? new DecodedScenario());
     }
 
     public void UpdateLobbyRoom()
     {
-        _lobbyRoomReader?.UpdateLobbyRoom(false);
+        _lobbyRoomReader?.UpdateLobbyRoom();
         _lobbyRoomSubject.OnNext(_lobbyRoomReader?.DecodedLobbyRoom ?? new DecodedLobbyRoom());
     }
 
     public void UpdateLobbyRoomPlayers()
     {
-        _lobbyRoomPlayerReader?.UpdateRoomPlayers(false);
+        _lobbyRoomPlayerReader?.UpdateRoomPlayers();
         _lobbyRoomPlayersSubject.OnNext(_lobbyRoomPlayerReader?.DecodedLobbyRoomPlayers ?? []);
     }
 
     public void UpdateLobbySlots()
     {
-        _lobbySlotReader?.UpdateLobbySlots(false);
+        _lobbySlotReader?.UpdateLobbySlots();
         _lobbySlotsSubject.OnNext(_lobbySlotReader?.DecodedLobbySlots ?? []);
     }
 
@@ -139,11 +147,11 @@ public sealed class DataManager : IDataManager, IDisposable
 
         try
         {
-            UpdateInGameScenario();   
+            UpdateInGameScenario();
             UpdateDoors();
             UpdateEnemies();
             UpdateInGamePlayer();
-            
+
             if (now - _lastFullUpdateTime > _fullUpdateInterval)
             {
                 _lastFullUpdateTime = now;
