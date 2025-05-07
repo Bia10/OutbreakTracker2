@@ -76,7 +76,7 @@ public class ToastService(ISukiToastManager toastManager, IDispatcherService dis
             .OfType(NotificationType.Information)
             .WithTitle(string.IsNullOrEmpty(title) ? "Info" : title)
             .WithContent(content)
-            .WithActionButtonNormal(cancelButtonContent, onCanceledAction, true)
+            .WithActionButton(cancelButtonContent, onCanceledAction, true)
             .Queue();
 
         return toast;

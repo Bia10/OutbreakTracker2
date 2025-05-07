@@ -34,28 +34,23 @@
     </UserControl.DataTemplates>
 
     <suki:GroupBox Header="{Binding CharacterName}">
-        <StackPanel Spacing="10">
+        <Grid Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-            <ContentControl Margin="10" Content="{Binding Gauges}" />
+            <StackPanel Grid.Column="0" Spacing="5">
+                <ContentControl Content="{Binding Gauges}" />
+                <ContentControl Content="{Binding Conditions}" />
+                <ContentControl Content="{Binding StatusEffects}" />
+                <ContentControl Content="{Binding Attributes}" />
+            </StackPanel>
 
-            <ContentControl Margin="10" Content="{Binding Conditions}" />
-
-            <Expander ExpandDirection="Down" Header="Status">
-                <ContentControl Margin="10" Content="{Binding StatusEffects}" />
-            </Expander>
-
-            <Expander ExpandDirection="Down" Header="Attributes">
-                <ContentControl Margin="10" Content="{Binding Attributes}" />
-            </Expander>
-
-            <Expander ExpandDirection="Down" Header="Inventory">
+            <StackPanel Grid.Column="1" Spacing="5">
                 <ContentControl Content="{Binding Inventory}" />
-            </Expander>
-
-            <Expander ExpandDirection="Down" Header="Position">
-                <ContentControl Margin="10" Content="{Binding Position}" />
-            </Expander>
-
-        </StackPanel>
+                <ContentControl Content="{Binding Position}" />
+            </StackPanel>
+        </Grid>
     </suki:GroupBox>
 </UserControl>

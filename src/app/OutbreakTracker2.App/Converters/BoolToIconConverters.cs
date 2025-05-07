@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Globalization;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Material.Icons;
 
-namespace OutbreakTracker2.App.Convertors;
+namespace OutbreakTracker2.App.Converters;
 
 public static class BoolToIconConverters
 {
@@ -17,11 +18,12 @@ public sealed class BoolToIconConverter(MaterialIconKind trueIcon, MaterialIconK
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is not bool b) return null;
+        if (value is not bool b)
+            return BindingOperations.DoNothing;
 
         return b ? trueIcon : falseIcon;
     }
 
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
 }

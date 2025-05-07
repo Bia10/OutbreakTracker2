@@ -12,13 +12,12 @@
     x:DataType="inGamePlayers:InGamePlayersViewModel"
     mc:Ignorable="d">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        <ItemsControl ItemsSource="{Binding Players}">
+        <ItemsControl ItemsSource="{Binding PlayersView}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <StackPanel Orientation="Vertical" Spacing="15" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
-
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <controls:GlassCard

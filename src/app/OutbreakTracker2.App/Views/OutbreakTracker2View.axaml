@@ -3,7 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    xmlns:convertors="clr-namespace:OutbreakTracker2.App.Convertors"
+    xmlns:converters="clr-namespace:OutbreakTracker2.App.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:suki="https://github.com/kikipoulet/SukiUI"
@@ -178,7 +178,7 @@
                 Header="Title Bar"
                 ToolTip.Tip="Toggles the title bar.">
                 <MenuItem.Icon>
-                    <avalonia:MaterialIcon Kind="{Binding TitleBarVisible, Converter={x:Static convertors:BoolToIconConverters.Visibility}}" />
+                    <avalonia:MaterialIcon Kind="{Binding TitleBarVisible, Converter={x:Static converters:BoolToIconConverters.Visibility}}" />
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Command="{Binding ToggleTitleBackgroundCommand}" Header="Change TitleBar Background Visibility">
@@ -203,7 +203,7 @@
                     Header="Window Lock"
                     ToolTip.Tip="Toggles minimizing and resizing.">
                     <MenuItem.Icon>
-                        <avalonia:MaterialIcon Kind="{Binding WindowLocked, Converter={x:Static convertors:BoolToIconConverters.WindowLock}}" />
+                        <avalonia:MaterialIcon Kind="{Binding WindowLocked, Converter={x:Static converters:BoolToIconConverters.WindowLock}}" />
                     </MenuItem.Icon>
                 </MenuItem>
                 <MenuItem
@@ -246,12 +246,12 @@
             <MenuItem Header="-" />
             <MenuItem Command="{Binding ToggleAnimationsCommand}" Header="Animations">
                 <MenuItem.Icon>
-                    <avalonia:MaterialIcon Kind="{Binding AnimationsEnabled, Converter={x:Static convertors:BoolToIconConverters.Animation}}" />
+                    <avalonia:MaterialIcon Kind="{Binding AnimationsEnabled, Converter={x:Static converters:BoolToIconConverters.Animation}}" />
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Command="{Binding ToggleTransitionsCommand}" Header="Transitions">
                 <MenuItem.Icon>
-                    <avalonia:MaterialIcon Kind="{Binding TransitionsEnabled, Converter={x:Static convertors:BoolToIconConverters.Animation}}" />
+                    <avalonia:MaterialIcon Kind="{Binding TransitionsEnabled, Converter={x:Static converters:BoolToIconConverters.Animation}}" />
                 </MenuItem.Icon>
             </MenuItem>
         </MenuItem>

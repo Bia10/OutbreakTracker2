@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.App.Services.Data;
-using OutbreakTracker2.App.Services.Dispatcher;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
 using OutbreakTracker2.Outbreak.Models;
 
@@ -9,7 +8,16 @@ namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer;
 public partial class InGamePlayerViewModel : ObservableObject
 {
     [ObservableProperty]
+    private short nameId;
+
+    [ObservableProperty]
     private string characterName = string.Empty;
+
+    [ObservableProperty]
+    private string characterType = string.Empty;
+
+    [ObservableProperty]
+    private string uniqueNameId  = string.Empty;
 
     [ObservableProperty]
     private bool isEnabled;
@@ -35,11 +43,8 @@ public partial class InGamePlayerViewModel : ObservableObject
     [ObservableProperty]
     private InventoryViewModel _inventory;
 
-    private readonly IDispatcherService _dispatcherService;
-
-    public InGamePlayerViewModel(DecodedInGamePlayer player, IDataManager dataManager, IDispatcherService dispatcherService)
+    public InGamePlayerViewModel(DecodedInGamePlayer player, IDataManager dataManager)
     {
-        _dispatcherService = dispatcherService;
         _gauges = new PlayerGaugesViewModel();
         _statusEffects = new PlayerStatusEffectsViewModel();
         _conditions = new PlayerConditionsViewModel();
@@ -51,16 +56,17 @@ public partial class InGamePlayerViewModel : ObservableObject
     }
 
     public void Update(DecodedInGamePlayer player)
-    {
-        if (!_dispatcherService.IsOnUIThread())
-            _dispatcherService.PostOnUI(() => UpdateProperties(player));
-        else
-            UpdateProperties(player);
-    }
+        => UpdateProperties(player);
 
     private void UpdateProperties(DecodedInGamePlayer player)
     {
+        UniqueNameId = player.NameId > 0
+            ? $"NameId_{player.NameId}"
+            : $"CharacterType_{player.CharacterType}";
+
         CharacterName = player.CharacterName;
+        NameId = player.NameId;
+        CharacterType = player.CharacterType;
         IsEnabled = player.Enabled;
         IsInGame = player.InGame;
 
@@ -79,4 +85,15 @@ public partial class InGamePlayerViewModel : ObservableObject
             player.SpecialDeadInventory
         );
     }
+    
+    public override bool Equals(object? obj)
+    {
+        if (obj is InGamePlayerViewModel other)
+            return UniqueNameId == other.UniqueNameId;
+
+        return false;
+    }
+
+    public override int GetHashCode()
+        => UniqueNameId.GetHashCode();
 }

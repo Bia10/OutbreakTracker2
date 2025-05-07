@@ -24,10 +24,12 @@ using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameEnemies;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
 using OutbreakTracker2.App.Views.Log;
 using OutbreakTracker2.App.Views.Logging;
+using R3;
 using Serilog;
 using SukiUI.Dialogs;
 using SukiUI.Toasts;
 using System;
+using System.Threading.Tasks;
 
 namespace OutbreakTracker2.App;
 
@@ -54,12 +56,47 @@ public class App : Application
             DataTemplates.Add(new ViewLocator(views));
 
             IServiceProvider serviceProvider = ConfigureServicesAndLogging(services, configuration);
+
+            ConfigureExceptionHandling();
+
             desktop.MainWindow = views.CreateView<Views.OutbreakTracker2ViewModel>(serviceProvider) as Window;
 
             Log.Information("Application initialized successfully!");
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static void ConfigureExceptionHandling()
+    {
+        Avalonia.Threading.Dispatcher.UIThread.UnhandledException += (sender, e) =>
+        {
+            Log.Error(e.Exception, "Unhandled exception on UI thread");
+            e.Handled = true;
+        };
+
+        TaskScheduler.UnobservedTaskException += (sender, e) =>
+        {
+            Log.Error(e.Exception, "Unobserved task exception");
+            e.SetObserved();
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+        {
+            if (e.ExceptionObject is Exception ex)
+            {
+                Log.Fatal(ex, "Unhandled exception in application domain (IsTerminating: {IsTerminating})", e.IsTerminating);
+            }
+            else
+            {
+                Log.Fatal("Unhandled exception in application domain with unknown exception object: {ExceptionObject} (IsTerminating: {IsTerminating})", e.ExceptionObject, e.IsTerminating);
+            }
+        };
+
+        ObservableSystem.RegisterUnhandledExceptionHandler((Exception ex) =>
+        {
+            Log.Error(ex, "Unhandled R3 exception");
+        });
     }
 
     private static OutbreakTracker2Views ConfigureViews(ServiceCollection services)
@@ -92,7 +129,7 @@ public class App : Application
         Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration)
             .WriteTo.DataStoreLoggerSink(logDataStore)
             .CreateLogger();
-
+        
         ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
         loggerFactory.AddSerilog(Log.Logger);
     }
@@ -114,7 +151,7 @@ public class App : Application
         services.AddLogging(loggingBuilder =>
         {
             loggingBuilder.ClearProviders();
-            loggingBuilder.AddSerilog(Log.Logger, dispose: false);
+            loggingBuilder.AddSerilog(dispose: false);
         });
 
         services.AddSingleton<IProcessLocator, ProcessLocator>();

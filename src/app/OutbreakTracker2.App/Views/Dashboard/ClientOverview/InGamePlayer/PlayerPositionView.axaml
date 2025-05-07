@@ -4,26 +4,29 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
     xmlns:vm="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer"
     d:DesignHeight="100"
     d:DesignWidth="200"
     x:DataType="vm:PlayerPositionViewModel"
     mc:Ignorable="d">
-    <Grid
-        Margin="0"
-        ColumnDefinitions="Auto"
-        RowDefinitions="Auto,Auto,Auto">
-        <TextBlock
-            Grid.Row="0"
-            Grid.Column="0"
-            Text="{Binding PositionX, StringFormat='X: {0}'}" />
-        <TextBlock
-            Grid.Row="1"
-            Grid.Column="0"
-            Text="{Binding PositionY, StringFormat='Y: {0}'}" />
-        <TextBlock
-            Grid.Row="2"
-            Grid.Column="0"
-            Text="{Binding RoomName, StringFormat='Room name: {0}'}" />
-    </Grid>
+    <suki:GroupBox Header="Location">
+        <Grid
+            Margin="2"
+            ColumnDefinitions="Auto"
+            RowDefinitions="Auto, Auto, Auto">
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                Text="{Binding RoomName, StringFormat='Room name: {0}'}" />
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="0"
+                Text="{Binding PositionX, StringFormat='X: {0}'}" />
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="0"
+                Text="{Binding PositionY, StringFormat='Y: {0}'}" />
+        </Grid>
+    </suki:GroupBox>
 </UserControl>
