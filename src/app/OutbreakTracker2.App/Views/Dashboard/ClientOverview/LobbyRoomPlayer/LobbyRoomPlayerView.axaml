@@ -1,0 +1,125 @@
+﻿<UserControl
+    x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer.LobbyRoomPlayerView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:lobbyRoomPlayer="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    d:DesignHeight="150"
+    d:DesignWidth="250"
+    x:DataType="lobbyRoomPlayer:LobbyRoomPlayerViewModel"
+    mc:Ignorable="d">
+
+    <suki:GlassCard
+        MinWidth="220"
+        MaxWidth="280"
+        Margin="5">
+        <Grid
+            Margin="10"
+            ColumnDefinitions="Auto,*"
+            RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+            <avalonia:MaterialIcon
+                Grid.Row="0"
+                Grid.Column="0"
+                Width="18"
+                Height="18"
+                VerticalAlignment="Center"
+                Kind="Account" />
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                FontSize="14"
+                FontWeight="Bold"
+                Text="{Binding CharacterName}" />
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                FontWeight="SemiBold"
+                Text="NameId:" />
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Text="{Binding NameId}" />
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                FontWeight="SemiBold"
+                Text="Type:" />
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Text="{Binding NPCType}" />
+            <TextBlock
+                Grid.Row="3"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                FontWeight="SemiBold"
+                Text="HP:" />
+            <TextBlock
+                Grid.Row="3"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Text="{Binding CharacterHP}" />
+            <TextBlock
+                Grid.Row="4"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                FontWeight="SemiBold"
+                Text="Power:" />
+            <TextBlock
+                Grid.Row="4"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Text="{Binding CharacterPower}" />
+            <StackPanel
+                Grid.Row="5"
+                Grid.Column="0"
+                Grid.ColumnSpan="2">
+                <Border
+                    Height="1"
+                    Margin="0,5,0,5"
+                    Background="{DynamicResource SukiControlBorderBrush}" />
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="NPC Name:" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Text="{Binding NPCName}" />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="NPC HP:" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Text="{Binding NPCHP}" />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="NPC Power:" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Text="{Binding NPCPower}" />
+                </Grid>
+            </StackPanel>
+        </Grid>
+    </suki:GlassCard>
+</UserControl>

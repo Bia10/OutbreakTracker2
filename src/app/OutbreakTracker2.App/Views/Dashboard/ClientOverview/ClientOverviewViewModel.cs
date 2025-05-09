@@ -2,6 +2,8 @@
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameEnemies;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoom;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlots;
 using System;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview;
@@ -14,16 +16,21 @@ public class ClientOverviewViewModel : ObservableObject
 
     public InGameEnemiesViewModel InGameEnemiesViewModel { get; }
 
+    public LobbySlotsViewModel LobbySlotsViewModel { get; }
+
+    public LobbyRoomViewModel LobbyRoomViewModel { get; }
+
     public ClientOverviewViewModel(
         DebugViewModel debugViewModel,
         InGamePlayersViewModel inGamePlayersViewModel,
-        InGameEnemiesViewModel inGameEnemiesViewModel)
+        InGameEnemiesViewModel inGameEnemiesViewModel,
+        LobbySlotsViewModel lobbySlotsViewModel,
+        LobbyRoomViewModel lobbyRoomViewModel)
     {
-        DebugViewModel =
-            debugViewModel ?? throw new ArgumentNullException(nameof(debugViewModel));
-        InGamePlayersViewModel =
-            inGamePlayersViewModel ?? throw new ArgumentNullException(nameof(inGamePlayersViewModel));
-        InGameEnemiesViewModel =
-            inGameEnemiesViewModel ?? throw new ArgumentNullException(nameof(inGameEnemiesViewModel));
+        DebugViewModel = debugViewModel ?? throw new ArgumentNullException(nameof(debugViewModel));
+        InGamePlayersViewModel = inGamePlayersViewModel ?? throw new ArgumentNullException(nameof(inGamePlayersViewModel));
+        InGameEnemiesViewModel = inGameEnemiesViewModel ?? throw new ArgumentNullException(nameof(inGameEnemiesViewModel));
+        LobbySlotsViewModel = lobbySlotsViewModel ?? throw new ArgumentNullException(nameof(lobbySlotsViewModel));
+        LobbyRoomViewModel = lobbyRoomViewModel ?? throw new ArgumentNullException(nameof(lobbyRoomViewModel));
     }
 }

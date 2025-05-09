@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Enums;
+using OutbreakTracker2.Outbreak.Enums.LobbyRoom;
 using OutbreakTracker2.Outbreak.Enums.LobbySlot;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Offsets;
@@ -20,6 +21,9 @@ public sealed class LobbyRoomReader : ReaderBase
         DecodedLobbyRoom = new DecodedLobbyRoom();
     }
 
+    public short GetCurPlayers()
+        => ReadValue(LobbyRoomOffsets.CurPlayers, (short)-1);
+
     public short GetMaxPlayers()
         => ReadValue(LobbyRoomOffsets.MaxPlayers, (short)-1);
 
@@ -35,11 +39,11 @@ public sealed class LobbyRoomReader : ReaderBase
     public short GetTime()
         => ReadValue(LobbyRoomOffsets.Time, (short)-1);
 
-    public short GetCurPlayers()
-        => ReadValue(LobbyRoomOffsets.CurPlayers, (short)-1);
-
     public static string GetDifficultyName(short difficulty)
         => EnumUtility.GetEnumString(difficulty, RoomDifficulty.Unknown);
+
+    public static string GetStatusName(byte status)
+        => EnumUtility.GetEnumString(status, RoomStatus.Unknown);
 
     public string GetScenarioName(short scenarioId)
         => GetScenarioString(scenarioId,
@@ -69,12 +73,12 @@ public sealed class LobbyRoomReader : ReaderBase
 
         DecodedLobbyRoom = new DecodedLobbyRoom
         {
+            CurPlayer = GetCurPlayers(),
             MaxPlayer = GetMaxPlayers(),
             Difficulty = GetDifficultyName(GetDifficulty()),
-            Status = GetStatus(),
+            Status = GetStatusName(GetStatus()),
             ScenarioName = GetScenarioName(GetScenarioId()),
-            TimeLeft = GetFormattedTimeString(),
-            CurPlayer = GetCurPlayers()
+            TimeLeft = GetFormattedTimeString()
         };
 
         long duration = Environment.TickCount64 - start;

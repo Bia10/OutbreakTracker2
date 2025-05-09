@@ -7,7 +7,7 @@ public sealed record DecodedLobbyRoom
 {
     [JsonInclude]
     [JsonPropertyName(nameof(Status))]
-    public byte Status { get; set; }
+    public string Status { get; set; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(TimeLeft))]

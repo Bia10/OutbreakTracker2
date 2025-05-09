@@ -53,13 +53,6 @@
 
 
   <ItemGroup>
-    <Folder Include="Views\Dashboard\ClientOverview\LobbySlots\" />
-    <Folder Include="Views\Dashboard\ClientOverview\LobbyRoom\" />
-    <Folder Include="Views\Dashboard\ClientOverview\LobbyRoomPlayers\" />
-  </ItemGroup>
-
-
-  <ItemGroup>
     <ProjectReference Include="..\..\libs\OutbreakTracker2.Outbreak\OutbreakTracker2.Outbreak.csproj" />
   </ItemGroup>
 </Project>

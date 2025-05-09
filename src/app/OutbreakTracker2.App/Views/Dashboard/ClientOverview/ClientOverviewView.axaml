@@ -7,6 +7,8 @@
     xmlns:debug="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug"
     xmlns:inGameEnemies="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameEnemies"
     xmlns:inGamePlayers="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers"
+    xmlns:lobbyRoom="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoom"
+    xmlns:lobbySlots="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlots"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -17,12 +19,20 @@
             <TabItem Header="Debug">
                 <debug:DebugView DataContext="{Binding DebugViewModel}" />
             </TabItem>
+            <TabItem Header="Lobby Slots">
+                <lobbySlots:LobbySlotsView DataContext="{Binding LobbySlotsViewModel}" />
+            </TabItem>
+            <TabItem Header="Lobby Room">
+                <lobbyRoom:LobbyRoomView DataContext="{Binding LobbyRoomViewModel}" />
+            </TabItem>
+            <!--  Scenario  -->
             <TabItem Header="In-Game Players">
                 <inGamePlayers:InGamePlayersView DataContext="{Binding InGamePlayersViewModel}" />
             </TabItem>
             <TabItem Header="In-Game Enemies">
                 <inGameEnemies:InGameEnemiesView DataContext="{Binding InGameEnemiesViewModel}" />
             </TabItem>
+            <!--  In-Game Doors  -->
         </TabControl>
     </Grid>
 </UserControl>

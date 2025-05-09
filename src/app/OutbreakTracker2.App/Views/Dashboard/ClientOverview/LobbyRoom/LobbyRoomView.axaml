@@ -1,0 +1,135 @@
+﻿<UserControl
+    x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoom.LobbyRoomView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:lobbyRoom="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoom"
+    xmlns:lobbyRoomPlayer="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    d:DesignHeight="600"
+    d:DesignWidth="800"
+    x:DataType="lobbyRoom:LobbyRoomViewModel"
+    mc:Ignorable="d">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="10">
+            <suki:GlassCard Margin="0,0,0,10" HorizontalAlignment="Stretch">
+                <Grid
+                    Margin="15"
+                    ColumnDefinitions="Auto,*,Auto"
+                    RowDefinitions="Auto,Auto,Auto,Auto">
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        FontSize="18"
+                        FontWeight="Bold"
+                        Text="Scenario:" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="18"
+                        FontWeight="Bold"
+                        Text="{Binding ScenarioName}"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Text="{Binding Difficulty}" />
+                    <Border
+                        Grid.Row="1"
+                        Grid.ColumnSpan="3"
+                        Height="1"
+                        Margin="0,5,0,10"
+                        Background="{DynamicResource SukiControlBorderBrush}" />
+                    <StackPanel
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <avalonia:MaterialIcon
+                            Width="18"
+                            Height="18"
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            Kind="Clock" />
+                        <TextBlock
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Time Left:" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Text="{Binding TimeLeft}" />
+                    <StackPanel
+                        Grid.Row="2"
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <avalonia:MaterialIcon
+                            Width="18"
+                            Height="18"
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            Kind="AccountGroup" />
+                        <TextBlock VerticalAlignment="Center" Text="{Binding PlayersDisplay}" />
+                    </StackPanel>
+                    <StackPanel
+                        Grid.Row="3"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <avalonia:MaterialIcon
+                            Width="18"
+                            Height="18"
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            Kind="Signal" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Status:" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Text="{Binding Status}" />
+                </Grid>
+            </suki:GlassCard>
+            <TextBlock
+                Margin="0,10,0,5"
+                HorizontalAlignment="Center"
+                FontSize="20"
+                FontWeight="Bold"
+                Text="Players" />
+            <Border
+                Height="1"
+                Margin="0,0,0,10"
+                Background="{DynamicResource SukiControlBorderBrush}" />
+            <ItemsControl ItemsSource="{Binding Players}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel HorizontalAlignment="Center" Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="lobbyRoomPlayer:LobbyRoomPlayerViewModel">
+                        <lobbyRoomPlayer:LobbyRoomPlayerView DataContext="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

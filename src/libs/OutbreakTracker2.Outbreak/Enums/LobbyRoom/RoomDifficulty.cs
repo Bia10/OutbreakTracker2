@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace OutbreakTracker2.Outbreak.Enums;
+namespace OutbreakTracker2.Outbreak.Enums.LobbyRoom;
 
 public enum RoomDifficulty : byte
 {

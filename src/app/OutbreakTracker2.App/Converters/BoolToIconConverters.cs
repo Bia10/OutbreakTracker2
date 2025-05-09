@@ -1,8 +1,8 @@
-﻿using System;
-using System.Globalization;
-using Avalonia.Data;
+﻿using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Material.Icons;
+using System;
+using System.Globalization;
 
 namespace OutbreakTracker2.App.Converters;
 
@@ -12,6 +12,7 @@ public static class BoolToIconConverters
     public static readonly BoolToIconConverter WindowLock = new(MaterialIconKind.Unlocked, MaterialIconKind.Lock);
     public static readonly BoolToIconConverter Visibility = new(MaterialIconKind.EyeClosed, MaterialIconKind.Eye);
     public static readonly BoolToIconConverter Simple = new(MaterialIconKind.Close, MaterialIconKind.Ticket);
+    public static readonly BoolToIconConverter Password = new(MaterialIconKind.Lock, MaterialIconKind.Unlocked);
 }
 
 public sealed class BoolToIconConverter(MaterialIconKind trueIcon, MaterialIconKind falseIcon) : IValueConverter
