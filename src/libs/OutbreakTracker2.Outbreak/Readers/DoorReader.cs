@@ -33,7 +33,7 @@ public sealed class DoorReader : ReaderBase
         _ => 0xFF
     };
 
-    public string DecodeFlag(ushort doorHP, ushort flag)
+    public static string DecodeFlag(ushort doorHP, ushort flag)
     {
         if (doorHP is 500)
             return "unlocked";
@@ -75,9 +75,9 @@ public sealed class DoorReader : ReaderBase
 
         for (var i = 0; i < maxDoors; i++)
         {
-            DecodedDoors[i].HP = GetHealthPoints(i);
+            DecodedDoors[i].Hp = GetHealthPoints(i);
             DecodedDoors[i].Flag = GetFlag(i);
-            DecodedDoors[i].Status = DecodeFlag(DecodedDoors[i].HP, DecodedDoors[i].Flag);
+            DecodedDoors[i].Status = DecodeFlag(DecodedDoors[i].Hp, DecodedDoors[i].Flag);
         }
 
         long duration = Environment.TickCount64 - start;

@@ -85,7 +85,7 @@ public partial class InGamePlayerViewModel : ObservableObject
             player.SpecialDeadInventory
         );
     }
-    
+
     public override bool Equals(object? obj)
     {
         if (obj is InGamePlayerViewModel other)

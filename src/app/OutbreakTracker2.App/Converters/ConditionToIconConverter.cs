@@ -10,8 +10,8 @@ public class ConditionToIconConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is not string rawCondition)    
-            return BindingOperations.DoNothing;    
+        if (value is not string rawCondition)
+            return BindingOperations.DoNothing;
 
         return rawCondition.ToLower() switch
         {

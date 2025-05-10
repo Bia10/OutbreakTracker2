@@ -190,7 +190,7 @@ public sealed class DataManager : IDataManager, IDisposable
         _enemiesReader?.UpdateEnemies2();
         _enemiesSubject.OnNext(_enemiesReader?.DecodedEnemies2 ?? []);
     }
-    
+
     public void UpdateInGamePlayer()
     {
         _inGamePlayerReader?.UpdateInGamePlayers();
@@ -205,7 +205,7 @@ public sealed class DataManager : IDataManager, IDisposable
         }
 
         _logger.LogDebug("DataManager is about to emit {Count} players.", decodedPlayers.Length);
-        
+
         foreach (DecodedInGamePlayer player in decodedPlayers)
             _logger.LogTrace(
                 "DataManager Emitting Player - Name: '{Name}', Pos({X:F2}, {Y:F2}), Health:{Health}/{MaxHealth}({HealthPct:F2}%), Status:'{Status}', Condition:'{Condition}'",

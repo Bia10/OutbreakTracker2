@@ -55,12 +55,12 @@ public partial class LobbyRoomPlayerViewModel : ObservableObject
         _model = model;
 
         IsEnabled = model.IsEnabled;
-        NameId = model.NameId;      
+        NameId = model.NameId;
         NPCType = model.NPCType;
         CharacterName = model.CharacterName;
         CharacterHP = model.CharacterHP;
         CharacterPower = model.CharacterPower;
-        NPCName = model.NPCName; 
+        NPCName = model.NPCName;
         NPCHP = model.NPCHP;
         NPCPower = model.NPCPower;
 

@@ -7,8 +7,6 @@ namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlot;
 
 public partial class LobbySlotViewModel : ObservableObject
 {
-    private DecodedLobbySlot _model;
-
     [ObservableProperty]
     private short _slotNumber;
 
@@ -34,7 +32,7 @@ public partial class LobbySlotViewModel : ObservableObject
     private string _title = string.Empty;
 
     public bool IsPasswordProtectedBool
-        => !string.IsNullOrEmpty(IsPassProtected) 
+        => !string.IsNullOrEmpty(IsPassProtected)
         && (IsPassProtected.Equals("true", StringComparison.Ordinal) || IsPassProtected == "1");
 
     public string PlayersDisplay => $"{CurPlayers}/{MaxPlayers}";
@@ -43,14 +41,11 @@ public partial class LobbySlotViewModel : ObservableObject
 
     public LobbySlotViewModel(DecodedLobbySlot model)
     {
-        _model = model;
         Update(model);
     }
 
     public void Update(DecodedLobbySlot model)
     {
-        _model = model;
-
         SlotNumber = model.SlotNumber;
         Status = model.Status;
         IsPassProtected = model.IsPassProtected;

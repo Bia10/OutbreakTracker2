@@ -25,8 +25,8 @@ public partial class LobbySlotsViewModel : ObservableObject, IDisposable
     public NotifyCollectionChangedSynchronizedViewList<LobbySlotViewModel> LobbySlots { get; }
 
     public LobbySlotsViewModel(
-        IDataManager dataManager, 
-        ILogger<LobbySlotsViewModel> logger, 
+        IDataManager dataManager,
+        ILogger<LobbySlotsViewModel> logger,
         IDispatcherService dispatcherService)
     {
         _dataManager = dataManager;
@@ -46,7 +46,7 @@ public partial class LobbySlotsViewModel : ObservableObject, IDisposable
                     try
                     {
                         var filteredIncomingSlots = lobbySlotsSnapshot
-                            .AsValueEnumerable() 
+                            .AsValueEnumerable()
                             .ToList();
 
                         _logger.LogInformation("Processed {Count} filtered lobby slot entries on thread pool.", filteredIncomingSlots.Count);
@@ -75,7 +75,7 @@ public partial class LobbySlotsViewModel : ObservableObject, IDisposable
                             else
                             {
                                 _logger.LogDebug("Creating new LobbySlotViewModel on TP for SlotNumber {SlotNumber}", slotNumberKey);
-                                var newVm = new LobbySlotViewModel(incomingSlotData); 
+                                var newVm = new LobbySlotViewModel(incomingSlotData);
                                 desiredViewModels.Add(newVm);
                             }
                         }

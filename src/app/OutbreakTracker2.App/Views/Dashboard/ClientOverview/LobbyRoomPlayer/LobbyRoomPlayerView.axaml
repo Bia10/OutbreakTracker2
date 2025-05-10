@@ -16,18 +16,16 @@
         MinWidth="220"
         MaxWidth="280"
         Margin="5">
-        <Grid Margin="10" ColumnDefinitions="Auto,*">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+        <Grid
+            Margin="10"
+            ColumnDefinitions="Auto,*"
+            RowDefinitions="Auto,Auto,Auto,Auto">
             <avalonia:MaterialIcon
                 Grid.Row="0"
                 Grid.Column="0"
                 Width="18"
                 Height="18"
+                Margin="0,0,5,0"
                 VerticalAlignment="Center"
                 Kind="Account" />
             <TextBlock
@@ -40,6 +38,7 @@
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="0"
+                Margin="0,0,5,0"
                 VerticalAlignment="Center"
                 FontWeight="SemiBold"
                 Text="NameId:" />
@@ -51,6 +50,7 @@
             <TextBlock
                 Grid.Row="2"
                 Grid.Column="0"
+                Margin="0,0,5,0"
                 VerticalAlignment="Center"
                 FontWeight="SemiBold"
                 Text="Type:" />
@@ -64,9 +64,26 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 IsVisible="{Binding IsMainCharacter}">
+                <Border
+                    Height="1"
+                    Margin="0,5,0,5"
+                    Background="{DynamicResource SukiControlBorderBrush}" />
                 <Grid ColumnDefinitions="Auto,*">
                     <TextBlock
                         Grid.Column="0"
+                        Margin="0,0,5,0"
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="Name:" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Text="{Binding CharacterName}" />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock
+                        Grid.Column="0"
+                        Margin="0,0,5,0"
                         VerticalAlignment="Center"
                         FontWeight="SemiBold"
                         Text="HP:" />
@@ -78,6 +95,7 @@
                 <Grid ColumnDefinitions="Auto,*">
                     <TextBlock
                         Grid.Column="0"
+                        Margin="0,0,5,0"
                         VerticalAlignment="Center"
                         FontWeight="SemiBold"
                         Text="Power:" />
@@ -99,6 +117,7 @@
                 <Grid ColumnDefinitions="Auto,*">
                     <TextBlock
                         Grid.Column="0"
+                        Margin="0,0,5,0"
                         VerticalAlignment="Center"
                         FontWeight="SemiBold"
                         Text="NPC Name:" />
@@ -110,6 +129,7 @@
                 <Grid ColumnDefinitions="Auto,*">
                     <TextBlock
                         Grid.Column="0"
+                        Margin="0,0,5,0"
                         VerticalAlignment="Center"
                         FontWeight="SemiBold"
                         Text="NPC HP:" />
@@ -121,6 +141,7 @@
                 <Grid ColumnDefinitions="Auto,*">
                     <TextBlock
                         Grid.Column="0"
+                        Margin="0,0,5,0"
                         VerticalAlignment="Center"
                         FontWeight="SemiBold"
                         Text="NPC Power:" />

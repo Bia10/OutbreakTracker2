@@ -115,7 +115,7 @@ public sealed record DecodedInGamePlayer : IEquatable<DecodedInGamePlayer>
     [JsonInclude]
     [JsonPropertyName(nameof(SpecialInventory))]
     public byte[] SpecialInventory { get; set; } = new byte[4];
-    
+
     [JsonInclude]
     [JsonPropertyName(nameof(DeadInventory))]
     public byte[] DeadInventory { get; set; } = new byte[4];
