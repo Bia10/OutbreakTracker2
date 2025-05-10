@@ -20,6 +20,7 @@ using OutbreakTracker2.App.Views.Dashboard.ClientAlreadyRunning;
 using OutbreakTracker2.App.Views.Dashboard.ClientNotRunning;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameDoors;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameEnemies;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoom;
@@ -51,16 +52,11 @@ public class App : Application
                 .Build();
 
             var services = new ServiceCollection();
-
             services.AddSingleton(desktop);
-
             OutbreakTracker2Views views = ConfigureViews(services);
-            DataTemplates.Add(new ViewLocator(views));
-
             IServiceProvider serviceProvider = ConfigureServicesAndLogging(services, configuration);
-
             ConfigureExceptionHandling();
-
+            DataTemplates.Add(new ViewLocator(views));
             desktop.MainWindow = views.CreateView<Views.OutbreakTracker2ViewModel>(serviceProvider) as Window;
 
             Log.Information("Application initialized successfully!");
@@ -71,28 +67,24 @@ public class App : Application
 
     private static void ConfigureExceptionHandling()
     {
-        Avalonia.Threading.Dispatcher.UIThread.UnhandledException += (sender, e) =>
+        Avalonia.Threading.Dispatcher.UIThread.UnhandledException += (_, e) =>
         {
             Log.Error(e.Exception, "Unhandled exception on UI thread");
             e.Handled = true;
         };
 
-        TaskScheduler.UnobservedTaskException += (sender, e) =>
+        TaskScheduler.UnobservedTaskException += (_, e) =>
         {
             Log.Error(e.Exception, "Unobserved task exception");
             e.SetObserved();
         };
 
-        AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
         {
             if (e.ExceptionObject is Exception ex)
-            {
                 Log.Fatal(ex, "Unhandled exception in application domain (IsTerminating: {IsTerminating})", e.IsTerminating);
-            }
             else
-            {
                 Log.Fatal("Unhandled exception in application domain with unknown exception object: {ExceptionObject} (IsTerminating: {IsTerminating})", e.ExceptionObject, e.IsTerminating);
-            }
         };
 
         ObservableSystem.RegisterUnhandledExceptionHandler((Exception ex) =>
@@ -115,6 +107,7 @@ public class App : Application
             .AddView<InGameEnemiesView, InGameEnemiesViewModel>(services)
             .AddView<LobbySlotsView, LobbySlotsViewModel>(services)
             .AddView<LobbyRoomView, LobbyRoomViewModel>(services)
+            .AddView<InGameDoorsView, InGameDoorsViewModel>(services)
             .AddView<LogView, LogViewModel>(services);
 
     private static IServiceProvider ConfigureServicesAndLogging(IServiceCollection services, IConfiguration configuration)
@@ -130,10 +123,11 @@ public class App : Application
     {
         ILogDataStorageService logDataStore = serviceProvider.GetRequiredService<ILogDataStorageService>();
 
-        Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration)
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(configuration)
             .WriteTo.DataStoreLoggerSink(logDataStore)
             .CreateLogger();
-        
+
         ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
         loggerFactory.AddSerilog(Log.Logger);
     }
@@ -155,7 +149,7 @@ public class App : Application
         services.AddLogging(loggingBuilder =>
         {
             loggingBuilder.ClearProviders();
-            loggingBuilder.AddSerilog(dispose: false);
+            loggingBuilder.AddSerilog(Log.Logger, dispose: false);
         });
 
         services.AddSingleton<IProcessLocator, ProcessLocator>();
