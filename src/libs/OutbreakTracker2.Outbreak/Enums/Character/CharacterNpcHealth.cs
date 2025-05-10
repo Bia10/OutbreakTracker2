@@ -25,6 +25,6 @@ internal enum CharacterNpcHealth : byte
     [EnumMember(Value = "3600 - 4000")]
     HpRange7 = 6,
 
-    [EnumMember(Value = "Unknown HpRange")]
+    [EnumMember(Value = "Unknown HpRange(255)")]
     Unknown = 255
 }

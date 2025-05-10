@@ -16,10 +16,13 @@
         MinWidth="220"
         MaxWidth="280"
         Margin="5">
-        <Grid
-            Margin="10"
-            ColumnDefinitions="Auto,*"
-            RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+        <Grid Margin="10" ColumnDefinitions="Auto,*">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             <avalonia:MaterialIcon
                 Grid.Row="0"
                 Grid.Column="0"
@@ -33,7 +36,7 @@
                 VerticalAlignment="Center"
                 FontSize="14"
                 FontWeight="Bold"
-                Text="{Binding CharacterName}" />
+                Text="{Binding DisplayName}" />
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="0"
@@ -56,32 +59,39 @@
                 Grid.Column="1"
                 VerticalAlignment="Center"
                 Text="{Binding NPCType}" />
-            <TextBlock
-                Grid.Row="3"
-                Grid.Column="0"
-                VerticalAlignment="Center"
-                FontWeight="SemiBold"
-                Text="HP:" />
-            <TextBlock
-                Grid.Row="3"
-                Grid.Column="1"
-                VerticalAlignment="Center"
-                Text="{Binding CharacterHP}" />
-            <TextBlock
-                Grid.Row="4"
-                Grid.Column="0"
-                VerticalAlignment="Center"
-                FontWeight="SemiBold"
-                Text="Power:" />
-            <TextBlock
-                Grid.Row="4"
-                Grid.Column="1"
-                VerticalAlignment="Center"
-                Text="{Binding CharacterPower}" />
             <StackPanel
-                Grid.Row="5"
+                Grid.Row="3"
                 Grid.Column="0"
-                Grid.ColumnSpan="2">
+                Grid.ColumnSpan="2"
+                IsVisible="{Binding IsMainCharacter}">
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="HP:" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Text="{Binding CharacterHP}" />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="Power:" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Text="{Binding CharacterPower}" />
+                </Grid>
+            </StackPanel>
+            <StackPanel
+                Grid.Row="3"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                IsVisible="{Binding IsOtherNPC}">
                 <Border
                     Height="1"
                     Margin="0,5,0,5"

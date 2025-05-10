@@ -11,6 +11,9 @@ public partial class LobbyRoomPlayerViewModel : ObservableObject
     private bool _isEnabled;
 
     [ObservableProperty]
+    private string _displayName = string.Empty;
+
+    [ObservableProperty]
     private byte _nameId;
 
     [ObservableProperty]
@@ -34,6 +37,8 @@ public partial class LobbyRoomPlayerViewModel : ObservableObject
     [ObservableProperty]
     private string _nPCPower = string.Empty;
 
+    public bool IsMainCharacter => NPCType == "Main Characters";
+    public bool IsOtherNPC => NPCType == "Other NPCs";
     public byte UniquePlayerId => NameId;
 
     public LobbyRoomPlayerViewModel(DecodedLobbyRoomPlayer model)
@@ -44,22 +49,27 @@ public partial class LobbyRoomPlayerViewModel : ObservableObject
 
     public void Update(DecodedLobbyRoomPlayer model)
     {
+        if (!model.IsEnabled)
+            return;
+
         _model = model;
 
         IsEnabled = model.IsEnabled;
-        NameId = model.NameId;
+        NameId = model.NameId;      
         NPCType = model.NPCType;
         CharacterName = model.CharacterName;
         CharacterHP = model.CharacterHP;
         CharacterPower = model.CharacterPower;
-        NPCName = model.NPCName;
+        NPCName = model.NPCName; 
         NPCHP = model.NPCHP;
         NPCPower = model.NPCPower;
+
+        DisplayName = NPCType == "Main Characters" ? CharacterName : NPCName;
     }
 
     public override bool Equals(object? obj)
     {
-        if (ReferenceEquals(null, obj)) return false;
+        if (obj is null) return false;
         if (ReferenceEquals(this, obj)) return true;
         if (obj.GetType() != GetType()) return false;
 

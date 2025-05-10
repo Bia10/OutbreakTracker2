@@ -10,15 +10,14 @@ public sealed class LobbyVersionToIconConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is not string versionString || string.IsNullOrWhiteSpace(versionString)
-            || versionString.Equals("Unknown", StringComparison.Ordinal))
+        if (value is not string versionString || string.IsNullOrWhiteSpace(versionString))
             return BindingOperations.DoNothing;
 
-        string lowerVersion = versionString.Trim().ToLowerInvariant();
-        return lowerVersion switch
+        return versionString.ToLower() switch
         {
             "dvd-rom" => MaterialIconKind.Album,
             "hdd" => MaterialIconKind.Harddisk,
+            "Unknown" => MaterialIconKind.HelpCircleOutline,
             _ => MaterialIconKind.HelpCircleOutline
         };
     }

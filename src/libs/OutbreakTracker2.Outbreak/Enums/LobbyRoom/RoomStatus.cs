@@ -8,19 +8,19 @@ public enum RoomStatus : byte
     Unknown = 255,
 
     [EnumMember(Value = "Waiting")]
-    Easy = 0,
+    Waiting = 0,
 
     [EnumMember(Value = "In Game")]
-    Normal = 1,
+    InGame = 1,
 
     [EnumMember(Value = "Full")]
-    Hard = 2,
+    Full = 2,
 
     // TODO: states below are just guesses
 
     [EnumMember(Value = "Creating room")]
-    VeryHard = 3,
+    CreatingRoom = 3,
 
     [EnumMember(Value = "Hosting room")]
-    Nightmare = 4
+    HostingRoom = 4
 }

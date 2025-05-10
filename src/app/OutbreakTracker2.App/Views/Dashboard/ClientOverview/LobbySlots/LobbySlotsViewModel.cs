@@ -45,17 +45,20 @@ public partial class LobbySlotsViewModel : ObservableObject, IDisposable
 
                     try
                     {
-
                         var filteredIncomingSlots = lobbySlotsSnapshot
-                            .AsValueEnumerable()
-                            //.Where(slot => slot.Status != "Empty" ) // Example filter
+                            .AsValueEnumerable() 
                             .ToList();
 
                         _logger.LogInformation("Processed {Count} filtered lobby slot entries on thread pool.", filteredIncomingSlots.Count);
 
-                        var incomingSlotDataMap = filteredIncomingSlots
-                            .AsValueEnumerable()
-                            .ToDictionary(slot => slot.SlotNumber);
+                        var incomingSlotDataMap = new Dictionary<short, DecodedLobbySlot>(filteredIncomingSlots.Count);
+                        foreach (var slot in filteredIncomingSlots.AsValueEnumerable())
+                        {
+                            if (!incomingSlotDataMap.TryAdd(slot.SlotNumber, slot))
+                            {
+                                _logger.LogWarning("Duplicate SlotNumber '{SlotNumber}' found in incoming lobby slots snapshot. Ignoring this duplicate entry and keeping the first one encountered.", slot.SlotNumber);
+                            }
+                        }
 
                         var desiredViewModels = new List<LobbySlotViewModel>(filteredIncomingSlots.Count);
 
@@ -134,12 +137,23 @@ public partial class LobbySlotsViewModel : ObservableObject, IDisposable
                                 if (currentIndexInPlayersList == -1)
                                 {
                                     _logger.LogDebug("Inserting LobbySlotViewModel into UI list on UI thread: SlotNumber {SlotNumber} at index {Index}", desiredVm.UniqueSlotId, i);
-                                    _lobbySlotsInternal.Insert(i, desiredVm);
+                                    if (i <= _lobbySlotsInternal.Count)
+                                        _lobbySlotsInternal.Insert(i, desiredVm);
                                 }
                                 else if (currentIndexInPlayersList != i)
                                 {
-                                    _logger.LogDebug("Moving LobbySlotViewModel in UI list on UI thread: SlotNumber {SlotNumber} from index {FromIndex} to index {ToIndex}", desiredVm.UniqueSlotId, currentIndexInPlayersList, i);
-                                    _lobbySlotsInternal.Move(currentIndexInPlayersList, i);
+                                    if (i == _lobbySlotsInternal.Count)
+                                    {
+                                        _logger.LogDebug("Removing LobbySlotViewModel from current position {FromIndex} and re-inserting at end ({ToIndex}) for SlotNumber: {SlotNumber}", currentIndexInPlayersList, i, desiredVm.UniqueSlotId);
+                                        _lobbySlotsInternal.RemoveAt(currentIndexInPlayersList);
+                                        if (i <= _lobbySlotsInternal.Count)
+                                            _lobbySlotsInternal.Insert(i, desiredVm);
+                                    }
+                                    else
+                                    {
+                                        _logger.LogDebug("Moving LobbySlotViewModel in UI list on UI thread: SlotNumber {SlotNumber} from index {FromIndex} to index {ToIndex}", desiredVm.UniqueSlotId, currentIndexInPlayersList, i);
+                                        _lobbySlotsInternal.Move(currentIndexInPlayersList, i);
+                                    }
                                 }
                                 else
                                 {

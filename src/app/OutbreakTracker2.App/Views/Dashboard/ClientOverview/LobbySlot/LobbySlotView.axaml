@@ -76,8 +76,7 @@
                 Height="18"
                 Margin="0,0,5,0"
                 VerticalAlignment="Center"
-                Kind="{Binding Status, Converter={StaticResource LobbySlotStatusToIconConverter}}"
-                ToolTip.Tip="{Binding Status}" />
+                Kind="{Binding Status, Converter={StaticResource LobbySlotStatusToIconConverter}}" />
             <TextBlock
                 Grid.Row="3"
                 Grid.Column="2"
@@ -116,8 +115,7 @@
                 Grid.ColumnSpan="3"
                 VerticalAlignment="Center"
                 Text="{Binding ScenarioId}"
-                TextTrimming="CharacterEllipsis"
-                ToolTip.Tip="{Binding ScenarioId}" />
+                TextTrimming="CharacterEllipsis" />
             <TextBlock
                 Grid.Row="6"
                 Grid.Column="0"
@@ -135,8 +133,7 @@
                     Width="18"
                     Height="18"
                     Margin="0,0,5,0"
-                    Kind="{Binding Version, Converter={StaticResource LobbyVersionToIconConverter}}"
-                    ToolTip.Tip="Version Type denotes what kind of version is host playing either a DVD-ROM or HHD version. Only other people using HDD version can join HDD version games." />
+                    Kind="{Binding Version, Converter={StaticResource LobbyVersionToIconConverter}}" />
                 <TextBlock VerticalAlignment="Center" Text="{Binding Version}" />
             </StackPanel>
         </Grid>

@@ -24,6 +24,7 @@ public sealed class LobbyRoomReader : ReaderBase
     public short GetCurPlayers()
         => ReadValue(LobbyRoomOffsets.CurPlayers, (short)-1);
 
+    // TODO: this seems to return wrong data
     public short GetMaxPlayers()
         => ReadValue(LobbyRoomOffsets.MaxPlayers, (short)-1);
 

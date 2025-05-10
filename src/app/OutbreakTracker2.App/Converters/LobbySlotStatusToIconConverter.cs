@@ -20,12 +20,17 @@ public sealed class LobbySlotStatusToIconConverter : IValueConverter
         switch (value)
         {
             case SlotStatus directStatus:
-                status = directStatus; break;
+                status = directStatus;
+                break;
             case string statusString when FastEnum.TryParse(statusString, true, out SlotStatus parsedStatus):
-                status = parsedStatus; break;
+                status = parsedStatus;
+                break;
             case string statusString when statusString.Equals("Join in", StringComparison.OrdinalIgnoreCase):
-                status = SlotStatus.JoinIn; break;
-            case string: status = SlotStatus.Unknown; break;
+                status = SlotStatus.JoinIn;
+                break;
+            case string: status = SlotStatus.Unknown;
+                break;
+
             default: return BindingOperations.DoNothing;
         }
 
