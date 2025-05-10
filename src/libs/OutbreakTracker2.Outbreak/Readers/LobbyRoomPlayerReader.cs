@@ -76,7 +76,6 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
     public static string GetCharacterNpcName(byte characterBaseType)
         => EnumUtility.GetEnumString(characterBaseType, CharacterNpcName.Unknown);
 
-    // TODO: this is incorrectly confusing hpRanges and npcHealth data wich for given baseType will be one of the hpRanges
     public static string GetCharacterNpcHealthName(byte characterBaseType)
         => EnumUtility.GetEnumString(characterBaseType, CharacterNpcHealth.Unknown);
 

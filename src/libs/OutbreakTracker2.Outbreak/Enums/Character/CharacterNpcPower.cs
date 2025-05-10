@@ -2,489 +2,564 @@
 
 namespace OutbreakTracker2.Outbreak.Enums.Character;
 
-internal enum CharacterNpcPower
+internal enum CharacterNpcPower : byte
 {
     [EnumMember(Value = "Character is not NPC!")]
-    CharNotNPC = 0,
+    NotNpc = 0,
 
     [EnumMember(Value = "110%")]
-    Power110 = 1,
+    MacDowell = 1,
 
     [EnumMember(Value = "118%")]
-    Power118 = 2,
+    Rodriguez = 2,
 
     [EnumMember(Value = "100%")]
-    Power100_3 = 3,
+    Conrad = 3,
 
     [EnumMember(Value = "130%")]
-    Power130_4 = 4,
+    HunkB = 4,
 
     [EnumMember(Value = "130%")]
-    Power130_5 = 5,
+    Hunk = 5,
 
     [EnumMember(Value = "130%")]
-    Power130_6 = 6,
+    Miguel = 6,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown7 = 7,
+    [EnumMember(Value = "Unknown(7)")]
+    MiguelB = 7,
 
     [EnumMember(Value = "110%")]
-    Power110_8 = 8,
+    Luke = 8,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown9 = 9,
+    [EnumMember(Value = "Unknown(9)")]
+    MacDowellB = 9,
 
     [EnumMember(Value = "122%")]
-    Power122_10 = 10,
+    Arnold = 10,
 
     [EnumMember(Value = "97%")]
-    Power97_11 = 11,
+    Matt = 11,
 
     [EnumMember(Value = "82%")]
-    Power82_12 = 12,
+    Billy = 12,
 
     [EnumMember(Value = "90%")]
-    Power90_13 = 13,
+    Harsh = 13,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown14 = 14,
+    [EnumMember(Value = "Unknown(14)")]
+    HarshB = 14,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown15 = 15,
+    [EnumMember(Value = "Unknown(15)")]
+    HarshC = 15,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown16 = 16,
+    [EnumMember(Value = "Unknown(16)")]
+    Scott = 16,
 
     [EnumMember(Value = "118%")]
-    Power118_17 = 17,
+    Peter = 17,
 
     [EnumMember(Value = "100%")]
-    Power100_18 = 18,
+    Marvin = 18,
 
     [EnumMember(Value = "100%")]
-    Power100_19 = 19,
+    Fred = 19,
 
     [EnumMember(Value = "83%")]
-    Power83_20 = 20,
+    Andy = 20,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown21 = 21,
+    [EnumMember(Value = "Unknown(21)")]
+    MarvinB = 21,
 
     [EnumMember(Value = "92%")]
-    Power92_22 = 22,
+    Jean = 22,
 
     [EnumMember(Value = "91%")]
-    Power91_23 = 23,
+    Tony = 23,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown24 = 24,
+    [EnumMember(Value = "Unknown(24)")]
+    PatrickB = 24,
 
     [EnumMember(Value = "100%")]
-    Power100_25 = 25,
+    Patrick = 25,
 
     [EnumMember(Value = "95%")]
-    Power95_26 = 26,
+    Lloyd = 26,
 
     [EnumMember(Value = "88%")]
-    Power88_27 = 27,
+    Austin = 27,
 
     [EnumMember(Value = "110%")]
-    Power110_28 = 28,
+    Clint = 28,
 
     [EnumMember(Value = "100%")]
-    Power100_29 = 29,
+    Bone = 29,
 
     [EnumMember(Value = "98%")]
-    Power98_30 = 30,
+    Bob = 30,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown31 = 31,
+    [EnumMember(Value = "Unknown(31)")]
+    JackZombie = 31,
 
     [EnumMember(Value = "112%")]
-    Power112_32 = 32,
+    Nathan = 32,
 
     [EnumMember(Value = "118%")]
-    Power118_33 = 33,
+    Samuel = 33,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown34 = 34,
+    [EnumMember(Value = "Unknown(34)")]
+    MacDowellC = 34,
 
     [EnumMember(Value = "97%")]
-    Power97_35 = 35,
+    Will = 35,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown36 = 36,
+    [EnumMember(Value = "Unknown(36)")]
+    WillB = 36,
 
     [EnumMember(Value = "100%")]
-    Power100_37 = 37,
+    Roger = 37,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown38 = 38,
+    [EnumMember(Value = "Unknown(38)")]
+    MacDowellD = 38,
 
     [EnumMember(Value = "92%")]
-    Power92_39 = 39,
+    Carter = 39,
 
     [EnumMember(Value = "85%")]
-    Power85_40 = 40,
+    Greg = 40,
 
     [EnumMember(Value = "96%")]
-    Power96_41 = 41,
+    Frost = 41,
 
     [EnumMember(Value = "100%")]
-    Power100_42 = 42,
+    FrostB = 42,
 
     [EnumMember(Value = "87%")]
-    Power87_43 = 43,
+    Jake = 43,
 
     [EnumMember(Value = "99%")]
-    Power99_44 = 44,
+    Gary = 44,
 
     [EnumMember(Value = "100%")]
-    Power100_45 = 45,
+    Richard = 45,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown46 = 46,
+    [EnumMember(Value = "Unknown(46)")]
+    MickeyB = 46,
 
     [EnumMember(Value = "93%")]
-    Power93_47 = 47,
+    Mickey = 47,
 
     [EnumMember(Value = "87%")]
-    Power87_48 = 48,
+    Al = 48,
 
     [EnumMember(Value = "138%")]
-    Power138_49 = 49,
+    Axeman = 49,
 
     [EnumMember(Value = "114%")]
-    Power114_50 = 50,
+    AlB = 50,
 
     [EnumMember(Value = "107%")]
-    Power107_51 = 51,
+    Ben = 51,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown52 = 52,
+    [EnumMember(Value = "Unknown(52)")]
+    Lucy = 52,
 
     [EnumMember(Value = "100%")]
-    Power100_53 = 53,
+    Regan = 53,
 
     [EnumMember(Value = "82%")]
-    Power82_54 = 54,
+    ReganB = 54,
 
     [EnumMember(Value = "98%")]
-    Power98_55 = 55,
+    Monica = 55,
 
     [EnumMember(Value = "96%")]
-    Power96_56 = 56,
+    Linda = 56,
 
     [EnumMember(Value = "113%")]
-    Power113_57 = 57,
+    Rita = 57,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown58 = 58,
+    [EnumMember(Value = "Unknown(58)")]
+    MacDowellE = 58,
 
     [EnumMember(Value = "97%")]
-    Power97_59 = 59,
+    Mary = 59,
 
     [EnumMember(Value = "89%")]
-    Power89_60 = 60,
+    Kate = 60,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown61 = 61,
+    [EnumMember(Value = "Unknown(61)")]
+    MacDowellF = 61,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown62 = 62,
+    [EnumMember(Value = "Unknown(62)")]
+    MacDowellG = 62,
 
     [EnumMember(Value = "112%")]
-    Power112_63 = 63,
+    Danny = 63,
 
     [EnumMember(Value = "116%")]
-    Power116_64 = 64,
+    DannyB = 64,
 
     [EnumMember(Value = "96%")]
-    Power96_65 = 65,
+    Gill = 65,
 
     [EnumMember(Value = "97%")]
-    Power97_66 = 66,
+    GillB = 66,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown67 = 67,
+    [EnumMember(Value = "Unknown(67)")]
+    Gap67 = 67,
+    [EnumMember(Value = "Unknown(68)")]
+    Gap68 = 68,
+    [EnumMember(Value = "Unknown(69)")]
+    Gap69 = 69,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown68 = 68,
+    [EnumMember(Value = "Unknown(70)")]
+    EthanC = 70,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown69 = 69,
+    [EnumMember(Value = "Unknown(71)")]
+    Gap71 = 71,
+    [EnumMember(Value = "Unknown(72)")]
+    Gap72 = 72,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown70 = 70,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown71 = 71,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown72 = 72,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown73 = 73,
+    [EnumMember(Value = "Unknown(73)")]
+    Cindy = 73,
 
     [EnumMember(Value = "92%")]
-    Power92_74 = 74,
+    Keith = 74,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown75 = 75,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown76 = 76,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown77 = 77,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown78 = 78,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown79 = 79,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown80 = 80,
+    [EnumMember(Value = "Unknown(75)")]
+    Gap75 = 75,
+    [EnumMember(Value = "Unknown(76)")]
+    Gap76 = 76,
+    [EnumMember(Value = "Unknown(77)")]
+    Gap77 = 77,
+    [EnumMember(Value = "Unknown(78)")]
+    Gap78 = 78,
+    [EnumMember(Value = "Unknown(79)")]
+    Gap79 = 79,
+    [EnumMember(Value = "Unknown(80)")]
+    Gap80 = 80,
 
     [EnumMember(Value = "100%")]
-    Power100_81 = 81,
+    Kurt = 81,
 
     [EnumMember(Value = "97%")]
-    Power97_82 = 82,
+    KurtB = 82,
 
     [EnumMember(Value = "100%")]
-    Power100_83 = 83,
+    GaryB = 83,
 
     [EnumMember(Value = "100%")]
-    Power100_84 = 84,
+    AlC = 84,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown85 = 85,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown86 = 86,
+    [EnumMember(Value = "Unknown(85)")]
+    Gap85 = 85,
+    [EnumMember(Value = "Unknown(86)")]
+    Gap86 = 86,
 
     [EnumMember(Value = "83%")]
-    Power83_87 = 87,
+    Dorothy = 87,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown88 = 88,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown89 = 89,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown90 = 90,
+    [EnumMember(Value = "Unknown(88)")]
+    Gap88 = 88,
+    [EnumMember(Value = "Unknown(89)")]
+    Gap89 = 89,
+    [EnumMember(Value = "Unknown(90)")]
+    Gap90 = 90,
 
     [EnumMember(Value = "94%")]
-    Power94_91 = 91,
+    YokoZ = 91,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown92 = 92,
+    [EnumMember(Value = "Unknown(92)")]
+    Gap92 = 92,
+    [EnumMember(Value = "Unknown(93)")]
+    Gap93 = 93,
+    [EnumMember(Value = "Unknown(94)")]
+    Gap94 = 94,
+    [EnumMember(Value = "Unknown(95)")]
+    Gap95 = 95,
+    [EnumMember(Value = "Unknown(96)")]
+    Gap96 = 96,
+    [EnumMember(Value = "Unknown(97)")]
+    Gap97 = 97,
+    [EnumMember(Value = "Unknown(98)")]
+    Gap98 = 98,
+    [EnumMember(Value = "Unknown(99)")]
+    Gap99 = 99,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown93 = 93,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown94 = 94,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown95 = 95,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown96 = 96,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown97 = 97,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown98 = 98,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown99 = 99,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown100 = 100,
+    [EnumMember(Value = "Unknown(100)")]
+    MrGrey = 100,
 
     [EnumMember(Value = "102%")]
-    Power102_101 = 101,
+    Raymond = 101,
 
     [EnumMember(Value = "100%")]
-    Power100_102 = 102,
+    Arthur = 102,
 
     [EnumMember(Value = "121%")]
-    Power121_103 = 103,
+    Aaron = 103,
 
     [EnumMember(Value = "105%")]
-    Power105_104 = 104,
+    Dorian = 104,
 
     [EnumMember(Value = "119%")]
-    Power119_105 = 105,
+    Elliot = 105,
 
     [EnumMember(Value = "115%")]
-    Power115_106 = 106,
+    Eric = 106,
 
     [EnumMember(Value = "84%")]
-    Power84_107 = 107,
+    Harry = 107,
 
     [EnumMember(Value = "150%")]
-    Power150_108 = 108,
+    MrRed = 108,
 
     [EnumMember(Value = "80%")]
-    Power80_109 = 109,
+    MrBlue = 109,
 
     [EnumMember(Value = "100%")]
-    Power100_110 = 110,
+    MrGreen = 110,
 
     [EnumMember(Value = "150%")]
-    Power150_111 = 111,
+    MrGold = 111,
 
     [EnumMember(Value = "132%")]
-    Power132_112 = 112,
+    MrBlack = 112,
 
     [EnumMember(Value = "118%")]
-    Power118_113 = 113,
+    Karl = 113,
 
     [EnumMember(Value = "121%")]
-    Power121_114 = 114,
+    Dustin = 114,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown115 = 115,
+    [EnumMember(Value = "Unknown(115)")]
+    DustinB = 115,
 
     [EnumMember(Value = "109%")]
-    Power109_116 = 116,
+    Derek = 116,
 
     [EnumMember(Value = "135%")]
-    Power135_117 = 117,
+    MsWhite = 117,
 
     [EnumMember(Value = "100%")]
-    Power100_118 = 118,
+    MsPeach = 118,
 
     [EnumMember(Value = "75%")]
-    Power75_119 = 119,
+    MsWater = 119,
 
     [EnumMember(Value = "111%")]
-    Power111_120 = 120,
+    Len = 120,
 
     [EnumMember(Value = "96%")]
-    Power96_121 = 121,
+    Nick = 121,
 
     [EnumMember(Value = "112%")]
-    Power112_122 = 122,
+    Sean = 122,
 
     [EnumMember(Value = "97%")]
-    Power97_123 = 123,
+    Philip = 123,
 
     [EnumMember(Value = "87%")]
-    Power87_124 = 124,
+    Don = 124,
 
     [EnumMember(Value = "100%")]
-    Power100_125 = 125,
+    Matthew = 125,
 
     [EnumMember(Value = "109%")]
-    Power109_126 = 126,
+    Robert = 126,
 
     [EnumMember(Value = "100%")]
-    Power100_127 = 127,
+    Chuck = 127,
 
     [EnumMember(Value = "113%")]
-    Power113_128 = 128,
+    Ginger = 128,
 
     [EnumMember(Value = "100%")]
-    Power100_129 = 129,
+    Laura = 129,
 
     [EnumMember(Value = "100%")]
-    Power100_130 = 130,
+    Amelia = 130,
 
     [EnumMember(Value = "88%")]
-    Power88_131 = 131,
+    Ethan = 131,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown132 = 132,
+    [EnumMember(Value = "Unknown(132)")]
+    EthanB = 132,
 
     [EnumMember(Value = "100%")]
-    Power100_133 = 133,
+    Howard = 133,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown134 = 134,
+    [EnumMember(Value = "Unknown(134)")]
+    HowardB = 134,
 
     [EnumMember(Value = "113%")]
-    Power113_135 = 135,
+    Isaac = 135,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown136 = 136,
+    [EnumMember(Value = "Unknown(136)")]
+    IsaacB = 136,
 
     [EnumMember(Value = "97%")]
-    Power97_137 = 137,
+    Kathy = 137,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown138 = 138,
+    [EnumMember(Value = "Unknown(138)")]
+    KathyB = 138,
 
     [EnumMember(Value = "84%")]
-    Power84_139 = 139,
+    Elena = 139,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown140 = 140,
+    [EnumMember(Value = "Unknown(140)")]
+    ElenaB = 140,
 
     [EnumMember(Value = "91%")]
-    Power91_141 = 141,
+    Frank = 141,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown142 = 142,
+    [EnumMember(Value = "Unknown(142)")]
+    KathyC = 142,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown143 = 143,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown144 = 144,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown145 = 145,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown146 = 146,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown147 = 147,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown148 = 148,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown149 = 149,
-
-    [EnumMember(Value = "Unknown")]
-    Unknown150 = 150,
+    [EnumMember(Value = "Unknown(143)")]
+    Gap143 = 143,
+    [EnumMember(Value = "Unknown(144)")]
+    Gap144 = 144,
+    [EnumMember(Value = "Unknown(145)")]
+    Gap145 = 145,
+    [EnumMember(Value = "Unknown(146)")]
+    Gap146 = 146,
+    [EnumMember(Value = "Unknown(147)")]
+    Gap147 = 147,
+    [EnumMember(Value = "Unknown(148)")]
+    Gap148 = 148,
+    [EnumMember(Value = "Unknown(149)")]
+    Gap149 = 149,
+    [EnumMember(Value = "Unknown(150)")]
+    Gap150 = 150,
 
     [EnumMember(Value = "94%")]
-    Power94_151 = 151,
+    Rodney = 151,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown201 = 201,
+    [EnumMember(Value = "Unknown(152)")]
+    Gap152 = 152,
+    [EnumMember(Value = "Unknown(153)")]
+    Gap153 = 153,
+    [EnumMember(Value = "Unknown(154)")]
+    Gap154 = 154,
+    [EnumMember(Value = "Unknown(155)")]
+    Gap155 = 155,
+    [EnumMember(Value = "Unknown(156)")]
+    Gap156 = 156,
+    [EnumMember(Value = "Unknown(157)")]
+    Gap157 = 157,
+    [EnumMember(Value = "Unknown(158)")]
+    Gap158 = 158,
+    [EnumMember(Value = "Unknown(159)")]
+    Gap159 = 159,
+    [EnumMember(Value = "Unknown(160)")]
+    Gap160 = 160,
+    [EnumMember(Value = "Unknown(161)")]
+    Gap161 = 161,
+    [EnumMember(Value = "Unknown(162)")]
+    Gap162 = 162,
+    [EnumMember(Value = "Unknown(163)")]
+    Gap163 = 163,
+    [EnumMember(Value = "Unknown(164)")]
+    Gap164 = 164,
+    [EnumMember(Value = "Unknown(165)")]
+    Gap165 = 165,
+    [EnumMember(Value = "Unknown(166)")]
+    Gap166 = 166,
+    [EnumMember(Value = "Unknown(167)")]
+    Gap167 = 167,
+    [EnumMember(Value = "Unknown(168)")]
+    Gap168 = 168,
+    [EnumMember(Value = "Unknown(169)")]
+    Gap169 = 169,
+    [EnumMember(Value = "Unknown(170)")]
+    Gap170 = 170,
+    [EnumMember(Value = "Unknown(171)")]
+    Gap171 = 171,
+    [EnumMember(Value = "Unknown(172)")]
+    Gap172 = 172,
+    [EnumMember(Value = "Unknown(173)")]
+    Gap173 = 173,
+    [EnumMember(Value = "Unknown(174)")]
+    Gap174 = 174,
+    [EnumMember(Value = "Unknown(175)")]
+    Gap175 = 175,
+    [EnumMember(Value = "Unknown(176)")]
+    Gap176 = 176,
+    [EnumMember(Value = "Unknown(177)")]
+    Gap177 = 177,
+    [EnumMember(Value = "Unknown(178)")]
+    Gap178 = 178,
+    [EnumMember(Value = "Unknown(179)")]
+    Gap179 = 179,
+    [EnumMember(Value = "Unknown(180)")]
+    Gap180 = 180,
+    [EnumMember(Value = "Unknown(181)")]
+    Gap181 = 181,
+    [EnumMember(Value = "Unknown(182)")]
+    Gap182 = 182,
+    [EnumMember(Value = "Unknown(183)")]
+    Gap183 = 183,
+    [EnumMember(Value = "Unknown(184)")]
+    Gap184 = 184,
+    [EnumMember(Value = "Unknown(185)")]
+    Gap185 = 185,
+    [EnumMember(Value = "Unknown(186)")]
+    Gap186 = 186,
+    [EnumMember(Value = "Unknown(187)")]
+    Gap187 = 187,
+    [EnumMember(Value = "Unknown(188)")]
+    Gap188 = 188,
+    [EnumMember(Value = "Unknown(189)")]
+    Gap189 = 189,
+    [EnumMember(Value = "Unknown(190)")]
+    Gap190 = 190,
+    [EnumMember(Value = "Unknown(191)")]
+    Gap191 = 191,
+    [EnumMember(Value = "Unknown(192)")]
+    Gap192 = 192,
+    [EnumMember(Value = "Unknown(193)")]
+    Gap193 = 193,
+    [EnumMember(Value = "Unknown(194)")]
+    Gap194 = 194,
+    [EnumMember(Value = "Unknown(195)")]
+    Gap195 = 195,
+    [EnumMember(Value = "Unknown(196)")]
+    Gap196 = 196,
+    [EnumMember(Value = "Unknown(197)")]
+    Gap197 = 197,
+    [EnumMember(Value = "Unknown(198)")]
+    Gap198 = 198,
+    [EnumMember(Value = "Unknown(199)")]
+    Gap199 = 199,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown202 = 202,
+    [EnumMember(Value = "Unknown(200)")]
+    CindyB = 200,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown203 = 203,
+    [EnumMember(Value = "Unknown(201)")]
+    Kevin = 201,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown204 = 204,
+    [EnumMember(Value = "Unknown(202)")]
+    Mark = 202,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown205 = 205,
+    [EnumMember(Value = "Unknown(203)")]
+    Jim = 203,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown206 = 206,
+    [EnumMember(Value = "Unknown(204)")]
+    George = 204,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown207 = 207,
+    [EnumMember(Value = "Unknown(205)")]
+    David = 205,
 
-    [EnumMember(Value = "Unknown")]
-    Unknown208 = 208,
+    [EnumMember(Value = "Unknown(206)")]
+    Alyssa = 206,
 
-    [EnumMember(Value = "Unknown")]
+    [EnumMember(Value = "Unknown(207)")]
+    Yoko = 207,
+
+    [EnumMember(Value = "Unknown(208)")]
+    CindyC = 208,
+
+    [EnumMember(Value = "0")]
     Unknown = 255
 }
 
