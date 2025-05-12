@@ -14,7 +14,7 @@ public class InGameScenarioReader : ReaderBase
 {
     public DecodedScenario DecodedScenario { get; }
 
-    public InGameScenarioReader(GameClient gameClient, EEmemMemory memory, ILogger logger)
+    public InGameScenarioReader(GameClient gameClient, IEEmemMemory memory, ILogger logger)
         : base(gameClient, memory, logger)
     {
         DecodedScenario = new DecodedScenario();

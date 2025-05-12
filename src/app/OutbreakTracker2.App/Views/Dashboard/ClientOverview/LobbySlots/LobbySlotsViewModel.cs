@@ -13,12 +13,11 @@ using ZLinq;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlots;
 
-public partial class LobbySlotsViewModel : ObservableObject, IDisposable
+public class LobbySlotsViewModel : ObservableObject, IDisposable
 {
     private readonly IDisposable _subscription;
     private readonly ILogger<LobbySlotsViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
-    private readonly IDataManager _dataManager;
     private readonly Dictionary<short, LobbySlotViewModel> _viewModelCache = [];
 
     private readonly ObservableList<LobbySlotViewModel> _lobbySlotsInternal = [];
@@ -29,7 +28,6 @@ public partial class LobbySlotsViewModel : ObservableObject, IDisposable
         ILogger<LobbySlotsViewModel> logger,
         IDispatcherService dispatcherService)
     {
-        _dataManager = dataManager;
         _logger = logger;
         _dispatcherService = dispatcherService;
         _logger.LogInformation("Initializing LobbySlotsViewModel");
@@ -52,33 +50,37 @@ public partial class LobbySlotsViewModel : ObservableObject, IDisposable
                         _logger.LogInformation("Processed {Count} filtered lobby slot entries on thread pool.", filteredIncomingSlots.Count);
 
                         var incomingSlotDataMap = new Dictionary<short, DecodedLobbySlot>(filteredIncomingSlots.Count);
-                        foreach (var slot in filteredIncomingSlots.AsValueEnumerable())
-                        {
+                        foreach (DecodedLobbySlot slot in filteredIncomingSlots.AsValueEnumerable())
                             if (!incomingSlotDataMap.TryAdd(slot.SlotNumber, slot))
-                            {
                                 _logger.LogWarning("Duplicate SlotNumber '{SlotNumber}' found in incoming lobby slots snapshot. Ignoring this duplicate entry and keeping the first one encountered.", slot.SlotNumber);
-                            }
-                        }
 
-                        var desiredViewModels = new List<LobbySlotViewModel>(filteredIncomingSlots.Count);
+                        var tempDesiredVmsMap = new Dictionary<short, LobbySlotViewModel>();
 
                         foreach (DecodedLobbySlot incomingSlotData in filteredIncomingSlots.AsValueEnumerable())
                         {
                             cancellationToken.ThrowIfCancellationRequested();
                             short slotNumberKey = incomingSlotData.SlotNumber;
 
+                            if (tempDesiredVmsMap.ContainsKey(slotNumberKey))
+                            {
+                                _logger.LogWarning("Skipping duplicate incoming slot data for SlotNumber {SlotNumber} when building desired view models. Keeping the first encountered.", slotNumberKey);
+                                continue;
+                            }
+
                             if (_viewModelCache.TryGetValue(slotNumberKey, out LobbySlotViewModel? existingVm))
                             {
-                                desiredViewModels.Add(existingVm);
+                                tempDesiredVmsMap.Add(slotNumberKey, existingVm);
                                 _logger.LogTrace("Found existing LobbySlotViewModel in cache on TP for SlotNumber {SlotNumber}", slotNumberKey);
                             }
                             else
                             {
                                 _logger.LogDebug("Creating new LobbySlotViewModel on TP for SlotNumber {SlotNumber}", slotNumberKey);
                                 var newVm = new LobbySlotViewModel(incomingSlotData);
-                                desiredViewModels.Add(newVm);
+                                tempDesiredVmsMap.Add(slotNumberKey, newVm);
                             }
                         }
+
+                        var desiredViewModels = tempDesiredVmsMap.Values.ToList();
 
                         desiredViewModels.Sort((vm1, vm2) => vm1.SlotNumber.CompareTo(vm2.SlotNumber));
 
@@ -89,7 +91,6 @@ public partial class LobbySlotsViewModel : ObservableObject, IDisposable
                             _logger.LogInformation("Applying lobby slot updates on UI thread.");
 
                             foreach (LobbySlotViewModel vm in desiredViewModels)
-                            {
                                 if (incomingSlotDataMap.TryGetValue(vm.UniqueSlotId, out DecodedLobbySlot? slotData))
                                 {
                                     vm.Update(slotData);
@@ -99,16 +100,13 @@ public partial class LobbySlotsViewModel : ObservableObject, IDisposable
                                 {
                                     _logger.LogWarning("Slot data not found in map for VM SlotNumber {SlotNumber} during UI update.", vm.UniqueSlotId);
                                 }
-                            }
 
                             var desiredSlotNumbersLookup = new HashSet<short>(desiredViewModels.Select(vm => vm.UniqueSlotId));
                             for (int i = _lobbySlotsInternal.Count - 1; i >= 0; i--)
                             {
                                 LobbySlotViewModel currentVmInList = _lobbySlotsInternal[i];
                                 if (desiredSlotNumbersLookup.Contains(currentVmInList.UniqueSlotId))
-                                {
                                     continue;
-                                }
 
                                 _logger.LogDebug("Removing LobbySlotViewModel from UI list & Cache for SlotNumber: {SlotNumber}", currentVmInList.UniqueSlotId);
                                 _lobbySlotsInternal.RemoveAt(i);
@@ -120,19 +118,15 @@ public partial class LobbySlotsViewModel : ObservableObject, IDisposable
                                 LobbySlotViewModel desiredVm = desiredViewModels[i];
 
                                 if (_viewModelCache.TryAdd(desiredVm.UniqueSlotId, desiredVm))
-                                {
                                     _logger.LogDebug("Added new LobbySlotViewModel to cache on UI thread: SlotNumber {SlotNumber}", desiredVm.UniqueSlotId);
-                                }
 
                                 int currentIndexInPlayersList = -1;
-                                for(int j=0; j < _lobbySlotsInternal.Count; j++)
-                                {
-                                    if(_lobbySlotsInternal[j].UniqueSlotId == desiredVm.UniqueSlotId)
+                                for (int j = 0; j < _lobbySlotsInternal.Count; j++)
+                                    if (_lobbySlotsInternal[j].UniqueSlotId == desiredVm.UniqueSlotId)
                                     {
                                         currentIndexInPlayersList = j;
                                         break;
                                     }
-                                }
 
                                 if (currentIndexInPlayersList == -1)
                                 {
@@ -162,9 +156,7 @@ public partial class LobbySlotsViewModel : ObservableObject, IDisposable
                             }
 
                             if (_lobbySlotsInternal.Count != desiredViewModels.Count)
-                            {
                                 _logger.LogWarning("_lobbySlotsInternal count ({InternalCount}) differs from desiredViewModels count ({DesiredCount}) after sync. This indicates a potential sync logic error.", _lobbySlotsInternal.Count, desiredViewModels.Count);
-                            }
 
                             _logger.LogInformation("UI update complete. LobbySlots UI list count: {Count}", _lobbySlotsInternal.Count);
                         }, cancellationToken);

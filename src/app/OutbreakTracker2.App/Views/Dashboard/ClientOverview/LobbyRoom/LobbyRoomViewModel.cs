@@ -4,6 +4,7 @@ using ObservableCollections;
 using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.App.Services.Dispatcher;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer;
+using OutbreakTracker2.Extensions;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
@@ -106,7 +107,7 @@ public partial class LobbyRoomViewModel : ObservableObject, IDisposable
 
                         if (_playerViewModelCache.TryGetValue(playerIdKey, out LobbyRoomPlayerViewModel? existingVm))
                         {
-                             desiredPlayerViewModels.Add(existingVm);
+                            desiredPlayerViewModels.Add(existingVm);
                             _logger.LogTrace("Found existing LobbyRoomPlayerViewModel in cache on TP for PlayerId {PlayerId}", playerIdKey);
                         }
                         else
@@ -149,8 +150,7 @@ public partial class LobbyRoomViewModel : ObservableObject, IDisposable
                             }
                         }
 
-                        _playersInternal.Clear();
-                        _playersInternal.AddRange(desiredPlayerViewModels);
+                        _playersInternal.ReplaceAll(desiredPlayerViewModels);
                         _logger.LogInformation("UI list synchronized by clear and add. New count: {Count}", _playersInternal.Count);
 
                         if (_playersInternal.Count != desiredPlayerViewModels.Count)

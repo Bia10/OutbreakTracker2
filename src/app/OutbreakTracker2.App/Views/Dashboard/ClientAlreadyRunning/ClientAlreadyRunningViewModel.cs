@@ -1,21 +1,25 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
+using OutbreakTracker2.App.Services.Data;
+using OutbreakTracker2.App.Services.ProcessLauncher;
+using OutbreakTracker2.App.Services.Toasts;
+using OutbreakTracker2.PCSX2;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.Logging;
-using OutbreakTracker2.App.Services.ProcessLauncher;
-using OutbreakTracker2.App.Services.Toasts;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientAlreadyRunning;
 
-public partial class ClientAlreadyRunningViewModel : ObservableObject, IDisposable
+public partial class ClientAlreadyRunningViewModel : ObservableObject
 {
+    private readonly ILogger<ClientAlreadyRunningViewModel> _logger;
     private readonly IProcessLauncher _processLauncher;
     private readonly IToastService _toastService;
-    private readonly ILogger<ClientAlreadyRunningViewModel> _logger;
+    private readonly IDataManager _dataManager;
 
     [ObservableProperty]
     private ObservableCollection<ProcessModel> _runningProcesses = [];
@@ -23,11 +27,12 @@ public partial class ClientAlreadyRunningViewModel : ObservableObject, IDisposab
     public ClientAlreadyRunningViewModel(
         IProcessLauncher processLauncher,
         IToastService toastService,
-        ILogger<ClientAlreadyRunningViewModel> logger)
+        ILogger<ClientAlreadyRunningViewModel> logger, IDataManager dataManager)
     {
         _processLauncher = processLauncher;
         _toastService = toastService;
         _logger = logger;
+        _dataManager = dataManager;
     }
 
     public void UpdateProcesses(List<int> processIds)
@@ -59,6 +64,13 @@ public partial class ClientAlreadyRunningViewModel : ObservableObject, IDisposab
         {
             await _processLauncher.AttachAsync(processId);
             await _toastService.InvokeSuccessToastAsync("Successfully attached to process!");
+
+            GameClient? activeGameClient = _processLauncher.GetActiveGameClient();
+            if (activeGameClient is not null)
+            {
+                await _dataManager.InitializeAsync(activeGameClient, default(CancellationToken));
+                _logger.LogInformation("DataManager initialized successfully.");
+            }
         }
         catch (Exception ex)
         {
@@ -70,12 +82,13 @@ public partial class ClientAlreadyRunningViewModel : ObservableObject, IDisposab
 
     private static DateTime GetSafeStartTime(Process process)
     {
-        try { return process.StartTime; }
-        catch { return DateTime.MinValue; }
-    }
-
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
+        try
+        {
+            return process.StartTime;
+        }
+        catch
+        {
+            return DateTime.MinValue;
+        }
     }
 }

@@ -14,7 +14,7 @@ public class InGamePlayerReader : ReaderBase
 {
     public DecodedInGamePlayer[] DecodedInGamePlayers { get; }
 
-    public InGamePlayerReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
+    public InGamePlayerReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
     {
         DecodedInGamePlayers = new DecodedInGamePlayer[GameConstants.MaxPlayers];
         for (int i = 0; i < GameConstants.MaxPlayers; i++)

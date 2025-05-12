@@ -15,7 +15,7 @@ public sealed class LobbySlotReader : ReaderBase
 {
     public DecodedLobbySlot[] DecodedLobbySlots { get; }
 
-    public LobbySlotReader(GameClient gameClient, EEmemMemory memory, ILogger logger) : base(
+    public LobbySlotReader(GameClient gameClient, IEEmemMemory memory, ILogger logger) : base(
         gameClient, memory, logger)
     {
         DecodedLobbySlots = new DecodedLobbySlot[GameConstants.MaxLobbySlots];

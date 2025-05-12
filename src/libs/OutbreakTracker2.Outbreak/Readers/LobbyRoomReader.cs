@@ -15,7 +15,7 @@ public sealed class LobbyRoomReader : ReaderBase
 {
     public DecodedLobbyRoom DecodedLobbyRoom { get; set; }
 
-    public LobbyRoomReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger)
+    public LobbyRoomReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
         : base(gameClient, eememMemory, logger)
     {
         DecodedLobbyRoom = new DecodedLobbyRoom();

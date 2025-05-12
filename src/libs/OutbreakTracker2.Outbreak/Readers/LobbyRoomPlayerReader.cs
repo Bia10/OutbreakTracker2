@@ -14,7 +14,7 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
 {
     public DecodedLobbyRoomPlayer[] DecodedLobbyRoomPlayers { get; }
 
-    public LobbyRoomPlayerReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger)
+    public LobbyRoomPlayerReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
         : base(gameClient, eememMemory, logger)
     {
         DecodedLobbyRoomPlayers = new DecodedLobbyRoomPlayer[GameConstants.MaxPlayers];

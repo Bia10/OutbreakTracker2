@@ -38,123 +38,123 @@ public class InGameDoorsViewModel : ObservableObject, IDisposable
         _subscription = dataManager.DoorsObservable
             .ObserveOnThreadPool()
             .SubscribeAwait(async (incomingDoorsSnapshot, ct) =>
+            {
+                switch (incomingDoorsSnapshot.Length)
                 {
-                    switch (incomingDoorsSnapshot.Length)
-                    {
-                        case 0: _logger.LogWarning("Received empty or null doors snapshot. Entries {Length}", incomingDoorsSnapshot.Length); return;
-                        case > GameConstants.MaxDoors: _logger.LogWarning("Received more doors then is the inGame limit. Entries {Length}", incomingDoorsSnapshot.Length); return;
-                        default: _logger.LogInformation("Processing doors snapshot on thread pool with {Length} entries", incomingDoorsSnapshot.Length);
-                            try
+                    case 0: _logger.LogWarning("Received empty or null doors snapshot. Entries {Length}", incomingDoorsSnapshot.Length); return;
+                    case > GameConstants.MaxDoors: _logger.LogWarning("Received more doors then is the inGame limit. Entries {Length}", incomingDoorsSnapshot.Length); return;
+                    default: _logger.LogInformation("Processing doors snapshot on thread pool with {Length} entries", incomingDoorsSnapshot.Length);
+                        try
+                        {
+                            var filteredIncomingDoors = incomingDoorsSnapshot
+                                .AsValueEnumerable()
+                                // .Where(...)
+                                .ToList();
+
+                            _logger.LogInformation("Processed {Count} filtered door entries on thread pool.", filteredIncomingDoors.Count);
+
+                            var incomingDoorDataMap = filteredIncomingDoors
+                                .AsValueEnumerable()
+                                .ToDictionary(door => door.Id);
+
+                            var desiredViewModels = new List<InGameDoorViewModel>(filteredIncomingDoors.Count);
+
+                            foreach (DecodedDoor incomingDoor in filteredIncomingDoors.AsValueEnumerable())
                             {
-                                var filteredIncomingDoors = incomingDoorsSnapshot
-                                    .AsValueEnumerable()
-                                    // .Where(...)
-                                    .ToList();
+                                ct.ThrowIfCancellationRequested();
 
-                                _logger.LogInformation("Processed {Count} filtered door entries on thread pool.", filteredIncomingDoors.Count);
-
-                                var incomingDoorDataMap = filteredIncomingDoors
-                                    .AsValueEnumerable()
-                                    .ToDictionary(door => door.Id);
-
-                                var desiredViewModels = new List<InGameDoorViewModel>(filteredIncomingDoors.Count);
-
-                                foreach (DecodedDoor incomingDoor in filteredIncomingDoors.AsValueEnumerable())
+                                if (_viewModelCache.TryGetValue(incomingDoor.Id, out InGameDoorViewModel? existingVm))
                                 {
-                                    ct.ThrowIfCancellationRequested();
+                                    desiredViewModels.Add(existingVm);
+                                    _logger.LogTrace("Found existing ViewModel in cache on TP for {UniqueId}", incomingDoor.Id);
+                                }
+                                else
+                                {
+                                    _logger.LogDebug("Creating new ViewModel on TP for {UniqueId}", incomingDoor.Id);
+                                    var newVm = new InGameDoorViewModel(incomingDoor);
+                                    desiredViewModels.Add(newVm);
+                                }
+                            }
 
-                                    if (_viewModelCache.TryGetValue(incomingDoor.Id, out InGameDoorViewModel? existingVm))
+                            _logger.LogInformation("ViewModel preparation complete on thread pool. {DesiredCount} desired VMs.", desiredViewModels.Count);
+
+                            await _dispatcherService.InvokeOnUIAsync(() =>
+                            {
+                                _logger.LogInformation("Applying door updates on UI thread.");
+
+                                foreach (InGameDoorViewModel vm in desiredViewModels)
+                                {
+                                    if (incomingDoorDataMap.TryGetValue(vm.UniqueId, out DecodedDoor? doorData))
                                     {
-                                        desiredViewModels.Add(existingVm);
-                                        _logger.LogTrace("Found existing ViewModel in cache on TP for {UniqueId}", incomingDoor.Id);
+                                        vm.Update(doorData);
+                                        _viewModelCache.TryAdd(vm.UniqueId, vm);
+                                        _logger.LogTrace("Updating ViewModel properties and adding to cache on UI thread for {UniqueId}", vm.UniqueId);
                                     }
                                     else
                                     {
-                                        _logger.LogDebug("Creating new ViewModel on TP for {UniqueId}", incomingDoor.Id);
-                                        var newVm = new InGameDoorViewModel(incomingDoor);
-                                        desiredViewModels.Add(newVm);
+                                        _logger.LogWarning("Door data not found in map for VM {UniqueId} during UI update. This should not happen.", vm.UniqueId);
                                     }
                                 }
 
-                                _logger.LogInformation("ViewModel preparation complete on thread pool. {DesiredCount} desired VMs.", desiredViewModels.Count);
-
-                                await _dispatcherService.InvokeOnUIAsync(() =>
+                                var desiredUniqueIdsLookup = new HashSet<string>(desiredViewModels.Select(vm => vm.UniqueId));
+                                for (int i = _doors.Count - 1; i >= 0; i--)
                                 {
-                                    _logger.LogInformation("Applying door updates on UI thread.");
+                                    InGameDoorViewModel currentVmInList = _doors[i];
+                                    if (desiredUniqueIdsLookup.Contains(currentVmInList.UniqueId))
+                                        continue;
 
-                                    foreach (InGameDoorViewModel vm in desiredViewModels)
+                                    _logger.LogDebug("Removing ViewModel from Doors list & Cache on UI thread for UniqueId: {UniqueId}", currentVmInList.UniqueId);
+                                    _doors.RemoveAt(i);
+                                    _viewModelCache.Remove(currentVmInList.UniqueId);
+                                }
+
+                                for (int i = 0; i < desiredViewModels.Count; i++)
+                                {
+                                    InGameDoorViewModel desiredVm = desiredViewModels[i];
+
+                                    int currentIndexInDoors;
+                                    if (i < _doors.Count && _doors[i].UniqueId.Equals(desiredVm.UniqueId, StringComparison.Ordinal))
                                     {
-                                        if (incomingDoorDataMap.TryGetValue(vm.UniqueId, out DecodedDoor? doorData))
-                                        {
-                                            vm.Update(doorData);
-                                            _viewModelCache.TryAdd(vm.UniqueId, vm);
-                                            _logger.LogTrace("Updating ViewModel properties and adding to cache on UI thread for {UniqueId}", vm.UniqueId);
-                                        }
-                                        else
-                                        {
-                                            _logger.LogWarning("Door data not found in map for VM {UniqueId} during UI update. This should not happen.", vm.UniqueId);
-                                        }
+                                        currentIndexInDoors = i;
+                                        _logger.LogTrace("ViewModel {UniqueId} already in correct position.", desiredVm.UniqueId);
+                                    }
+                                    else
+                                    {
+                                        currentIndexInDoors = _doors.IndexOf(desiredVm);
                                     }
 
-                                    var desiredUniqueIdsLookup = new HashSet<string>(desiredViewModels.Select(vm => vm.UniqueId));
-                                    for (int i = _doors.Count - 1; i >= 0; i--)
+                                    if (currentIndexInDoors is -1)
                                     {
-                                        InGameDoorViewModel currentVmInList = _doors[i];
-                                        if (desiredUniqueIdsLookup.Contains(currentVmInList.UniqueId))
-                                            continue;
-
-                                        _logger.LogDebug("Removing ViewModel from Doors list & Cache on UI thread for UniqueId: {UniqueId}", currentVmInList.UniqueId);
-                                        _doors.RemoveAt(i);
-                                        _viewModelCache.Remove(currentVmInList.UniqueId);
+                                        _logger.LogDebug("Inserting ViewModel into ObservableList on UI thread: {UniqueId} at index {Index}", desiredVm.UniqueId, i);
+                                        _doors.Insert(i, desiredVm);
                                     }
-
-                                    for (int i = 0; i < desiredViewModels.Count; i++)
+                                    else if (currentIndexInDoors != i)
                                     {
-                                        InGameDoorViewModel desiredVm = desiredViewModels[i];
-
-                                        int currentIndexInDoors;
-                                        if (i < _doors.Count && _doors[i].UniqueId.Equals(desiredVm.UniqueId, StringComparison.Ordinal))
-                                        {
-                                            currentIndexInDoors = i;
-                                            _logger.LogTrace("ViewModel {UniqueId} already in correct position.", desiredVm.UniqueId);
-                                        }
-                                        else
-                                        {
-                                            currentIndexInDoors = _doors.IndexOf(desiredVm);
-                                        }
-
-                                        if (currentIndexInDoors is -1)
-                                        {
-                                            _logger.LogDebug("Inserting ViewModel into ObservableList on UI thread: {UniqueId} at index {Index}", desiredVm.UniqueId, i);
-                                            _doors.Insert(i, desiredVm);
-                                        }
-                                        else if (currentIndexInDoors != i)
-                                        {
-                                            _logger.LogDebug("Moving ViewModel in ObservableList on UI thread: {UniqueId} from index {FromIndex} to index {ToIndex}", desiredVm.UniqueId, currentIndexInDoors, i);
-                                            _doors.Move(currentIndexInDoors, i);
-                                        }
+                                        _logger.LogDebug("Moving ViewModel in ObservableList on UI thread: {UniqueId} from index {FromIndex} to index {ToIndex}", desiredVm.UniqueId, currentIndexInDoors, i);
+                                        _doors.Move(currentIndexInDoors, i);
                                     }
+                                }
 
-                                    if (_doors.Count != desiredViewModels.Count)
-                                        _logger.LogWarning("_doors count ({DCount}) differs from desiredViewModels count ({DesCount}) after sync. Adjusting.", _doors.Count, desiredViewModels.Count);
+                                if (_doors.Count != desiredViewModels.Count)
+                                    _logger.LogWarning("_doors count ({DCount}) differs from desiredViewModels count ({DesCount}) after sync. Adjusting.", _doors.Count, desiredViewModels.Count);
 
-                                    _logger.LogInformation("UI update complete. Doors ObservableList count: {Count}", _doors.Count);
-                                }, ct);
+                                _logger.LogInformation("UI update complete. Doors ObservableList count: {Count}", _doors.Count);
+                            }, ct);
 
-                                _logger.LogInformation("Finished processing door snapshot cycle.");
-                            }
-                            catch (OperationCanceledException)
-                            {
-                                _logger.LogTrace("Door snapshot processing cancelled.");
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Error during door snapshot processing cycle.");
-                            }
+                            _logger.LogInformation("Finished processing door snapshot cycle.");
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            _logger.LogTrace("Door snapshot processing cancelled.");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error during door snapshot processing cycle.");
+                        }
 
-                            break;
-                    }
-                }, AwaitOperation.Drop);
+                        break;
+                }
+            }, AwaitOperation.Drop);
     }
 
     public void Dispose()

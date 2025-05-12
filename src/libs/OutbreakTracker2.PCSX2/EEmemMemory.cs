@@ -7,32 +7,47 @@ public sealed class EEmemMemory : IEEmemMemory
 {
     private readonly GameClient _gameClient;
 
-    public nint BaseAddress { get; }
+    public nint BaseAddress { get; private set; }
+
     public IMemoryReader MemoryReader { get; }
 
     public EEmemMemory(GameClient gameClient, IMemoryReader memoryReader)
     {
         _gameClient = gameClient ?? throw new ArgumentNullException(nameof(gameClient));
         MemoryReader = memoryReader ?? throw new ArgumentNullException(nameof(memoryReader));
-
-        BaseAddress = GetEEmemBaseAddress();
-
-        if (BaseAddress == nint.Zero)
-            throw new Exception("Failed to find EEmem base address.");
     }
 
-    public nint GetEEmemBaseAddress()
+    public async ValueTask<bool> InitializeAsync(GameClient gameClient, CancellationToken cancellationToken)
     {
-        nint baseAddress = _gameClient.MainModuleBase;
+        const int MaxAttempts = 20;
+        const int DelayBetweenAttemptsMs = 100;
+
+        for (int i = 0; i < MaxAttempts; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            BaseAddress = GetEEmemBaseAddress(gameClient);
+            if (BaseAddress != nint.Zero)
+                return true;
+
+            await Task.Delay(DelayBetweenAttemptsMs, cancellationToken);
+        }
+
+        return false;
+    }
+
+    private nint GetEEmemBaseAddress(GameClient gameClient)
+    {
+        nint baseAddress = gameClient.MainModuleBase;
 
         // Read DOS Header
-        PE32.ImageDosHeader dosHeader = MemoryReader.Read<PE32.ImageDosHeader>(_gameClient.Handle, baseAddress);
+        PE32.ImageDosHeader dosHeader = MemoryReader.Read<PE32.ImageDosHeader>(gameClient.Handle, baseAddress);
         if (dosHeader.Magic != 0x5A4D) // "MZ"
             return nint.Zero;
 
         // Read NT Headers
         nint ntHeadersAddr = baseAddress + dosHeader.LfaNew;
-        PE32.ImageNtHeaders64 ntHeaders = MemoryReader.Read<PE32.ImageNtHeaders64>(_gameClient.Handle, ntHeadersAddr);
+        PE32.ImageNtHeaders64 ntHeaders = MemoryReader.Read<PE32.ImageNtHeaders64>(gameClient.Handle, ntHeadersAddr);
         if (ntHeaders.Signature != 0x00004550) // "PE\0\0"
             return nint.Zero;
 
@@ -42,30 +57,30 @@ public sealed class EEmemMemory : IEEmemMemory
             return nint.Zero;
 
         nint exportDirPtr = baseAddress + (int)exportDir.VirtualAddress;
-        PE32.ImageExportDirectory exportDirStruct = MemoryReader.Read<PE32.ImageExportDirectory>(_gameClient.Handle, exportDirPtr);
+        PE32.ImageExportDirectory exportDirStruct = MemoryReader.Read<PE32.ImageExportDirectory>(gameClient.Handle, exportDirPtr);
 
         // Read Export Names
         nint namesAddr = baseAddress + (int)exportDirStruct.AddressOfNames;
         for (int i = 0; i < exportDirStruct.NumberOfNames; i++)
         {
             nint nameRvaPtr = namesAddr + i * 4;
-            uint nameRva = MemoryReader.Read<uint>(_gameClient.Handle, nameRvaPtr);
+            uint nameRva = MemoryReader.Read<uint>(gameClient.Handle, nameRvaPtr);
             nint namePtr = baseAddress + (int)nameRva;
-            string name = MemoryReader.ReadString(_gameClient.Handle, namePtr);
+            string name = MemoryReader.ReadString(gameClient.Handle, namePtr);
 
             if (name.Equals("EEmem", StringComparison.Ordinal))
             {
                 // Get corresponding ordinal and function address
                 nint ordinalsAddr = baseAddress + (int)exportDirStruct.AddressOfNameOrdinals;
-                ushort ordinal = MemoryReader.Read<ushort>(_gameClient.Handle, ordinalsAddr + i * 2);
+                ushort ordinal = MemoryReader.Read<ushort>(gameClient.Handle, ordinalsAddr + i * 2);
 
                 nint functionsAddr = baseAddress + (int)exportDirStruct.AddressOfFunctions;
                 nint functionRvaPtr = functionsAddr + ordinal * 4;
-                uint functionRva = MemoryReader.Read<uint>(_gameClient.Handle, functionRvaPtr);
+                uint functionRva = MemoryReader.Read<uint>(gameClient.Handle, functionRvaPtr);
 
                 // Read the EEMem pointer (64-bit)
                 nint eememAddr = baseAddress + (int)functionRva;
-                long eememValue = MemoryReader.Read<long>(_gameClient.Handle, eememAddr);
+                long eememValue = MemoryReader.Read<long>(gameClient.Handle, eememAddr); // Assuming 64-bit pointer
                 return (nint)eememValue;
             }
         }

@@ -166,7 +166,5 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
         {
             _logger?.LogError(ex.InnerException ?? ex, "An error occurred while disposing the sink");
         }
-
-        GC.SuppressFinalize(this);
     }
 }

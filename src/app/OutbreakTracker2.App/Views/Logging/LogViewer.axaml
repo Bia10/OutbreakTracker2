@@ -97,7 +97,7 @@
                             <TextBlock
                                 FontSize="14"
                                 Foreground="{DynamicResource SukiLowText}"
-                                Text="{Binding MessagesCount}" />
+                                Text="{Binding InformationCount}" />
                             <CheckBox Margin="5,0,0,0" IsChecked="{Binding IsInformationSelected, Mode=TwoWay}" />
                         </StackPanel>
                     </suki:GlassCard>

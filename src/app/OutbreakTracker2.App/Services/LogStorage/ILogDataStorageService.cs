@@ -7,7 +7,9 @@ namespace OutbreakTracker2.App.Services.LogStorage;
 
 public interface ILogDataStorageService
 {
-    ObservableList<LogModel>? Entries { get; set; }
+    ObservableFixedSizeRingBuffer<LogModel> Entries { get; }
 
-    Task AddEntryAsync(LogModel logModel, CancellationToken cancellationToken);
+    ValueTask AddEntryAsync(LogModel logModel, CancellationToken cancellationToken);
+
+    int MaxCapacity { get; }
 }

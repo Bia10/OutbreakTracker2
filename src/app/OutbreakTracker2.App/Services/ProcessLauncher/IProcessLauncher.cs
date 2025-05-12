@@ -1,9 +1,8 @@
-﻿using R3;
+﻿using OutbreakTracker2.PCSX2;
+using R3;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using OutbreakTracker2.App.Services.Data;
-using OutbreakTracker2.PCSX2;
 
 namespace OutbreakTracker2.App.Services.ProcessLauncher;
 
@@ -17,11 +16,9 @@ public interface IProcessLauncher
 
     GameClient? AttachedGameClient { get; }
 
-    IDataManager? DataManager { get; }
+    Task<GameClient> LaunchAsync(string fileName, string? arguments, CancellationToken cancellationToken = default);
 
-    Task LaunchAsync(string fileName, string? arguments, CancellationToken cancellationToken = default);
-
-    Task AttachAsync(int processId);
+    Task<GameClient> AttachAsync(int processId);
 
     Task TerminateAsync(int? processId = null);
 
@@ -30,4 +27,6 @@ public interface IProcessLauncher
     bool HasExited(int processId);
 
     int GetExitCode(int processId);
+
+    GameClient? GetActiveGameClient();
 }

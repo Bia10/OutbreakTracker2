@@ -8,19 +8,20 @@ using OutbreakTracker2.PCSX2;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
+using OutbreakTracker2.Extensions;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
 public abstract class ReaderBase
 {
     private readonly GameClient GameClient;
-    private readonly EEmemMemory EEmemMemory;
+    private readonly IEEmemMemory EEmemMemory;
     private readonly IMemoryReader MemoryReader;
     protected readonly ILogger Logger;
     private const bool _enableLogging = false;
     protected GameFile CurrentFile { get; }
 
-    protected ReaderBase(GameClient gameClient, EEmemMemory eememMemory, ILogger logger)
+    protected ReaderBase(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
     {
         GameClient = gameClient;
         EEmemMemory = eememMemory;
@@ -162,7 +163,7 @@ public abstract class ReaderBase
         nint[] offsets = GetOffsets(offsetsFile1, offsetsFile2);
         nint basePtr = GetLobbyBasePointer(slotIndex);
 
-        if (!basePtr.IsValidAddress())
+        if (!basePtr.IsNeitherNullNorNegative())
         {
             errorMessage = $"[{methodName}] Invalid base pointer for slot index {slotIndex}.";
             return false;
@@ -170,7 +171,7 @@ public abstract class ReaderBase
 
         address = ComputeAddress(basePtr, offsets);
 
-        if (address.IsValidAddress())
+        if (address.IsNeitherNullNorNegative())
             return true;
 
         errorMessage = $"[{methodName}] Invalid address for slot index {slotIndex}: {address:X}";
@@ -189,7 +190,7 @@ public abstract class ReaderBase
         nint[] offsets = GetOffsets(offsetsFile1, offsetsFile2);
         address = ComputeAddress(offsets);
 
-        if (address.IsValidAddress())
+        if (address.IsNeitherNullNorNegative())
             return true;
 
         errorMessage = $"[{methodName}] Invalid address: {address:X}";

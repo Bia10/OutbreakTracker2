@@ -32,9 +32,9 @@
                 </Grid>
             </suki:GroupBox>
             <!--  Status  -->
-            <WrapPanel>
-                <ContentControl Content="{Binding StatusBadge}" />
-            </WrapPanel>
+            <!-- <WrapPanel> -->
+            <!--     <ContentControl Content="{Binding StatusBadge}" /> -->
+            <!-- </WrapPanel> -->
             <!--  Details  -->
             <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto">
                 <TextBlock

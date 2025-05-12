@@ -16,7 +16,7 @@ public class EnemiesReader : ReaderBase
 
     public DecodedEnemy[] DecodedEnemies1 { get; }
 
-    public EnemiesReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
+    public EnemiesReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
     {
         DecodedEnemies1 = new DecodedEnemy[GameConstants.MaxEnemies1];
         for (int i = 0; i < GameConstants.MaxEnemies1; i++)

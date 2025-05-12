@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutbreakTracker2.Memory", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutbreakTracker2.Outbreak", "libs\OutbreakTracker2.Outbreak\OutbreakTracker2.Outbreak.csproj", "{AF509A2F-3F8B-4283-85D6-02210F6F9031}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutbreakTracker2.Extensions", "OutbreakTracker2.Extensions\OutbreakTracker2.Extensions.csproj", "{4989C5FC-D4A9-47E8-8913-EEF3F8450DFE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{AF509A2F-3F8B-4283-85D6-02210F6F9031}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF509A2F-3F8B-4283-85D6-02210F6F9031}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF509A2F-3F8B-4283-85D6-02210F6F9031}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4989C5FC-D4A9-47E8-8913-EEF3F8450DFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4989C5FC-D4A9-47E8-8913-EEF3F8450DFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4989C5FC-D4A9-47E8-8913-EEF3F8450DFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4989C5FC-D4A9-47E8-8913-EEF3F8450DFE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

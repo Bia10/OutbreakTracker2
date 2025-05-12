@@ -5,6 +5,10 @@ namespace OutbreakTracker2.Outbreak.Models;
 public sealed record DecodedEnemy
 {
     [JsonInclude]
+    [JsonPropertyName(nameof(Id))]
+    public string Id { get; set; } = Guid.CreateVersion7().ToString();
+
+    [JsonInclude]
     [JsonPropertyName(nameof(Enabled))]
     public byte Enabled;
 
@@ -14,45 +18,41 @@ public sealed record DecodedEnemy
 
     [JsonInclude]
     [JsonPropertyName(nameof(SlotId))]
-    public short SlotId;
-
-    [JsonInclude]
-    [JsonPropertyName(nameof(Flag))]
-    public byte Flag;
-
-    [JsonInclude]
-    [JsonPropertyName(nameof(CurHp))]
-    public short CurHp;
-
-    [JsonInclude]
-    [JsonPropertyName(nameof(MaxHp))]
-    public short MaxHp;
-
-    [JsonInclude]
-    [JsonPropertyName(nameof(BossType))]
-    public byte BossType;
-
-    [JsonInclude]
-    [JsonPropertyName(nameof(NameId))]
-    public byte NameId;
-
-    [JsonInclude]
-    [JsonPropertyName(nameof(Name))]
-    public string Name = string.Empty;
+    public short SlotId { get; set; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(RoomId))]
-    public byte RoomId;
-
-    [JsonInclude]
-    [JsonPropertyName(nameof(RoomName))]
-    public string RoomName = string.Empty;
+    public byte RoomId { get; set; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(TypeId))]
-    public byte TypeId;
+    public byte TypeId { get; set; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(NameId))]
+    public byte NameId { get; set; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(Name))]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(CurHp))]
+    public short CurHp { get; set; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(MaxHp))]
+    public short MaxHp { get; set; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(BossType))]
+    public byte BossType { get; set; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Status))]
-    public byte Status;
+    public byte Status { get; set; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(RoomName))]
+    public string RoomName { get; set; } = string.Empty;
 }

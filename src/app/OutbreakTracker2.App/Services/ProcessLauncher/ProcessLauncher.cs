@@ -1,5 +1,6 @@
 ﻿using Cysharp.Diagnostics;
 using Microsoft.Extensions.Logging;
+using OutbreakTracker2.PCSX2;
 using R3;
 using System;
 using System.Collections.Concurrent;
@@ -8,16 +9,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using OutbreakTracker2.App.Services.Data;
-using OutbreakTracker2.PCSX2;
 
 namespace OutbreakTracker2.App.Services.ProcessLauncher;
 
 public class ProcessLauncher : IProcessLauncher, IDisposable
 {
-    private readonly ILogger _logger;
-    //private readonly IOutputMonitoringService _outputMonitoringService;
-
+    private readonly ILogger<ProcessLauncher> _logger;
     private readonly Subject<string> _processErrors = new();
     private readonly Subject<ProcessModel> _processUpdate = new();
     private readonly Subject<bool> _isCancelling = new();
@@ -28,14 +25,10 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
     public Observable<ProcessModel> ProcessUpdate => _processUpdate.AsObservable();
     public Process? ClientMonitoredProcess { get; private set; }
     public GameClient? AttachedGameClient { get; private set; }
-    public IDataManager? DataManager { get; private set; }
 
-    public ProcessLauncher(ILogger<ProcessLauncher> logger, IDataManager dataManager)
-        // IOutputMonitoringService outputMonitoringService)
+    public ProcessLauncher(ILogger<ProcessLauncher> logger)
     {
         _logger = logger;
-        DataManager = dataManager;
-        // _outputMonitoringService = outputMonitoringService;
     }
 
     private static ProcessStartInfo CreateProcessStartInfo(string fileName, string? arguments)
@@ -55,7 +48,7 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
         process.EnableRaisingEvents = true;
         process.Exited += (sender, _) => HandleProcessExit(sender);
 
-        // TODO: manage multiple instances
+        // TODO: manage multiple instances - for now, only single client monitored
         _processes.TryAdd(process.Id, process);
         _clientProcessIds.TryAdd(process.Id, 0);
 
@@ -70,7 +63,7 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
         });
     }
 
-    public Task LaunchAsync(
+    public Task<GameClient> LaunchAsync(
         string fileName,
         string? arguments,
         CancellationToken cancellationToken = default)
@@ -84,16 +77,22 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
 
         AttachedGameClient = new GameClient();
         AttachedGameClient.Attach(process);
-        DataManager?.Initialize(AttachedGameClient);
+
+        _logger.LogInformation("PCSX2 process launched (ID: {ProcessId}). DataManager initialization deferred.", process.Id);
 
         var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        return HandleProcessOutputAsync(
+        _ = HandleProcessOutputAsync(
             process,
             stdOut,
             stdError,
             cts.Token);
+
+        return Task.FromResult(AttachedGameClient);
     }
+
+    public GameClient? GetActiveGameClient()
+        => AttachedGameClient;
 
     private async Task HandleProcessOutputAsync(
         Process process,
@@ -137,7 +136,6 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
         CancellationToken ct)
         =>
         [
-            //ProcessOutputAsync(stdOut, _outputMonitoringService.AddLog, ct),
             ProcessOutputAsync(stdError, HandleErrorLog, ct),
         ];
 
@@ -201,12 +199,19 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
         }
     }
 
-    public Task AttachAsync(int processId)
+    public Task<GameClient> AttachAsync(int processId)
     {
         if (ClientMonitoredProcess?.Id == processId)
         {
             _logger.LogInformation("Already attached to process {ProcessId}", processId);
-            return Task.CompletedTask;
+
+            if (AttachedGameClient is { IsAttached: true })
+                return Task.FromResult(AttachedGameClient);
+
+            AttachedGameClient = new GameClient();
+            AttachedGameClient.Attach(Process.GetProcessById(processId));
+
+            return Task.FromResult(AttachedGameClient);
         }
 
         var process = Process.GetProcessById(processId);
@@ -218,10 +223,9 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
         AttachedGameClient?.Dispose();
         AttachedGameClient = new GameClient();
         AttachedGameClient.Attach(process);
-        DataManager?.Initialize(AttachedGameClient);
 
-        _logger.LogInformation("Attached to existing process ID: {ProcessId}", processId);
-        return Task.CompletedTask;
+        _logger.LogInformation("Attached to existing process ID: {ProcessId}. DataManager initialization deferred.", processId);
+        return Task.FromResult(AttachedGameClient);
     }
 
     public Observable<string> GetErrorObservable()
@@ -246,8 +250,5 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
 
         AttachedGameClient?.Dispose();
         AttachedGameClient = null;
-        DataManager = null;
-
-        GC.SuppressFinalize(this);
     }
 }

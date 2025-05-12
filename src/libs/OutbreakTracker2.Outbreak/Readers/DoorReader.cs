@@ -12,7 +12,7 @@ public sealed class DoorReader : ReaderBase
 {
     public DecodedDoor[] DecodedDoors { get; }
 
-    public DoorReader(GameClient gameClient, EEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
+    public DoorReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
     {
         DecodedDoors = new DecodedDoor[GameConstants.MaxDoors];
         for (int i = 0; i < GameConstants.MaxDoors; i++)

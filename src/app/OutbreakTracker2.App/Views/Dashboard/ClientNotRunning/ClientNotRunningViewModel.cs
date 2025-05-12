@@ -1,14 +1,16 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using OutbreakTracker2.App.Services.Data;
+using OutbreakTracker2.App.Services.FileLocators;
 using OutbreakTracker2.App.Services.ProcessLauncher;
 using OutbreakTracker2.App.Services.Toasts;
+using OutbreakTracker2.PCSX2;
 using R3;
+using SukiUI.Toasts;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.Input;
-using OutbreakTracker2.App.Services.FileLocators;
-using SukiUI.Toasts;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientNotRunning;
 
@@ -19,9 +21,10 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
     private readonly IToastService _toastService;
     private readonly IProcessLauncher _processLauncher;
     private readonly IPCSX2Locator _pcsx2Locator;
+    private readonly IDataManager _dataManager;
 
-    private const byte LaunchDelay = 3;
-    private const byte LaunchTimeout = 6;
+    // Overall timeout for launch and data manager init (increased to allow for EEmemory retries)
+    private const byte LaunchTimeout = 3;
 
     [ObservableProperty]
     private bool _isClientLaunching;
@@ -33,13 +36,15 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
         ILogger<ClientNotRunningViewModel> logger,
         IToastService toastService,
         IProcessLauncher processLauncher,
-        IPCSX2Locator pcsx2Locator
+        IPCSX2Locator pcsx2Locator,
+        IDataManager dataManager
     )
     {
         _logger = logger;
         _toastService = toastService;
         _processLauncher = processLauncher;
         _pcsx2Locator = pcsx2Locator;
+        _dataManager = dataManager;
     }
 
     [RelayCommand]
@@ -75,45 +80,25 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
     {
         _logger.LogInformation("Launching client");
         IsClientLaunching = true;
+        IsCancellationRequested = false;
 
         var cts = new CancellationTokenSource();
 
         _processLauncher.IsCancelling.Subscribe(
-                state: this,
-                onNext: (isCancelling, vm) => vm.IsCancellationRequested = isCancelling,
-                onErrorResume: (ex, vm) => vm._logger.LogError(ex, "Error in IsCancelling observable, resuming pipeline"),
-                onCompleted: (result, vm) => vm._logger.LogInformation("IsCancelling observable completed with {Status}", result.IsSuccess ? "success" : "failure"))
-            .AddTo(_disposables);
+            onNext: isCancelling => IsCancellationRequested = isCancelling,
+            onErrorResume: ex => _logger.LogError(ex, "Error in IsCancelling observable, resuming pipeline"),
+            onCompleted: result => _logger.LogInformation("IsCancelling observable completed with {Status}", result.IsSuccess ? "success" : "failure")
+        ).AddTo(_disposables);
 
         ISukiToast launchToast = _toastService.CreateInfoToastWithCancelButton(
             "Launch client", "Cancel client launch", toast =>
             {
-                CancellationTokenSource? localCts = cts;
-                if (localCts is { IsCancellationRequested: false })
+                if (!cts.IsCancellationRequested)
                 {
-                    localCts.Cancel();
-                    localCts.Dispose();
-                    cts = null;
-                    _logger.LogInformation("User cancelled client launch");
-                    IsClientLaunching = false;
+                    _logger.LogInformation("User cancelled client launch via toast.");
+                    cts.Cancel();
                 }
-
-                _toastService.DismissToastAsync(toast);
             });
-
-        _processLauncher.ProcessUpdate.Where(p => p.IsRunning)
-            .Take(1)
-            .SelectMany(_ => Observable.Timer(TimeSpan.FromSeconds(LaunchDelay)))
-            .Subscribe(state: launchToast,
-                onNext: (_, toast) =>
-                {
-                    _toastService.DismissToastAsync(toast);
-                    _logger.LogInformation("Client launched successfully");
-                    IsClientLaunching = false;
-                },
-                onErrorResume: (ex, _) => _logger.LogError(ex, "Error in process update stream, resuming pipeline"),
-                onCompleted: (result, _) => _logger.LogInformation("Process update stream completed with {Status}", result.IsSuccess ? "success" : "failure"))
-            .AddTo(_disposables);
 
         try
         {
@@ -122,33 +107,125 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
             {
                 _logger.LogError("Failed to find PCSX2 executable!");
                 await _toastService.InvokeErrorToastAsync("PCSX2 executable not found!");
+                IsClientLaunching = false;
+                await _toastService.DismissToastAsync(launchToast);
+                cts.Dispose();
                 return;
             }
 
             var arguments = $"-fastboot -nofullscreen -- \"{isoPath}\"";
-            await _processLauncher.LaunchAsync(pcsx2ExePath, arguments, cts.Token)
-                .WaitAsync(TimeSpan.FromSeconds(LaunchTimeout), cts.Token)
-                .ConfigureAwait(true);
+
+            // This pipeline encapsulates:
+            // 1. Initializing PCSX2 process via _processLauncher.LaunchAsync.
+            // 2. Waiting for _processLauncher.ProcessUpdate to signal PCSX2 is 'running'.
+            // 3. Attempting to initialize DataManager which internally waits for EEmemory to be valid.
+            Observable<Unit> launchAndInitializePipeline = Observable.FromAsync(async _ =>
+                {
+                    _logger.LogInformation("Initiating PCSX2 process launch via ProcessLauncher.LaunchAsync.");
+                    await _processLauncher.LaunchAsync(pcsx2ExePath, arguments, cts.Token);
+                    _logger.LogInformation("PCSX2 process launched successfully.");
+                    return true;
+                })
+                .Where(launchedSuccessfully => launchedSuccessfully)
+                .Take(1)
+                .SelectMany(_ => Observable.FromAsync(async _ =>
+                    {
+                        _logger.LogInformation("PCSX2 process reported as running. Attempting to initialize DataManager (EEmemory connection).");
+
+                        GameClient? gameClient = _processLauncher.GetActiveGameClient();
+                        if (gameClient is null)
+                        {
+                            _logger.LogError("GameClient not available from ProcessLauncher after PCSX2 launch. Cannot initialize DataManager.");
+                            throw new InvalidOperationException("GameClient not available after PCSX2 launch.");
+                        }
+
+                        await _dataManager.InitializeAsync(gameClient, cts.Token);
+                        _logger.LogInformation("DataManager initialized successfully.");
+                    })
+                );
+
+            launchAndInitializePipeline.Timeout(TimeSpan.FromSeconds(LaunchTimeout))
+                .SubscribeAwait(onNextAsync: async (success, token) =>
+                    {
+                        await _toastService.DismissToastAsync(launchToast);
+                        _logger.LogInformation("Client launched and data manager initialized successfully.");
+                        IsClientLaunching = false;
+                        cts.Dispose();
+                    }, onErrorResume: async void (innerEx) =>
+                    {
+                        try
+                        {
+                            _logger.LogError(innerEx, "Error in client launch/data manager stream.");
+
+                            await _toastService.DismissToastAsync(launchToast);
+
+                            switch (innerEx)
+                            {
+                                case TimeoutException:
+                                    await _toastService.InvokeErrorToastAsync("PCSX2 client launch and initialization timed out!");
+                                    break;
+                                case OperationCanceledException:
+                                    await _toastService.InvokeWarningToastAsync("PCSX2 client launch cancelled!");
+                                    break;
+                                case InvalidOperationException or ArgumentNullException:
+                                    await _toastService.InvokeErrorToastAsync($"Setup error: {innerEx.Message}");
+                                    break;
+                                default:
+                                    await _toastService.InvokeErrorToastAsync($"An unexpected error occurred: {innerEx.Message}");
+                                    break;
+                            }
+
+                            IsClientLaunching = false;
+                            cts.Dispose();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error in client launch/data manager stream error handler.");
+                            throw;
+                        }
+                    }, onCompleted: async void (result) =>
+                    {
+                        try
+                        {
+                            _logger.LogInformation("Client launch/data manager stream completed with {Status}", result.IsSuccess ? "success" : "failure");
+                            await _toastService.DismissToastAsync(launchToast);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error in client launch/data manager stream completed handler.");
+                            throw; // TODO handle exception
+                        }
+                    }, configureAwait: true, cancelOnCompleted: true
+                ).AddTo(_disposables);
         }
-        catch (TimeoutException) when (IsClientLaunching)
+        catch (OperationCanceledException)
         {
-            await _toastService.InvokeErrorToastAsync("PCSX2 client launch timed out!")
-                .ConfigureAwait(true);
-        }
-        catch (OperationCanceledException) when (IsClientLaunching)
-        {
-            await _toastService.InvokeWarningToastAsync("PCSX2 client launch cancelled!")
-                .ConfigureAwait(true);
-        }
-        finally
-        {
+            _logger.LogInformation("Client launch cancelled during initial setup.");
+            await _toastService.InvokeWarningToastAsync("PCSX2 client launch cancelled!");
             IsClientLaunching = false;
+            await _toastService.DismissToastAsync(launchToast);
+            cts.Dispose();
+        }
+        catch (TimeoutException)
+        {
+            _logger.LogError("PCSX2 client launch timed out during initial setup.");
+            await _toastService.InvokeErrorToastAsync("PCSX2 client launch timed out!");
+            IsClientLaunching = false;
+            await _toastService.DismissToastAsync(launchToast);
+            cts.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred during PCSX2 launch setup.");
+            await _toastService.InvokeErrorToastAsync($"An unexpected error occurred: {ex.Message}");
+            IsClientLaunching = false;
+            await _toastService.DismissToastAsync(launchToast);
+            cts.Dispose();
         }
     }
 
     public void Dispose()
     {
         _disposables.Dispose();
-        GC.SuppressFinalize(this);
     }
 }
