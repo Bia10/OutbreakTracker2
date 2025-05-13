@@ -8,6 +8,9 @@ namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlot;
 public partial class LobbySlotViewModel : ObservableObject
 {
     [ObservableProperty]
+    private Ulid _id = Ulid.NewUlid();
+
+    [ObservableProperty]
     private short _slotNumber;
 
     [ObservableProperty]
@@ -31,13 +34,13 @@ public partial class LobbySlotViewModel : ObservableObject
     [ObservableProperty]
     private string _title = string.Empty;
 
-    public bool IsPasswordProtectedBool
-        => !string.IsNullOrEmpty(IsPassProtected)
-        && (IsPassProtected.Equals("true", StringComparison.Ordinal) || IsPassProtected == "1");
+    public bool IsPasswordProtectedBool => !string.IsNullOrEmpty(IsPassProtected)
+                                           && (IsPassProtected.Equals("true", StringComparison.Ordinal)
+                                               || IsPassProtected.Equals("1", StringComparison.Ordinal));
 
     public string PlayersDisplay => $"{CurPlayers}/{MaxPlayers}";
 
-    public short UniqueSlotId => SlotNumber;
+    public Ulid UniqueSlotId => Id;
 
     public LobbySlotViewModel(DecodedLobbySlot model)
     {
@@ -61,8 +64,8 @@ public partial class LobbySlotViewModel : ObservableObject
 
     public override bool Equals(object? obj)
         => obj is LobbySlotViewModel viewModel &&
-           SlotNumber == viewModel.SlotNumber;
+           Id == viewModel.Id;
 
     public override int GetHashCode()
-        => HashCode.Combine(SlotNumber);
+        => HashCode.Combine(Id);
 }
