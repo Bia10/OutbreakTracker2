@@ -1,11 +1,16 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
+using System;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer;
 
 public partial class LobbyRoomPlayerViewModel : ObservableObject
 {
-    private DecodedLobbyRoomPlayer _model;
+    [ObservableProperty]
+    private Ulid _id = Ulid.NewUlid();
+
+    [ObservableProperty]
+    private byte _nameId;
 
     [ObservableProperty]
     private bool _isEnabled;
@@ -14,71 +19,57 @@ public partial class LobbyRoomPlayerViewModel : ObservableObject
     private string _displayName = string.Empty;
 
     [ObservableProperty]
-    private byte _nameId;
-
-    [ObservableProperty]
-    private string _nPCType = string.Empty;
+    private string _npcType = string.Empty;
 
     [ObservableProperty]
     private string _characterName = string.Empty;
 
     [ObservableProperty]
-    private string _characterHP = string.Empty;
+    private string _characterHp = string.Empty;
 
     [ObservableProperty]
     private string _characterPower = string.Empty;
 
     [ObservableProperty]
-    private string _nPCName = string.Empty;
+    private string _npcName = string.Empty;
 
     [ObservableProperty]
-    private string _nPCHP = string.Empty;
+    private string _npcHp = string.Empty;
 
     [ObservableProperty]
-    private string _nPCPower = string.Empty;
+    private string _npcPower = string.Empty;
 
-    public bool IsMainCharacter => NPCType == "Main Characters";
-    public bool IsOtherNPC => NPCType == "Other NPCs";
-    public byte UniquePlayerId => NameId;
+    public bool IsMainCharacter => NpcType == "Main Characters";
+    public bool IsOtherNpc => NpcType == "Other NPCs";
+    public byte DataPlayerId => NameId;
+    public Ulid ViewModelId => Id;
+
+    public LobbyRoomPlayerViewModel() { }
 
     public LobbyRoomPlayerViewModel(DecodedLobbyRoomPlayer model)
     {
-        _model = model;
         Update(model);
     }
 
     public void Update(DecodedLobbyRoomPlayer model)
     {
-        if (!model.IsEnabled)
-            return;
-
-        _model = model;
-
         IsEnabled = model.IsEnabled;
         NameId = model.NameId;
-        NPCType = model.NPCType;
+        NpcType = model.NPCType;
         CharacterName = model.CharacterName;
-        CharacterHP = model.CharacterHP;
+        CharacterHp = model.CharacterHP;
         CharacterPower = model.CharacterPower;
-        NPCName = model.NPCName;
-        NPCHP = model.NPCHP;
-        NPCPower = model.NPCPower;
+        NpcName = model.NPCName;
+        NpcHp = model.NPCHP;
+        NpcPower = model.NPCPower;
 
-        DisplayName = NPCType == "Main Characters" ? CharacterName : NPCName;
+        DisplayName = NpcType == "Main Characters" ? CharacterName : NpcName;
     }
 
     public override bool Equals(object? obj)
-    {
-        if (obj is null) return false;
-        if (ReferenceEquals(this, obj)) return true;
-        if (obj.GetType() != GetType()) return false;
-
-        return Equals((LobbyRoomPlayerViewModel)obj);
-    }
-
-    protected bool Equals(LobbyRoomPlayerViewModel other)
-        => UniquePlayerId == other.UniquePlayerId;
+        => obj is LobbyRoomPlayerViewModel viewModel &&
+           Id == viewModel.Id;
 
     public override int GetHashCode()
-        => UniquePlayerId.GetHashCode();
+        => HashCode.Combine(Id);
 }

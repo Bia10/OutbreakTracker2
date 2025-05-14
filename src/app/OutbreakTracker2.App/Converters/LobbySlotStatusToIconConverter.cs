@@ -10,7 +10,7 @@ namespace OutbreakTracker2.App.Converters;
 
 public sealed class LobbySlotStatusToIconConverter : IValueConverter
 {
-    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is null)
             return BindingOperations.DoNothing;
@@ -45,6 +45,6 @@ public sealed class LobbySlotStatusToIconConverter : IValueConverter
         };
     }
 
-    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => new BindingNotification(new NotSupportedException(), BindingErrorType.Error);
 }

@@ -17,7 +17,7 @@ public static class BoolToIconConverters
 
 public sealed class BoolToIconConverter(MaterialIconKind trueIcon, MaterialIconKind falseIcon) : IValueConverter
 {
-    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is not bool b)
             return BindingOperations.DoNothing;
@@ -25,6 +25,6 @@ public sealed class BoolToIconConverter(MaterialIconKind trueIcon, MaterialIconK
         return b ? trueIcon : falseIcon;
     }
 
-    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
 }

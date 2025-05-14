@@ -64,11 +64,15 @@ public sealed class LobbySlotReader : ReaderBase
         if (CurrentFile is GameFile.Unknown) return;
 
         long start = Environment.TickCount64;
-        var errors = new List<string>();
+        List<string> errors = [];
 
-        for (var i = 0; i < GameConstants.MaxLobbySlots; i++)
+        for (int i = 0; i < GameConstants.MaxLobbySlots; i++)
         {
             if (debug) Logger.LogDebug("Decoding lobby at slot index: {SlotIndex}", i);
+
+            // TODO: reads wrong values
+            byte passStatus = GetPass(i);
+            Logger.LogDebug("Decoding lobby at slot index: {SlotIndex} current pass status: {PassStatus}", i, passStatus);
 
             try
             {
@@ -94,8 +98,8 @@ public sealed class LobbySlotReader : ReaderBase
         if (errors.Count > 0)
         {
             Logger.LogError("Encountered {ErrorCount} errors", errors.Count);
-            foreach (string error in errors)
-                Logger.LogError(error);
+            for (int i = 0; i < errors.Count; i++)
+                Logger.LogError("Error {I}: {Error}", i, errors[i]);
         }
 
         long duration = Environment.TickCount64 - start;
@@ -104,6 +108,6 @@ public sealed class LobbySlotReader : ReaderBase
         Logger.LogDebug("Decoded lobby slots in {Duration}ms", duration);
         foreach (string jsonObject in DecodedLobbySlots.Select(lobbySlot
                      => JsonSerializer.Serialize(lobbySlot, DecodedLobbySlotJsonContext.Default.DecodedLobbySlot)))
-            Logger.LogDebug("Decoded lobby slot: {jsonObject}", jsonObject);
+            Logger.LogDebug("Decoded lobby slot: {JsonObject}", jsonObject);
     }
 }

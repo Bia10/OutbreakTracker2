@@ -9,21 +9,24 @@ using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using ZLinq;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
 
-public class InGamePlayersViewModel : ObservableObject, IDisposable
+public class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
 {
     private readonly IDisposable _subscription;
     private readonly ILogger<InGamePlayersViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
     private readonly Dictionary<string, InGamePlayerViewModel> _viewModelCache = new();
-
-    private ObservableList<InGamePlayerViewModel> _players { get; } = [];
+    private readonly ObservableList<InGamePlayerViewModel> _players = [];
     public NotifyCollectionChangedSynchronizedViewList<InGamePlayerViewModel> PlayersView { get; }
 
-    public InGamePlayersViewModel(IDataManager dataManager, ILogger<InGamePlayersViewModel> logger, IDispatcherService dispatcherService)
+    public InGamePlayersViewModel(
+        IDataManager dataManager,
+        ILogger<InGamePlayersViewModel> logger,
+        IDispatcherService dispatcherService)
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
@@ -40,18 +43,18 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
 
                     try
                     {
-                        var filteredIncomingPlayers = incomingPlayersSnapshot
+                        List<DecodedInGamePlayer> filteredIncomingPlayers = incomingPlayersSnapshot
                             .AsValueEnumerable()
-                            .Where(player => player.NameId > 0 || (player.NameId == 0 && !string.IsNullOrEmpty(player.CharacterType)))
+                            .Where(IsPlayerActive)
                             .ToList();
 
-                        _logger.LogInformation("Processed {Count} filtered player entries on thread pool.", filteredIncomingPlayers.Count);
+                        _logger.LogInformation("Processed {Count} filtered player entries on thread pool", filteredIncomingPlayers.Count);
 
-                        var incomingPlayerDataMap = filteredIncomingPlayers
+                        Dictionary<string, DecodedInGamePlayer> incomingPlayerDataMap = filteredIncomingPlayers
                             .AsValueEnumerable()
                             .ToDictionary(player => player.NameId > 0 ? $"NameId_{player.NameId}" : $"CharacterType_{player.CharacterType}");
 
-                        var desiredViewModels = new List<InGamePlayerViewModel>(filteredIncomingPlayers.Count);
+                        List<InGamePlayerViewModel> desiredViewModels = new(filteredIncomingPlayers.Count);
 
                         foreach (DecodedInGamePlayer incomingPlayer in filteredIncomingPlayers.AsValueEnumerable())
                         {
@@ -68,16 +71,16 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
                             else
                             {
                                 _logger.LogDebug("Creating new ViewModel on TP for {UniqueId}", playerUniqueId);
-                                var newVm = new InGamePlayerViewModel(incomingPlayer, dataManager);
+                                InGamePlayerViewModel newVm = new(incomingPlayer, dataManager);
                                 desiredViewModels.Add(newVm);
                             }
                         }
 
-                        _logger.LogInformation("ViewModel preparation complete on thread pool. {DesiredCount} desired VMs.", desiredViewModels.Count);
+                        _logger.LogInformation("ViewModel preparation complete on thread pool. {DesiredCount} desired VMs", desiredViewModels.Count);
 
                         await _dispatcherService.InvokeOnUIAsync(() =>
                         {
-                            _logger.LogInformation("Applying player updates on UI thread.");
+                            _logger.LogInformation("Applying player updates on UI thread");
 
                             foreach (InGamePlayerViewModel vm in desiredViewModels)
                                 if (incomingPlayerDataMap.TryGetValue(vm.UniqueNameId, out DecodedInGamePlayer? playerData))
@@ -87,10 +90,10 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
                                 }
                                 else
                                 {
-                                    _logger.LogWarning("Player data not found in map for VM {UniqueId} during UI update. This should not happen.", vm.UniqueNameId);
+                                    _logger.LogWarning("Player data not found in map for VM {UniqueId} during UI update. This should not happen", vm.UniqueNameId);
                                 }
 
-                            var desiredUniqueIdsLookup = new HashSet<string>(desiredViewModels.Select(vm => vm.UniqueNameId));
+                            HashSet<string> desiredUniqueIdsLookup = new(desiredViewModels.Select(vm => vm.UniqueNameId));
                             for (int i = _players.Count - 1; i >= 0; i--)
                             {
                                 InGamePlayerViewModel currentVmInList = _players[i];
@@ -113,7 +116,7 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
                                 if (i < _players.Count && _players[i].UniqueNameId.Equals(desiredVm.UniqueNameId, StringComparison.Ordinal))
                                 {
                                     currentIndexInPlayers = i;
-                                    _logger.LogTrace("ViewModel {UniqueId} already in correct position.", desiredVm.UniqueNameId);
+                                    _logger.LogTrace("ViewModel {UniqueId} already in correct position", desiredVm.UniqueNameId);
                                 }
                                 else
                                 {
@@ -122,48 +125,54 @@ public class InGamePlayersViewModel : ObservableObject, IDisposable
 
                                 if (currentIndexInPlayers is -1)
                                 {
-                                    _logger.LogDebug("Inserting ViewModel into ObservableList on UI thread: {UniqueId} at index {Index}", desiredVm.UniqueNameId, i);
+                                    _logger.LogDebug("Inserting ViewModel into ObservableList on UI thread: {UniqueId} at index {Index}",
+                                        desiredVm.UniqueNameId, i);
                                     _players.Insert(i, desiredVm);
                                 }
                                 else if (currentIndexInPlayers != i)
                                 {
-                                    _logger.LogDebug("Moving ViewModel in ObservableList on UI thread: {UniqueId} from index {FromIndex} to index {ToIndex}", desiredVm.UniqueNameId, currentIndexInPlayers, i);
+                                    _logger.LogDebug("Moving ViewModel in ObservableList on UI thread: {UniqueId} from index {FromIndex} to index {ToIndex}",
+                                        desiredVm.UniqueNameId, currentIndexInPlayers, i);
                                     _players.Move(currentIndexInPlayers, i);
                                 }
                             }
 
                             if (_players.Count != desiredViewModels.Count)
-                                _logger.LogWarning("_players count ({PCount}) differs from desiredViewModels count ({DCount}) after sync. Adjusting.", _players.Count, desiredViewModels.Count);
+                                _logger.LogWarning("_players count ({PCount}) differs from desiredViewModels count ({DCount}) after sync. Adjusting",
+                                    _players.Count, desiredViewModels.Count);
 
                             _logger.LogInformation("UI update complete. Players ObservableList count: {Count}", _players.Count);
-                        }, ct);
+                        }, ct).ConfigureAwait(false);
 
-                        _logger.LogInformation("Finished processing player snapshot cycle.");
+                        _logger.LogInformation("Finished processing player snapshot cycle");
                     }
                     catch (OperationCanceledException)
                     {
-                        _logger.LogTrace("Player snapshot processing cancelled.");
+                        _logger.LogTrace("Player snapshot processing cancelled");
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error during player snapshot processing cycle.");
+                        _logger.LogError(ex, "Error during player snapshot processing cycle");
                     }
                 },
                 AwaitOperation.Drop);
     }
 
-    public void Dispose()
+    private static bool IsPlayerActive(DecodedInGamePlayer player)
+        => player.NameId > 0 || (player.NameId is 0 && !string.IsNullOrEmpty(player.CharacterType));
+
+    public async ValueTask DisposeAsync()
     {
-        _logger.LogDebug("Disposing InGamePlayersViewModel.");
+        _logger.LogDebug("Disposing InGamePlayersViewModel");
         _subscription.Dispose();
 
-        _dispatcherService.PostOnUI(() =>
+        await _dispatcherService.InvokeOnUIAsync(() =>
         {
             _players.Clear();
             _viewModelCache.Clear();
-            _logger.LogDebug("InGamePlayersViewModel collections cleared on UI thread during dispose.");
-        });
+            _logger.LogDebug("InGamePlayersViewModel collections cleared on UI thread during async dispose");
+        }).ConfigureAwait(false);
 
-        _logger.LogDebug("InGamePlayersViewModel disposal complete.");
+        _logger.LogDebug("InGamePlayersViewModel asynchronous disposal complete");
     }
 }

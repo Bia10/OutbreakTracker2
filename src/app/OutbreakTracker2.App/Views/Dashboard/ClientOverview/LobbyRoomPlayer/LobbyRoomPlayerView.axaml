@@ -19,9 +19,21 @@
         <Grid
             Margin="10"
             ColumnDefinitions="Auto,*"
-            RowDefinitions="Auto,Auto,Auto,Auto">
-            <avalonia:MaterialIcon
+            RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+            <TextBlock
                 Grid.Row="0"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Margin="0,0,0,5"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                FontSize="10"
+                Foreground="Gray"
+                Opacity="0.7"
+                Text="{Binding Id, StringFormat='ULID: {0}'}" />
+
+            <avalonia:MaterialIcon
+                Grid.Row="1"
                 Grid.Column="0"
                 Width="18"
                 Height="18"
@@ -29,38 +41,41 @@
                 VerticalAlignment="Center"
                 Kind="Account" />
             <TextBlock
-                Grid.Row="0"
+                Grid.Row="1"
                 Grid.Column="1"
                 VerticalAlignment="Center"
                 FontSize="14"
                 FontWeight="Bold"
                 Text="{Binding DisplayName}" />
+
             <TextBlock
-                Grid.Row="1"
+                Grid.Row="2"
                 Grid.Column="0"
                 Margin="0,0,5,0"
                 VerticalAlignment="Center"
                 FontWeight="SemiBold"
                 Text="NameId:" />
             <TextBlock
-                Grid.Row="1"
+                Grid.Row="2"
                 Grid.Column="1"
                 VerticalAlignment="Center"
                 Text="{Binding NameId}" />
+
             <TextBlock
-                Grid.Row="2"
+                Grid.Row="3"
                 Grid.Column="0"
                 Margin="0,0,5,0"
                 VerticalAlignment="Center"
                 FontWeight="SemiBold"
                 Text="Type:" />
             <TextBlock
-                Grid.Row="2"
+                Grid.Row="3"
                 Grid.Column="1"
                 VerticalAlignment="Center"
-                Text="{Binding NPCType}" />
+                Text="{Binding NpcType}" />
+
             <StackPanel
-                Grid.Row="3"
+                Grid.Row="4"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 IsVisible="{Binding IsMainCharacter}">
@@ -90,7 +105,7 @@
                     <TextBlock
                         Grid.Column="1"
                         VerticalAlignment="Center"
-                        Text="{Binding CharacterHP}" />
+                        Text="{Binding CharacterHp}" />
                 </Grid>
                 <Grid ColumnDefinitions="Auto,*">
                     <TextBlock
@@ -105,11 +120,12 @@
                         Text="{Binding CharacterPower}" />
                 </Grid>
             </StackPanel>
+
             <StackPanel
-                Grid.Row="3"
+                Grid.Row="4"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
-                IsVisible="{Binding IsOtherNPC}">
+                IsVisible="{Binding IsOtherNpc}">
                 <Border
                     Height="1"
                     Margin="0,5,0,5"
@@ -124,7 +140,7 @@
                     <TextBlock
                         Grid.Column="1"
                         VerticalAlignment="Center"
-                        Text="{Binding NPCName}" />
+                        Text="{Binding NpcName}" />
                 </Grid>
                 <Grid ColumnDefinitions="Auto,*">
                     <TextBlock
@@ -136,7 +152,7 @@
                     <TextBlock
                         Grid.Column="1"
                         VerticalAlignment="Center"
-                        Text="{Binding NPCHP}" />
+                        Text="{Binding NpcHp}" />
                 </Grid>
                 <Grid ColumnDefinitions="Auto,*">
                     <TextBlock
@@ -148,7 +164,7 @@
                     <TextBlock
                         Grid.Column="1"
                         VerticalAlignment="Center"
-                        Text="{Binding NPCPower}" />
+                        Text="{Binding NpcPower}" />
                 </Grid>
             </StackPanel>
         </Grid>

@@ -6,9 +6,9 @@ using System.Globalization;
 
 namespace OutbreakTracker2.App.Converters;
 
-public class ConditionToIconConverter : IValueConverter
+public sealed class ConditionToIconConverter : IValueConverter
 {
-    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is not string rawCondition)
             return BindingOperations.DoNothing;
@@ -27,8 +27,6 @@ public class ConditionToIconConverter : IValueConverter
         };
     }
 
-    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        return new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
-    }
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
 }
