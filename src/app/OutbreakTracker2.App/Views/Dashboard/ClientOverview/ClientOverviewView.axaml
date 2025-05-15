@@ -11,6 +11,7 @@
     xmlns:lobbyRoom="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoom"
     xmlns:lobbySlots="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlots"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:inGameScenario="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="clientOverview:ClientOverviewViewModel"
@@ -26,7 +27,9 @@
             <TabItem Header="Lobby Room">
                 <lobbyRoom:LobbyRoomView DataContext="{Binding LobbyRoomViewModel}" />
             </TabItem>
-            <!--  Scenario  -->
+            <TabItem Header="In-Game Scenario">
+                <inGameScenario:InGameScenarioView DataContext="{Binding InGameScenarioViewModel}" />
+            </TabItem>
             <TabItem Header="In-Game Players">
                 <inGamePlayers:InGamePlayersView DataContext="{Binding InGamePlayersViewModel}" />
             </TabItem>

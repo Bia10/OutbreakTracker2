@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace OutbreakTracker2.App.Services.Data;
 
-// TODO: some kind of gurantuee of uniqueness before emitting would be nice
+// TODO: some kind of guarantee of uniqueness before emitting would be nice
 // currently we emit the same data over and over
-// but that could imply having to wragle with how to compare the composite data
+// but that could imply having to wrangle with how to compare the composite data
 public sealed class DataManager : IDataManager, IDisposable
 {
     private readonly ILogger<IDataManager> _logger;
@@ -29,7 +29,7 @@ public sealed class DataManager : IDataManager, IDisposable
     private readonly Subject<DecodedDoor[]> _doorsSubject = new();
     private readonly Subject<DecodedEnemy[]> _enemiesSubject = new();
     private readonly Subject<DecodedInGamePlayer[]> _inGamePlayersSubject = new();
-    private readonly Subject<DecodedScenario> _inGameScenarioSubject = new();
+    private readonly Subject<DecodedInGameScenario> _inGameScenarioSubject = new();
     private readonly Subject<DecodedLobbyRoom> _lobbyRoomSubject = new();
     private readonly Subject<DecodedLobbyRoomPlayer[]> _lobbyRoomPlayersSubject = new();
     private readonly Subject<DecodedLobbySlot[]> _lobbySlotsSubject = new();
@@ -39,7 +39,7 @@ public sealed class DataManager : IDataManager, IDisposable
     public Observable<DecodedDoor[]> DoorsObservable { get; private set; } = Observable.Empty<DecodedDoor[]>();
     public Observable<DecodedEnemy[]> EnemiesObservable { get; private set; } = Observable.Empty<DecodedEnemy[]>();
     public Observable<DecodedInGamePlayer[]> InGamePlayersObservable { get; private set; } = Observable.Empty<DecodedInGamePlayer[]>();
-    public Observable<DecodedScenario> InGameScenarioObservable { get; private set; } = Observable.Empty<DecodedScenario>();
+    public Observable<DecodedInGameScenario> InGameScenarioObservable { get; private set; } = Observable.Empty<DecodedInGameScenario>();
     public Observable<DecodedLobbyRoom> LobbyRoomObservable { get; private set; } = Observable.Empty<DecodedLobbyRoom>();
     public Observable<DecodedLobbyRoomPlayer[]> LobbyRoomPlayersObservable { get; private set; } = Observable.Empty<DecodedLobbyRoomPlayer[]>();
     public Observable<DecodedLobbySlot[]> LobbySlotsObservable { get; private set; } = Observable.Empty<DecodedLobbySlot[]>();
@@ -47,7 +47,7 @@ public sealed class DataManager : IDataManager, IDisposable
     public DecodedDoor[] Doors => _doorReader?.DecodedDoors ?? [];
     public DecodedEnemy[] Enemies => _enemiesReader?.DecodedEnemies2 ?? [];
     public DecodedInGamePlayer[] InGamePlayers => _inGamePlayerReader?.DecodedInGamePlayers ?? [];
-    public DecodedScenario InGameScenario => _inGameScenarioReader?.DecodedScenario ?? new DecodedScenario();
+    public DecodedInGameScenario InGameScenario => _inGameScenarioReader?.DecodedScenario ?? new DecodedInGameScenario();
     public DecodedLobbyRoom LobbyRoom => _lobbyRoomReader?.DecodedLobbyRoom ?? new DecodedLobbyRoom();
     public DecodedLobbyRoomPlayer[] LobbyRoomPlayers => _lobbyRoomPlayerReader?.DecodedLobbyRoomPlayers ?? [];
     public DecodedLobbySlot[] LobbySlots => _lobbySlotReader?.DecodedLobbySlots ?? [];
@@ -55,7 +55,7 @@ public sealed class DataManager : IDataManager, IDisposable
     private readonly TimeSpan _fastUpdateInterval = TimeSpan.FromMilliseconds(500);
     private readonly TimeSpan _slowUpdateInterval = TimeSpan.FromMilliseconds(1000);
 
-    public DataManager(ILogger<IDataManager> logger)
+    public DataManager(ILogger<DataManager> logger)
     {
         _logger = logger;
         SetupObservables();
@@ -81,18 +81,18 @@ public sealed class DataManager : IDataManager, IDisposable
 
         if (IsInitialized)
         {
-            _logger.LogWarning("DataManager is already initialized.");
+            _logger.LogWarning("DataManager is already initialized");
             return;
         }
 
-        _logger.LogInformation("Attempting to initialize DataManager and EEmemory connection.");
+        _logger.LogInformation("Attempting to initialize DataManager and EEmemory connection");
 
         _eememMemory = new EEmemMemory(gameClient, new MemoryReader());
 
-        bool eememMemoryReady = await _eememMemory.InitializeAsync(gameClient, cancellationToken);
+        bool eememMemoryReady = await _eememMemory.InitializeAsync(gameClient, cancellationToken).ConfigureAwait(false);
         if (!eememMemoryReady)
         {
-            _logger.LogError("Failed to initialize EEmemory after multiple attempts within DataManager.");
+            _logger.LogError("Failed to initialize EEmemory after multiple attempts within DataManager");
             throw new InvalidOperationException("Failed to initialize EEmemory: PCSX2 memory not ready or 'EEmem' export not found.");
         }
 
@@ -104,8 +104,8 @@ public sealed class DataManager : IDataManager, IDisposable
         _lobbyRoomReader = new LobbyRoomReader(gameClient, _eememMemory, _logger);
         _lobbySlotReader = new LobbySlotReader(gameClient, _eememMemory, _logger);
 
-        var fastUpdateTrigger = Observable.Interval(_fastUpdateInterval, cancellationToken);
-        var slowUpdateTrigger = Observable.Interval(_slowUpdateInterval, cancellationToken);
+        Observable<Unit> fastUpdateTrigger = Observable.Interval(_fastUpdateInterval, cancellationToken);
+        Observable<Unit> slowUpdateTrigger = Observable.Interval(_slowUpdateInterval, cancellationToken);
 
         IDisposable fastSubscription = fastUpdateTrigger
             .ObserveOnThreadPool()
@@ -113,15 +113,15 @@ public sealed class DataManager : IDataManager, IDisposable
             {
                 try
                 {
-                    await UpdateCoreGameDataAsync(ct);
+                    await UpdateCoreGameDataAsync(ct).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger.LogTrace("Fast update cancelled.");
+                    _logger.LogTrace("Fast update cancelled");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error during fast update cycle.");
+                    _logger.LogError(ex, "Error during fast update cycle");
                 }
             }, AwaitOperation.Drop);
 
@@ -131,22 +131,22 @@ public sealed class DataManager : IDataManager, IDisposable
             {
                 try
                 {
-                    await UpdateLobbyDataAsync(ct);
+                    await UpdateLobbyDataAsync(ct).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger.LogTrace("Slow update cancelled.");
+                    _logger.LogTrace("Slow update cancelled");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error during slow update cycle.");
+                    _logger.LogError(ex, "Error during slow update cycle");
                 }
             }, AwaitOperation.Drop);
 
         _updateSubscription = Disposable.Combine(fastSubscription, slowSubscription);
 
         IsInitialized = true;
-        _logger.LogInformation("Data manager has been initialized and update loop started.");
+        _logger.LogInformation("Data manager has been initialized and update loop started");
     }
 
     private ValueTask UpdateCoreGameDataAsync(CancellationToken cancellationToken)
@@ -214,12 +214,12 @@ public sealed class DataManager : IDataManager, IDisposable
 
         if (decodedPlayers is null)
         {
-            _logger.LogWarning("DataManager is about to emit 0 players because the decoded players array is null.");
+            _logger.LogWarning("DataManager is about to emit 0 players because the decoded players array is null");
             _inGamePlayersSubject.OnNext([]);
             return;
         }
 
-        _logger.LogDebug("DataManager is about to emit {Count} players.", decodedPlayers.Length);
+        _logger.LogDebug("DataManager is about to emit {Count} players", decodedPlayers.Length);
 
         foreach (DecodedInGamePlayer player in decodedPlayers)
             _logger.LogTrace(
@@ -232,7 +232,7 @@ public sealed class DataManager : IDataManager, IDisposable
     public void UpdateInGameScenario()
     {
         _inGameScenarioReader?.UpdateScenario();
-        _inGameScenarioSubject.OnNext(_inGameScenarioReader?.DecodedScenario ?? new DecodedScenario());
+        _inGameScenarioSubject.OnNext(_inGameScenarioReader?.DecodedScenario ?? new DecodedInGameScenario());
     }
 
     public void UpdateLobbyRoom()
@@ -280,6 +280,6 @@ public sealed class DataManager : IDataManager, IDisposable
         _lobbySlotsSubject.Dispose();
 
         IsInitialized = false;
-        _logger.LogInformation("DataManager disposed.");
+        _logger.LogInformation("DataManager disposed");
     }
 }

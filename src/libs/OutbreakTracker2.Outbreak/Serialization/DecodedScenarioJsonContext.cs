@@ -3,6 +3,6 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Outbreak.Serialization;
 
-[JsonSerializable(typeof(DecodedScenario))]
+[JsonSerializable(typeof(DecodedInGameScenario))]
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 internal sealed partial class DecodedScenarioJsonContext : JsonSerializerContext;

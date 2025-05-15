@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace OutbreakTracker2.Outbreak.Models;
 
-public sealed record DecodedScenario
+public sealed record DecodedInGameScenario
 {
     [JsonInclude]
     [JsonPropertyName(nameof(CurrentFile))]

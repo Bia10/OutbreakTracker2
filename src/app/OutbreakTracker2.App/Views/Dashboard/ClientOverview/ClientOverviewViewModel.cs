@@ -3,6 +3,7 @@ using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameDoors;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameEnemies;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoom;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlots;
 using System;
@@ -17,6 +18,8 @@ public class ClientOverviewViewModel : ObservableObject
 
     public LobbyRoomViewModel LobbyRoomViewModel { get; }
 
+    public InGameScenarioViewModel InGameScenarioViewModel { get; }
+
     public InGamePlayersViewModel InGamePlayersViewModel { get; }
 
     public InGameEnemiesViewModel InGameEnemiesViewModel { get; }
@@ -27,6 +30,7 @@ public class ClientOverviewViewModel : ObservableObject
         DebugViewModel debugViewModel,
         LobbySlotsViewModel lobbySlotsViewModel,
         LobbyRoomViewModel lobbyRoomViewModel,
+        InGameScenarioViewModel inGameScenarioViewModel,
         InGamePlayersViewModel inGamePlayersViewModel,
         InGameEnemiesViewModel inGameEnemiesViewModel,
         InGameDoorsViewModel inGameDoorsViewModel)
@@ -34,6 +38,7 @@ public class ClientOverviewViewModel : ObservableObject
         DebugViewModel = debugViewModel ?? throw new ArgumentNullException(nameof(debugViewModel));
         LobbySlotsViewModel = lobbySlotsViewModel ?? throw new ArgumentNullException(nameof(lobbySlotsViewModel));
         LobbyRoomViewModel = lobbyRoomViewModel ?? throw new ArgumentNullException(nameof(lobbyRoomViewModel));
+        InGameScenarioViewModel = inGameScenarioViewModel ?? throw new ArgumentNullException(nameof(inGameScenarioViewModel));
         InGamePlayersViewModel = inGamePlayersViewModel ?? throw new ArgumentNullException(nameof(inGamePlayersViewModel));
         InGameEnemiesViewModel = inGameEnemiesViewModel ?? throw new ArgumentNullException(nameof(inGameEnemiesViewModel));
         InGameDoorsViewModel = inGameDoorsViewModel ?? throw new ArgumentNullException(nameof(inGameDoorsViewModel));

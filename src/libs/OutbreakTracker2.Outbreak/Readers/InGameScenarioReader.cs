@@ -12,12 +12,12 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public class InGameScenarioReader : ReaderBase
 {
-    public DecodedScenario DecodedScenario { get; }
+    public DecodedInGameScenario DecodedScenario { get; }
 
     public InGameScenarioReader(GameClient gameClient, IEEmemMemory memory, ILogger logger)
         : base(gameClient, memory, logger)
     {
-        DecodedScenario = new DecodedScenario();
+        DecodedScenario = new DecodedInGameScenario();
     }
 
     public static string GetScenarioName(short scenarioId)
@@ -167,7 +167,7 @@ public class InGameScenarioReader : ReaderBase
 
     public DecodedItem[] GetItems()
     {
-        var Items = new DecodedItem[GameConstants.MaxItems - 1];
+        DecodedItem[] items = new DecodedItem[GameConstants.MaxItems - 1];
         byte roomId = 0;
         byte slotIndex = 0;
         short typeId = 0;
@@ -183,7 +183,7 @@ public class InGameScenarioReader : ReaderBase
                  nint itemBaseOffset = FileOnePtrs.PickupStructSize * i;
                  roomId = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.RoomIdOffset]);
                  slotIndex = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.NumberOffset]);
-                 typeId  = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.IdOffset]);
+                 typeId = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.IdOffset]);
                  mix = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.MixOffset]);
                  present = ReadValue<int>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PresentOffset]);
                  quantity = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PickupCountOffset]);
@@ -197,14 +197,14 @@ public class InGameScenarioReader : ReaderBase
                  roomId = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.RoomIdOffset]);
 
                  slotIndex = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.NumberOffset]);
-                 typeId  = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.IdOffset]);
+                 typeId = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.IdOffset]);
                  mix = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.MixOffset]);
                  present = ReadValue<int>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PresentOffset]);
                  quantity = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PickupCountOffset]);
                  pickedUp = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PickupOffset]);
              }
 
-             Items[i] = new DecodedItem
+             items[i] = new DecodedItem
              {
                  Id = (short)(i + 1),
                  RoomId = roomId,
@@ -217,7 +217,7 @@ public class InGameScenarioReader : ReaderBase
              };
          }
 
-        return Items;
+        return items;
     }
 
     public void UpdateScenario(bool debug = false)
@@ -266,7 +266,7 @@ public class InGameScenarioReader : ReaderBase
         if (!debug) return;
 
         Logger.LogDebug("Decoded scenario in {Duration}ms", duration);
-        string jsonObject = JsonSerializer.Serialize(DecodedScenario, DecodedScenarioJsonContext.Default.DecodedScenario);
-        Logger.LogDebug("Decoded scenario: {jsonObject}", jsonObject);
+        string jsonObject = JsonSerializer.Serialize(DecodedScenario, DecodedScenarioJsonContext.Default.DecodedInGameScenario);
+        Logger.LogDebug("Decoded scenario: {JsonObject}", jsonObject);
     }
 }

@@ -23,6 +23,7 @@ using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameDoors;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameEnemies;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoom;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlots;
 using OutbreakTracker2.App.Views.Log;
@@ -51,7 +52,7 @@ public class App : Application
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            var services = new ServiceCollection();
+            ServiceCollection services = new();
             services.AddSingleton(desktop);
             OutbreakTracker2Views views = ConfigureViews(services);
             IServiceProvider serviceProvider = ConfigureServicesAndLogging(services, configuration);
@@ -87,7 +88,7 @@ public class App : Application
                 Log.Fatal("Unhandled exception in application domain with unknown exception object: {ExceptionObject} (IsTerminating: {IsTerminating})", e.ExceptionObject, e.IsTerminating);
         };
 
-        ObservableSystem.RegisterUnhandledExceptionHandler((Exception ex) =>
+        ObservableSystem.RegisterUnhandledExceptionHandler(ex =>
         {
             Log.Error(ex, "Unhandled R3 exception");
         });
@@ -103,6 +104,7 @@ public class App : Application
             .AddView<ClientAlreadyRunningView, ClientAlreadyRunningViewModel>(services)
             .AddView<ClientOverviewView, ClientOverviewViewModel>(services)
             .AddView<DebugView, DebugViewModel>(services)
+            .AddView<InGameScenarioView, InGameScenarioViewModel>(services)
             .AddView<InGamePlayersView, InGamePlayersViewModel>(services)
             .AddView<InGameEnemiesView, InGameEnemiesViewModel>(services)
             .AddView<LobbySlotsView, LobbySlotsViewModel>(services)
@@ -157,7 +159,7 @@ public class App : Application
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
         services.AddSingleton<IPCSX2Locator, PCSX2Locator>();
 
-        var providerOptions = new ServiceProviderOptions
+        ServiceProviderOptions providerOptions = new()
         {
             ValidateOnBuild = true,
             ValidateScopes = true

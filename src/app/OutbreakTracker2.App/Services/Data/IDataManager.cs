@@ -14,7 +14,7 @@ public interface IDataManager
 
     public DecodedInGamePlayer[] InGamePlayers { get; }
 
-    public DecodedScenario InGameScenario { get; }
+    public DecodedInGameScenario InGameScenario { get; }
 
     public DecodedLobbyRoom LobbyRoom { get; }
 
@@ -28,7 +28,7 @@ public interface IDataManager
 
     public Observable<DecodedInGamePlayer[]> InGamePlayersObservable { get; }
 
-    public Observable<DecodedScenario> InGameScenarioObservable { get; }
+    public Observable<DecodedInGameScenario> InGameScenarioObservable { get; }
 
     public Observable<DecodedLobbyRoom> LobbyRoomObservable { get; }
 

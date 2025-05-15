@@ -4,11 +4,14 @@ namespace OutbreakTracker2.Outbreak.Enums;
 
 public enum InGameScenario : short
 {
-    [EnumMember(Value = "Unknown")]
-    Unknown = -1,
+    [EnumMember(Value = "Unknown(0)")]
+    Unknown = 0,
 
-    [EnumMember(Value = "Training ground")]
-    TrainingGround = 0,
+    [EnumMember(Value = "Outbreak")]
+    Outbreak = 1,
+
+    [EnumMember(Value = "Hellfire")]
+    Hellfire = 2,
 
     [EnumMember(Value = "End of the road")]
     EndOfTheRoad = 6,
@@ -18,6 +21,9 @@ public enum InGameScenario : short
 
     [EnumMember(Value = "Desperate times")]
     DesperateTimes = 15,
+
+    [EnumMember(Value = "Training ground")]
+    TrainingGround = 20,
 
     [EnumMember(Value = "Showdown 1")]
     Showdown1 = 21,
@@ -34,12 +40,21 @@ public enum InGameScenario : short
     [EnumMember(Value = "Elimination 3")]
     Elimination3 = 27,
 
+    [EnumMember(Value = "The hive")]
+    TheHive = 28,
+
     [EnumMember(Value = "Elimination 1")]
     Elimination1 = 29,
 
     [EnumMember(Value = "Elimination 2")]
     Elimination2 = 30,
 
+    [EnumMember(Value = "Below freezing point")]
+    BelowFreezingPoint = 35,
+
     [EnumMember(Value = "Wild things")]
-    WildThings = 40
+    WildThings = 40,
+
+    [EnumMember(Value = "Decisions, decisions")]
+    DecisionsDecisions = 41
 }

@@ -1,7 +1,6 @@
 ﻿using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.App.Services.Data;
-using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
 using SukiUI.Controls;
@@ -14,38 +13,34 @@ public partial class InGameEnemyViewModel : ObservableObject
     private DecodedEnemy _enemy = null!;
 
     [ObservableProperty]
-    private string name = string.Empty;
+    private string _name = string.Empty;
 
     [ObservableProperty]
-    private short currentHp;
+    private short _currentHp;
 
     [ObservableProperty]
-    private short maxHp;
+    private short _maxHp;
 
     [ObservableProperty]
-    private double healthPercentage;
+    private double _healthPercentage;
 
     [ObservableProperty]
-    private string bossType = string.Empty;
+    private string _bossType = string.Empty;
 
     [ObservableProperty]
-    private string status = string.Empty;
+    private string _status = string.Empty;
 
     [ObservableProperty]
-    private string roomName = string.Empty;
+    private string _roomName = string.Empty;
 
-    //[ObservableProperty]
-    //private InfoBar _statusBadge;
-
-    public string UniqueId { get; private set; }
+    public string UniqueId { get; }
 
     private readonly IDataManager _dataManager;
 
     public InGameEnemyViewModel(DecodedEnemy enemy, IDataManager dataManager)
     {
         _dataManager = dataManager;
-        //_statusBadge = CreateInfoBar("Status:", string.Empty);
-        UniqueId = enemy.Id; // Initialize UniqueId from the DecodedEnemy's Id
+        UniqueId = enemy.Id;
         Update(enemy);
     }
 
@@ -62,12 +57,6 @@ public partial class InGameEnemyViewModel : ObservableObject
         BossType = ConvertBossType(enemy.BossType);
         Status = ConvertStatus(enemy.Status);
 
-        // UpdateBadge(
-        //     StatusBadge,
-        //     Status,
-        //     GetStatusSeverity(enemy.Status),
-        //     "Status:"
-        // );
 
         UpdateRoomName(enemy);
     }
@@ -75,21 +64,12 @@ public partial class InGameEnemyViewModel : ObservableObject
     private void UpdateRoomName(DecodedEnemy enemy)
     {
         string curScenarioName = _dataManager.InGameScenario.ScenarioName;
-        if (!string.IsNullOrEmpty(curScenarioName) && EnumUtility.TryParseByValueOrMember(curScenarioName, out InGameScenario scenarioEnum))
+        if (!string.IsNullOrEmpty(curScenarioName) && EnumUtility.TryParseByValueOrMember(curScenarioName, out Outbreak.Enums.InGameScenario scenarioEnum))
             RoomName = scenarioEnum.GetRoomName(enemy.RoomId);
         else
             RoomName = $"Room {enemy.RoomId}";
     }
 
-    // TODO: this violates principles of MVVM and should be refactored
-    // private static InfoBar CreateInfoBar(string title, string message) => new()
-    // {
-    //     Title = title,
-    //     IsOpen = true,
-    //     IsClosable = false,
-    //     Message = message,
-    //     Severity = NotificationType.Information
-    // };
 
     private static void UpdateBadge(InfoBar badge, string message, NotificationType severity, string title)
     {

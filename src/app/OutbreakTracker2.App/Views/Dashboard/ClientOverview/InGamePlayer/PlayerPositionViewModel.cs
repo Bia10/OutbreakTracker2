@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.App.Services.Data;
-using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer;
@@ -36,7 +35,7 @@ public partial class PlayerPositionViewModel : ObservableObject
     private string GetRoomName(short roomId)
     {
         string curScenarioName = _dataManager.InGameScenario.ScenarioName;
-        if (!string.IsNullOrEmpty(curScenarioName) && EnumUtility.TryParseByValueOrMember(curScenarioName, out InGameScenario scenarioEnum))
+        if (!string.IsNullOrEmpty(curScenarioName) && EnumUtility.TryParseByValueOrMember(curScenarioName, out Outbreak.Enums.InGameScenario scenarioEnum))
             return scenarioEnum.GetRoomName(roomId);
 
         return $"Room ID: {roomId}";

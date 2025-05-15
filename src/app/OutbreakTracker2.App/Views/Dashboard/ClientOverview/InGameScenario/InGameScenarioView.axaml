@@ -1,0 +1,650 @@
+<UserControl
+    x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario.InGameScenarioView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:inGameScenario="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    d:DesignHeight="800"
+    d:DesignWidth="400"
+    x:DataType="inGameScenario:InGameScenarioViewModel"
+    mc:Ignorable="d">
+
+    <!--
+        TODO: needs to be split into sub-views depending on scenario and bind visibility to current scenario later,
+        but for debug displaying all at once is suitable
+    -->
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="10" Orientation="Vertical">
+            <suki:GlassCard HorizontalAlignment="Stretch">
+                <Grid
+                    Margin="15"
+                    ColumnDefinitions="Auto,*"
+                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*,*"
+                    RowSpacing="5">
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Scenario Name:" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding ScenarioName}"
+                        TextTrimming="CharacterEllipsis" />
+
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Difficulty:" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding Difficulty}" />
+
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Current File:" />
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding CurrentFile}" />
+
+                    <TextBlock
+                        Grid.Row="3"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Cleared:" />
+                    <TextBlock
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding ClearedDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="4"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Frame Counter:" />
+                    <TextBlock
+                        Grid.Row="4"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding FrameCounter}" />
+
+                    <TextBlock
+                        Grid.Row="5"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Players:" />
+                    <TextBlock
+                        Grid.Row="5"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PlayerCountDisplay}" />
+
+                    <Border
+                        Grid.Row="6"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Height="1"
+                        Margin="0,10,0,5"
+                        Background="{DynamicResource SukiControlBorderBrush}" />
+
+                    <TextBlock
+                        Grid.Row="7"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Wild Things Time:" />
+                    <TextBlock
+                        Grid.Row="7"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding WildThingsTimeDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="8"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Escape Time:" />
+                    <TextBlock
+                        Grid.Row="8"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding EscapeTimeDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="9"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Fight Time:" />
+                    <TextBlock
+                        Grid.Row="9"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding FightTimeDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="10"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Fight Time 2:" />
+                    <TextBlock
+                        Grid.Row="10"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding FightTime2Display}" />
+
+                    <TextBlock
+                        Grid.Row="11"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Garage Time:" />
+                    <TextBlock
+                        Grid.Row="11"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding GarageTimeDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="12"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Gas Time:" />
+                    <TextBlock
+                        Grid.Row="12"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding GasTimeDisplay}" />
+
+                    <Border
+                        Grid.Row="13"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Height="1"
+                        Margin="0,10,0,5"
+                        Background="{DynamicResource SukiControlBorderBrush}" />
+
+                    <TextBlock
+                        Grid.Row="14"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Gas Flag:" />
+                    <TextBlock
+                        Grid.Row="14"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding GasFlag}" />
+
+                    <TextBlock
+                        Grid.Row="15"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Gas Random:" />
+                    <TextBlock
+                        Grid.Row="15"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding GasRandom}" />
+
+                    <TextBlock
+                        Grid.Row="16"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Item Random:" />
+                    <TextBlock
+                        Grid.Row="16"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding ItemRandom}" />
+
+                    <TextBlock
+                        Grid.Row="17"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Item Random 2:" />
+                    <TextBlock
+                        Grid.Row="17"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding ItemRandom2}" />
+
+                    <TextBlock
+                        Grid.Row="18"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Puzzle Random:" />
+                    <TextBlock
+                        Grid.Row="18"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PuzzleRandom}" />
+
+                    <TextBlock
+                        Grid.Row="19"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Coin:" />
+                    <TextBlock
+                        Grid.Row="19"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding Coin}" />
+
+                    <TextBlock
+                        Grid.Row="20"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Killed Zombie:" />
+                    <TextBlock
+                        Grid.Row="20"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding KilledZombie}" />
+
+                    <Border
+                        Grid.Row="21"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Height="1"
+                        Margin="0,10,0,5"
+                        Background="{DynamicResource SukiControlBorderBrush}" />
+
+                    <TextBlock
+                        Grid.Row="22"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass Desperate Times 1:" />
+                    <TextBlock
+                        Grid.Row="22"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PassDesperateTimes1}" />
+
+                    <TextBlock
+                        Grid.Row="23"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass Wild Things:" />
+                    <TextBlock
+                        Grid.Row="23"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PassWildThings}" />
+
+                    <TextBlock
+                        Grid.Row="24"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass Desperate Times 2:" />
+                    <TextBlock
+                        Grid.Row="24"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PassDesperateTimes2}" />
+
+                    <TextBlock
+                        Grid.Row="25"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass Desperate Times 3:" />
+                    <TextBlock
+                        Grid.Row="25"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PassDesperateTimes3}" />
+
+                    <TextBlock
+                        Grid.Row="26"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass 1:" />
+                    <TextBlock
+                        Grid.Row="26"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding Pass1}" />
+
+                    <TextBlock
+                        Grid.Row="27"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass 2:" />
+                    <TextBlock
+                        Grid.Row="27"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding Pass2}" />
+
+                    <TextBlock
+                        Grid.Row="28"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass 3:" />
+                    <TextBlock
+                        Grid.Row="28"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding Pass3}" />
+
+                    <TextBlock
+                        Grid.Row="29"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass Underbelly 1:" />
+                    <TextBlock
+                        Grid.Row="29"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PassUnderbelly1}" />
+
+                    <TextBlock
+                        Grid.Row="30"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass Underbelly 2:" />
+                    <TextBlock
+                        Grid.Row="30"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PassUnderbelly2}" />
+
+                    <TextBlock
+                        Grid.Row="31"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass Underbelly 3:" />
+                    <TextBlock
+                        Grid.Row="31"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PassUnderbelly3}" />
+
+                    <TextBlock
+                        Grid.Row="32"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass 4:" />
+                    <TextBlock
+                        Grid.Row="32"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding Pass4}" />
+
+                    <TextBlock
+                        Grid.Row="33"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass 5:" />
+                    <TextBlock
+                        Grid.Row="33"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding Pass5}" />
+
+                    <TextBlock
+                        Grid.Row="34"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass 6:" />
+                    <TextBlock
+                        Grid.Row="34"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding Pass6}" />
+
+                    <Border
+                        Grid.Row="35"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Height="1"
+                        Margin="0,10,0,5"
+                        Background="{DynamicResource SukiControlBorderBrush}" />
+
+                    <TextBlock
+                        Grid.Row="36"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="BFP Password:" />
+                    <TextBlock
+                        Grid.Row="36"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding BelowFreezingPointPasswordDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="37"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Hellfire Code:" />
+                    <TextBlock
+                        Grid.Row="37"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding HellfireDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="38"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Decisions Code:" />
+                    <TextBlock
+                        Grid.Row="38"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding DecisionsDecisionsDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="39"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Underbelly:" />
+                    <TextBlock
+                        Grid.Row="39"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding UnderbellyDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="40"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="End of the Road Value:" />
+                    <TextBlock
+                        Grid.Row="40"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding EndOfRoadDisplay}" />
+
+                    <Border
+                        Grid.Row="41"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Height="1"
+                        Margin="0,10,0,5"
+                        Background="{DynamicResource SukiControlBorderBrush}" />
+
+                    <TextBlock
+                        Grid.Row="42"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass BFP:" />
+                    <TextBlock
+                        Grid.Row="42"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PassBelowFreezingPointDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="43"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass 2 BFP:" />
+                    <TextBlock
+                        Grid.Row="43"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding Pass2BelowFreezingPointDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="44"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass Hive:" />
+                    <TextBlock
+                        Grid.Row="44"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PassHiveDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="45"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="HF Pass:" />
+                    <TextBlock
+                        Grid.Row="45"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding HellfirePassDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="46"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="HF Map:" />
+                    <TextBlock
+                        Grid.Row="46"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding HellfireMapDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="47"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="HF Power:" />
+                    <TextBlock
+                        Grid.Row="47"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding HellfirePowerDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="48"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="DD Pass:" />
+                    <TextBlock
+                        Grid.Row="48"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding DecisionsDecisionsPassDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="49"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Clock Time:" />
+                    <TextBlock
+                        Grid.Row="49"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding ClockTimeDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="50"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass WT:" />
+                    <TextBlock
+                        Grid.Row="50"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PassWildThingsDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="51"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass DT:" />
+                    <TextBlock
+                        Grid.Row="51"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PassDesperateTimesDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="52"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass UB1:" />
+                    <TextBlock
+                        Grid.Row="52"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PassUnderbelly1Display}" />
+
+                    <TextBlock
+                        Grid.Row="53"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Pass UB2:" />
+                    <TextBlock
+                        Grid.Row="53"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding PassUnderbelly2Display}" />
+
+                    <Border
+                        Grid.Row="54"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Height="1"
+                        Margin="0,10,0,5"
+                        Background="{DynamicResource SukiControlBorderBrush}" />
+
+                    <TextBlock
+                        Grid.Row="55"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Gas Random Order:" />
+                    <TextBlock
+                        Grid.Row="55"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding GasRandomOrderDisplay}" />
+
+                    <TextBlock
+                        Grid.Row="56"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        Text="Gas Room IDs:" />
+                    <TextBlock
+                        Grid.Row="56"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Text="{Binding GasRoomNamesFormattedDisplay}"
+                        TextWrapping="Wrap" />
+
+                    <Border
+                        Grid.Row="57"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2" />
+                    <Border
+                        Grid.Row="58"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2" />
+
+                </Grid>
+            </suki:GlassCard>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
