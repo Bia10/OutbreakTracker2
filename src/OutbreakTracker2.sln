@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutbreakTracker2.Memory", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutbreakTracker2.Outbreak", "libs\OutbreakTracker2.Outbreak\OutbreakTracker2.Outbreak.csproj", "{AF509A2F-3F8B-4283-85D6-02210F6F9031}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutbreakTracker2.Extensions", "OutbreakTracker2.Extensions\OutbreakTracker2.Extensions.csproj", "{4989C5FC-D4A9-47E8-8913-EEF3F8450DFE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutbreakTracker2.Extensions", "libs\OutbreakTracker2.Extensions\OutbreakTracker2.Extensions.csproj", "{4989C5FC-D4A9-47E8-8913-EEF3F8450DFE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
