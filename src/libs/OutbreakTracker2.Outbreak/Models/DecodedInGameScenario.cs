@@ -18,8 +18,8 @@ public sealed record DecodedInGameScenario
     public int FrameCounter { get; set; }
 
     [JsonInclude]
-    [JsonPropertyName(nameof(Cleared))]
-    public byte Cleared { get; set; }
+    [JsonPropertyName(nameof(Status))]
+    public byte Status { get; set; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(WildThingsTime))]

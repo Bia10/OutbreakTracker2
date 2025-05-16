@@ -21,7 +21,7 @@ public class InGameScenarioReader : ReaderBase
     }
 
     public static string GetScenarioName(short scenarioId)
-        => EnumUtility.GetEnumString(scenarioId, InGameScenario.Unknown);
+        => EnumUtility.GetEnumString(scenarioId, Scenario.Unknown);
 
     public static string GetDifficultyName(byte difficulty)
         => EnumUtility.GetEnumString(difficulty, RoomDifficulty.Unknown);
@@ -43,10 +43,10 @@ public class InGameScenarioReader : ReaderBase
         _ => -1
     };
 
-    public byte GetIsScenarioCleared() => CurrentFile switch
+    public byte GetScenarioStatus() => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.IsScenarioCleared),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.IsScenarioCleared),
+        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.ScenarioStatus),
+        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.ScenarioStatus),
         _ => 0xFF
     };
 
@@ -177,45 +177,51 @@ public class InGameScenarioReader : ReaderBase
         short pickedUp = 0;
 
         for (int i = 0; i < GameConstants.MaxItems - 1; i++)
-         {
-             if (CurrentFile == GameFile.FileOne)
-             {
-                 nint itemBaseOffset = FileOnePtrs.PickupStructSize * i;
-                 roomId = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.RoomIdOffset]);
-                 slotIndex = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.NumberOffset]);
-                 typeId = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.IdOffset]);
-                 mix = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.MixOffset]);
-                 present = ReadValue<int>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PresentOffset]);
-                 quantity = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PickupCountOffset]);
-                 pickedUp = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PickupOffset]);
-             }
-             else if (CurrentFile == GameFile.FileTwo)
-             {
-                 nint itemBaseOffset = FileTwoPtrs.PickupStructSize * i;
+        {
+            switch (CurrentFile)
+            {
+                case GameFile.FileOne:
+                    {
+                        nint itemBaseOffset = FileOnePtrs.PickupStructSize * i;
+                        roomId = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.RoomIdOffset]);
+                        slotIndex = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.NumberOffset]);
+                        typeId = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.IdOffset]);
+                        mix = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.MixOffset]);
+                        present = ReadValue<int>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PresentOffset]);
+                        quantity = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PickupCountOffset]);
+                        pickedUp = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PickupOffset]);
+                        break;
+                    }
+                case GameFile.FileTwo:
+                    {
+                        nint itemBaseOffset = FileTwoPtrs.PickupStructSize * i;
+                        // TODO: this seems bugged
+                        roomId = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.RoomIdOffset]);
+                        slotIndex = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.NumberOffset]);
+                        typeId = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.IdOffset]);
+                        mix = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.MixOffset]);
+                        present = ReadValue<int>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PresentOffset]);
+                        quantity = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PickupCountOffset]);
+                        pickedUp = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PickupOffset]);
+                        break;
+                    }
+                case GameFile.Unknown: break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(CurrentFile), CurrentFile, "Unrecognized current game file");
+            }
 
-                 // TODO: this seems bugged
-                 roomId = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.RoomIdOffset]);
-
-                 slotIndex = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.NumberOffset]);
-                 typeId = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.IdOffset]);
-                 mix = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.MixOffset]);
-                 present = ReadValue<int>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PresentOffset]);
-                 quantity = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PickupCountOffset]);
-                 pickedUp = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PickupOffset]);
-             }
-
-             items[i] = new DecodedItem
-             {
-                 Id = (short)(i + 1),
-                 RoomId = roomId,
-                 SlotIndex = slotIndex,
-                 TypeName = GetItemTypeName(typeId),
-                 Mix = mix,
-                 Present = present,
-                 Quantity = quantity,
-                 PickedUp = pickedUp
-             };
-         }
+            items[i] = new DecodedItem
+            {
+                Id = (short)(i + 1),
+                RoomId = roomId,
+                SlotIndex = slotIndex,
+                TypeName = GetItemTypeName(typeId),
+                Mix = mix,
+                Present = present,
+                Quantity = quantity,
+                PickedUp = pickedUp
+            };
+        }
 
         return items;
     }
@@ -228,9 +234,10 @@ public class InGameScenarioReader : ReaderBase
 
         if (debug) Logger.LogDebug("Decoding scenario");
 
+        DecodedScenario.CurrentFile = (byte)CurrentFile;
         DecodedScenario.ScenarioName = GetScenarioName(GetScenarioId());
         DecodedScenario.FrameCounter = GetFrameCount();
-        DecodedScenario.Cleared = GetIsScenarioCleared();
+        DecodedScenario.Status = GetScenarioStatus();
         DecodedScenario.PlayerCount = GetPlayerCount();
         DecodedScenario.WildThingsTime = GetWildThingsTime();
         DecodedScenario.EscapeTime = GetEscapeTime();

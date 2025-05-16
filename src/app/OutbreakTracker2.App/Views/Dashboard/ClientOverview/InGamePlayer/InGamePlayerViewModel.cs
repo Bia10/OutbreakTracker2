@@ -8,22 +8,22 @@ namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer;
 public partial class InGamePlayerViewModel : ObservableObject
 {
     [ObservableProperty]
-    private short nameId;
+    private short _nameId;
 
     [ObservableProperty]
-    private string characterName = string.Empty;
+    private string _characterName = string.Empty;
 
     [ObservableProperty]
-    private string characterType = string.Empty;
+    private string _characterType = string.Empty;
 
     [ObservableProperty]
-    private string uniqueNameId  = string.Empty;
+    private string _uniqueNameId = string.Empty;
 
     [ObservableProperty]
-    private bool isEnabled;
+    private bool _isEnabled;
 
     [ObservableProperty]
-    private bool isInGame;
+    private bool _isInGame;
 
     [ObservableProperty]
     private PlayerGaugesViewModel _gauges;

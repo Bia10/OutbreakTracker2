@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Outbreak.Enums;
 
-public enum InGameScenario : short
+public enum Scenario : short
 {
     [EnumMember(Value = "Unknown(0)")]
     Unknown = 0,

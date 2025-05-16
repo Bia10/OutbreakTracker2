@@ -166,7 +166,7 @@ public class FileOnePtrs
     public const nint Pass5 = 0x48AC1B; //48ADCF  on=48ADF3
     public const nint Pass6 = 0x48AC15; //4927=7500 4032=7480 40 4284=0200
     public const nint Difficulty = 0x48C01A;
-    public const nint IsScenarioCleared = 0x48BF60; //
+    public const nint ScenarioStatus = 0x48BF60; //
     public const nint ItemRandom = 0x23BB20; //23BB28 23C055 23BD20 426AA9 23BBA0 23BD24
     public const nint ItemRandom2 = 0x23BBA1;
     public const nint PuzzleRandom = 0x23BBA0; // puzzle set

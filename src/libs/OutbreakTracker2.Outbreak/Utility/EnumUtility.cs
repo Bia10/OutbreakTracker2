@@ -46,27 +46,27 @@ public static class EnumUtility
         return false;
     }
 
-    public static string GetRoomName(this InGameScenario scenarioName, short roomId)
+    public static string GetRoomName(this Scenario scenarioName, int roomId)
         => scenarioName switch
         {
-            InGameScenario.Unknown => $"Unknown roomName for id: {roomId}",
-            InGameScenario.TrainingGround => GetEnumString(roomId, TrainingGroundRooms.Spawning),
-            InGameScenario.EndOfTheRoad => GetEnumString(roomId, EndOfTheRoadRooms.Spawning),
-            InGameScenario.Underbelly => GetEnumString(roomId, UnderbellyRooms.Spawning),
-            InGameScenario.DesperateTimes => GetEnumString(roomId, DesperateTimesRooms.Spawning),
-            InGameScenario.Showdown1 => GetEnumString(roomId, ShowdownRooms.Spawning),
-            InGameScenario.Showdown2 => GetEnumString(roomId, ShowdownRooms.Spawning),
-            InGameScenario.Showdown3 => GetEnumString(roomId, ShowdownRooms.Spawning),
-            InGameScenario.Flashback => GetEnumString(roomId, FlashbackRooms.Spawning),
-            InGameScenario.Elimination3 => GetEnumString(roomId, Elimination3Rooms.Spawning),
-            InGameScenario.Elimination1 => GetEnumString(roomId, Elimination1Rooms.Spawning),
-            InGameScenario.Elimination2 => GetEnumString(roomId, Elimination2Rooms.Spawning),
-            InGameScenario.WildThings => GetEnumString(roomId, WildThingsRooms.Spawning),
-            InGameScenario.Outbreak => GetEnumString(roomId, OutbreakRooms.Spawning),
-            InGameScenario.Hellfire => GetEnumString(roomId, HellfireRooms.Spawning),
-            InGameScenario.TheHive => GetEnumString(roomId, HiveRooms.Spawning),
-            InGameScenario.BelowFreezingPoint => GetEnumString(roomId, BelowFreezingRooms.Spawning),
-            InGameScenario.DecisionsDecisions => GetEnumString(roomId, DecisionsRooms.Spawning),
+            Scenario.Unknown => $"Unknown roomName for id: {roomId}",
+            Scenario.TrainingGround => GetEnumString(roomId, TrainingGroundRooms.Spawning),
+            Scenario.EndOfTheRoad => GetEnumString(roomId, EndOfTheRoadRooms.Spawning),
+            Scenario.Underbelly => GetEnumString(roomId, UnderbellyRooms.Spawning),
+            Scenario.DesperateTimes => GetEnumString(roomId, DesperateTimesRooms.Spawning),
+            Scenario.Showdown1 => GetEnumString(roomId, ShowdownRooms.Spawning),
+            Scenario.Showdown2 => GetEnumString(roomId, ShowdownRooms.Spawning),
+            Scenario.Showdown3 => GetEnumString(roomId, ShowdownRooms.Spawning),
+            Scenario.Flashback => GetEnumString(roomId, FlashbackRooms.Spawning),
+            Scenario.Elimination3 => GetEnumString(roomId, Elimination3Rooms.Spawning),
+            Scenario.Elimination1 => GetEnumString(roomId, Elimination1Rooms.Spawning),
+            Scenario.Elimination2 => GetEnumString(roomId, Elimination2Rooms.Spawning),
+            Scenario.WildThings => GetEnumString(roomId, WildThingsRooms.Spawning),
+            Scenario.Outbreak => GetEnumString(roomId, OutbreakRooms.Spawning),
+            Scenario.Hellfire => GetEnumString(roomId, HellfireRooms.Spawning),
+            Scenario.TheHive => GetEnumString(roomId, HiveRooms.Spawning),
+            Scenario.BelowFreezingPoint => GetEnumString(roomId, BelowFreezingRooms.Spawning),
+            Scenario.DecisionsDecisions => GetEnumString(roomId, DecisionsRooms.Spawning),
             _ => throw new ArgumentOutOfRangeException(nameof(scenarioName), scenarioName, null)
         };
 }

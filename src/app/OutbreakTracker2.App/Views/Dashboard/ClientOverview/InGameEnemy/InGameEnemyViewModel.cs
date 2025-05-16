@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.App.Services.Data;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
 using SukiUI.Controls;
@@ -64,7 +65,7 @@ public partial class InGameEnemyViewModel : ObservableObject
     private void UpdateRoomName(DecodedEnemy enemy)
     {
         string curScenarioName = _dataManager.InGameScenario.ScenarioName;
-        if (!string.IsNullOrEmpty(curScenarioName) && EnumUtility.TryParseByValueOrMember(curScenarioName, out Outbreak.Enums.InGameScenario scenarioEnum))
+        if (!string.IsNullOrEmpty(curScenarioName) && EnumUtility.TryParseByValueOrMember(curScenarioName, out Scenario scenarioEnum))
             RoomName = scenarioEnum.GetRoomName(enemy.RoomId);
         else
             RoomName = $"Room {enemy.RoomId}";

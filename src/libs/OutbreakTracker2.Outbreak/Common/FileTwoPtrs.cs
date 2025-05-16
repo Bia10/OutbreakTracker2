@@ -214,7 +214,7 @@ public class FileTwoPtrs
     public const nint IngamePlayerNumber = 0x24AFCC;
     public const nint Coin = 0x491188; //wild things
     public const nint KilledZombie = 0x491268; //47ca64,49010c,491268,desperate times
-    public const nint IsScenarioCleared = 0x4912A0; //4912A0 4912C9
+    public const nint ScenarioStatus = 0x4912A0; //4912A0 4912C9
 
     public const nint EnemyHpPointer = 0x388314; //enemy HP
 

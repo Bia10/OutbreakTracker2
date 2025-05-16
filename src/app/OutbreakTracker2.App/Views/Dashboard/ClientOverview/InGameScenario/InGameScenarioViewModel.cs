@@ -6,8 +6,6 @@ using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
 using R3;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario;
 
@@ -15,15 +13,73 @@ namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario;
 public partial class InGameScenarioViewModel : ObservableObject
 {
     private readonly ILogger<InGameScenarioViewModel> _logger;
-    private readonly IDataManager _dataManager;
+
+    [ObservableProperty]
+    private byte _currentFile;
+
+    [ObservableProperty]
+    private string _scenarioName = string.Empty;
+
+    [ObservableProperty]
+    private int _frameCounter;
+
+    [ObservableProperty]
+    private string _gameTimeDisplay;
+
+    // TODO: unknown statuses
+    // 0 = scenario not in progress
+    // 1 = loading after cinematic sequence
+    // 2 = ingame scenario in progress
+    // 7 = loading scenario
+    // 12 = finished (died)
+    // 13 = after game stats
+    // 14 = intro scenario cinematic sequence
+    // 15 = after save to memory card
+    [ObservableProperty]
+    private byte _status;
+
+    [ObservableProperty]
+    private string _isCleared = string.Empty;
+
+    [ObservableProperty]
+    private string _difficulty = string.Empty;
+
+    [ObservableProperty]
+    private byte _playerCount;
+
+    [ObservableProperty]
+    private string _playerCountDisplay;
+
+    // Used in Underbelly, Flashback
+    [ObservableProperty]
+    private byte _itemRandom;
+
+    // Used in Underbelly, Flashback
+    [ObservableProperty]
+    private byte _itemRandom2;
+
+    // Used in Underbelly, Flashback, Hellfire
+    [ObservableProperty]
+    private byte _puzzleRandom;
+
+    // Used in Desperate Times, however this seems more like generic random seed then scenario specific
+    // used in calculations unrelated to Desperate Times
+    [ObservableProperty]
+    private byte _gasRandom;
+
+    [ObservableProperty]
+    private int _gasRandomOrderDisplay;
+
+    [ObservableProperty]
+    private DesperateTimesViewModel _desperateTimesVm;
 
     public InGameScenarioViewModel(
-        IDataManager dataManager,
         ILogger<InGameScenarioViewModel> logger,
+        IDataManager dataManager,
         IDispatcherService dispatcherService)
     {
-        _dataManager = dataManager;
         _logger = logger;
+        _desperateTimesVm = new DesperateTimesViewModel();
 
         dataManager.InGameScenarioObservable
             .ObserveOnThreadPool()
@@ -55,146 +111,71 @@ public partial class InGameScenarioViewModel : ObservableObject
         ScenarioName = scenario.ScenarioName;
         FrameCounter = scenario.FrameCounter;
         Difficulty = scenario.Difficulty;
-        Cleared = scenario.Cleared;
-        WildThingsTime = scenario.WildThingsTime;
-        EscapeTime = scenario.EscapeTime;
-        FightTime = scenario.FightTime;
-        FightTime2 = scenario.FightTime2;
-        GarageTime = scenario.GarageTime;
-        GasTime = scenario.GasTime;
-        GasFlag = scenario.GasFlag;
-        GasRandom = scenario.GasRandom;
+        Status = scenario.Status;
+        PlayerCount = scenario.PlayerCount;
         ItemRandom = scenario.ItemRandom;
         ItemRandom2 = scenario.ItemRandom2;
         PuzzleRandom = scenario.PuzzleRandom;
-        Coin = scenario.Coin;
-        KilledZombie = scenario.KilledZombie;
-        PlayerCount = scenario.PlayerCount;
-        PassDesperateTimes1 = scenario.PassDesperateTimes1;
-        PassWildThings = scenario.PassWildThings;
-        PassDesperateTimes2 = scenario.PassDesperateTimes2;
-        PassDesperateTimes3 = scenario.PassDesperateTimes3;
-        Pass1 = scenario.Pass1;
-        Pass2 = scenario.Pass2;
-        Pass3 = scenario.Pass3;
-        PassUnderbelly1 = scenario.PassUnderbelly1;
-        PassUnderbelly2 = scenario.PassUnderbelly2;
-        PassUnderbelly3 = scenario.PassUnderbelly3;
-        Pass4 = scenario.Pass4;
-        Pass5 = scenario.Pass5;
-        Pass6 = scenario.Pass6;
+        GasRandom = scenario.GasRandom;
 
-        OnPropertyChanged(nameof(ClearedDisplay));
-        OnPropertyChanged(nameof(PlayerCountDisplay));
-        OnPropertyChanged(nameof(GameTimeDisplay));
-        OnPropertyChanged(nameof(WildThingsTimeDisplay));
-        OnPropertyChanged(nameof(EscapeTimeDisplay));
-        OnPropertyChanged(nameof(FightTimeDisplay));
-        OnPropertyChanged(nameof(FightTime2Display));
-        OnPropertyChanged(nameof(GarageTimeDisplay));
-        OnPropertyChanged(nameof(GasTimeDisplay));
-        OnPropertyChanged(nameof(PassBelowFreezingPointDisplay));
-        OnPropertyChanged(nameof(Pass2BelowFreezingPointDisplay));
-        OnPropertyChanged(nameof(PassHiveDisplay));
-        OnPropertyChanged(nameof(HellfirePassDisplay));
-        OnPropertyChanged(nameof(HellfireMapDisplay));
-        OnPropertyChanged(nameof(HellfirePowerDisplay));
-        OnPropertyChanged(nameof(DecisionsDecisionsPassDisplay));
-        OnPropertyChanged(nameof(ClockTimeDisplay));
-        OnPropertyChanged(nameof(GasRandomOrderDisplay));
-        OnPropertyChanged(nameof(PassWildThingsDisplay));
-        OnPropertyChanged(nameof(PassDesperateTimesDisplay));
-        OnPropertyChanged(nameof(PassUnderbelly1Display));
-        OnPropertyChanged(nameof(PassUnderbelly2Display));
-        OnPropertyChanged(nameof(GasRoomIdsDisplay));
-        OnPropertyChanged(nameof(GasRoomNamesFormattedDisplay));
-        OnPropertyChanged(nameof(BelowFreezingPointPasswordDisplay));
-        OnPropertyChanged(nameof(HellfireDisplay));
-        OnPropertyChanged(nameof(DecisionsDecisionsDisplay));
-        OnPropertyChanged(nameof(IsUnderbellyPasswordVisible));
-        OnPropertyChanged(nameof(PassUnderbelly1IsGreen));
-        OnPropertyChanged(nameof(PassUnderbelly2IsGreen));
-        OnPropertyChanged(nameof(UnderbellyDisplay));
-        OnPropertyChanged(nameof(EndOfRoadDisplay));
+        PlayerCountDisplay = GetPlayerCountDisplay();
+        GameTimeDisplay = GetGameTime();
+        GasRandomOrderDisplay = CalculateGasRandomOrderDisplay();
+        IsCleared = GetClearedDisplay();
+
+        //EscapeTime = scenario.EscapeTime;
+        //WildThingsTime = scenario.WildThingsTime;
+        //Coin = scenario.Coin;
+        //PassWildThings = scenario.PassWildThings;
+        //Pass1 = scenario.Pass1;
+        //Pass2 = scenario.Pass2;
+        //Pass3 = scenario.Pass3;
+        //PassUnderbelly1 = scenario.PassUnderbelly1;
+        //PassUnderbelly2 = scenario.PassUnderbelly2;
+        //PassUnderbelly3 = scenario.PassUnderbelly3;
+        //Pass4 = scenario.Pass4;
+        //Pass5 = scenario.Pass5;
+        //Pass6 = scenario.Pass6;
+
+        //OnPropertyChanged(nameof(EscapeTimeDisplay));
+        //OnPropertyChanged(nameof(WildThingsTimeDisplay));
+        //OnPropertyChanged(nameof(PassBelowFreezingPointDisplay));
+        //OnPropertyChanged(nameof(Pass2BelowFreezingPointDisplay));
+        //OnPropertyChanged(nameof(PassHiveDisplay));
+        //OnPropertyChanged(nameof(HellfirePassDisplay));
+        //OnPropertyChanged(nameof(HellfireMapDisplay));
+        //OnPropertyChanged(nameof(HellfirePowerDisplay));
+        //OnPropertyChanged(nameof(DecisionsDecisionsPassDisplay));
+        //OnPropertyChanged(nameof(ClockTimeDisplay));
+        //OnPropertyChanged(nameof(GasRandomOrderDisplay));
+        //OnPropertyChanged(nameof(PassWildThingsDisplay));
+        //OnPropertyChanged(nameof(PassUnderbelly1Display));
+        //OnPropertyChanged(nameof(PassUnderbelly2Display));
+        //OnPropertyChanged(nameof(BelowFreezingPointPasswordDisplay));
+        //OnPropertyChanged(nameof(HellfireDisplay));
+        //OnPropertyChanged(nameof(DecisionsDecisionsDisplay));
+        //OnPropertyChanged(nameof(IsUnderbellyPasswordVisible));
+        //OnPropertyChanged(nameof(PassUnderbelly1IsGreen));
+        //OnPropertyChanged(nameof(PassUnderbelly2IsGreen));
+        //OnPropertyChanged(nameof(UnderbellyDisplay));
+        //OnPropertyChanged(nameof(EndOfRoadDisplay));
     }
-
-    [ObservableProperty]
-    private byte _currentFile;
-
-    [ObservableProperty]
-    private string _scenarioName = string.Empty;
-
-    [ObservableProperty]
-    private int _frameCounter;
-
-    [ObservableProperty]
-    private byte _cleared;
-
-    [ObservableProperty]
-    private short _wildThingsTime;
 
     // Used in "Underbelly" and "Flashback"
     [ObservableProperty]
     private short _escapeTime;
 
-    // Used in "Desperate Times"
-    [ObservableProperty]
-    private int _fightTime;
-
-    // Used in "Desperate Times"
-    [ObservableProperty]
-    private short _fightTime2;
-
-    // Used in "Desperate Times"
-    [ObservableProperty]
-    private int _garageTime;
-
-    // Used in "Desperate Times"
-    [ObservableProperty]
-    private int _gasTime;
-
-    // Likely a bitmask
-    [ObservableProperty]
-    private int _gasFlag;
-
-    // A bit interesting that this is used in decoding various passwords and other apparently unrelated things
-    // feels like a bit more generic random seed then just for the gas
-    [ObservableProperty]
-    private byte _gasRandom;
-
-    [ObservableProperty]
-    private byte _itemRandom;
-
-    [ObservableProperty]
-    private byte _itemRandom2;
-
-    // Used for Hellfire power
-    [ObservableProperty]
-    private byte _puzzleRandom;
-
     // Used in "Wild Things"
     [ObservableProperty]
     private byte _coin;
 
-    // Used in "Desperate Times"
+    // Used in "Wild Things"
     [ObservableProperty]
-    private byte _killedZombie;
-
-    [ObservableProperty]
-    private byte _playerCount;
-
-    [ObservableProperty]
-    private short _passDesperateTimes1;
+    private short _wildThingsTime;
 
     // Used for Wild Things
     [ObservableProperty]
     private byte _passWildThings;
-
-    [ObservableProperty]
-    private byte _passDesperateTimes2;
-
-    [ObservableProperty]
-    private byte _passDesperateTimes3;
 
     // Used for Below Freezing Point and Hive
     [ObservableProperty]
@@ -229,18 +210,8 @@ public partial class InGameScenarioViewModel : ObservableObject
     [ObservableProperty]
     private byte _pass6;
 
-    [ObservableProperty]
-    private string _difficulty = string.Empty;
-
-    public string ClearedDisplay => GetClearedDisplay();
-    public string PlayerCountDisplay => GetPlayerCountDisplay();
-    public string GameTimeDisplay => GetGameTime();
-    public string WildThingsTimeDisplay => GetWildThingsTimeDisplay();
     public string EscapeTimeDisplay => GetEscapeTimeDisplay();
-    public string FightTimeDisplay => GetFightTimeDisplay();
-    public string FightTime2Display => GetFightTime2Display();
-    public string GarageTimeDisplay => GetGarageTimeDisplay();
-    public string GasTimeDisplay => GetGasTimeDisplay();
+    public string WildThingsTimeDisplay => GetWildThingsTimeDisplay();
     public string PassBelowFreezingPointDisplay => CalculatePassBelowFreezingPointDisplay();
     public string Pass2BelowFreezingPointDisplay => CalculatePass2BelowFreezingPointDisplay();
     public string PassHiveDisplay => CalculatePassHiveDisplay();
@@ -249,13 +220,9 @@ public partial class InGameScenarioViewModel : ObservableObject
     public string HellfirePowerDisplay => CalculateHellfirePowerDisplay();
     public string DecisionsDecisionsPassDisplay => CalculateDecisionsDecisionsPassDisplay();
     public string ClockTimeDisplay => CalculateClockTimeDisplay();
-    public int GasRandomOrderDisplay => CalculateGasRandomOrderDisplay();
     public string PassWildThingsDisplay => CalculatePassWildThingsDisplay();
-    public string PassDesperateTimesDisplay => CalculatePassDesperateTimesDisplay();
     public string PassUnderbelly1Display => CalculatePassUnderbelly1Display();
     public string PassUnderbelly2Display => CalculatePassUnderbelly2Display();
-    public IEnumerable<int>? GasRoomIdsDisplay => CalculateGasRoomIdsDisplay();
-    public string GasRoomNamesFormattedDisplay => FormatGasRoomNamesDisplay();
     public string BelowFreezingPointPasswordDisplay => GetBelowFreezingPointPasswordDisplay();
     public string HellfireDisplay => GetHellfireDisplay();
     public string DecisionsDecisionsDisplay => GetDecisionsDecisionsDisplay();
@@ -265,15 +232,11 @@ public partial class InGameScenarioViewModel : ObservableObject
     public string UnderbellyDisplay => GetUnderbellyDisplay();
     public string EndOfRoadDisplay => GetEndOfRoadDisplay();
 
-    private string GetClearedDisplay() => Cleared > 0 ? "Yes" : "No";
+    private string GetClearedDisplay() => Status is 12 or 13 or 15 ? "Yes" : "No";
     private string GetPlayerCountDisplay() => $"{PlayerCount} Players";
     private string GetGameTime() => TimeUtility.GetTimeFromFrames(FrameCounter);
     private string GetWildThingsTimeDisplay() => TimeUtility.GetTimeToString3(WildThingsTime);
     private string GetEscapeTimeDisplay() => TimeUtility.GetTimeToString3(EscapeTime);
-    private string GetFightTimeDisplay() => TimeUtility.GetTimeToString3(FightTime);
-    private string GetFightTime2Display() => TimeUtility.GetTimeToString3(FightTime2);
-    private string GetGarageTimeDisplay() => TimeUtility.GetTimeToString3(GarageTime);
-    private string GetGasTimeDisplay() => TimeUtility.GetTimeToString3(GasTime);
 
     private string CalculatePassBelowFreezingPointDisplay()
     {
@@ -430,33 +393,6 @@ public partial class InGameScenarioViewModel : ObservableObject
         }
     }
 
-    private string CalculatePassDesperateTimesDisplay()
-    {
-        switch (GasRandom % 16)
-        {
-            case 0: return "2236";
-            case 1: return "1587";
-            case 2: return "2994";
-            case 3: return "3048";
-            case 4: return "4425";
-            case 5: return "5170";
-            case 6: return "6703";
-            case 7: return "7312";
-            case 8: return "8669";
-            case 9: return "9851";
-            case 10: return "0764";
-            case 11: return "3516";
-            case 12: return "5835";
-            case 13: return "6249";
-            case 14: return "7177";
-            case 15: return "9408";
-
-            default:
-                _logger.LogDebug("Unrecognized PassDesperateTimes1 value: {PassDesperateTimes}", PassDesperateTimes1);
-                return $"Unrecognized PassDesperateTimes1({PassDesperateTimes1})";
-        }
-    }
-
     private string CalculatePassUnderbelly1Display()
     {
         switch (GasRandom % 16)
@@ -486,7 +422,7 @@ public partial class InGameScenarioViewModel : ObservableObject
 
     private string CalculatePassUnderbelly2Display()
     {
-        switch ((GasRandom % 16))
+        switch (GasRandom % 16)
         {
             case 0: return "2916";
             case 1: return "3719";
@@ -509,69 +445,6 @@ public partial class InGameScenarioViewModel : ObservableObject
                 _logger.LogDebug("Unrecognized PassUnderbelly2 value: {PassUnderbelly2}", PassUnderbelly2);
                 return $"Unrecognized PassUnderbelly2({PassUnderbelly2})";
         }
-    }
-
-    private bool IsHardOrVeryHard()
-    {
-        return Difficulty.Equals("hard", StringComparison.Ordinal)
-               || Difficulty.Equals("very hard", StringComparison.Ordinal);
-    }
-
-    private static readonly Dictionary<(int Modulo, int Flag), (int? HardRoomId, List<int> BaseRoomIds)> RoomMapping =
-        new()
-        {
-            // --- GasRandom % 2 == 0 Cases ---
-            { (0, 1), (4, [14, 20]) },
-            { (0, 2), (7, [10, 12]) },
-            { (0, 4), (9, [13, 27]) },
-            { (0, 8), (5, [7, 21]) },
-            { (0, 16), (4, [10, 11]) },
-            { (0, 32), (5, [15, 16]) },
-            { (0, 64), (4, [11, 13]) },
-            { (0, 128), (14, [15, 21]) },
-            { (0, 256), (11, [20, 27]) },
-            { (0, 512), (5, [9, 16]) },
-
-            // --- GasRandom % 2 == 1 Cases ---
-            { (1, 1), (7, [10, 16]) },
-            { (1, 2), (4, [14, 27]) },
-            { (1, 4), (7, [16, 20]) },
-            { (1, 8), (9, [13, 21]) },
-            { (1, 16), (10, [12, 15]) },
-            { (1, 32), (5, [16, 21]) },
-            { (1, 64), (5, [11, 27]) },
-            { (1, 128), (4, [7, 20]) },
-            { (1, 256), (10, [12, 13]) },
-            { (1, 512), (7, [15, 21]) },
-        };
-
-    private List<int>? CalculateGasRoomIdsDisplay()
-    {
-        if (!ScenarioName.Equals("desperate times", StringComparison.Ordinal))
-            return null;
-
-        List<int> roomIds = [];
-        (int, int GasFlag) key = (GasRandom % 2, GasFlag);
-
-        if (RoomMapping.TryGetValue(key, out (int? HardRoomId, List<int> BaseRoomIds) mapping))
-        {
-            if (IsHardOrVeryHard() && mapping.HardRoomId.HasValue)
-                roomIds.Add(mapping.HardRoomId.Value);
-
-            roomIds.AddRange(mapping.BaseRoomIds);
-        }
-
-        return roomIds;
-    }
-
-    private string FormatGasRoomNamesDisplay()
-    {
-        IEnumerable<int> roomIds = (CalculateGasRoomIdsDisplay() ?? []).ToArray();
-        if (!roomIds.Any())
-            return string.Empty;
-
-        IEnumerable<string> roomNames = roomIds.Select(id => GetRoomName((short)id));
-        return string.Join(Environment.NewLine, roomNames);
     }
 
     private string GetBelowFreezingPointPasswordDisplay()
@@ -619,14 +492,5 @@ public partial class InGameScenarioViewModel : ObservableObject
         return !ScenarioName.Equals("end of the road", StringComparison.Ordinal)
             ? string.Empty
             : Pass4.ToString();
-    }
-
-    private string GetRoomName(short roomId)
-    {
-        string curScenarioName = _dataManager.InGameScenario.ScenarioName;
-        if (!string.IsNullOrEmpty(curScenarioName) && EnumUtility.TryParseByValueOrMember(curScenarioName, out Outbreak.Enums.InGameScenario scenarioEnum))
-            return scenarioEnum.GetRoomName(roomId);
-
-        return $"Room ID: {roomId}";
     }
 }
