@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Outbreak.Common;
 
-public class FileOnePtrs
+public static class FileOnePtrs
 {
     // Actually a bit shady maybe we could get that from the PCSX2 text memory
     public const nint DiscStart = 0x02321B3;
@@ -15,7 +15,7 @@ public class FileOnePtrs
         if (!slotIndex.IsSlotIndexValid())
             throw new InvalidOperationException($"Invalid Slot Index: {slotIndex}");
 
-        return BaseLobbySlot + slotIndex * LobbySlotStructSize;
+        return BaseLobbySlot + (slotIndex * LobbySlotStructSize);
     }
 
     public const nint LobbySlotPlayer = 0x2;
@@ -41,7 +41,7 @@ public class FileOnePtrs
         if (!characterId.IsCharacterIdValid())
             throw new InvalidOperationException($"Invalid character id: {characterId}");
 
-        return BaseLobbyRoomPlayer + characterId * LobbyRoomPlayerStructSize;
+        return BaseLobbyRoomPlayer + (characterId * LobbyRoomPlayerStructSize);
     }
 
     // Offsets for the lobby room player structure, offseting from BaseLobbyRoomPlayer
@@ -119,7 +119,7 @@ public class FileOnePtrs
         if (!characterId.IsCharacterIdValid())
             throw new InvalidOperationException($"Invalid character id: {characterId}");
 
-        return BasePlayerStart + characterId * PlayerStructSize;
+        return BasePlayerStart + (characterId * PlayerStructSize);
     }
 
     public const nint CharacterEnabledOffset = 0x0; // 0 +1 byte(s) to next offset

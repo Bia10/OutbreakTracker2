@@ -5,20 +5,20 @@ namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer;
 public partial class PlayerConditionsViewModel : ObservableObject
 {
     [ObservableProperty]
-    private string conditionTitle = "Condition:";
+    private string _conditionTitle = "Condition:";
 
     [ObservableProperty]
-    private string conditionMessage = string.Empty;
+    private string _conditionMessage = string.Empty;
 
     [ObservableProperty]
-    private string statusTitle = "Status:";
+    private string _statusTitle = "Status:";
 
     [ObservableProperty]
-    private string statusMessage = string.Empty;
+    private string _statusMessage = string.Empty;
 
     public void Update(string rawCondition, string rawStatus)
     {
-            ConditionMessage = !string.IsNullOrEmpty(rawCondition) ? rawCondition : string.Empty;
-            StatusMessage = !string.IsNullOrEmpty(rawStatus) ? rawStatus : string.Empty;
+        ConditionMessage = !string.IsNullOrEmpty(rawCondition) ? rawCondition : string.Empty;
+        StatusMessage = !string.IsNullOrEmpty(rawStatus) ? rawStatus : string.Empty;
     }
 }

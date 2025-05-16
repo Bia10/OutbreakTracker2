@@ -34,11 +34,7 @@
     </UserControl.DataTemplates>
 
     <suki:GroupBox Header="{Binding CharacterName}">
-        <Grid Margin="5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+        <Grid Margin="5" ColumnDefinitions="Auto,Auto">
 
             <StackPanel Grid.Column="0" Spacing="5">
                 <ContentControl Content="{Binding Gauges}" />

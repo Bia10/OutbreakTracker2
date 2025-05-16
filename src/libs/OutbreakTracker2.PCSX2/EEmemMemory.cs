@@ -63,7 +63,7 @@ public sealed class EEmemMemory : IEEmemMemory
         nint namesAddr = baseAddress + (int)exportDirStruct.AddressOfNames;
         for (int i = 0; i < exportDirStruct.NumberOfNames; i++)
         {
-            nint nameRvaPtr = namesAddr + i * 4;
+            nint nameRvaPtr = namesAddr + (i * 4);
             uint nameRva = MemoryReader.Read<uint>(gameClient.Handle, nameRvaPtr);
             nint namePtr = baseAddress + (int)nameRva;
             string name = MemoryReader.ReadString(gameClient.Handle, namePtr);
@@ -72,10 +72,10 @@ public sealed class EEmemMemory : IEEmemMemory
             {
                 // Get corresponding ordinal and function address
                 nint ordinalsAddr = baseAddress + (int)exportDirStruct.AddressOfNameOrdinals;
-                ushort ordinal = MemoryReader.Read<ushort>(gameClient.Handle, ordinalsAddr + i * 2);
+                ushort ordinal = MemoryReader.Read<ushort>(gameClient.Handle, ordinalsAddr + (i * 2));
 
                 nint functionsAddr = baseAddress + (int)exportDirStruct.AddressOfFunctions;
-                nint functionRvaPtr = functionsAddr + ordinal * 4;
+                nint functionRvaPtr = functionsAddr + (ordinal * 4);
                 uint functionRva = MemoryReader.Read<uint>(gameClient.Handle, functionRvaPtr);
 
                 // Read the EEMem pointer (64-bit)

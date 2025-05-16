@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
@@ -44,6 +43,7 @@ public partial class DesperateTimesViewModel : ObservableObject
     [ObservableProperty]
     private byte _passDesperateTimes3;
 
+    // Computed properties
     [ObservableProperty]
     private string _fightTimeDisplay = string.Empty;
 
@@ -64,9 +64,6 @@ public partial class DesperateTimesViewModel : ObservableObject
 
     [ObservableProperty]
     private string _gasRoomNamesFormattedDisplay = string.Empty;
-
-    private readonly ILogger<DesperateTimesViewModel> _logger
-        = new Logger<DesperateTimesViewModel>(new LoggerFactory());
 
     public void Update(DecodedInGameScenario scenario)
     {
@@ -93,29 +90,26 @@ public partial class DesperateTimesViewModel : ObservableObject
 
     private string CalculatePassDesperateTimesDisplay(int gasRandom)
     {
-        switch (gasRandom % 16)
+        return (gasRandom % 16) switch
         {
-            case 0: return "2236";
-            case 1: return "1587";
-            case 2: return "2994";
-            case 3: return "3048";
-            case 4: return "4425";
-            case 5: return "5170";
-            case 6: return "6703";
-            case 7: return "7312";
-            case 8: return "8669";
-            case 9: return "9851";
-            case 10: return "0764";
-            case 11: return "3516";
-            case 12: return "5835";
-            case 13: return "6249";
-            case 14: return "7177";
-            case 15: return "9408";
-
-            default:
-                _logger.LogDebug("Unrecognized PassDesperateTimes1 value: {PassDesperateTimes}", PassDesperateTimes1);
-                return $"Unrecognized PassDesperateTimes1({PassDesperateTimes1})";
-        }
+            0 => "2236",
+            1 => "1587",
+            2 => "2994",
+            3 => "3048",
+            4 => "4425",
+            5 => "5170",
+            6 => "6703",
+            7 => "7312",
+            8 => "8669",
+            9 => "9851",
+            10 => "0764",
+            11 => "3516",
+            12 => "5835",
+            13 => "6249",
+            14 => "7177",
+            15 => "9408",
+            _ => $"Unrecognized PassDesperateTimes1({PassDesperateTimes1})"
+        };
     }
 
     private static readonly Dictionary<(int Modulo, int Flag), (int? HardRoomId, List<int> BaseRoomIds)> RoomMapping =

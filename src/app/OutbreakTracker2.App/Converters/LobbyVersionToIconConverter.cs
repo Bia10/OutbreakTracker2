@@ -17,7 +17,6 @@ public sealed class LobbyVersionToIconConverter : IValueConverter
         {
             "dvd-rom" => MaterialIconKind.Album,
             "hdd" => MaterialIconKind.Harddisk,
-            "Unknown" => MaterialIconKind.HelpCircleOutline,
             _ => MaterialIconKind.HelpCircleOutline
         };
     }

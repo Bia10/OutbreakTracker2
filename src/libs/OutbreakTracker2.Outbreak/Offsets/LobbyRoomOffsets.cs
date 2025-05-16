@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Outbreak.Offsets;
 
-internal class LobbyRoomOffsets
+internal static class LobbyRoomOffsets
 {
     public static readonly (nint[] File1, nint[] File2) MaxPlayers = ([FileOnePtrs.LobbyRoomMaxPlayer], [FileTwoPtrs.LobbyRoomMaxPlayer]);
     public static readonly (nint[] File1, nint[] File2) Difficulty = ([FileOnePtrs.LobbyRoomDifficulty], [FileTwoPtrs.LobbyRoomDifficulty]);

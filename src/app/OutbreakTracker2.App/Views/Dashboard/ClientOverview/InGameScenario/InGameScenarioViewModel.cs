@@ -24,7 +24,7 @@ public partial class InGameScenarioViewModel : ObservableObject
     private int _frameCounter;
 
     [ObservableProperty]
-    private string _gameTimeDisplay;
+    private string _gameTimeDisplay = string.Empty;
 
     // TODO: unknown statuses
     // 0 = scenario not in progress
@@ -48,7 +48,7 @@ public partial class InGameScenarioViewModel : ObservableObject
     private byte _playerCount;
 
     [ObservableProperty]
-    private string _playerCountDisplay;
+    private string _playerCountDisplay = string.Empty;
 
     // Used in Underbelly, Flashback
     [ObservableProperty]
@@ -107,6 +107,9 @@ public partial class InGameScenarioViewModel : ObservableObject
 
     public void Update(DecodedInGameScenario scenario)
     {
+        if (scenario.CurrentFile is < 1 or > 2)
+            return;
+
         CurrentFile = scenario.CurrentFile;
         ScenarioName = scenario.ScenarioName;
         FrameCounter = scenario.FrameCounter;
@@ -130,9 +133,6 @@ public partial class InGameScenarioViewModel : ObservableObject
         //Pass1 = scenario.Pass1;
         //Pass2 = scenario.Pass2;
         //Pass3 = scenario.Pass3;
-        //PassUnderbelly1 = scenario.PassUnderbelly1;
-        //PassUnderbelly2 = scenario.PassUnderbelly2;
-        //PassUnderbelly3 = scenario.PassUnderbelly3;
         //Pass4 = scenario.Pass4;
         //Pass5 = scenario.Pass5;
         //Pass6 = scenario.Pass6;
@@ -147,17 +147,10 @@ public partial class InGameScenarioViewModel : ObservableObject
         //OnPropertyChanged(nameof(HellfirePowerDisplay));
         //OnPropertyChanged(nameof(DecisionsDecisionsPassDisplay));
         //OnPropertyChanged(nameof(ClockTimeDisplay));
-        //OnPropertyChanged(nameof(GasRandomOrderDisplay));
         //OnPropertyChanged(nameof(PassWildThingsDisplay));
-        //OnPropertyChanged(nameof(PassUnderbelly1Display));
-        //OnPropertyChanged(nameof(PassUnderbelly2Display));
         //OnPropertyChanged(nameof(BelowFreezingPointPasswordDisplay));
         //OnPropertyChanged(nameof(HellfireDisplay));
         //OnPropertyChanged(nameof(DecisionsDecisionsDisplay));
-        //OnPropertyChanged(nameof(IsUnderbellyPasswordVisible));
-        //OnPropertyChanged(nameof(PassUnderbelly1IsGreen));
-        //OnPropertyChanged(nameof(PassUnderbelly2IsGreen));
-        //OnPropertyChanged(nameof(UnderbellyDisplay));
         //OnPropertyChanged(nameof(EndOfRoadDisplay));
     }
 
@@ -221,15 +214,9 @@ public partial class InGameScenarioViewModel : ObservableObject
     public string DecisionsDecisionsPassDisplay => CalculateDecisionsDecisionsPassDisplay();
     public string ClockTimeDisplay => CalculateClockTimeDisplay();
     public string PassWildThingsDisplay => CalculatePassWildThingsDisplay();
-    public string PassUnderbelly1Display => CalculatePassUnderbelly1Display();
-    public string PassUnderbelly2Display => CalculatePassUnderbelly2Display();
     public string BelowFreezingPointPasswordDisplay => GetBelowFreezingPointPasswordDisplay();
     public string HellfireDisplay => GetHellfireDisplay();
     public string DecisionsDecisionsDisplay => GetDecisionsDecisionsDisplay();
-    public bool IsUnderbellyPasswordVisible => DetermineIsUnderbellyPasswordVisible();
-    public bool PassUnderbelly1IsGreen => DeterminePassUnderbelly1IsGreen();
-    public bool PassUnderbelly2IsGreen => DeterminePassUnderbelly2IsGreen();
-    public string UnderbellyDisplay => GetUnderbellyDisplay();
     public string EndOfRoadDisplay => GetEndOfRoadDisplay();
 
     private string GetClearedDisplay() => Status is 12 or 13 or 15 ? "Yes" : "No";
@@ -393,60 +380,6 @@ public partial class InGameScenarioViewModel : ObservableObject
         }
     }
 
-    private string CalculatePassUnderbelly1Display()
-    {
-        switch (GasRandom % 16)
-        {
-            case 0: return "DESK";
-            case 1: return "MISS";
-            case 2: return "FREE";
-            case 3: return "JUNK";
-            case 4: return "NEWS";
-            case 5: return "CARD";
-            case 6: return "DIET";
-            case 7: return "POEM";
-            case 8: return "BEER";
-            case 9: return "LOCK";
-            case 10: return "TEST";
-            case 11: return "SOFA";
-            case 12: return "WINE";
-            case 13: return "TAPE";
-            case 14: return "GOLF";
-            case 15: return "PLAN";
-
-            default:
-                _logger.LogDebug("Unrecognized PassUnderbelly1 value: {PassUnderbelly1}", PassUnderbelly1);
-                return $"Unrecognized PassUnderbelly1({PassUnderbelly1})";
-        }
-    }
-
-    private string CalculatePassUnderbelly2Display()
-    {
-        switch (GasRandom % 16)
-        {
-            case 0: return "2916";
-            case 1: return "3719";
-            case 2: return "0154";
-            case 3: return "6443";
-            case 4: return "7688";
-            case 5: return "1812";
-            case 6: return "5551";
-            case 7: return "6010";
-            case 8: return "0652";
-            case 9: return "6234";
-            case 10: return "0533";
-            case 11: return "9439";
-            case 12: return "1421";
-            case 13: return "1127";
-            case 14: return "7840";
-            case 15: return "6910";
-
-            default:
-                _logger.LogDebug("Unrecognized PassUnderbelly2 value: {PassUnderbelly2}", PassUnderbelly2);
-                return $"Unrecognized PassUnderbelly2({PassUnderbelly2})";
-        }
-    }
-
     private string GetBelowFreezingPointPasswordDisplay()
     {
         return !ScenarioName.Equals("below freezing point", StringComparison.Ordinal)
@@ -466,25 +399,6 @@ public partial class InGameScenarioViewModel : ObservableObject
         return !ScenarioName.Equals("decisions,decisions", StringComparison.Ordinal)
             ? string.Empty
             : $"{CalculateDecisionsDecisionsPassDisplay()}-{CalculateClockTimeDisplay()}";
-    }
-
-    private bool DetermineIsUnderbellyPasswordVisible()
-        => EscapeTime is 0 or -1;
-
-    private bool DeterminePassUnderbelly1IsGreen()
-        => PassUnderbelly3 % 64 >= 32;
-
-    private bool DeterminePassUnderbelly2IsGreen()
-        => PassUnderbelly3 % 32 >= 16;
-
-    private string GetUnderbellyDisplay()
-    {
-        if (!ScenarioName.Equals("underbelly", StringComparison.Ordinal))
-            return string.Empty;
-
-        return DetermineIsUnderbellyPasswordVisible()
-            ? $"{CalculatePassUnderbelly1Display()} {CalculatePassUnderbelly2Display()}"
-            : GetEscapeTimeDisplay();
     }
 
     private string GetEndOfRoadDisplay()

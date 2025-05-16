@@ -122,7 +122,7 @@ public class InGamePlayerReader : ReaderBase
         var specialInventory = new byte[4];
         for (var i = 0; i < 4; i++)
         {
-            nint curItemOffset = 8 * characterId + i;
+            nint curItemOffset = (8 * characterId) + i;
             switch (CurrentFile)
             {
                 case GameFile.FileOne:
@@ -144,7 +144,7 @@ public class InGamePlayerReader : ReaderBase
         var specialInventory = new byte[4];
         for (var i = 0; i < 4; i++)
         {
-            nint curItemOffset = 8 * characterId + 4 + i;
+            nint curItemOffset = (8 * characterId) + 4 + i;
             switch (CurrentFile)
             {
                 case GameFile.FileOne:

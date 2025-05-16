@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Outbreak.Common;
 
-public class FileTwoPtrs
+public static class FileTwoPtrs
 {
     public const nint DiscStart = 0x023DFD3;
 
@@ -14,7 +14,7 @@ public class FileTwoPtrs
         if (!slotIndex.IsSlotIndexValid())
             throw new InvalidOperationException($"Invalid Slot Index: {slotIndex}");
 
-        return BaseLobbySlot + slotIndex * LobbySlotStructSize;
+        return BaseLobbySlot + (slotIndex * LobbySlotStructSize);
     }
 
     public const nint LobbySlotPlayer = 0x2;
@@ -40,7 +40,7 @@ public class FileTwoPtrs
         if (!characterId.IsCharacterIdValid())
             throw new InvalidOperationException($"Invalid Character Id: {characterId}");
 
-        return BaseLobbyRoomPlayer + characterId * LobbyRoomPlayerStructSize;
+        return BaseLobbyRoomPlayer + (characterId * LobbyRoomPlayerStructSize);
     }
 
     // Offsets for the lobby room player structure, offseting from BaseLobbyRoomPlayer
@@ -150,7 +150,7 @@ public class FileTwoPtrs
         if (!characterId.IsCharacterIdValid())
             throw new InvalidOperationException($"Invalid character id: {characterId}");
 
-        return BasePlayerStart + characterId * PlayerStructSize;
+        return BasePlayerStart + (characterId * PlayerStructSize);
     }
 
     public const nint CharacterEnabledOffset = 0x0; //0

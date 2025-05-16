@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Outbreak.Offsets;
 
-internal class LobbySlotOffsets
+internal static class LobbySlotOffsets
 {
     public static readonly (nint[] File1, nint[] File2) Index = ([], []);
     public static readonly (nint[] File1, nint[] File2) CurPlayers = ([FileOnePtrs.LobbySlotPlayer], [FileTwoPtrs.LobbySlotPlayer]);
