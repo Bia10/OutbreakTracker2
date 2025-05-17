@@ -3,7 +3,7 @@ using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
 using System;
 
-namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario;
+namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 
 public partial class WildThingsViewModel : ObservableObject
 {

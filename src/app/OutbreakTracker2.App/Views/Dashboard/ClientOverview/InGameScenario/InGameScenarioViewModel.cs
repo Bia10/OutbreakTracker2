@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.App.Services.Dispatcher;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
 using R3;
@@ -135,16 +136,11 @@ public partial class InGameScenarioViewModel : ObservableObject
         //Pass6 = scenario.Pass6;
 
         //OnPropertyChanged(nameof(EscapeTimeDisplay));
-        //OnPropertyChanged(nameof(PassBelowFreezingPointDisplay));
-        //OnPropertyChanged(nameof(Pass2BelowFreezingPointDisplay));
         //OnPropertyChanged(nameof(PassHiveDisplay));
-        //OnPropertyChanged(nameof(HellfirePassDisplay));
-        //OnPropertyChanged(nameof(HellfireMapDisplay));
-        //OnPropertyChanged(nameof(HellfirePowerDisplay));
+
         //OnPropertyChanged(nameof(DecisionsDecisionsPassDisplay));
         //OnPropertyChanged(nameof(ClockTimeDisplay));
-        //OnPropertyChanged(nameof(BelowFreezingPointPasswordDisplay));
-        //OnPropertyChanged(nameof(HellfireDisplay));
+
         //OnPropertyChanged(nameof(DecisionsDecisionsDisplay));
         //OnPropertyChanged(nameof(EndOfRoadDisplay));
     }
@@ -188,12 +184,8 @@ public partial class InGameScenarioViewModel : ObservableObject
 
     public string EscapeTimeDisplay => GetEscapeTimeDisplay();
     public string PassHiveDisplay => CalculatePassHiveDisplay();
-    public string HellfirePassDisplay => CalculateHellfirePassDisplay();
-    public string HellfireMapDisplay => CalculateHellfireMapDisplay();
-    public string HellfirePowerDisplay => CalculateHellfirePowerDisplay();
     public string DecisionsDecisionsPassDisplay => CalculateDecisionsDecisionsPassDisplay();
     public string ClockTimeDisplay => CalculateClockTimeDisplay();
-    public string HellfireDisplay => GetHellfireDisplay();
     public string DecisionsDecisionsDisplay => GetDecisionsDecisionsDisplay();
     public string EndOfRoadDisplay => GetEndOfRoadDisplay();
 
@@ -215,50 +207,6 @@ public partial class InGameScenarioViewModel : ObservableObject
                 return $"Unrecognized Hive Pass1({Pass1})";
         }
     }
-
-    private string CalculateHellfirePassDisplay()
-    {
-        switch (Pass3)
-        {
-            case > 0x0 and <= 0x1: return "0721-DCH";
-            case >= 0x2 and <= 0x3: return "2287-JIA";
-            case >= 0x4 and <= 0x7: return "6354-BAE";
-            case >= 0x8 and <= 0xF: return "5128-GGF";
-
-            default:
-                _logger.LogDebug("Unrecognized Hellfire Pass3 value: {Pass3}", Pass3);
-                return $"Unrecognized Hellfire Pass3({Pass3})";
-        }
-    }
-
-    private string CalculateHellfireMapDisplay()
-    {
-        switch (Pass4)
-        {
-            case 0x4000: return "1234";
-            case 0x4020: return "234";
-            case 0x4040: return "134";
-            case 0x4060: return "34";
-            case 0x4080: return "124";
-            case 0x40A0: return "24";
-            case 0x40C0: return "14";
-            case 0x40E0: return "4";
-            case 0x4100: return "123";
-            case 0x4120: return "23";
-            case 0x4140: return "13";
-            case 0x4160: return "3";
-            case 0x4180: return "12";
-            case 0x41A0: return "2";
-            case 0x41C0: return "1";
-
-            default:
-                _logger.LogDebug("Unrecognized Hellfire Pass4 value: {Pass4}", Pass4);
-                return $"Unrecognized Hellfire Pass4({Pass4})";
-        }
-    }
-
-    private string CalculateHellfirePowerDisplay()
-        => PuzzleRandom % 2 == 0 ? "1" : "2";
 
     private string CalculateDecisionsDecisionsPassDisplay()
     {
@@ -300,13 +248,6 @@ public partial class InGameScenarioViewModel : ObservableObject
                 _logger.LogDebug("Unrecognized GasRandom value: {GasRandom}", GasRandom);
                 return -1;
         }
-    }
-
-    private string GetHellfireDisplay()
-    {
-        return !ScenarioName.Equals("hellfire", StringComparison.Ordinal)
-            ? string.Empty
-            : $"{CalculateHellfirePassDisplay()}-{CalculateHellfireMapDisplay()}-{CalculateHellfirePowerDisplay()}";
     }
 
     private string GetDecisionsDecisionsDisplay()

@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
 
-public partial class BelowFreezingPointView : UserControl
+public partial class HellfireView : UserControl
 {
-    public BelowFreezingPointView()
+    public HellfireView()
     {
         InitializeComponent();
     }

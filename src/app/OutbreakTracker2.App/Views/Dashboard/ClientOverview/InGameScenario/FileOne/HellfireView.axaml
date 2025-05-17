@@ -1,5 +1,5 @@
 <UserControl
-    x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario.FileOne.BelowFreezingPointView"
+    x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario.FileOne.HellfireView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,14 +9,15 @@
     xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:DataType="fileOne:BelowFreezingPointViewModel"
+    x:DataType="fileOne:HellfireViewModel"
     mc:Ignorable="d">
+
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        <suki:GroupBox HorizontalAlignment="Stretch" Header="Below Freezing Point Details">
+        <suki:GroupBox HorizontalAlignment="Stretch" Header="Hellfire Details">
             <Grid
                 Margin="15"
                 ColumnDefinitions="Auto,*"
-                RowDefinitions="Auto,Auto,Auto">
+                RowDefinitions="Auto,Auto,Auto,Auto">
 
                 <StackPanel
                     Grid.Row="0"
@@ -27,18 +28,18 @@
                     <icons:MaterialIcon
                         Width="16"
                         Height="16"
-                        Kind="ThermometerMinus"
-                        ToolTip.Tip="Pass 1 Below Freezing Point" />
+                        Kind="KeyOutline"
+                        ToolTip.Tip="Hellfire Pass" />
                     <TextBlock
                         VerticalAlignment="Center"
                         FontWeight="SemiBold"
-                        Text="Pass 1:" />
+                        Text="Pass:" />
                 </StackPanel>
                 <TextBlock
                     Grid.Row="0"
                     Grid.Column="1"
                     VerticalAlignment="Center"
-                    Text="{Binding Pass1BelowFreezingPoint}"
+                    Text="{Binding HellfirePassDisplay}"
                     TextTrimming="CharacterEllipsis" />
 
                 <StackPanel
@@ -50,18 +51,18 @@
                     <icons:MaterialIcon
                         Width="16"
                         Height="16"
-                        Kind="ThermometerMinus"
-                        ToolTip.Tip="Pass 2 Below Freezing Point" />
+                        Kind="MapOutline"
+                        ToolTip.Tip="Hellfire Map" />
                     <TextBlock
                         VerticalAlignment="Center"
                         FontWeight="SemiBold"
-                        Text="Pass 2:" />
+                        Text="Map:" />
                 </StackPanel>
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="1"
                     VerticalAlignment="Center"
-                    Text="{Binding Pass2BelowFreezingPoint}"
+                    Text="{Binding HellfireMapDisplay}"
                     TextTrimming="CharacterEllipsis" />
 
                 <StackPanel
@@ -73,18 +74,41 @@
                     <icons:MaterialIcon
                         Width="16"
                         Height="16"
-                        Kind="Snowflake"
-                        ToolTip.Tip="Pass Below Freezing Point" />
+                        Kind="PowerPlug"
+                        ToolTip.Tip="Hellfire Power" />
                     <TextBlock
                         VerticalAlignment="Center"
                         FontWeight="SemiBold"
-                        Text="Main Pass:" />
+                        Text="Power:" />
                 </StackPanel>
                 <TextBlock
                     Grid.Row="2"
                     Grid.Column="1"
                     VerticalAlignment="Center"
-                    Text="{Binding PassBelowFreezingPoint}"
+                    Text="{Binding HellfirePowerDisplay}"
+                    TextTrimming="CharacterEllipsis" />
+
+                <StackPanel
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="5">
+                    <icons:MaterialIcon
+                        Width="16"
+                        Height="16"
+                        Kind="Fire"
+                        ToolTip.Tip="Hellfire Overall Status" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="Status:" />
+                </StackPanel>
+                <TextBlock
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Text="{Binding HellfireDisplay}"
                     TextTrimming="CharacterEllipsis" />
 
             </Grid>

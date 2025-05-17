@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario;
+namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 
 public partial class DesperateTimesViewModel : ObservableObject
 {
