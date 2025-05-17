@@ -43,8 +43,11 @@ public partial class InGamePlayerViewModel : ObservableObject
     [ObservableProperty]
     private InventoryViewModel _inventory;
 
+    private readonly IDataManager _dataManager;
+
     public InGamePlayerViewModel(DecodedInGamePlayer player, IDataManager dataManager)
     {
+        _dataManager = dataManager;
         _gauges = new PlayerGaugesViewModel();
         _statusEffects = new PlayerStatusEffectsViewModel();
         _conditions = new PlayerConditionsViewModel();
@@ -71,7 +74,7 @@ public partial class InGamePlayerViewModel : ObservableObject
         IsInGame = player.InGame;
 
         Gauges.Update(player.CurrentHealth, player.MaximumHealth, player.HealthPercentage, player.CurVirus, player.MaxVirus, player.VirusPercentage);
-        StatusEffects.Update(player.BleedTime, player.AntiVirusTime, player.AntiVirusGTime, player.HerbTime);
+        StatusEffects.Update(player.BleedTime, player.AntiVirusTime, player.AntiVirusGTime, player.HerbTime, player.Status, _dataManager.InGameScenario.CurrentFile);
         Conditions.Update(player.Condition, player.Status);
         Attributes.Update(player.CritBonus, player.Size, player.Power, player.Speed);
         Position.Update(player.PositionX, player.PositionY, player.RoomId);

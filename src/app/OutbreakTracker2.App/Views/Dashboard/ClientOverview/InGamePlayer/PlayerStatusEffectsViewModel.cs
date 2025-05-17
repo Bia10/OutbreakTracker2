@@ -1,30 +1,33 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer;
 
 public partial class PlayerStatusEffectsViewModel : ObservableObject
 {
     [ObservableProperty]
-    private ushort _bleedTime;
+    private string _bleedTime = string.Empty;
 
     [ObservableProperty]
-    private ushort _antiVirusTime;
+    private string _antiVirusTime = string.Empty;
 
     [ObservableProperty]
-    private ushort _antiVirusGTime;
+    private string _antiVirusGTime = string.Empty;
 
     [ObservableProperty]
-    private ushort _herbTime;
+    private string _herbTime = string.Empty;
 
     public void Update(
         ushort bleedTime,
         ushort antiVirusTime,
         ushort antiVirusGTime,
-        ushort herbTime)
+        ushort herbTime,
+        string status,
+        byte currentGameFile)
     {
-        BleedTime = bleedTime;
-        AntiVirusTime = antiVirusTime;
-        AntiVirusGTime = antiVirusGTime;
-        HerbTime = herbTime;
+        BleedTime = TimeUtility.FormatBleedTime(bleedTime, status);
+        AntiVirusTime = TimeUtility.FormatAntivirusOrHerbTime(antiVirusTime, herbTime);
+        AntiVirusGTime = TimeUtility.FormatAntivirusGTime(antiVirusGTime, currentGameFile);
+        HerbTime = TimeUtility.FormatAntivirusOrHerbTime(antiVirusTime, herbTime);
     }
 }

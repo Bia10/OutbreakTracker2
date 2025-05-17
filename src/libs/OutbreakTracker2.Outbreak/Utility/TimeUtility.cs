@@ -60,13 +60,19 @@ public static class TimeUtility
 
     public static string GetStandardTimeToString(int timeInSeconds)
     {
-        int minutes = (int)Math.Floor((double)timeInSeconds / StandardTimeUnitsPerSecond / SecondsPerMinute % MinutesPerHour);
-        int seconds = (int)Math.Floor(((double)timeInSeconds - SecondsPerMinute) % SecondsPerMinute);
+        int minutes = (int)Math.Floor((double)timeInSeconds / SecondsPerMinute % MinutesPerHour);
+        int seconds = (int)Math.Floor((double)timeInSeconds % SecondsPerMinute);
 
         return $"{minutes:D2}:{seconds:D2}";
     }
 
-    public static string GetTimeToString3(int wildThingsTimeUnits)
+    /// <summary>
+    /// Converts time units (where 30 units = 1 second, 1800 units = 1 minute)
+    /// into a formatted time string MM:SS (zero-padded minutes and seconds).
+    /// </summary>
+    /// <param name="wildThingsTimeUnits">The time value in wild things units.</param>
+    /// <returns>A string representing the time in MM:SS format.</returns>
+    public static string GetTimeToString3(int wildThingsTimeUnits) // Time2string3
     {
         int minutes = (int)Math.Floor((double)wildThingsTimeUnits / WildThingsTimeUnitsPerMinute % MinutesPerHour);
         int seconds = (int)Math.Floor((double)wildThingsTimeUnits / WildThingsTimeUnitsPerSecond % SecondsPerMinute);
@@ -74,11 +80,72 @@ public static class TimeUtility
         return $"{minutes:D2}:{seconds:D2}";
     }
 
-    public static string GetStoppingVirusTime(int stoppingVirusTimeUnits)
+    /// <summary>
+    /// Converts time units (where 30 units = 1 second, 1800 units = 1 minute)
+    /// into a formatted time string M:SS (non-zero-padded minutes, zero-padded seconds).
+    /// </summary>
+    /// <param name="wildThingsTimeUnits">The time value in wild things units.</param>
+    /// <returns>A string representing the time in M:SS format.</returns>
+    public static string GetBleedingTimeToString(int wildThingsTimeUnits) // Time2string4 (bleeding time)
+    {
+        int minutes = (int)Math.Floor((double)wildThingsTimeUnits / WildThingsTimeUnitsPerMinute % MinutesPerHour);
+        int seconds = (int)Math.Floor((double)wildThingsTimeUnits / WildThingsTimeUnitsPerSecond % SecondsPerMinute);
+
+        return $"{minutes}:{seconds:D2}";
+    }
+
+    /// <summary>
+    /// Converts time units (where 60 units = 1 second, 3600 units = 1 minute)
+    /// into a formatted time string M:SS (non-zero-padded minutes, zero-padded seconds).
+    /// </summary>
+    /// <param name="stoppingVirusTimeUnits">The time value in stopping virus units.</param>
+    /// <returns>A string representing the time in M:SS format.</returns>
+    public static string GetStoppingVirusTimeToString(int stoppingVirusTimeUnits) // Time2string5 (stopping virus time)
     {
         int minutes = (int)Math.Floor((double)stoppingVirusTimeUnits / StoppingVirusTimeUnitsPerMinute % MinutesPerHour);
         int seconds = (int)Math.Floor((double)stoppingVirusTimeUnits / StoppingVirusTimeUnitsPerSecond % SecondsPerMinute);
 
         return $"{minutes}:{seconds:D2}";
+    }
+
+    /// <summary>
+    /// Formats the Antivirus G time if the conditions for its display are met.
+    /// </summary>
+    /// <param name="antivirusGTime">Player's antivirus G time (StoppingVirus units).</param>
+    /// <param name="currentGameFile">The current game file number.</param>
+    /// <returns>The formatted time string (M:SS) if displayed, otherwise null.</returns>
+    public static string FormatAntivirusGTime(ushort antivirusGTime, ushort currentGameFile)
+    {
+        if (currentGameFile is 1 && antivirusGTime > 0)
+            return GetStoppingVirusTimeToString(antivirusGTime);
+
+        return "0:00";
+    }
+
+    /// <summary>
+    /// Formats the Antivirus or Herb time based on which is greater and positive,
+    /// if the conditions for its display in the Lua logic are met.
+    /// </summary>
+    /// <param name="antivirusTime">Player's antivirus time (StoppingVirus units).</param>
+    /// <param name="herbTime">Player's herb time (StoppingVirus units).</param>
+    /// <returns>The formatted time string (M:SS) if displayed, otherwise null.</returns>
+    public static string FormatAntivirusOrHerbTime(ushort antivirusTime, ushort herbTime)
+    {
+        int timeToDisplay = Math.Max(antivirusTime, herbTime);
+        return timeToDisplay > 0 ? GetStoppingVirusTimeToString(timeToDisplay) : "0:00";
+    }
+
+    /// <summary>
+    /// Formats the Bleed time if the conditions for its display in the Lua logic are met.
+    /// </summary>
+    /// <param name="bleedTime">Player's bleed time (WildThings units).</param>
+    /// <param name="status">Player's current status string.</param>
+    /// <returns>The formatted time string (M:SS) if displayed, otherwise null.</returns>
+    public static string FormatBleedTime(ushort bleedTime, string status)
+    {
+        if (bleedTime > 0 && status is "Bleed" or "Poison+Bleed" or "Gas+Bleed")
+            return GetBleedingTimeToString(bleedTime);
+
+        return "0:00";
     }
 }

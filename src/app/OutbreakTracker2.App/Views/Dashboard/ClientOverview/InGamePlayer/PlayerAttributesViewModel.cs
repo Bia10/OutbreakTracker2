@@ -27,4 +27,12 @@ public partial class PlayerAttributesViewModel : ObservableObject
         Power = power;
         Speed = speed;
     }
+
+    // TODO: critical bonus
+    // In Resident Evil Outbreak, Jim Chapman's personal item Coin increases his chances of landing a critical attack anywhere from %15 to %45.
+    // In Resident Evil Outbreak File #2, his Lucky Coin can boost it by an additional %5 to anyone who possess it in their inventory.
+    // [EnumMember(Value = "Jim's Coin")]
+    // JimsCoin = 403,
+    // [EnumMember(Value = "Lucky Coin")]
+    // LuckyCoin = 419,
 }
