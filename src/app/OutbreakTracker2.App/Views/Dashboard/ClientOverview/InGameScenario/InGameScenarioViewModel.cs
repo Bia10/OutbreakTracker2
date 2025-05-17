@@ -126,18 +126,6 @@ public partial class InGameScenarioViewModel : ObservableObject
         GameTimeDisplay = GetGameTime();
         GasRandomOrderDisplay = CalculateGasRandomOrderDisplay();
         IsCleared = GetClearedDisplay();
-
-        //EscapeTime = scenario.EscapeTime;
-        //Pass1 = scenario.Pass1;
-        //Pass2 = scenario.Pass2;
-        //Pass3 = scenario.Pass3;
-        //Pass4 = scenario.Pass4;
-        //Pass5 = scenario.Pass5;
-        //Pass6 = scenario.Pass6;
-
-        //OnPropertyChanged(nameof(EscapeTimeDisplay));
-        //OnPropertyChanged(nameof(PassHiveDisplay));
-        //OnPropertyChanged(nameof(EndOfRoadDisplay));
     }
 
     // Used in "Underbelly" and "Flashback"
@@ -177,13 +165,9 @@ public partial class InGameScenarioViewModel : ObservableObject
     [ObservableProperty]
     private byte _pass6;
 
-    public string EscapeTimeDisplay => GetEscapeTimeDisplay();
-    public string EndOfRoadDisplay => GetEndOfRoadDisplay();
-
     private string GetClearedDisplay() => Status is 12 or 13 or 15 ? "Yes" : "No";
     private string GetPlayerCountDisplay() => $"{PlayerCount} Players";
     private string GetGameTime() => TimeUtility.GetTimeFromFrames(FrameCounter);
-    private string GetEscapeTimeDisplay() => TimeUtility.GetTimeToString3(EscapeTime);
 
     private int CalculateGasRandomOrderDisplay()
     {
@@ -195,12 +179,5 @@ public partial class InGameScenarioViewModel : ObservableObject
                 _logger.LogDebug("Unrecognized GasRandom value: {GasRandom}", GasRandom);
                 return -1;
         }
-    }
-
-    private string GetEndOfRoadDisplay()
-    {
-        return !ScenarioName.Equals("end of the road", StringComparison.Ordinal)
-            ? string.Empty
-            : Pass4.ToString();
     }
 }

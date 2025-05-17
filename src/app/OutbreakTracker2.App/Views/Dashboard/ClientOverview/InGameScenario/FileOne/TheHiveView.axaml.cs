@@ -1,8 +1,6 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 
-namespace OutbreakTracker2.App;
+namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
 
 public partial class TheHiveView : UserControl
 {

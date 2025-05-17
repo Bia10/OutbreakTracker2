@@ -1,0 +1,27 @@
+<UserControl
+    x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario.FileTwo.EndOfTheRoadView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fileTwo="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario.FileTwo"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="fileTwo:EndOfTheRoadViewModel"
+    mc:Ignorable="d">
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <suki:GroupBox HorizontalAlignment="Stretch" Header="End of the Road">
+            <TextBlock
+                Margin="15"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="18"
+                FontWeight="SemiBold"
+                Text="{Binding EndOfRoadDisplay}"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+        </suki:GroupBox>
+    </ScrollViewer>
+</UserControl>
