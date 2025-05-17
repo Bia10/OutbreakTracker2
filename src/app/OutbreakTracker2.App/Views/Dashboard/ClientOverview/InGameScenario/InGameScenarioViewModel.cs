@@ -137,11 +137,6 @@ public partial class InGameScenarioViewModel : ObservableObject
 
         //OnPropertyChanged(nameof(EscapeTimeDisplay));
         //OnPropertyChanged(nameof(PassHiveDisplay));
-
-        //OnPropertyChanged(nameof(DecisionsDecisionsPassDisplay));
-        //OnPropertyChanged(nameof(ClockTimeDisplay));
-
-        //OnPropertyChanged(nameof(DecisionsDecisionsDisplay));
         //OnPropertyChanged(nameof(EndOfRoadDisplay));
     }
 
@@ -184,9 +179,6 @@ public partial class InGameScenarioViewModel : ObservableObject
 
     public string EscapeTimeDisplay => GetEscapeTimeDisplay();
     public string PassHiveDisplay => CalculatePassHiveDisplay();
-    public string DecisionsDecisionsPassDisplay => CalculateDecisionsDecisionsPassDisplay();
-    public string ClockTimeDisplay => CalculateClockTimeDisplay();
-    public string DecisionsDecisionsDisplay => GetDecisionsDecisionsDisplay();
     public string EndOfRoadDisplay => GetEndOfRoadDisplay();
 
     private string GetClearedDisplay() => Status is 12 or 13 or 15 ? "Yes" : "No";
@@ -208,36 +200,6 @@ public partial class InGameScenarioViewModel : ObservableObject
         }
     }
 
-    private string CalculateDecisionsDecisionsPassDisplay()
-    {
-        if (Pass3 is > 0x00 and < 0x40 && Pass6 % 2 == 0x0)
-            return "4284";
-
-        switch (Pass3)
-        {
-            case >= 0x40 and < 0x80: return "4161";
-            case >= 0x80 when Pass6 == 0: return "4032";
-        }
-
-        if (Pass3 is > 0x00 and < 0x40 && Pass6 % 2 == 0x1)
-            return "4927";
-
-        _logger.LogDebug("Unrecognized Decisions,decisions Pass3 value: {Pass3}", Pass3);
-        return $"Unrecognized Decisions,decisions Pass3({Pass3})";
-    }
-
-    private string CalculateClockTimeDisplay()
-    {
-        return Difficulty.ToLowerInvariant() switch
-        {
-            "easy" => "03:25",
-            "normal" => "10:05",
-            "hard" => "07:40",
-            "very hard" => "02:50",
-            _ => "N/A",
-        };
-    }
-
     private int CalculateGasRandomOrderDisplay()
     {
         switch (GasRandom)
@@ -248,13 +210,6 @@ public partial class InGameScenarioViewModel : ObservableObject
                 _logger.LogDebug("Unrecognized GasRandom value: {GasRandom}", GasRandom);
                 return -1;
         }
-    }
-
-    private string GetDecisionsDecisionsDisplay()
-    {
-        return !ScenarioName.Equals("decisions,decisions", StringComparison.Ordinal)
-            ? string.Empty
-            : $"{CalculateDecisionsDecisionsPassDisplay()}-{CalculateClockTimeDisplay()}";
     }
 
     private string GetEndOfRoadDisplay()
