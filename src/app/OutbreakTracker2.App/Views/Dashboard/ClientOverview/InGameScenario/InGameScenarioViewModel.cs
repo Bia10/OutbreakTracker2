@@ -178,27 +178,12 @@ public partial class InGameScenarioViewModel : ObservableObject
     private byte _pass6;
 
     public string EscapeTimeDisplay => GetEscapeTimeDisplay();
-    public string PassHiveDisplay => CalculatePassHiveDisplay();
     public string EndOfRoadDisplay => GetEndOfRoadDisplay();
 
     private string GetClearedDisplay() => Status is 12 or 13 or 15 ? "Yes" : "No";
     private string GetPlayerCountDisplay() => $"{PlayerCount} Players";
     private string GetGameTime() => TimeUtility.GetTimeFromFrames(FrameCounter);
     private string GetEscapeTimeDisplay() => TimeUtility.GetTimeToString3(EscapeTime);
-
-    private string CalculatePassHiveDisplay()
-    {
-        switch (Pass1)
-        {
-            case > 0x00 and <= 0x1F or >= 0x80 and <= 0x9F: return "3555-0930";
-            case >= 0x20 and <= 0x3F or >= 0x60 and <= 0x7F or >= 0xA0 and <= 0xBF or >= 0xE0 and < 0xFF: return "5315-0930";
-            case >= 0x40 and <= 0x5F or >= 0xC0 and < 0xDF: return "8211-0930";
-
-            default:
-                _logger.LogDebug("Unrecognized Hive Pass1 value: {Pass1}", Pass1);
-                return $"Unrecognized Hive Pass1({Pass1})";
-        }
-    }
 
     private int CalculateGasRandomOrderDisplay()
     {
