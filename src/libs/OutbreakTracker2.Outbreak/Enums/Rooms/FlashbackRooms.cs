@@ -23,7 +23,7 @@ public enum FlashbackRooms : short
     HospitalBackGate = 5,
 
     [EnumMember(Value = "Main building 1F hall")]
-    MainBuilding1F_Hall = 6,
+    MainBuilding1FHall = 6,
 
     [EnumMember(Value = "Reception office")]
     ReceptionOffice = 7,
@@ -32,7 +32,7 @@ public enum FlashbackRooms : short
     ExaminationRoom = 8,
 
     [EnumMember(Value = "Auxiliary building 1F hall")]
-    AuxiliaryBuilding1F_Hall = 9,
+    AuxiliaryBuilding1FHall = 9,
 
     [EnumMember(Value = "Locker room")]
     LockerRoom = 10,
@@ -47,13 +47,13 @@ public enum FlashbackRooms : short
     Pharmacy = 14,
 
     [EnumMember(Value = "Auxiliary building B1F hall")]
-    AuxiliaryBuildingB1F_Hall = 15,
+    AuxiliaryBuildingB1FHall = 15,
 
     [EnumMember(Value = "Intensive care unit")]
     IntensiveCareUnit = 16,
 
     [EnumMember(Value = "Main building 2F hall")]
-    MainBuilding2F_Hall = 17,
+    MainBuilding2FHall = 17,
 
     [EnumMember(Value = "Room 201")]
     Room201 = 18,
@@ -68,7 +68,7 @@ public enum FlashbackRooms : short
     AdministratorsOffice = 21,
 
     [EnumMember(Value = "Auxiliary building 2F hall")]
-    AuxiliaryBuilding2F_Hall = 22,
+    AuxiliaryBuilding2FHall = 22,
 
     [EnumMember(Value = "Auxiliary building 3F")]
     AuxiliaryBuilding3F = 23,

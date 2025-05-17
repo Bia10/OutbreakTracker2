@@ -17,7 +17,7 @@ public enum DesperateTimesRooms : short
     FrontGate = 3,
 
     [EnumMember(Value = "1F lobby")]
-    F1_Lobby = 4,
+    F1Lobby = 4,
 
     [EnumMember(Value = "East office")]
     EastOffice = 5,
@@ -26,19 +26,19 @@ public enum DesperateTimesRooms : short
     Stairwell = 6,
 
     [EnumMember(Value = "2F East hall")]
-    F2_EastHall = 7,
+    F2EastHall = 7,
 
     [EnumMember(Value = "Rooftop")]
     Rooftop = 8,
 
     [EnumMember(Value = "1F East hall")]
-    F1_EastHall = 9,
+    F1EastHall = 9,
 
     [EnumMember(Value = "Night-duty room")]
     NightDutyRoom = 10,
 
     [EnumMember(Value = "B1F East hall")]
-    B1F_EastHall = 11,
+    B1FEastHall = 11,
 
     [EnumMember(Value = "Autopsy room")]
     AutopsyRoom = 12,
@@ -47,7 +47,7 @@ public enum DesperateTimesRooms : short
     ParkingGarage = 13,
 
     [EnumMember(Value = "B1F West hall")]
-    B1F_WestHall = 14,
+    B1FWestHall = 14,
 
     [EnumMember(Value = "Kennel")]
     Kennel = 15,

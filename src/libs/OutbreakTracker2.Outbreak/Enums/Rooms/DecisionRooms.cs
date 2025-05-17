@@ -41,7 +41,7 @@ public enum DecisionsRooms : short
     QualityAssuranceTestingRoom = 11,
 
     [EnumMember(Value = "B4F Corridor")]
-    B4F_Corridor = 36,
+    B4FCorridor = 36,
 
     [EnumMember(Value = "Access Waterway")]
     AccessWaterway = 37,
@@ -59,7 +59,7 @@ public enum DecisionsRooms : short
     NorthCar = 52,
 
     [EnumMember(Value = "T-Shaped Passway")]
-    TShapedPassway = 54,
+    ShapedPassway = 54,
 
     [EnumMember(Value = "Control Room")]
     ControlRoom = 55,
@@ -107,13 +107,13 @@ public enum DecisionsRooms : short
     FrontSquare = 74,
 
     [EnumMember(Value = "B2F Passage Elevator")]
-    B2F_PassageElevator = 76,
+    B2FPassageElevator = 76,
 
     [EnumMember(Value = "Study Room")]
     StudyRoom = 77,
 
     [EnumMember(Value = "1F Elevator Passway")]
-    F1_ElevatorPassway = 78,
+    F1ElevatorPassway = 78,
 
     [EnumMember(Value = "Entrance Hall")]
     EntranceHall = 80,
@@ -128,10 +128,10 @@ public enum DecisionsRooms : short
     WaitingRoom = 83,
 
     [EnumMember(Value = "1F Passage A")]
-    F1_PassageA = 84,
+    F1PassageA = 84,
 
     [EnumMember(Value = "1F Passage B")]
-    F1_PassageB = 85,
+    F1PassageB = 85,
 
     [EnumMember(Value = "Testing Passage A")]
     TestingPassageA = 86,
@@ -143,7 +143,7 @@ public enum DecisionsRooms : short
     DrawingsRoom = 88,
 
     [EnumMember(Value = "2F Passage")]
-    F2_Passage = 89,
+    F2Passage = 89,
 
     [EnumMember(Value = "Art Safe Room")]
     ArtSafeRoom = 91,
@@ -152,7 +152,7 @@ public enum DecisionsRooms : short
     TestingPassageB = 93,
 
     [EnumMember(Value = "3F Passage Elevator")]
-    F3_PassageElevator = 94,
+    F3PassageElevator = 94,
 
     [EnumMember(Value = "Experiments Preparation Room")]
     ExperimentsPreparationRoom = 95,

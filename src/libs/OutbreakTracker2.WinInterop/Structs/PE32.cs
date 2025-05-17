@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace OutbreakTracker2.WinInterop.Structs;
 
-public static class PE32
+public static class Pe32
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct ImageDosHeader

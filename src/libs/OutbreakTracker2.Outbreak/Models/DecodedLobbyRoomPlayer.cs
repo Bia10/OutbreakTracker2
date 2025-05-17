@@ -13,30 +13,30 @@ public sealed record DecodedLobbyRoomPlayer
     public byte NameId { get; set; }
 
     [JsonInclude]
-    [JsonPropertyName(nameof(NPCType))]
-    public string NPCType { get; set; } = string.Empty;
+    [JsonPropertyName(nameof(NpcType))]
+    public string NpcType { get; set; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(CharacterName))]
     public string CharacterName { get; set; } = string.Empty;
 
     [JsonInclude]
-    [JsonPropertyName(nameof(CharacterHP))]
-    public string CharacterHP { get; set; } = string.Empty;
+    [JsonPropertyName(nameof(CharacterHp))]
+    public string CharacterHp { get; set; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(CharacterPower))]
     public string CharacterPower { get; set; } = string.Empty;
 
     [JsonInclude]
-    [JsonPropertyName(nameof(NPCName))]
-    public string NPCName { get; set; } = string.Empty;
+    [JsonPropertyName(nameof(NpcName))]
+    public string NpcName { get; set; } = string.Empty;
 
     [JsonInclude]
-    [JsonPropertyName(nameof(NPCHP))]
-    public string NPCHP { get; set; } = string.Empty;
+    [JsonPropertyName(nameof(Npchp))]
+    public string Npchp { get; set; } = string.Empty;
 
     [JsonInclude]
-    [JsonPropertyName(nameof(NPCPower))]
-    public string NPCPower { get; set; } = string.Empty;
+    [JsonPropertyName(nameof(NpcPower))]
+    public string NpcPower { get; set; } = string.Empty;
 }

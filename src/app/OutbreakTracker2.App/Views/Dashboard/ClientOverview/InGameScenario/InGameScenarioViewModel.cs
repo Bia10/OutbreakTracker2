@@ -122,7 +122,6 @@ public partial class InGameScenarioViewModel : ObservableObject
         PuzzleRandom = scenario.PuzzleRandom;
         GasRandom = scenario.GasRandom;
 
-        PlayerCountDisplay = GetPlayerCountDisplay();
         GameTimeDisplay = GetGameTime();
         GasRandomOrderDisplay = CalculateGasRandomOrderDisplay();
         IsCleared = GetClearedDisplay();
@@ -166,7 +165,6 @@ public partial class InGameScenarioViewModel : ObservableObject
     private byte _pass6;
 
     private string GetClearedDisplay() => Status is 12 or 13 or 15 ? "Yes" : "No";
-    private string GetPlayerCountDisplay() => $"{PlayerCount} Players";
     private string GetGameTime() => TimeUtility.GetTimeFromFrames(FrameCounter);
 
     private int CalculateGasRandomOrderDisplay()

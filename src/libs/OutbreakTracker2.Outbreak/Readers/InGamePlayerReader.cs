@@ -95,8 +95,8 @@ public class InGamePlayerReader : ReaderBase
 
     public byte[] GetSpecialInventory(int characterId)
     {
-        var specialInventory = new byte[4];
-        for (var i = 0; i < 4; i++)
+        byte[] specialInventory = new byte[4];
+        for (int i = 0; i < 4; i++)
         {
             nint curItemOffset;
             switch (CurrentFile)
@@ -119,8 +119,8 @@ public class InGamePlayerReader : ReaderBase
 
     public byte[] GetDeadInventory(int characterId)
     {
-        var specialInventory = new byte[4];
-        for (var i = 0; i < 4; i++)
+        byte[] specialInventory = new byte[4];
+        for (int i = 0; i < 4; i++)
         {
             nint curItemOffset = (8 * characterId) + i;
             switch (CurrentFile)
@@ -141,8 +141,8 @@ public class InGamePlayerReader : ReaderBase
 
     public byte[] GetSpecialDeadInventory(int characterId)
     {
-        var specialInventory = new byte[4];
-        for (var i = 0; i < 4; i++)
+        byte[] specialInventory = new byte[4];
+        for (int i = 0; i < 4; i++)
         {
             nint curItemOffset = (8 * characterId) + 4 + i;
             switch (CurrentFile)
@@ -306,9 +306,9 @@ public class InGamePlayerReader : ReaderBase
         };
     }
 
-    public static string DecodeCondition(short curHP, short maxHP)
+    public static string DecodeCondition(short curHp, short maxHp)
     {
-        return PercentageUtility.GetPercentage(curHP, maxHP) switch
+        return PercentageUtility.GetPercentage(curHp, maxHp) switch
         {
             >= 75 => "fine",
             >= 50 => "caution",
@@ -327,7 +327,7 @@ public class InGamePlayerReader : ReaderBase
 
         if (debug) Logger.LogDebug("Decoding in-game players");
 
-        for (var i = 0; i < GameConstants.MaxPlayers; i++)
+        for (int i = 0; i < GameConstants.MaxPlayers; i++)
         {
             DecodedInGamePlayers[i].Enabled = GetIsEnabled(i);
             if (!DecodedInGamePlayers[i].Enabled) continue;
@@ -349,21 +349,15 @@ public class InGamePlayerReader : ReaderBase
             DecodedInGamePlayers[i].CurVirus = GetCurVirus(i);
             DecodedInGamePlayers[i].MaxVirus = GetMaxVirus(i);
             DecodedInGamePlayers[i].VirusPercentage = GetVirusPercentage(DecodedInGamePlayers[i].CurVirus, DecodedInGamePlayers[i].MaxVirus);
-
-            // TODO: bugged?
             DecodedInGamePlayers[i].CritBonus = GetCritBonus(i);
-
             // TODO: Decode byte -> name -> icon/img
             DecodedInGamePlayers[i].SpecialItem = GetSpecialItem(i);
             DecodedInGamePlayers[i].EquippedItem = GetEquippedItem(i);
             DecodedInGamePlayers[i].RoomId = GetRoomId(i);
-
-            // TODO: untested, formatting?
             DecodedInGamePlayers[i].BleedTime = GetBleedTime(i);
             DecodedInGamePlayers[i].AntiVirusTime = GetAntiVirusTime(i);
             DecodedInGamePlayers[i].AntiVirusGTime = GetAntiVirusGTime(i);
             DecodedInGamePlayers[i].HerbTime = GetHerbTime(i);
-
             DecodedInGamePlayers[i].Inventory = GetInventory(i);
             DecodedInGamePlayers[i].SpecialInventory = GetSpecialInventory(i);
             DecodedInGamePlayers[i].DeadInventory = GetDeadInventory(i);
@@ -377,6 +371,6 @@ public class InGamePlayerReader : ReaderBase
         Logger.LogDebug("Decoded enemies2 in {Duration}ms", duration);
         foreach (string jsonObject in DecodedInGamePlayers.Select(inGamePlayer
                      => JsonSerializer.Serialize(inGamePlayer, DecodedInGamePlayersJsonContext.Default.DecodedInGamePlayer)))
-            Logger.LogDebug("Decoded inGame player: {jsonObject}", jsonObject);
+            Logger.LogDebug("Decoded inGame player: {JsonObject}", jsonObject);
     }
 }

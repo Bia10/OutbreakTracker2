@@ -157,7 +157,7 @@ public class App : Application
         services.AddSingleton<IProcessLocator, ProcessLocator>();
         services.AddSingleton<IDataManager, DataManager>();
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
-        services.AddSingleton<IPCSX2Locator, PCSX2Locator>();
+        services.AddSingleton<IPcsx2Locator, Pcsx2Locator>();
 
         ServiceProviderOptions providerOptions = new()
         {

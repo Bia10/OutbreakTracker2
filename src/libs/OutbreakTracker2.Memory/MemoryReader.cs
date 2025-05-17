@@ -42,8 +42,8 @@ public sealed class MemoryReader : IMemoryReader
 
         // Default to Shift-JIS for Japanese games with fullwidth Latin
         encoding ??= Encoding.GetEncoding(932);
-        var bytes = new List<byte>(256);
-        var buffer = new byte[1];
+        List<byte> bytes = new(256);
+        byte[] buffer = new byte[1];
         int consecutiveFails = 0;
         string result;
 
@@ -79,7 +79,7 @@ public sealed class MemoryReader : IMemoryReader
 
     private static void LogByteDetails(byte @byte, int offset, List<byte> bytes, Encoding encoding)
     {
-        var multiByteInfo = new StringBuilder();
+        StringBuilder multiByteInfo = new();
         if (encoding.CodePage is 932 && offset > 0 && IsShiftJisLeadByte(bytes[offset - 1]))
             try
             {
@@ -173,7 +173,7 @@ public sealed class MemoryReader : IMemoryReader
 
     private static string GetByteInterpretations(byte @byte)
     {
-        var sb = new StringBuilder();
+        StringBuilder sb = new();
 
         try
         {

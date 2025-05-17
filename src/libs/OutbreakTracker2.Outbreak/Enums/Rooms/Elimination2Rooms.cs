@@ -17,10 +17,10 @@ public enum Elimination2Rooms : short
     MainStreetSouth = 3,
 
     [EnumMember(Value = "B7F Experiments Room")]
-    B7F_ExperimentsRoom = 4,
+    B7FExperimentsRoom = 4,
 
     [EnumMember(Value = "Raccoon Hospital 1F Passage")]
-    RaccoonHospital1F_Passage = 5,
+    RaccoonHospital1FPassage = 5,
 
     [EnumMember(Value = "J's Bar Rooftop")]
     JsBarRooftop = 6,
@@ -44,10 +44,10 @@ public enum Elimination2Rooms : short
     LakesideArea = 12,
 
     [EnumMember(Value = "B5F Passway of Area B")]
-    B5F_PasswayOfAreaB = 13,
+    B5FPasswayOfAreaB = 13,
 
     [EnumMember(Value = "RPD's Front Gate")]
-    RPDsFrontGate = 14,
+    RpDsFrontGate = 14,
 
     [EnumMember(Value = "Owner's Room")]
     OwnersRoom = 15

@@ -19,10 +19,10 @@ public sealed class EEmemMemory : IEEmemMemory
 
     public async ValueTask<bool> InitializeAsync(GameClient gameClient, CancellationToken cancellationToken)
     {
-        const int MaxAttempts = 20;
-        const int DelayBetweenAttemptsMs = 100;
+        const int maxAttempts = 20;
+        const int delayBetweenAttemptsMs = 100;
 
-        for (int i = 0; i < MaxAttempts; i++)
+        for (int i = 0; i < maxAttempts; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -30,7 +30,8 @@ public sealed class EEmemMemory : IEEmemMemory
             if (BaseAddress != nint.Zero)
                 return true;
 
-            await Task.Delay(DelayBetweenAttemptsMs, cancellationToken);
+            await Task.Delay(delayBetweenAttemptsMs, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         return false;
@@ -41,23 +42,23 @@ public sealed class EEmemMemory : IEEmemMemory
         nint baseAddress = gameClient.MainModuleBase;
 
         // Read DOS Header
-        PE32.ImageDosHeader dosHeader = MemoryReader.Read<PE32.ImageDosHeader>(gameClient.Handle, baseAddress);
+        Pe32.ImageDosHeader dosHeader = MemoryReader.Read<Pe32.ImageDosHeader>(gameClient.Handle, baseAddress);
         if (dosHeader.Magic != 0x5A4D) // "MZ"
             return nint.Zero;
 
         // Read NT Headers
         nint ntHeadersAddr = baseAddress + dosHeader.LfaNew;
-        PE32.ImageNtHeaders64 ntHeaders = MemoryReader.Read<PE32.ImageNtHeaders64>(gameClient.Handle, ntHeadersAddr);
+        Pe32.ImageNtHeaders64 ntHeaders = MemoryReader.Read<Pe32.ImageNtHeaders64>(gameClient.Handle, ntHeadersAddr);
         if (ntHeaders.Signature != 0x00004550) // "PE\0\0"
             return nint.Zero;
 
         // Get Export Directory
-        PE32.ImageDataDirectory exportDir = ntHeaders.OptionalHeader.DataDirectory[0];
+        Pe32.ImageDataDirectory exportDir = ntHeaders.OptionalHeader.DataDirectory[0];
         if (exportDir.VirtualAddress is 0)
             return nint.Zero;
 
         nint exportDirPtr = baseAddress + (int)exportDir.VirtualAddress;
-        PE32.ImageExportDirectory exportDirStruct = MemoryReader.Read<PE32.ImageExportDirectory>(gameClient.Handle, exportDirPtr);
+        Pe32.ImageExportDirectory exportDirStruct = MemoryReader.Read<Pe32.ImageExportDirectory>(gameClient.Handle, exportDirPtr);
 
         // Read Export Names
         nint namesAddr = baseAddress + (int)exportDirStruct.AddressOfNames;

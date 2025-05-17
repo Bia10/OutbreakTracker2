@@ -23,7 +23,7 @@ public enum Elimination1Rooms : short
     DoctorStation = 5,
 
     [EnumMember(Value = "B7F South Passway")]
-    B7F_SouthPassway = 6,
+    B7FSouthPassway = 6,
 
     [EnumMember(Value = "(Subway) Break Room")]
     SubwayBreakRoom = 7,
@@ -32,19 +32,19 @@ public enum Elimination1Rooms : short
     LionStage = 8,
 
     [EnumMember(Value = "RPD Rooftop")]
-    RPD_Rooftop = 9,
+    RpdRooftop = 9,
 
     [EnumMember(Value = "1F RPD East Hall")]
-    F1_RPD_EastHall = 10,
+    F1RpdEastHall = 10,
 
     [EnumMember(Value = "J's Bar Staff Room")]
     JsBarStaffRoom = 11,
 
     [EnumMember(Value = "1F Abandoned Hospital")]
-    F1_AbandonedHospital = 12,
+    F1AbandonedHospital = 12,
 
     [EnumMember(Value = "B6F Security Office")]
-    B6F_SecurityOffice = 13,
+    B6FSecurityOffice = 13,
 
     [EnumMember(Value = "Pump Room")]
     PumpRoom = 14,
@@ -53,7 +53,7 @@ public enum Elimination1Rooms : short
     ExperimentationChamber = 15,
 
     [EnumMember(Value = "T-Shaped Passway")]
-    TShapedPassway = 16,
+    ShapedPassway = 16,
 
     [EnumMember(Value = "Security Office")]
     SecurityOffice = 17,

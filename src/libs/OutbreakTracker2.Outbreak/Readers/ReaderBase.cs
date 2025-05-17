@@ -14,33 +14,33 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public abstract class ReaderBase
 {
-    private readonly GameClient GameClient;
-    private readonly IEEmemMemory EEmemMemory;
-    private readonly IMemoryReader MemoryReader;
+    private readonly GameClient _gameClient;
+    private readonly IEEmemMemory _eEmemMemory;
+    private readonly IMemoryReader _memoryReader;
     protected readonly ILogger Logger;
-    private const bool _enableLogging = false;
+    private const bool EnableLogging = false;
     protected GameFile CurrentFile { get; }
 
     protected ReaderBase(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
     {
-        GameClient = gameClient;
-        EEmemMemory = eememMemory;
-        MemoryReader = eememMemory.MemoryReader;
+        _gameClient = gameClient;
+        _eEmemMemory = eememMemory;
+        _memoryReader = eememMemory.MemoryReader;
         Logger = logger;
 
         CurrentFile = GetGameFile();
     }
 
     private T Read<T>(nint address) where T : struct
-        => MemoryReader.Read<T>(GameClient.Handle, address);
+        => _memoryReader.Read<T>(_gameClient.Handle, address);
 
     private string ReadString(nint address, Encoding? encoding = null)
-        => MemoryReader.ReadString(GameClient.Handle, address, encoding);
+        => _memoryReader.ReadString(_gameClient.Handle, address, encoding);
 
     private GameFile GetGameFile()
     {
-        byte f1Byte = Read<byte>(EEmemMemory.GetAddressFromPtr(FileOnePtrs.DiscStart));
-        byte f2Byte = Read<byte>(EEmemMemory.GetAddressFromPtr(FileTwoPtrs.DiscStart));
+        byte f1Byte = Read<byte>(_eEmemMemory.GetAddressFromPtr(FileOnePtrs.DiscStart));
+        byte f2Byte = Read<byte>(_eEmemMemory.GetAddressFromPtr(FileTwoPtrs.DiscStart));
 
         if (f1Byte is 0x53)
         {
@@ -99,8 +99,8 @@ public abstract class ReaderBase
         }
 
         T result = Read<T>(address);
-        if (_enableLogging)
-            Logger.LogTrace("[{MethodName}] Successfully read type {Type} at 0x{Address:X} obtained value {Result}.", methodName, typeof(T), address, result);
+        if (EnableLogging)
+            Logger.LogTrace("[{MethodName}] Successfully read type {Type} at 0x{Address:X} obtained value {Result}", methodName, typeof(T), address, result);
 
         return result;
     }
@@ -114,7 +114,7 @@ public abstract class ReaderBase
         nint address = ComputeAddress(basePtr, offsets);
         T result = Read<T>(address);
 
-        if (_enableLogging)
+        if (EnableLogging)
             Logger.LogTrace("[{MethodName}] Read {Type} at 0x{Address:X}: {Result}", methodName, typeof(T), address, result);
 
         return result;
@@ -137,8 +137,8 @@ public abstract class ReaderBase
 
         string result = ReadString(address);
 
-        if (_enableLogging)
-            Logger.LogTrace("[{MethodName}] Successfully read string at 0x{Address:X} obtained value {Result}.", methodName, address, result);
+        if (EnableLogging)
+            Logger.LogTrace("[{MethodName}] Successfully read string at 0x{Address:X} obtained value {Result}", methodName, address, result);
 
         return result;
     }
@@ -207,8 +207,8 @@ public abstract class ReaderBase
         }
 
         T result = Read<T>(address);
-        if (_enableLogging)
-            Logger.LogTrace("[{MethodName}] Successfully read type {Type} at 0x{Address:X} obtained value {Result}.", methodName, typeof(T), address, result);
+        if (EnableLogging)
+            Logger.LogTrace("[{MethodName}] Successfully read type {Type} at 0x{Address:X} obtained value {Result}", methodName, typeof(T), address, result);
 
         return result;
     }
@@ -222,8 +222,8 @@ public abstract class ReaderBase
         }
 
         string result = ReadString(address);
-        if (_enableLogging)
-            Logger.LogTrace("[{MethodName}] Successfully read string at 0x{Address:X} obtained value {Result}.", methodName, address, result);
+        if (EnableLogging)
+            Logger.LogTrace("[{MethodName}] Successfully read string at 0x{Address:X} obtained value {Result}", methodName, address, result);
 
         return result;
     }
@@ -272,11 +272,11 @@ public abstract class ReaderBase
 
     protected nint ComputeAddress(nint basePtr, params ReadOnlySpan<nint> offsets)
         => offsets.Length is 0
-            ? EEmemMemory.GetAddressFromPtr(basePtr)
-            : EEmemMemory.GetAddressFromPtrChain(basePtr, offsets);
+            ? _eEmemMemory.GetAddressFromPtr(basePtr)
+            : _eEmemMemory.GetAddressFromPtrChain(basePtr, offsets);
 
     protected nint ComputeAddress(params ReadOnlySpan<nint> offsets)
         => offsets.Length is 1
-            ? EEmemMemory.GetAddressFromPtr(offsets[0])
-            : EEmemMemory.GetAddressFromPtrChain(offsets[0], offsets);
+            ? _eEmemMemory.GetAddressFromPtr(offsets[0])
+            : _eEmemMemory.GetAddressFromPtrChain(offsets[0], offsets);
 }

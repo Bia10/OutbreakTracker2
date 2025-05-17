@@ -14,7 +14,7 @@ public static class DataStoreLoggerSinkExtensions
         IFormatProvider? formatProvider = null,
         ILogger? logger = null)
     {
-        var config = new DataStoreLoggerConfiguration();
+        DataStoreLoggerConfiguration config = new();
 
         try
         {
@@ -22,7 +22,7 @@ public static class DataStoreLoggerSinkExtensions
         }
         catch (Exception ex)
         {
-            logger?.Error("Exception occurred while configuring DataStoreLoggerSink ex: {ex}",  ex);
+            logger?.Error("Exception occurred while configuring DataStoreLoggerSink ex: {Ex}", ex);
             throw;
         }
 

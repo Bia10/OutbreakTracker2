@@ -181,7 +181,7 @@
                     Grid.Column="1"
                     Margin="5,0,15,0"
                     VerticalAlignment="Center"
-                    Text="{Binding PlayerCountDisplay}"
+                    Text="{Binding PlayerCount}"
                     TextTrimming="CharacterEllipsis" />
 
                 <StackPanel

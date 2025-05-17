@@ -12,10 +12,10 @@
     mc:Ignorable="d">
     <suki:GroupBox Header="Attributes">
         <StackPanel Margin="0">
-            <TextBlock Text="{Binding Power, StringFormat='Power: {0:F1}'}" />
-            <TextBlock Text="{Binding CritBonus, StringFormat='Crit Bonus: {0:F2}x'}" />
-            <TextBlock Text="{Binding Speed, StringFormat='Speed: {0:F1}'}" />
-            <TextBlock Text="{Binding Size, StringFormat='Size: {0:F1}'}" />
+            <TextBlock Text="{Binding Power, StringFormat='Power: {0:P1}'}" />
+            <TextBlock Text="{Binding CritBonus, StringFormat='Crit Bonus: {0:F2}%'}" />
+            <TextBlock Text="{Binding Speed, StringFormat='Speed: {0:P1}'}" />
+            <TextBlock Text="{Binding Size, StringFormat='Size: {0:P1}'}" />
         </StackPanel>
     </suki:GroupBox>
 </UserControl>

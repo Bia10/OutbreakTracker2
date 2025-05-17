@@ -12,10 +12,10 @@ public enum ItemType : short
     Handgun = 0,
 
     [EnumMember(Value = "Handgun SG")]
-    HandgunSG = 1,
+    HandgunSg = 1,
 
     [EnumMember(Value = "Handgun GL")]
-    HandgunGL = 2,
+    HandgunGl = 2,
 
     [EnumMember(Value = "Magnum Handgun")]
     MagnumHandgun = 3,
@@ -24,10 +24,10 @@ public enum ItemType : short
     MagnumRevolver = 4,
 
     [EnumMember(Value = "Handgun HP")]
-    HandgunHP = 5,
+    HandgunHp = 5,
 
     [EnumMember(Value = "S&W model 500")]
-    SWModel500 = 6,
+    SwModel500 = 6,
 
     [EnumMember(Value = "Revolver")]
     Revolver = 7,
@@ -225,11 +225,11 @@ public enum ItemType : short
     AutoMagazine45 = 210,
 
     [EnumMember(Value = "Handgun HP Magazine")]
-    HandgunHPMagazine = 211,
+    HandgunHpMagazine = 211,
 
     // 250-263: Ammo Types
     [EnumMember(Value = "Hand Gun Rounds 9mm")]
-    HandgunRounds9mm = 250,
+    HandgunRounds9Mm = 250,
 
     [EnumMember(Value = "Magnum Hg rounds")]
     MagnumHgRounds = 251,
@@ -281,22 +281,22 @@ public enum ItemType : short
     RedHerb = 302,
 
     [EnumMember(Value = "Mixed Herb (G+G)")]
-    MixedHerbGG = 303,
+    MixedHerbGg = 303,
 
     [EnumMember(Value = "Mixed Herb (G+G+G)")]
-    MixedHerbGGG = 304,
+    MixedHerbGgg = 304,
 
     [EnumMember(Value = "Mixed Herb (G+R)")]
-    MixedHerbGR = 305,
+    MixedHerbGr = 305,
 
     [EnumMember(Value = "Mixed Herb (G+B)")]
-    MixedHerbGB = 306,
+    MixedHerbGb = 306,
 
     [EnumMember(Value = "Mixed Herb (G+G+B)")]
-    MixedHerbGGB = 307,
+    MixedHerbGgb = 307,
 
     [EnumMember(Value = "Mixed Herb (G+R+B)")]
-    MixedHerbGRB = 308,
+    MixedHerbGrb = 308,
 
     [EnumMember(Value = "First Aid Spray")]
     FirstAidSpray = 309,
@@ -311,7 +311,7 @@ public enum ItemType : short
     Daylight = 312,
 
     [EnumMember(Value = "Mixed Herb(R+B)")]
-    MixedHerbRB = 313,
+    MixedHerbRb = 313,
 
     [EnumMember(Value = "Antidote")]
     Antidote = 314,
@@ -372,7 +372,7 @@ public enum ItemType : short
     HerbCase = 413,
 
     [EnumMember(Value = "I-Shaped Pick")]
-    IShapedPick = 414,
+    ShapedPick = 414,
 
     [EnumMember(Value = "S-Shaped Pick")]
     SShapedPick = 415,
@@ -412,17 +412,17 @@ public enum ItemType : short
     Battery = 455,
 
     [EnumMember(Value = "Broken Handgun SG")]
-    BrokenHandgunSG = 456,
+    BrokenHandgunSg = 456,
 
     // 10100-10108: Keys/Story Items
     [EnumMember(Value = "Staff Room Key")]
     StaffRoomKey = 10100,
 
     [EnumMember(Value = "Key with a Red Tag (?? OB)")]
-    KeyWithRedTagOB = 10101,
+    KeyWithRedTagOb = 10101,
 
     [EnumMember(Value = "Key with a Blue Tag (?? OB)")]
-    KeyWithBlueTagOB = 10102,
+    KeyWithBlueTagOb = 10102,
 
     [EnumMember(Value = "Forklift Key")]
     ForkliftKey = 10103,
@@ -444,7 +444,7 @@ public enum ItemType : short
 
     // 10150: Notes
     [EnumMember(Value = "Newspaper (?? OB)")]
-    NewspaperOB = 10150,
+    NewspaperOb = 10150,
 
     // 10206-10211: Keys/Story Items
     [EnumMember(Value = "Charlie's ID tag")]
@@ -463,7 +463,7 @@ public enum ItemType : short
     SecurityRoomCardKey = 10210,
 
     [EnumMember(Value = "Red Jewel (?? HF)")]
-    RedJewelHF = 10211,
+    RedJewelHf = 10211,
 
     // 10600-10614: Keys/Story Items
     [EnumMember(Value = "Examination Room Key")]
@@ -476,13 +476,13 @@ public enum ItemType : short
     IDCardLv2 = 10602,
 
     [EnumMember(Value = "MO Disk")]
-    MODisk = 10603,
+    MoDisk = 10603,
 
     [EnumMember(Value = "MO Disk(Code A)")]
-    MODiskCodeA = 10604,
+    MoDiskCodeA = 10604,
 
     [EnumMember(Value = "MO Disk(Code G)")]
-    MODiskCodeG = 10605,
+    MoDiskCodeG = 10605,
 
     [EnumMember(Value = "Unknown10606")]
     Unknown10606 = 10606,
@@ -513,13 +513,13 @@ public enum ItemType : short
 
     // 10650-10652: Notes
     [EnumMember(Value = "Newspaper 1 (?? EOTR)")]
-    Newspaper1EOTR = 10650,
+    Newspaper1Eotr = 10650,
 
     [EnumMember(Value = "Newspaper 2 (?? EOTR)")]
-    Newspaper2EOTR = 10651,
+    Newspaper2Eotr = 10651,
 
     [EnumMember(Value = "Newspaper 3 (?? EOTR)")]
-    Newspaper3EOTR = 10652,
+    Newspaper3Eotr = 10652,
 
     // 11000-11010: Keys/Story Items
     [EnumMember(Value = "Employee Area Key")]
@@ -532,7 +532,7 @@ public enum ItemType : short
     VentilationTowerKey = 11002,
 
     [EnumMember(Value = "Valve Handle (?? UB)")]
-    ValveHandleUB = 11003,
+    ValveHandleUb = 11003,
 
     [EnumMember(Value = "Repair Tape")]
     RepairTape = 11004,
@@ -550,20 +550,20 @@ public enum ItemType : short
     ModelTrainWheel = 11008,
 
     [EnumMember(Value = "Blood Pack (?? UB)(already used)")]
-    BloodPackUBAlreadyUsed = 11009,
+    BloodPackUbAlreadyUsed = 11009,
 
     [EnumMember(Value = "Blood Pack (?? UB)")]
-    BloodPackUB = 11010,
+    BloodPackUb = 11010,
 
     // 11050-11052: Notes
     [EnumMember(Value = "Newspaper 1 (?? UB)")]
-    Newspaper1UB = 11050,
+    Newspaper1Ub = 11050,
 
     [EnumMember(Value = "Newspaper 2 (?? UB)")]
-    Newspaper2UB = 11051,
+    Newspaper2Ub = 11051,
 
     [EnumMember(Value = "Newspaper 3 (?? UB)")]
-    Newspaper3UB = 11052,
+    Newspaper3Ub = 11052,
 
     // 11500-11515: Keys/Story Items
     [EnumMember(Value = "Joker Key")]
@@ -639,10 +639,10 @@ public enum ItemType : short
 
     // 12800-12807: Keys/Story Items
     [EnumMember(Value = "Blood pack (?? TH)(already used)")]
-    BloodPackTHAlreadyUsed = 12800,
+    BloodPackThAlreadyUsed = 12800,
 
     [EnumMember(Value = "Blood pack (?? TH)")]
-    BloodPackTH = 12801,
+    BloodPackTh = 12801,
 
     [EnumMember(Value = "Unknown12802")]
     Unknown12802 = 12802,
@@ -654,10 +654,10 @@ public enum ItemType : short
     Unknown12804 = 12804,
 
     [EnumMember(Value = "Level 1 Card Key (?? TH)")]
-    Level1CardKeyTH = 12805,
+    Level1CardKeyTh = 12805,
 
     [EnumMember(Value = "Level 2 Card Key (?? TH)")]
-    Level2CardKeyTH = 12806,
+    Level2CardKeyTh = 12806,
 
     [EnumMember(Value = "Chain Key")]
     ChainKey = 12807,
@@ -674,13 +674,13 @@ public enum ItemType : short
 
     // 13500-13508: Keys/Story Items
     [EnumMember(Value = "UMB No.3")]
-    UMBNo3 = 13500,
+    UmbNo3 = 13500,
 
     [EnumMember(Value = "VP-017")]
-    VP017 = 13501,
+    Vp017 = 13501,
 
     [EnumMember(Value = "V-JOLT")]
-    VJOLT = 13502,
+    Vjolt = 13502,
 
     [EnumMember(Value = "Wrench")]
     Wrench = 13503,
@@ -695,7 +695,7 @@ public enum ItemType : short
     TurntableKey = 13506,
 
     [EnumMember(Value = "Valve Handle (?? BFP)")]
-    ValveHandleBFP = 13507,
+    ValveHandleBfp = 13507,
 
     [EnumMember(Value = "Hand Burner")]
     HandBurner = 13508,
@@ -724,23 +724,23 @@ public enum ItemType : short
     MrRacoonMedal = 14005,
 
     [EnumMember(Value = "Lion Emblem (RED)")]
-    LionEmblemRED = 14006,
+    LionEmblemRed = 14006,
 
     [EnumMember(Value = "Lion Emblem (BLUE)")]
-    LionEmblemBLUE = 14007,
+    LionEmblemBlue = 14007,
 
     [EnumMember(Value = "Blank Tape")]
     BlankTape = 14008,
 
     [EnumMember(Value = "Parade BGM Tape")]
-    ParadeBGMTape = 14009,
+    ParadeBgmTape = 14009,
 
     // 14100-14111: Keys/Story Items
     [EnumMember(Value = "Brass Spectacles")]
     BrassSpectacles = 14100,
 
     [EnumMember(Value = "Card Key (?? DD)")]
-    CardKeyDD = 14101,
+    CardKeyDd = 14101,
 
     [EnumMember(Value = "V-Poison")]
     VPoison = 14102,
@@ -761,14 +761,14 @@ public enum ItemType : short
     TBlood = 14107,
 
     [EnumMember(Value = "Red Jewel (?? DD)")]
-    RedJewelDD = 14108,
+    RedJewelDd = 14108,
 
     [EnumMember(Value = "Blue Jewel (?? DD)")]
-    BlueJewelDD = 14109,
+    BlueJewelDd = 14109,
 
     [EnumMember(Value = "P-Base(depleted)")]
     PBaseDepleted = 14110,
 
     [EnumMember(Value = "Key with a Red Tag (?? DD)")]
-    KeyWithRedTagDD = 14111
+    KeyWithRedTagDd = 14111
 }

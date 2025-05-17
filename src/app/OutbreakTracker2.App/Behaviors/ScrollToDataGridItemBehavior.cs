@@ -36,24 +36,23 @@ public class ScrollToDataGridItemBehavior : Behavior<DataGrid>
 
     private void OnItemToScrollToChanged(object? item)
     {
-        var dataGrid = AssociatedObject;
+        DataGrid? dataGrid = AssociatedObject;
 
         if (item is not null && dataGrid is not null)
         {
             Dispatcher.UIThread.Post(() =>
             {
-                if (dataGrid.Columns.Any())
-                {
-                    var firstColumn = dataGrid.Columns.FirstOrDefault();
+                if (!dataGrid.Columns.Any()) return;
 
-                    try
-                    {
-                        dataGrid.ScrollIntoView(item, firstColumn);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error scrolling DataGrid: {ex.Message}");
-                    }
+                DataGridColumn? firstColumn = dataGrid.Columns.FirstOrDefault();
+
+                try
+                {
+                    dataGrid.ScrollIntoView(item, firstColumn);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error scrolling DataGrid: {ex.Message}");
                 }
             }, DispatcherPriority.Render);
         }

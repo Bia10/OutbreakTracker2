@@ -134,7 +134,7 @@ public enum EndOfTheRoadRooms : short
     OfficeBuildingStairwell = 62,
 
     [EnumMember(Value = "Rooftop - Elevated Highway")]
-    Rooftop_ElevatedHighway = 63,
+    RooftopElevatedHighway = 63,
 
     [EnumMember(Value = "Inside The Helicopter")]
     InsideTheHelicopter = 65,

@@ -47,35 +47,35 @@ public static class FileOnePtrs
     // Offsets for the lobby room player structure, offseting from BaseLobbyRoomPlayer
     public const nint LobbyRoomPlayerEnabledOffset = 0x0;
     public const nint LobbyRoomPlayerNameIdOffset = 0xE4;
-    public const nint LobbyRoomPlayerNPCTypeOffset = 0xE6;
+    public const nint LobbyRoomPlayerNpcTypeOffset = 0xE6;
 
-    private const nint Door1HP = 0x472FC0; //472FC0/472FF0
-    private const nint Door2HP = 0x473086; //473086
-    private const nint Door3HP = 0x4731C0; //4731C0/473220
-    private const nint Door4HP = 0x473232; //473232/473260
-    private const nint Door5HP = 0x473504; //473504/4735F0
-    private const nint Door6HP = 0x473652; //room 102
+    private const nint Door1Hp = 0x472FC0; //472FC0/472FF0
+    private const nint Door2Hp = 0x473086; //473086
+    private const nint Door3Hp = 0x4731C0; //4731C0/473220
+    private const nint Door4Hp = 0x473232; //473232/473260
+    private const nint Door5Hp = 0x473504; //473504/4735F0
+    private const nint Door6Hp = 0x473652; //room 102
     // + 0xC0 192 bytes
-    private const nint Door7HP = 0x473712; //room 201
+    private const nint Door7Hp = 0x473712; //room 201
     // + 0xC0 192 bytes
-    private const nint Door8HP = 0x4737D2; //room 202
-    private const nint Door9HP = 0x4739B6; //4739B6/473A70 dd t-shaped
-    private const nint Door10HP = 0x473A40; //473A40/473A72 store room
+    private const nint Door8Hp = 0x4737D2; //room 202
+    private const nint Door9Hp = 0x4739B6; //4739B6/473A70 dd t-shaped
+    private const nint Door10Hp = 0x473A40; //473A40/473A72 store room
 
     public static nint GetDoorHealthAddress(int doorId)
     {
         return doorId switch
         {
-            0 => Door1HP,
-            1 => Door2HP,
-            2 => Door3HP,
-            3 => Door4HP,
-            4 => Door5HP,
-            5 => Door6HP,
-            6 => Door7HP,
-            7 => Door8HP,
-            8 => Door9HP,
-            9 => Door10HP,
+            0 => Door1Hp,
+            1 => Door2Hp,
+            2 => Door3Hp,
+            3 => Door4Hp,
+            4 => Door5Hp,
+            5 => Door6Hp,
+            6 => Door7Hp,
+            7 => Door8Hp,
+            8 => Door9Hp,
+            9 => Door10Hp,
             _ => -1
         };
     }

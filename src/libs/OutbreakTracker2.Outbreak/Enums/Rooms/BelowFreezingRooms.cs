@@ -14,31 +14,31 @@ public enum BelowFreezingRooms : short
     Platform = 2,
 
     [EnumMember(Value = "B7F Experiments Room")]
-    B7F_ExperimentsRoom = 3,
+    B7FExperimentsRoom = 3,
 
     [EnumMember(Value = "B7F South Passway")]
-    B7F_SouthPassway = 4,
+    B7FSouthPassway = 4,
 
     [EnumMember(Value = "B7F Chemical Disposal Room")]
-    B7F_ChemicalDisposalRoom = 5,
+    B7FChemicalDisposalRoom = 5,
 
     [EnumMember(Value = "B7F East Passway")]
-    B7F_EastPassway = 6,
+    B7FEastPassway = 6,
 
     [EnumMember(Value = "B7F Chemical Storage")]
-    B7F_ChemicalStorage = 8,
+    B7FChemicalStorage = 8,
 
     [EnumMember(Value = "B6F Security Office")]
-    B6F_SecurityOffice = 9,
+    B6FSecurityOffice = 9,
 
     [EnumMember(Value = "B6F South Passway")]
-    B6F_SouthPassway = 10,
+    B6FSouthPassway = 10,
 
     [EnumMember(Value = "B6F East Passway")]
-    B6F_EastPassway = 13,
+    B6FEastPassway = 13,
 
     [EnumMember(Value = "B6F Break Room")]
-    B6F_BreakRoom = 15,
+    B6FBreakRoom = 15,
 
     [EnumMember(Value = "Lift")]
     Lift = 17,
@@ -47,37 +47,37 @@ public enum BelowFreezingRooms : short
     TurntableCar = 18,
 
     [EnumMember(Value = "B5F Passway of Area B")]
-    B5F_PasswayAreaB = 19,
+    B5FPasswayAreaB = 19,
 
     [EnumMember(Value = "B5F Computer Room")]
-    B5F_ComputerRoom = 20,
+    B5FComputerRoom = 20,
 
     [EnumMember(Value = "B5F Emergency Passage")]
-    B5F_EmergencyPassage = 21,
+    B5FEmergencyPassage = 21,
 
     [EnumMember(Value = "B5F Passway of Area C")]
-    B5F_PasswayAreaC = 22,
+    B5FPasswayAreaC = 22,
 
     [EnumMember(Value = "B4F Turn Table")]
-    B4F_TurnTable = 23,
+    B4FTurnTable = 23,
 
     [EnumMember(Value = "Main Shaft")]
     MainShaft = 24,
 
     [EnumMember(Value = "B4F Passway of West Area")]
-    B4F_PasswayWestArea = 25,
+    B4FPasswayWestArea = 25,
 
     [EnumMember(Value = "Duct")]
     Duct = 26,
 
     [EnumMember(Value = "B4F Passway of East Area")]
-    B4F_PasswayEastArea = 27,
+    B4FPasswayEastArea = 27,
 
     [EnumMember(Value = "B4F Low Temperature Experimental Room")]
-    B4F_LowTempExperimentalRoom = 28,
+    B4FLowTempExperimentalRoom = 28,
 
     [EnumMember(Value = "B4F Culture Room")]
-    B4F_CultureRoom = 30,
+    B4FCultureRoom = 30,
 
     [EnumMember(Value = "Marshaling yard")]
     MarshalingYard = 32

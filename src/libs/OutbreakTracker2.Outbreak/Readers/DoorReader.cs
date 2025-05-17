@@ -33,9 +33,9 @@ public sealed class DoorReader : ReaderBase
         _ => 0xFF
     };
 
-    public static string DecodeFlag(ushort doorHP, ushort flag)
+    public static string DecodeFlag(ushort doorHp, ushort flag)
     {
-        if (doorHP is 500)
+        if (doorHp is 500)
             return "unlocked";
 
         return flag switch
@@ -73,7 +73,7 @@ public sealed class DoorReader : ReaderBase
             _ => 0
         };
 
-        for (var i = 0; i < maxDoors; i++)
+        for (int i = 0; i < maxDoors; i++)
         {
             DecodedDoors[i].Hp = GetHealthPoints(i);
             DecodedDoors[i].Flag = GetFlag(i);
@@ -87,6 +87,6 @@ public sealed class DoorReader : ReaderBase
         Logger.LogDebug("Decoded doors in {Duration}ms", duration);
         foreach (string jsonObject in DecodedDoors.Select(door
                      => JsonSerializer.Serialize(door, DecodedDoorJsonContext.Default.DecodedDoor)))
-            Logger.LogDebug("Decoded door: {jsonObject}", jsonObject);
+            Logger.LogDebug("Decoded door: {JsonObject}", jsonObject);
     }
 }

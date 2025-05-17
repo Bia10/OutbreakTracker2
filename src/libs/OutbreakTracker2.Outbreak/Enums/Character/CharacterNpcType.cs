@@ -8,7 +8,7 @@ internal enum CharacterNpcType : byte
     MainCharacters = 0,
 
     [EnumMember(Value = "Other NPCs")]
-    OtherNPCs = 1,
+    OtherNpCs = 1,
 
     [EnumMember(Value = "Unknown")]
     Unknown = 255

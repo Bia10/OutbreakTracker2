@@ -43,14 +43,14 @@ public class ProcessLocator : IProcessLocator
 
                 try
                 {
-                    var query = new WqlEventQuery
+                    WqlEventQuery query = new()
                     {
                         EventClassName = "__InstanceCreationEvent",
                         WithinInterval = checkInterval ?? TimeSpan.FromSeconds(1),
                         Condition = $"TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{processName}.exe'"
                     };
 
-                    var watcher = new ManagementEventWatcher(query);
+                    ManagementEventWatcher watcher = new(query);
                     bool initialCheck = Process.GetProcessesByName(processName).Length is not 0;
 
                     // Send initial state

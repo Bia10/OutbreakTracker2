@@ -112,7 +112,7 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
     {
         try
         {
-            var logModel = new LogModel(logLevel, eventId, message, exception);
+            LogModel logModel = new(logLevel, eventId, message, exception);
             await _dataStore.AddEntryAsync(logModel, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)

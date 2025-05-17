@@ -8,7 +8,7 @@ public enum HiveRooms : short
     Spawning = 0,
 
     [EnumMember(Value = "1F Passway")]
-    F1_Passway = 2,
+    F1Passway = 2,
 
     [EnumMember(Value = "Night Reception")]
     NightReception = 3,
@@ -29,7 +29,7 @@ public enum HiveRooms : short
     Room301 = 8,
 
     [EnumMember(Value = "3F Passway")]
-    F3_Passway = 9,
+    F3Passway = 9,
 
     [EnumMember(Value = "Room 302")]
     Room302 = 10,
@@ -47,31 +47,31 @@ public enum HiveRooms : short
     LockerRoom = 14,
 
     [EnumMember(Value = "2F Nurse Station")]
-    F2_NurseStation = 16,
+    F2NurseStation = 16,
 
     [EnumMember(Value = "2F Passway")]
-    F2_Passway = 22,
+    F2Passway = 22,
 
     [EnumMember(Value = "Room 202")]
     Room202 = 24,
 
     [EnumMember(Value = "B1F Passway")]
-    B1F_Passway = 25,
+    B1FPassway = 25,
 
     [EnumMember(Value = "EV. Control Room")]
-    EV_ControlRoom = 26,
+    EvControlRoom = 26,
 
     [EnumMember(Value = "B1F Reposing Room")]
-    B1F_ReposingRoom = 27,
+    B1FReposingRoom = 27,
 
     [EnumMember(Value = "B1F South Passway")]
-    B1F_SouthPassway = 28,
+    B1FSouthPassway = 28,
 
     [EnumMember(Value = "Waste Liquid Disposal Room")]
     WasteLiquidDisposalRoom = 29,
 
     [EnumMember(Value = "B2F Passway")]
-    B2F_Passway = 30,
+    B2FPassway = 30,
 
     [EnumMember(Value = "Experiment Room")]
     ExperimentRoom = 31,

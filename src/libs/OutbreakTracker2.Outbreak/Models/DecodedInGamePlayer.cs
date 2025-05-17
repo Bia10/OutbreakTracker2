@@ -169,7 +169,7 @@ public sealed record DecodedInGamePlayer : IEquatable<DecodedInGamePlayer>
 
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        HashCode hash = new();
         hash.Add(Enabled);
         hash.Add(InGame);
         hash.Add(CharacterType);

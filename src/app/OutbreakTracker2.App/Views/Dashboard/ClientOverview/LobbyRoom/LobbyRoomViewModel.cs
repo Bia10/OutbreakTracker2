@@ -273,7 +273,7 @@ public partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
 
     private static bool IsPlayerActive(DecodedLobbyRoomPlayer player)
         => !string.IsNullOrEmpty(player.CharacterName)
-           || (!string.IsNullOrEmpty(player.NPCName)
+           || (!string.IsNullOrEmpty(player.NpcName)
                && player is { IsEnabled: true });
 
     private void UpdateLobbyProperties(DecodedLobbyRoom model)

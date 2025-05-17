@@ -78,9 +78,9 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
         AttachedGameClient = new GameClient();
         AttachedGameClient.Attach(process);
 
-        _logger.LogInformation("PCSX2 process launched (ID: {ProcessId}). DataManager initialization deferred.", process.Id);
+        _logger.LogInformation("PCSX2 process launched (ID: {ProcessId}). DataManager initialization deferred", process.Id);
 
-        var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         _ = HandleProcessOutputAsync(
             process,
@@ -100,8 +100,8 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
         ProcessAsyncEnumerable stdError,
         CancellationToken ct)
     {
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        var weakCts = new WeakReference<CancellationTokenSource>(cts);
+        using CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        WeakReference<CancellationTokenSource> weakCts = new(cts);
 
         process.Exited += ExitHandler;
 
@@ -214,7 +214,7 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
             return Task.FromResult(AttachedGameClient);
         }
 
-        var process = Process.GetProcessById(processId);
+        Process process = Process.GetProcessById(processId);
         if (process.HasExited)
             throw new InvalidOperationException("Process has already exited");
 
@@ -224,7 +224,7 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
         AttachedGameClient = new GameClient();
         AttachedGameClient.Attach(process);
 
-        _logger.LogInformation("Attached to existing process ID: {ProcessId}. DataManager initialization deferred.", processId);
+        _logger.LogInformation("Attached to existing process ID: {ProcessId}. DataManager initialization deferred", processId);
         return Task.FromResult(AttachedGameClient);
     }
 

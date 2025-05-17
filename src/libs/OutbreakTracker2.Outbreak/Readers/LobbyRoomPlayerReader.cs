@@ -35,13 +35,13 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
         return ReadValue<bool>(basePlayerAddress, [offset]);
     }
 
-    public byte GetPlayerCharNPCType(int characterId)
+    public byte GetPlayerCharNpcType(int characterId)
     {
         nint basePlayerAddress = GetLobbyRoomPlayerBasePointer(characterId);
         nint offset = CurrentFile switch
         {
-            GameFile.FileOne => FileOnePtrs.LobbyRoomPlayerNPCTypeOffset,
-            GameFile.FileTwo => FileTwoPtrs.LobbyRoomPlayerNPCTypeOffset,
+            GameFile.FileOne => FileOnePtrs.LobbyRoomPlayerNpcTypeOffset,
+            GameFile.FileTwo => FileTwoPtrs.LobbyRoomPlayerNpcTypeOffset,
             _ => nint.Zero
         };
 
@@ -90,28 +90,28 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
 
         if (debug) Logger.LogDebug("Decoding lobby room players");
 
-        for (var i = 0; i < GameConstants.MaxPlayers; i++)
+        for (int i = 0; i < GameConstants.MaxPlayers; i++)
         {
             DecodedLobbyRoomPlayers[i].IsEnabled = GetPlayerCharEnabled(i);
             if (!DecodedLobbyRoomPlayers[i].IsEnabled) continue;
 
             DecodedLobbyRoomPlayers[i].NameId = GetPlayerCharNameId(i);
-            DecodedLobbyRoomPlayers[i].NPCType = GetCharacterNpcTypeName(GetPlayerCharNPCType(i));
+            DecodedLobbyRoomPlayers[i].NpcType = GetCharacterNpcTypeName(GetPlayerCharNpcType(i));
 
-            switch (DecodedLobbyRoomPlayers[i].NPCType)
+            switch (DecodedLobbyRoomPlayers[i].NpcType)
             {
                 case "Main Characters":
                     DecodedLobbyRoomPlayers[i].CharacterName = GetCharacterName(DecodedLobbyRoomPlayers[i].NameId);
-                    DecodedLobbyRoomPlayers[i].CharacterHP = GetCharacterHealthName(DecodedLobbyRoomPlayers[i].NameId);
+                    DecodedLobbyRoomPlayers[i].CharacterHp = GetCharacterHealthName(DecodedLobbyRoomPlayers[i].NameId);
                     DecodedLobbyRoomPlayers[i].CharacterPower = GetCharacterPowerName(DecodedLobbyRoomPlayers[i].NameId);
                     break;
                 case "Other NPCs":
-                    DecodedLobbyRoomPlayers[i].NPCName = GetCharacterNpcName(DecodedLobbyRoomPlayers[i].NameId);
-                    DecodedLobbyRoomPlayers[i].NPCHP = GetCharacterNpcHealthName(DecodedLobbyRoomPlayers[i].NameId);
-                    DecodedLobbyRoomPlayers[i].NPCPower = GetCharacterNpcPowerName(DecodedLobbyRoomPlayers[i].NameId);
+                    DecodedLobbyRoomPlayers[i].NpcName = GetCharacterNpcName(DecodedLobbyRoomPlayers[i].NameId);
+                    DecodedLobbyRoomPlayers[i].Npchp = GetCharacterNpcHealthName(DecodedLobbyRoomPlayers[i].NameId);
+                    DecodedLobbyRoomPlayers[i].NpcPower = GetCharacterNpcPowerName(DecodedLobbyRoomPlayers[i].NameId);
                     break;
                 case "Unknown":
-                    Logger.LogDebug("[{UpdateRoomPlayersName}] NPCType unknown: {NpcType} for character at index {I}.", nameof(UpdateRoomPlayers), DecodedLobbyRoomPlayers[i].NPCType, i);
+                    Logger.LogDebug("[{UpdateRoomPlayersName}] NPCType unknown: {NpcType} for character at index {I}", nameof(UpdateRoomPlayers), DecodedLobbyRoomPlayers[i].NpcType, i);
                     break;
             }
         }
@@ -123,6 +123,6 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
         Logger.LogDebug("Decoded room players in {Duration}ms", duration);
         foreach (string jsonObject in DecodedLobbyRoomPlayers.Select(inGamePlayer
                      => JsonSerializer.Serialize(inGamePlayer, DecodedLobbyRoomPlayerJsonContext.Default.DecodedLobbyRoomPlayer)))
-            Logger.LogDebug("Decoded room player: {jsonObject}", jsonObject);
+            Logger.LogDebug("Decoded room player: {JsonObject}", jsonObject);
     }
 }

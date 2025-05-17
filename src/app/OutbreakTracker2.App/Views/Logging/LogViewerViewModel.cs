@@ -23,7 +23,7 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
     private readonly ILogger<LogViewerViewModel> _logger;
     private readonly Subject<Unit> _filterUpdateSubject = new();
     private readonly IDisposable? _filterSubscription;
-    private const int _maxLogEntries = 100;
+    private const int MaxLogEntries = 100;
 
     private readonly ObservableList<LogModel> _filteredEntries = [];
     public NotifyCollectionChangedSynchronizedViewList<LogModel> FilteredEntriesView { get; }
@@ -122,7 +122,7 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
         _dispatcherService = dispatcherService;
         _logger = logger;
 
-        _logger.LogInformation("LogViewerViewModel initialized.");
+        _logger.LogInformation("LogViewerViewModel initialized");
 
         FilteredEntriesView = _filteredEntries
             .ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
@@ -130,11 +130,11 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
         _filterSubscription = _filterUpdateSubject
             .Debounce(TimeSpan.FromMilliseconds(100))
             .SubscribeOnThreadPool()
-            .SubscribeAwait(async (_, ct) => await ApplyLogFiltersAsync(ct), AwaitOperation.Drop);
+            .SubscribeAwait(async (_, ct) => await ApplyLogFiltersAsync(ct).ConfigureAwait(false), AwaitOperation.Drop);
 
         if (_dataStorageService.Entries.Count is 0)
         {
-            _logger.LogError("Log data storage service entries are empty.");
+            _logger.LogError("Log data storage service entries are empty");
             return;
         }
 
@@ -166,15 +166,15 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
 
             ct.ThrowIfCancellationRequested();
 
-            var selectedLevels = SelectedLogLevels.ToHashSet();
+            HashSet<LogLevel> selectedLevels = SelectedLogLevels.ToHashSet();
             IEnumerable<LogModel> filteredQuery = currentEntriesSnapshot;
 
             if (selectedLevels.Count > 0)
                 filteredQuery = filteredQuery.Where(log => selectedLevels.Contains(log.LogLevel));
 
-            var formattedAndFiltered = filteredQuery
+            List<LogModel> formattedAndFiltered = filteredQuery
                 .Select(LogModel.ToDisplayForm)
-                .TakeLast(_maxLogEntries)
+                .TakeLast(MaxLogEntries)
                 .ToList();
 
             ct.ThrowIfCancellationRequested();
@@ -191,7 +191,7 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
         }
         catch (OperationCanceledException)
         {
-            _logger.LogInformation("Log filtering operation was cancelled.");
+            _logger.LogInformation("Log filtering operation was cancelled");
         }
         catch (Exception ex)
         {
@@ -232,7 +232,7 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
         if (SelectedLogItem is null)
             return;
 
-        var text = $"{SelectedLogItem.LogLevel}: {SelectedLogItem.DisplayMessage}";
+        string text = $"{SelectedLogItem.LogLevel}: {SelectedLogItem.DisplayMessage}";
         if (!string.IsNullOrEmpty(SelectedLogItem.DisplayException))
             text += Environment.NewLine + SelectedLogItem.DisplayException;
 
@@ -284,6 +284,6 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
         _filteredEntries.Clear();
         SelectedLogLevels.Clear();
 
-        _logger.LogDebug("LogViewerViewModel disposed. Subscriptions cancelled.");
+        _logger.LogDebug("LogViewerViewModel disposed. Subscriptions cancelled");
     }
 }

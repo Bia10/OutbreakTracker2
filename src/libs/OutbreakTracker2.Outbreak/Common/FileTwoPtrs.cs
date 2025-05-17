@@ -45,52 +45,52 @@ public static class FileTwoPtrs
 
     // Offsets for the lobby room player structure, offseting from BaseLobbyRoomPlayer
     public const nint LobbyRoomPlayerNameIdOffset = 0x0;
-    public const nint LobbyRoomPlayerNPCTypeOffset = 0x2;
+    public const nint LobbyRoomPlayerNpcTypeOffset = 0x2;
     public const nint LobbyRoomPlayerEnabledOffset = 0x6;
 
-    public const nint Door1HP = 0x477762; //4777A2 Back Alley Door
-    public const nint Door2HP = 0x477720; //477760 Restaurant Back Door
-    public const nint Door3HP = 0x477724; //Restaurant Kitchen South
-    public const nint Door4HP = 0x477726; //Restaurant Kitchen West
-    public const nint Door5HP = 0x4777E4; //477820 South Area > East Gate
-    public const nint Door6HP = 0x4777E0; //477864 South Area > North Gate
-    public const nint Door7HP = 0x477824; //477860 East Area > North Gate
-    public const nint Door8HP = 0x4779E2; //477A66 Elephant Stage
-    public const nint Door9HP = 0x4778AE; //477B64 Otherworld East Side
-    public const nint Door10HP = 0x4777A4; //4778A0 Otherworld West Side
-    public const nint Door11HP = 0x4778AC; //4779A0 Lounge Right
-    public const nint Door12HP = 0x4778AA; //4779A2 Lounge Left
-    public const nint Door13HP = 0x477B26; //477BE0 Memory Room 203
-    public const nint Door14HP = 0x477724; //4777E0 Lobby > 1F Main Hall
-    public const nint Door15HP = 0x477824; //477920 Office > 1F East Wing
-    public const nint Door16HP = 0x4777E4; //477BE0 1F Main Hall > U-shaped Corridor
-    public const nint Door17HP = 0x4779A0; //4779E0 Morgue
-    public const nint Door18HP = 0x477A62; //477AA0 Dog House
-    public const nint Door19HP = 0x477B00; //EOTR Hole HP
+    public const nint Door1Hp = 0x477762; //4777A2 Back Alley Door
+    public const nint Door2Hp = 0x477720; //477760 Restaurant Back Door
+    public const nint Door3Hp = 0x477724; //Restaurant Kitchen South
+    public const nint Door4Hp = 0x477726; //Restaurant Kitchen West
+    public const nint Door5Hp = 0x4777E4; //477820 South Area > East Gate
+    public const nint Door6Hp = 0x4777E0; //477864 South Area > North Gate
+    public const nint Door7Hp = 0x477824; //477860 East Area > North Gate
+    public const nint Door8Hp = 0x4779E2; //477A66 Elephant Stage
+    public const nint Door9Hp = 0x4778AE; //477B64 Otherworld East Side
+    public const nint Door10Hp = 0x4777A4; //4778A0 Otherworld West Side
+    public const nint Door11Hp = 0x4778AC; //4779A0 Lounge Right
+    public const nint Door12Hp = 0x4778AA; //4779A2 Lounge Left
+    public const nint Door13Hp = 0x477B26; //477BE0 Memory Room 203
+    public const nint Door14Hp = 0x477724; //4777E0 Lobby > 1F Main Hall
+    public const nint Door15Hp = 0x477824; //477920 Office > 1F East Wing
+    public const nint Door16Hp = 0x4777E4; //477BE0 1F Main Hall > U-shaped Corridor
+    public const nint Door17Hp = 0x4779A0; //4779E0 Morgue
+    public const nint Door18Hp = 0x477A62; //477AA0 Dog House
+    public const nint Door19Hp = 0x477B00; //EOTR Hole HP
 
     public static nint GetDoorHealthAddress(int doorId)
     {
         return doorId switch
         {
-            0 => Door1HP,
-            1 => Door2HP,
-            2 => Door3HP,
-            3 => Door4HP,
-            4 => Door5HP,
-            5 => Door6HP,
-            6 => Door7HP,
-            7 => Door8HP,
-            8 => Door9HP,
-            9 => Door10HP,
-            10 => Door11HP,
-            11 => Door12HP,
-            12 => Door13HP,
-            13 => Door14HP,
-            14 => Door15HP,
-            15 => Door16HP,
-            16 => Door17HP,
-            17 => Door18HP,
-            18 => Door19HP,
+            0 => Door1Hp,
+            1 => Door2Hp,
+            2 => Door3Hp,
+            3 => Door4Hp,
+            4 => Door5Hp,
+            5 => Door6Hp,
+            6 => Door7Hp,
+            7 => Door8Hp,
+            8 => Door9Hp,
+            9 => Door10Hp,
+            10 => Door11Hp,
+            11 => Door12Hp,
+            12 => Door13Hp,
+            13 => Door14Hp,
+            14 => Door15Hp,
+            15 => Door16Hp,
+            16 => Door17Hp,
+            17 => Door18Hp,
+            18 => Door19Hp,
             _ => -1
         };
     }

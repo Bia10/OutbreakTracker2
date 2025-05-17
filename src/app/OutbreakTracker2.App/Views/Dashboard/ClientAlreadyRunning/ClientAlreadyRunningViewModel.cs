@@ -42,7 +42,7 @@ public partial class ClientAlreadyRunningViewModel : ObservableObject
         foreach (int id in processIds)
             try
             {
-                var process = Process.GetProcessById(id);
+                Process process = Process.GetProcessById(id);
                 RunningProcesses.Add(new ProcessModel
                 {
                     Id = process.Id,
@@ -68,8 +68,8 @@ public partial class ClientAlreadyRunningViewModel : ObservableObject
             GameClient? activeGameClient = _processLauncher.GetActiveGameClient();
             if (activeGameClient is not null)
             {
-                await _dataManager.InitializeAsync(activeGameClient, default(CancellationToken));
-                _logger.LogInformation("DataManager initialized successfully.");
+                await _dataManager.InitializeAsync(activeGameClient, CancellationToken.None);
+                _logger.LogInformation("DataManager initialized successfully");
             }
         }
         catch (Exception ex)

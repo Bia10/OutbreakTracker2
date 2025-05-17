@@ -116,7 +116,7 @@ public class EnemiesReader : ReaderBase
 
         if (debug) Logger.LogDebug("Decoding enemies2");
 
-        for (var i = 0; i < GameConstants.MaxEnemies2; i++)
+        for (int i = 0; i < GameConstants.MaxEnemies2; i++)
         {
             int curMobOffset = 0x60 * i;
 
@@ -181,6 +181,6 @@ public class EnemiesReader : ReaderBase
         Logger.LogDebug("Decoded enemies2 in {Duration}ms", duration);
         foreach (string jsonObject in DecodedEnemies2.Select(enemy
                      => JsonSerializer.Serialize(enemy, DecodedEnemyJsonContext.Default.DecodedEnemy)))
-            Logger.LogDebug("Decoded enemy: {jsonObject}", jsonObject);
+            Logger.LogDebug("Decoded enemy: {JsonObject}", jsonObject);
     }
 }

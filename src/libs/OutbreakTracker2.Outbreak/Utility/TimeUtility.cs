@@ -124,7 +124,7 @@ public static class TimeUtility
 
     /// <summary>
     /// Formats the Antivirus or Herb time based on which is greater and positive,
-    /// if the conditions for its display in the Lua logic are met.
+    /// if the conditions for its display are met.
     /// </summary>
     /// <param name="antivirusTime">Player's antivirus time (StoppingVirus units).</param>
     /// <param name="herbTime">Player's herb time (StoppingVirus units).</param>
@@ -136,7 +136,7 @@ public static class TimeUtility
     }
 
     /// <summary>
-    /// Formats the Bleed time if the conditions for its display in the Lua logic are met.
+    /// Formats the Bleed time if the conditions for its display are met.
     /// </summary>
     /// <param name="bleedTime">Player's bleed time (WildThings units).</param>
     /// <param name="status">Player's current status string.</param>

@@ -55,7 +55,7 @@ public sealed class LobbyRoomReader : ReaderBase
     {
         try
         {
-            var timeSpan = TimeSpan.FromSeconds(GetTime());
+            TimeSpan timeSpan = TimeSpan.FromSeconds(GetTime());
             return $"{timeSpan.Hours:D2}h:{timeSpan.Minutes:D2}m:{timeSpan.Seconds:D2}s";
         }
         catch
@@ -88,6 +88,6 @@ public sealed class LobbyRoomReader : ReaderBase
 
         Logger.LogDebug("Decoded lobby room in {Duration}ms", duration);
         string jsonObject = JsonSerializer.Serialize(DecodedLobbyRoom, DecodedLobbyRoomJsonContext.Default.DecodedLobbyRoom);
-        Logger.LogDebug("Decoded lobby room: {jsonObject}", jsonObject);
+        Logger.LogDebug("Decoded lobby room: {JsonObject}", jsonObject);
     }
 }

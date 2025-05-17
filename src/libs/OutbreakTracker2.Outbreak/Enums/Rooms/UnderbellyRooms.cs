@@ -65,7 +65,7 @@ public enum UnderbellyRooms : short
     WomansRestroomEast = 21,
 
     [EnumMember(Value = "B2F passage")]
-    B2F_Passage = 22,
+    B2FPassage = 22,
 
     [EnumMember(Value = "Refuse dump")]
     RefuseDump = 23,

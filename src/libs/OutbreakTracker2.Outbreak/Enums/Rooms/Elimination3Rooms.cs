@@ -23,16 +23,16 @@ public enum Elimination3Rooms : short
     NorthCar = 5,
 
     [EnumMember(Value = "B2F Stairwell")]
-    B2F_Stairwell = 6,
+    B2FStairwell = 6,
 
     [EnumMember(Value = "Show Animals' Boarding House")]
     ShowAnimalsBoardingHouse = 7,
 
     [EnumMember(Value = "RPD's East Office")]
-    RPDsEastOffice = 8,
+    RpDsEastOffice = 8,
 
     [EnumMember(Value = "B6F East Passway")]
-    B6F_EastPassway = 9,
+    B6FEastPassway = 9,
 
     [EnumMember(Value = "Stairwell to Observation Mezzanine")]
     StairwellToObservationMezzanine = 10,
@@ -44,7 +44,7 @@ public enum Elimination3Rooms : short
     ExaminationRoom = 12,
 
     [EnumMember(Value = "Subway's B2F Passage")]
-    SubwaysB2F_Passage = 13,
+    SubwaysB2FPassage = 13,
 
     [EnumMember(Value = "Abandoned Hospital's Locker Room")]
     AbandonedHospitalsLockerRoom = 14,
@@ -53,7 +53,7 @@ public enum Elimination3Rooms : short
     MainShaft = 15,
 
     [EnumMember(Value = "1F of The Apartment")]
-    F1_OfTheApartment = 16,
+    F1OfTheApartment = 16,
 
     [EnumMember(Value = "Parking garage")]
     ParkingGarage = 17,
