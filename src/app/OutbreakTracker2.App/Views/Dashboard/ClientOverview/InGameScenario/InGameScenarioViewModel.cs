@@ -187,15 +187,12 @@ public partial class InGameScenarioViewModel : ObservableObject
     private byte _pass6;
 
     public string EscapeTimeDisplay => GetEscapeTimeDisplay();
-    public string PassBelowFreezingPointDisplay => CalculatePassBelowFreezingPointDisplay();
-    public string Pass2BelowFreezingPointDisplay => CalculatePass2BelowFreezingPointDisplay();
     public string PassHiveDisplay => CalculatePassHiveDisplay();
     public string HellfirePassDisplay => CalculateHellfirePassDisplay();
     public string HellfireMapDisplay => CalculateHellfireMapDisplay();
     public string HellfirePowerDisplay => CalculateHellfirePowerDisplay();
     public string DecisionsDecisionsPassDisplay => CalculateDecisionsDecisionsPassDisplay();
     public string ClockTimeDisplay => CalculateClockTimeDisplay();
-    public string BelowFreezingPointPasswordDisplay => GetBelowFreezingPointPasswordDisplay();
     public string HellfireDisplay => GetHellfireDisplay();
     public string DecisionsDecisionsDisplay => GetDecisionsDecisionsDisplay();
     public string EndOfRoadDisplay => GetEndOfRoadDisplay();
@@ -204,34 +201,6 @@ public partial class InGameScenarioViewModel : ObservableObject
     private string GetPlayerCountDisplay() => $"{PlayerCount} Players";
     private string GetGameTime() => TimeUtility.GetTimeFromFrames(FrameCounter);
     private string GetEscapeTimeDisplay() => TimeUtility.GetTimeToString3(EscapeTime);
-
-    private string CalculatePassBelowFreezingPointDisplay()
-    {
-        switch (Pass1)
-        {
-            case > 0x00 and <= 0x1F or >= 0x80 and <= 0x9F: return "0634";
-            case >= 0x20 and <= 0x3F or >= 0xA0 and <= 0xBF: return "4509";
-            case >= 0x40 and <= 0x7F or >= 0xC0 and < 0xFF: return "9741";
-
-            default:
-                _logger.LogDebug("Unrecognized BFP Pass1 value: {Pass1}", Pass1);
-                return $"Unrecognized BFP Pass1({Pass1})";
-        }
-    }
-
-    private string CalculatePass2BelowFreezingPointDisplay()
-    {
-        switch (Pass2)
-        {
-            case 0x20: return "A375-B482";
-            case 0x40: return "J126-D580";
-            case 0x80: return "C582-A194";
-
-            default:
-                _logger.LogDebug("Unrecognized BFP Pass2 value: {Pass2}", Pass2);
-                return $"Unrecognized BFP Pass2({Pass2})";
-        }
-    }
 
     private string CalculatePassHiveDisplay()
     {
@@ -331,13 +300,6 @@ public partial class InGameScenarioViewModel : ObservableObject
                 _logger.LogDebug("Unrecognized GasRandom value: {GasRandom}", GasRandom);
                 return -1;
         }
-    }
-
-    private string GetBelowFreezingPointPasswordDisplay()
-    {
-        return !ScenarioName.Equals("below freezing point", StringComparison.Ordinal)
-            ? string.Empty
-            : $"{CalculatePassBelowFreezingPointDisplay()}-{CalculatePass2BelowFreezingPointDisplay()}";
     }
 
     private string GetHellfireDisplay()
