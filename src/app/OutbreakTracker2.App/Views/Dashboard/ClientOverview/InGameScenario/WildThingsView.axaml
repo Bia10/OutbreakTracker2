@@ -1,0 +1,93 @@
+<UserControl
+    x:Class="OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario.WildThingsView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:icons="using:Material.Icons.Avalonia"
+    xmlns:inGameScenario="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="inGameScenario:WildThingsViewModel"
+    mc:Ignorable="d">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <suki:GroupBox HorizontalAlignment="Stretch" Header="Wild Things Details">
+            <Grid
+                Margin="15"
+                ColumnDefinitions="Auto,*"
+                RowDefinitions="Auto,Auto,Auto">
+
+                <StackPanel
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="5">
+                    <icons:MaterialIcon
+                        Width="16"
+                        Height="16"
+                        Kind="Coins"
+                        ToolTip.Tip="Coin Count" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="Coin:" />
+                </StackPanel>
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Text="{Binding Coin}"
+                    TextTrimming="CharacterEllipsis" />
+
+                <StackPanel
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="5">
+                    <icons:MaterialIcon
+                        Width="16"
+                        Height="16"
+                        Kind="ClockOutline"
+                        ToolTip.Tip="Wild Things Timer" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="Wild Things Time:" />
+                </StackPanel>
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Text="{Binding WildThingsTimeDisplay}"
+                    TextTrimming="CharacterEllipsis" />
+
+                <StackPanel
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="5">
+                    <icons:MaterialIcon
+                        Width="16"
+                        Height="16"
+                        Kind="CheckCircleOutline"
+                        ToolTip.Tip="Pass Wild Things Status" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="Pass Wild Things:" />
+                </StackPanel>
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Text="{Binding PassWildThingsDisplay}"
+                    TextTrimming="CharacterEllipsis" />
+
+            </Grid>
+        </suki:GroupBox>
+    </ScrollViewer>
+</UserControl>

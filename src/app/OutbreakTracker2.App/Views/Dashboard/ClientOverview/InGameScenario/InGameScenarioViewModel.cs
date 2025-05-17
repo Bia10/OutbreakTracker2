@@ -127,9 +127,6 @@ public partial class InGameScenarioViewModel : ObservableObject
         IsCleared = GetClearedDisplay();
 
         //EscapeTime = scenario.EscapeTime;
-        //WildThingsTime = scenario.WildThingsTime;
-        //Coin = scenario.Coin;
-        //PassWildThings = scenario.PassWildThings;
         //Pass1 = scenario.Pass1;
         //Pass2 = scenario.Pass2;
         //Pass3 = scenario.Pass3;
@@ -138,7 +135,6 @@ public partial class InGameScenarioViewModel : ObservableObject
         //Pass6 = scenario.Pass6;
 
         //OnPropertyChanged(nameof(EscapeTimeDisplay));
-        //OnPropertyChanged(nameof(WildThingsTimeDisplay));
         //OnPropertyChanged(nameof(PassBelowFreezingPointDisplay));
         //OnPropertyChanged(nameof(Pass2BelowFreezingPointDisplay));
         //OnPropertyChanged(nameof(PassHiveDisplay));
@@ -147,7 +143,6 @@ public partial class InGameScenarioViewModel : ObservableObject
         //OnPropertyChanged(nameof(HellfirePowerDisplay));
         //OnPropertyChanged(nameof(DecisionsDecisionsPassDisplay));
         //OnPropertyChanged(nameof(ClockTimeDisplay));
-        //OnPropertyChanged(nameof(PassWildThingsDisplay));
         //OnPropertyChanged(nameof(BelowFreezingPointPasswordDisplay));
         //OnPropertyChanged(nameof(HellfireDisplay));
         //OnPropertyChanged(nameof(DecisionsDecisionsDisplay));
@@ -157,18 +152,6 @@ public partial class InGameScenarioViewModel : ObservableObject
     // Used in "Underbelly" and "Flashback"
     [ObservableProperty]
     private short _escapeTime;
-
-    // Used in "Wild Things"
-    [ObservableProperty]
-    private byte _coin;
-
-    // Used in "Wild Things"
-    [ObservableProperty]
-    private short _wildThingsTime;
-
-    // Used for Wild Things
-    [ObservableProperty]
-    private byte _passWildThings;
 
     // Used for Below Freezing Point and Hive
     [ObservableProperty]
@@ -204,7 +187,6 @@ public partial class InGameScenarioViewModel : ObservableObject
     private byte _pass6;
 
     public string EscapeTimeDisplay => GetEscapeTimeDisplay();
-    public string WildThingsTimeDisplay => GetWildThingsTimeDisplay();
     public string PassBelowFreezingPointDisplay => CalculatePassBelowFreezingPointDisplay();
     public string Pass2BelowFreezingPointDisplay => CalculatePass2BelowFreezingPointDisplay();
     public string PassHiveDisplay => CalculatePassHiveDisplay();
@@ -213,7 +195,6 @@ public partial class InGameScenarioViewModel : ObservableObject
     public string HellfirePowerDisplay => CalculateHellfirePowerDisplay();
     public string DecisionsDecisionsPassDisplay => CalculateDecisionsDecisionsPassDisplay();
     public string ClockTimeDisplay => CalculateClockTimeDisplay();
-    public string PassWildThingsDisplay => CalculatePassWildThingsDisplay();
     public string BelowFreezingPointPasswordDisplay => GetBelowFreezingPointPasswordDisplay();
     public string HellfireDisplay => GetHellfireDisplay();
     public string DecisionsDecisionsDisplay => GetDecisionsDecisionsDisplay();
@@ -222,7 +203,6 @@ public partial class InGameScenarioViewModel : ObservableObject
     private string GetClearedDisplay() => Status is 12 or 13 or 15 ? "Yes" : "No";
     private string GetPlayerCountDisplay() => $"{PlayerCount} Players";
     private string GetGameTime() => TimeUtility.GetTimeFromFrames(FrameCounter);
-    private string GetWildThingsTimeDisplay() => TimeUtility.GetTimeToString3(WildThingsTime);
     private string GetEscapeTimeDisplay() => TimeUtility.GetTimeToString3(EscapeTime);
 
     private string CalculatePassBelowFreezingPointDisplay()
@@ -350,33 +330,6 @@ public partial class InGameScenarioViewModel : ObservableObject
             default:
                 _logger.LogDebug("Unrecognized GasRandom value: {GasRandom}", GasRandom);
                 return -1;
-        }
-    }
-
-    private string CalculatePassWildThingsDisplay()
-    {
-        switch (GasRandom % 16)
-        {
-            case 0: return "39DJ";
-            case 1: return "LV4U";
-            case 2: return "EXP2";
-            case 3: return "E67C";
-            case 4: return "6SR2";
-            case 5: return "Q898";
-            case 6: return "44V7";
-            case 7: return "K3G6";
-            case 8: return "SW4D";
-            case 9: return "FM54";
-            case 10: return "5TF3";
-            case 11: return "4NZH";
-            case 12: return "B37B";
-            case 13: return "LYNX";
-            case 14: return "9AAA";
-            case 15: return "YTY7";
-
-            default:
-                _logger.LogDebug("Unrecognized PassWildThings value: {PassWildThings}", PassWildThings);
-                return $"Unrecognized PassWildThings({PassWildThings}) ";
         }
     }
 
