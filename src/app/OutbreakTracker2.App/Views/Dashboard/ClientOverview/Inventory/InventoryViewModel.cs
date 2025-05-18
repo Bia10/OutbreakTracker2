@@ -1,30 +1,30 @@
-﻿using System.Collections.ObjectModel;
-using System.Linq;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.Outbreak.Models;
+using System.Collections.ObjectModel;
+using ZLinq;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
 
 public partial class InventoryViewModel : ObservableObject
 {
     [ObservableProperty]
-    private ObservableCollection<SlotItem> _equippedItems = [];
+    private ObservableCollection<ItemSlotViewModel> _equippedItems = [];
 
     [ObservableProperty]
-    private ObservableCollection<SlotItem> _mainSlots = [];
+    private ObservableCollection<ItemSlotViewModel> _mainSlots = [];
 
     [ObservableProperty]
-    private ObservableCollection<SlotItem> _specialItems = [];
+    private ObservableCollection<ItemSlotViewModel> _specialItems = [];
 
     [ObservableProperty]
-    private ObservableCollection<SlotItem> _specialSlots = [];
+    private ObservableCollection<ItemSlotViewModel> _specialSlots = [];
 
     [ObservableProperty]
-    private ObservableCollection<SlotItem> _deadSlots = [];
+    private ObservableCollection<ItemSlotViewModel> _deadSlots = [];
 
     [ObservableProperty]
-    private ObservableCollection<SlotItem> _specialDeadSlots = [];
+    private ObservableCollection<ItemSlotViewModel> _specialDeadSlots = [];
 
     private readonly IDataManager _dataManager;
 
@@ -60,13 +60,13 @@ public partial class InventoryViewModel : ObservableObject
         UpdateSlots(SpecialDeadSlots, specialDeadInventory);
     }
 
-    private void UpdateSlots(ObservableCollection<SlotItem> slots, byte[] inventory)
+    private void UpdateSlots(ObservableCollection<ItemSlotViewModel> slots, byte[] inventory)
     {
         for (int i = 0; i < slots.Count; i++)
             UpdateSlot(slots[i], inventory[i]);
     }
 
-    private void UpdateSlot(SlotItem slot, byte itemId)
+    private void UpdateSlot(ItemSlotViewModel slot, byte itemId)
     {
         (string name, string debug) = LookupItem(itemId);
         slot.ItemName = name;
@@ -79,7 +79,8 @@ public partial class InventoryViewModel : ObservableObject
             return ("Empty", "0x00 | 0");
 
         DecodedItem? item = _dataManager.InGameScenario.Items
-            .Where(item => item is not null)
+            .AsValueEnumerable()
+            .Where(IsValidItem)
             .FirstOrDefault(item => item.Id.Equals(itemId));
 
         return item is not null
@@ -87,26 +88,21 @@ public partial class InventoryViewModel : ObservableObject
             : ("Unknown", $"0x{itemId:X2} | {itemId}");
     }
 
-    private static void InitializeSection(ObservableCollection<SlotItem> collection, int count)
+    private static void InitializeSection(ObservableCollection<ItemSlotViewModel> collection, int count)
     {
         for (int i = 0; i < count; i++)
-            collection.Add(new SlotItem
+        {
+            ItemSlotViewModel slotItem = new()
             {
                 SlotNumber = i + 1,
                 ItemName = "Empty",
                 DebugInfo = "0x00 | 0"
-            });
+            };
+
+            collection.Add(slotItem);
+        }
     }
-}
 
-public partial class SlotItem : ObservableObject
-{
-    [ObservableProperty]
-    private int _slotNumber;
-
-    [ObservableProperty]
-    private string _itemName = string.Empty;
-
-    [ObservableProperty]
-    private string _debugInfo = string.Empty;
+    private static bool IsValidItem(DecodedItem item)
+        => item is not { SlotIndex: 0, PickedUp: 0 };
 }

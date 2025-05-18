@@ -24,6 +24,7 @@ using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameDoors;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameEnemies;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoom;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlots;
 using OutbreakTracker2.App.Views.Log;
@@ -110,6 +111,7 @@ public class App : Application
             .AddView<LobbySlotsView, LobbySlotsViewModel>(services)
             .AddView<LobbyRoomView, LobbyRoomViewModel>(services)
             .AddView<InGameDoorsView, InGameDoorsViewModel>(services)
+            .AddView<ItemSlotView, ItemSlotViewModel>(services)
             .AddView<LogView, LogViewModel>(services);
 
     private static IServiceProvider ConfigureServicesAndLogging(IServiceCollection services, IConfiguration configuration)
