@@ -26,7 +26,7 @@ public partial class WildThingsViewModel : ObservableObject
     [ObservableProperty]
     private string _passWildThingsDisplay = string.Empty;
 
-    private void Update(DecodedInGameScenario scenario)
+    public void Update(DecodedInGameScenario scenario)
     {
         if (!IsValidScenario(scenario.ScenarioName))
             return;
@@ -66,7 +66,7 @@ public partial class WildThingsViewModel : ObservableObject
     private static bool IsValidScenario(string scenarioName)
     {
         return !string.IsNullOrEmpty(scenarioName)
-               && scenarioName.Equals("wild things", StringComparison.Ordinal);
+               && scenarioName.Equals("Wild things", StringComparison.Ordinal);
     }
 
     private string GetWildThingsTimeDisplay()

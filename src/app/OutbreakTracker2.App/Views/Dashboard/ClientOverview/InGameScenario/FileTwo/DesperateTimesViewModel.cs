@@ -181,7 +181,7 @@ public partial class DesperateTimesViewModel : ObservableObject
     private static bool IsValidScenario(string scenarioName)
     {
         return !string.IsNullOrEmpty(scenarioName)
-               && scenarioName.Equals("desperate times", StringComparison.Ordinal);
+               && scenarioName.Equals("Desperate times", StringComparison.Ordinal);
     }
 
     private string GetFightTimeDisplay() => TimeUtility.GetTimeToString3(FightTime);

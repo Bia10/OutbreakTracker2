@@ -1,8 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using FastEnumUtility;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.App.Services.Dispatcher;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
 using R3;
@@ -14,6 +16,10 @@ namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario;
 public partial class InGameScenarioViewModel : ObservableObject
 {
     private readonly ILogger<InGameScenarioViewModel> _logger;
+    private readonly DesperateTimesViewModel _desperateTimesVm;
+    private readonly EndOfTheRoadViewModel _endOfTheRoadVm;
+    private readonly UnderbellyViewModel _underbellyVm;
+    private readonly WildThingsViewModel _wildThingsVm;
 
     [ObservableProperty]
     private byte _currentFile;
@@ -71,8 +77,45 @@ public partial class InGameScenarioViewModel : ObservableObject
     [ObservableProperty]
     private int _gasRandomOrderDisplay;
 
+    // Used in "Underbelly" and "Flashback" (Existing properties)
     [ObservableProperty]
-    private DesperateTimesViewModel _desperateTimesVm;
+    private short _escapeTime;
+
+    // Used for Below Freezing Point and Hive (Existing properties)
+    [ObservableProperty]
+    private byte _pass1;
+
+    // Used for Below Freezing Point (Existing properties)
+    [ObservableProperty]
+    private byte _pass2;
+
+    // Used in Hellfire and Decisions,decisions (with pass6) (Existing properties)
+    [ObservableProperty]
+    private byte _pass3;
+
+    [ObservableProperty]
+    private short _passUnderbelly1;
+
+    [ObservableProperty]
+    private byte _passUnderbelly2;
+
+    [ObservableProperty]
+    private byte _passUnderbelly3;
+
+    // Used for Hellfire, also displayed raw in "End of the Road" (Existing properties)
+    [ObservableProperty]
+    private short _pass4;
+
+    // Use unclear ?? (Existing properties)
+    [ObservableProperty]
+    private byte _pass5;
+
+    // Used for Decisions,decisions (with pass3) (Existing properties)
+    [ObservableProperty]
+    private byte _pass6;
+
+    [ObservableProperty]
+    private ObservableObject? _currentScenarioSpecificViewModel;
 
     public InGameScenarioViewModel(
         ILogger<InGameScenarioViewModel> logger,
@@ -81,6 +124,9 @@ public partial class InGameScenarioViewModel : ObservableObject
     {
         _logger = logger;
         _desperateTimesVm = new DesperateTimesViewModel();
+        _endOfTheRoadVm = new EndOfTheRoadViewModel();
+        _underbellyVm = new UnderbellyViewModel();
+        _wildThingsVm = new WildThingsViewModel();
 
         dataManager.InGameScenarioObservable
             .ObserveOnThreadPool()
@@ -121,48 +167,71 @@ public partial class InGameScenarioViewModel : ObservableObject
         ItemRandom2 = scenario.ItemRandom2;
         PuzzleRandom = scenario.PuzzleRandom;
         GasRandom = scenario.GasRandom;
+        EscapeTime = scenario.EscapeTime;
+        Pass1 = scenario.Pass1;
+        Pass2 = scenario.Pass2;
+        Pass3 = scenario.Pass3;
+        PassUnderbelly1 = scenario.PassUnderbelly1;
+        PassUnderbelly2 = scenario.PassUnderbelly2;
+        PassUnderbelly3 = scenario.PassUnderbelly3;
+        Pass4 = scenario.Pass4;
+        Pass5 = scenario.Pass5;
+        Pass6 = scenario.Pass6;
 
         GameTimeDisplay = GetGameTime();
         GasRandomOrderDisplay = CalculateGasRandomOrderDisplay();
         IsCleared = GetClearedDisplay();
+
+        UpdateScenarioSpecificViewModel(scenario);
     }
 
-    // Used in "Underbelly" and "Flashback"
-    [ObservableProperty]
-    private short _escapeTime;
+    private void UpdateScenarioSpecificViewModel(DecodedInGameScenario scenario)
+    {
+        if (string.IsNullOrEmpty(scenario.ScenarioName))
+            return;
 
-    // Used for Below Freezing Point and Hive
-    [ObservableProperty]
-    private byte _pass1;
+        CurrentScenarioSpecificViewModel = null;
 
-    // Used for Below Freezing Point
-    [ObservableProperty]
-    private byte _pass2;
+        switch (FastEnum.Parse<Scenario>(scenario.ScenarioName))
+        {
+            case Scenario.DesperateTimes:
+                _desperateTimesVm.Update(scenario);
+                CurrentScenarioSpecificViewModel = _desperateTimesVm;
+                break;
+            case Scenario.EndOfTheRoad:
+                _endOfTheRoadVm.Update(scenario);
+                CurrentScenarioSpecificViewModel = _endOfTheRoadVm;
+                break;
+            case Scenario.Underbelly:
+                _underbellyVm.Update(scenario);
+                CurrentScenarioSpecificViewModel = _underbellyVm;
+                break;
+            case Scenario.WildThings:
+                _wildThingsVm.Update(scenario);
+                CurrentScenarioSpecificViewModel = _wildThingsVm;
+                break;
+            // TODO:
+            case Scenario.Hellfire:
+            case Scenario.TheHive:
+            case Scenario.DecisionsDecisions:
+            case Scenario.BelowFreezingPoint:
+            // unused for now
+            case Scenario.Unknown:
+            case Scenario.Outbreak:
+            case Scenario.TrainingGround:
+            case Scenario.Showdown1:
+            case Scenario.Showdown2:
+            case Scenario.Showdown3:
+            case Scenario.Flashback:
+            case Scenario.Elimination3:
+            case Scenario.Elimination1:
+            case Scenario.Elimination2:
 
-    // Used in Hellfire and Decisions,decisions (with pass6)
-    [ObservableProperty]
-    private byte _pass3;
-
-    [ObservableProperty]
-    private short _passUnderbelly1;
-
-    [ObservableProperty]
-    private byte _passUnderbelly2;
-
-    [ObservableProperty]
-    private byte _passUnderbelly3;
-
-    // Used for Hellfire, also displayed raw in "End of the Road"
-    [ObservableProperty]
-    private short _pass4;
-
-    // Use unclear ??
-    [ObservableProperty]
-    private byte _pass5;
-
-    // Used for Decisions,decisions (with pass3)
-    [ObservableProperty]
-    private byte _pass6;
+            default:
+                _logger.LogInformation("No specific view configured for scenario: {ScenarioName}", scenario.ScenarioName);
+                break;
+        }
+    }
 
     private string GetClearedDisplay() => Status is 12 or 13 or 15 ? "Yes" : "No";
     private string GetGameTime() => TimeUtility.GetTimeFromFrames(FrameCounter);

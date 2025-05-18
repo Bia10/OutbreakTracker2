@@ -121,5 +121,5 @@ public partial class UnderbellyViewModel : ObservableObject
 
     private static bool IsValidScenario(string scenarioName)
         => !string.IsNullOrEmpty(scenarioName)
-           && scenarioName.Equals("underbelly", StringComparison.Ordinal);
+           && scenarioName.Equals("Underbelly", StringComparison.Ordinal);
 }

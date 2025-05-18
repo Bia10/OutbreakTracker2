@@ -9,7 +9,7 @@ public partial class EndOfTheRoadViewModel : ObservableObject
     [ObservableProperty]
     private string _endOfRoadDisplay = string.Empty;
 
-    private void Update(DecodedInGameScenario scenario)
+    public void Update(DecodedInGameScenario scenario)
     {
         if (!IsValidScenario(scenario.ScenarioName))
             return;
@@ -22,5 +22,5 @@ public partial class EndOfTheRoadViewModel : ObservableObject
 
     private static bool IsValidScenario(string scenarioName)
         => !string.IsNullOrEmpty(scenarioName)
-           && scenarioName.Equals("end of the road", StringComparison.Ordinal);
+           && scenarioName.Equals("End of the road", StringComparison.Ordinal);
 }
