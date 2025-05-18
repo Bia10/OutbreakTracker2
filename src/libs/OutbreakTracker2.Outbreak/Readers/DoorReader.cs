@@ -43,14 +43,14 @@ public sealed class DoorReader : ReaderBase
             0 => "unlocked",
             1 => "locked",
             2 => "locked", //Fragile lock wild things
-            3 => "locked", //Fragile lock underbelly
+            3 => "locked", //Fragile lock underbelly, elephant restaurant(simple lock)
             4 => "locked", //Fragile lock underbelly
             6 => "unknownState6",
             8 => "locked", //Fragile lock wild things
             10 => "unlocked",
             12 => "unlocked",
-            13 => "unknownState13",
-            18 => "unknownState14",
+            13 => "unknownState13", // Wild things
+            18 => "unknownState14", // Flashback
             44 => "unlocked",
             130 => "unlocked",
             2000 => "unlocked",

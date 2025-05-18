@@ -22,12 +22,12 @@
             <ItemsControl IsVisible="{Binding EnemiesView, Converter={StaticResource CollectionIsNullOrEmptyConverter}, ConverterParameter=Inverse}" ItemsSource="{Binding EnemiesView}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Vertical" Spacing="15" />
+                        <WrapPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ContentControl Content="{Binding}">
+                        <ContentControl Margin="0,0,10,10" Content="{Binding}">
                             <ContentControl.DataTemplates>
                                 <DataTemplate DataType="inGameEnemy:InGameEnemyViewModel">
                                     <inGameEnemy:InGameEnemyView />

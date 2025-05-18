@@ -12,34 +12,44 @@
     mc:Ignorable="d">
 
     <suki:GlassCard
-        Margin="10"
-        Padding="15"
+        Margin="5"
+        Padding="10"
         CornerRadius="10">
-        <StackPanel Spacing="10">
-            <!--  Header  -->
-            <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding Name}" />
-            <!--  Health  -->
-            <suki:GroupBox Header="Health">
-                <Grid ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto">
-                <!-- <ProgressBar -->
-                <!--     Grid.Row="0" Grid.Column="0" -->
-                <!--     Maximum="100" -->
-                <!--     Minimum="0" -->
-                <!--     ShowProgressText="True" -->
-                <!--     Value="{Binding HealthPercentage}"/> -->
-                <TextBlock Grid.Row="1" Grid.Column="0" FontSize="12" Text="{Binding CurrentHp, StringFormat='CurHp: {0}'}" />
-                <TextBlock Grid.Row="1" Grid.Column="1" FontSize="12" Text="{Binding MaxHp, StringFormat='MaxHp: {0}'}" />
-                </Grid>
-            </suki:GroupBox>
-            <!--  Status  -->
-            <!-- <WrapPanel> -->
-            <!--     <ContentControl Content="{Binding StatusBadge}" /> -->
-            <!-- </WrapPanel> -->
-            <!--  Details  -->
+        <StackPanel Spacing="5">
+            <TextBlock
+                FontSize="14"
+                FontWeight="Bold"
+                Text="{Binding Name}" />
+
+            <TextBlock
+                Margin="0,5,0,0"
+                FontSize="10"
+                FontWeight="SemiBold"
+                Text="Health:" />
+            <Grid ColumnDefinitions="Auto, Auto, Auto" RowDefinitions="Auto">
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Margin="0,0,10,0"
+                    FontSize="12"
+                    Text="{Binding CurrentHp, StringFormat='CurHp: {0}'}" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    FontSize="12"
+                    Text="{Binding MaxHp, StringFormat='MaxHp: {0}'}" />
+            </Grid>
+
+            <TextBlock
+                Margin="0,5,0,0"
+                FontSize="10"
+                FontWeight="SemiBold"
+                Text="Details:" />
             <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto">
                 <TextBlock
                     Grid.Row="0"
                     Grid.Column="0"
+                    Margin="0,0,5,0"
                     Text="Boss Type:" />
                 <TextBlock
                     Grid.Row="0"
@@ -48,6 +58,7 @@
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="0"
+                    Margin="0,0,5,0"
                     Text="Room:" />
                 <TextBlock
                     Grid.Row="1"

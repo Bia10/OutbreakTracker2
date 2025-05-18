@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using FastEnumUtility;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.App.Services.Dispatcher;
@@ -10,21 +9,14 @@ using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
 using R3;
 using System;
+using System.Collections.Generic;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario;
 
-// TODO: needs a rewrite
 public partial class InGameScenarioViewModel : ObservableObject
 {
     private readonly ILogger<InGameScenarioViewModel> _logger;
-    private readonly DesperateTimesViewModel _desperateTimesVm;
-    private readonly EndOfTheRoadViewModel _endOfTheRoadVm;
-    private readonly UnderbellyViewModel _underbellyVm;
-    private readonly WildThingsViewModel _wildThingsVm;
-    private readonly HellfireViewModel _hellfireVm;
-    private readonly TheHiveViewModel _theHiveVm;
-    private readonly DecisionsDecisionsViewModel _decisionsDecisionsVm;
-    private readonly BelowFreezingPointViewModel _belowFreezingPointVm;
+    private readonly Dictionary<Scenario, Action<DecodedInGameScenario>> _scenarioUpdateActions;
 
     [ObservableProperty]
     private byte _currentFile;
@@ -117,14 +109,26 @@ public partial class InGameScenarioViewModel : ObservableObject
         IDispatcherService dispatcherService)
     {
         _logger = logger;
-        _desperateTimesVm = new DesperateTimesViewModel();
-        _endOfTheRoadVm = new EndOfTheRoadViewModel();
-        _underbellyVm = new UnderbellyViewModel();
-        _wildThingsVm = new WildThingsViewModel();
-        _hellfireVm = new HellfireViewModel();
-        _theHiveVm = new TheHiveViewModel();
-        _decisionsDecisionsVm = new DecisionsDecisionsViewModel();
-        _belowFreezingPointVm = new BelowFreezingPointViewModel();
+        DesperateTimesViewModel desperateTimesVm = new();
+        EndOfTheRoadViewModel endOfTheRoadVm = new();
+        UnderbellyViewModel underbellyVm = new();
+        WildThingsViewModel wildThingsVm = new();
+        HellfireViewModel hellfireVm = new();
+        TheHiveViewModel theHiveVm = new();
+        DecisionsDecisionsViewModel decisionsDecisionsVm = new();
+        BelowFreezingPointViewModel belowFreezingPointVm = new();
+
+        _scenarioUpdateActions = new Dictionary<Scenario, Action<DecodedInGameScenario>>
+        {
+            { Scenario.DesperateTimes, scenario => { desperateTimesVm.Update(scenario); CurrentScenarioSpecificViewModel = desperateTimesVm; } },
+            { Scenario.EndOfTheRoad, scenario => { endOfTheRoadVm.Update(scenario); CurrentScenarioSpecificViewModel = endOfTheRoadVm; } },
+            { Scenario.Underbelly, scenario => { underbellyVm.Update(scenario); CurrentScenarioSpecificViewModel = underbellyVm; } },
+            { Scenario.WildThings, scenario => { wildThingsVm.Update(scenario); CurrentScenarioSpecificViewModel = wildThingsVm; } },
+            { Scenario.Hellfire, scenario => { hellfireVm.Update(scenario); CurrentScenarioSpecificViewModel = hellfireVm; } },
+            { Scenario.TheHive, scenario => { theHiveVm.Update(scenario); CurrentScenarioSpecificViewModel = theHiveVm; } },
+            { Scenario.DecisionsDecisions, scenario => { decisionsDecisionsVm.Update(scenario); CurrentScenarioSpecificViewModel = decisionsDecisionsVm; } },
+            { Scenario.BelowFreezingPoint, scenario => { belowFreezingPointVm.Update(scenario); CurrentScenarioSpecificViewModel = belowFreezingPointVm; } }
+        };
 
         dataManager.InGameScenarioObservable
             .ObserveOnThreadPool()
@@ -185,61 +189,22 @@ public partial class InGameScenarioViewModel : ObservableObject
 
     private void UpdateScenarioSpecificViewModel(DecodedInGameScenario scenario)
     {
-        if (string.IsNullOrEmpty(scenario.ScenarioName))
+        if (string.IsNullOrEmpty(scenario.ScenarioName) || scenario.ScenarioName.Equals("Unknown(0)", StringComparison.Ordinal))
             return;
 
         CurrentScenarioSpecificViewModel = null;
 
-        switch (FastEnum.Parse<Scenario>(scenario.ScenarioName))
+        bool parsedScenario = EnumUtility.TryParseByValueOrMember(scenario.ScenarioName, out Scenario scenarioType);
+        if (!parsedScenario)
         {
-            case Scenario.DesperateTimes:
-                _desperateTimesVm.Update(scenario);
-                CurrentScenarioSpecificViewModel = _desperateTimesVm;
-                break;
-            case Scenario.EndOfTheRoad:
-                _endOfTheRoadVm.Update(scenario);
-                CurrentScenarioSpecificViewModel = _endOfTheRoadVm;
-                break;
-            case Scenario.Underbelly:
-                _underbellyVm.Update(scenario);
-                CurrentScenarioSpecificViewModel = _underbellyVm;
-                break;
-            case Scenario.WildThings:
-                _wildThingsVm.Update(scenario);
-                CurrentScenarioSpecificViewModel = _wildThingsVm;
-                break;
-            case Scenario.Hellfire:
-                _hellfireVm.Update(scenario);
-                CurrentScenarioSpecificViewModel = _hellfireVm;
-                break;
-            case Scenario.TheHive:
-                _theHiveVm.Update(scenario);
-                CurrentScenarioSpecificViewModel = _theHiveVm;
-                break;
-            case Scenario.DecisionsDecisions:
-                _decisionsDecisionsVm.Update(scenario);
-                CurrentScenarioSpecificViewModel = _decisionsDecisionsVm;
-                break;
-            case Scenario.BelowFreezingPoint:
-                _belowFreezingPointVm.Update(scenario);
-                CurrentScenarioSpecificViewModel = _belowFreezingPointVm;
-                break;
-            // unused for now
-            case Scenario.Unknown:
-            case Scenario.Outbreak:
-            case Scenario.TrainingGround:
-            case Scenario.Showdown1:
-            case Scenario.Showdown2:
-            case Scenario.Showdown3:
-            case Scenario.Flashback:
-            case Scenario.Elimination3:
-            case Scenario.Elimination1:
-            case Scenario.Elimination2:
-
-            default:
-                _logger.LogInformation("No specific view configured for scenario: {ScenarioName}", scenario.ScenarioName);
-                break;
+            _logger.LogWarning("Failed to parse scenario name: {ScenarioName}", scenario.ScenarioName);
+            return;
         }
+
+        if (_scenarioUpdateActions.TryGetValue(scenarioType, out Action<DecodedInGameScenario>? updateAction))
+            updateAction(scenario);
+        else
+            _logger.LogInformation("No specific view configured for scenario: {ScenarioName}", scenario.ScenarioName);
     }
 
     private string GetClearedDisplay() => Status is 12 or 13 or 15 ? "Yes" : "No";
