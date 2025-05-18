@@ -15,7 +15,7 @@ public partial class BelowFreezingPointViewModel : ObservableObject
     [ObservableProperty]
     private string _passBelowFreezingPoint = string.Empty;
 
-    private void Update(DecodedInGameScenario scenario)
+    public void Update(DecodedInGameScenario scenario)
     {
         if (!IsValidScenario(scenario.ScenarioName)) return;
 

@@ -9,7 +9,7 @@ public partial class TheHiveViewModel : ObservableObject
     [ObservableProperty]
     private string _passHiveDisplay = string.Empty;
 
-    private void Update(DecodedInGameScenario scenario)
+    public void Update(DecodedInGameScenario scenario)
     {
         if (!IsValidScenario(scenario.ScenarioName))
             return;

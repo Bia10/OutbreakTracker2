@@ -15,7 +15,7 @@ public partial class DecisionsDecisionsViewModel : ObservableObject
     [ObservableProperty]
     private string _clockTimeDisplay = string.Empty;
 
-    private void Update(DecodedInGameScenario scenario)
+    public void Update(DecodedInGameScenario scenario)
     {
         if (!IsValidScenario(scenario.ScenarioName))
             return;

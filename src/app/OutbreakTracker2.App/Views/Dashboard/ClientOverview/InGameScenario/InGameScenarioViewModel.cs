@@ -3,6 +3,7 @@ using FastEnumUtility;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.App.Services.Dispatcher;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
@@ -20,6 +21,10 @@ public partial class InGameScenarioViewModel : ObservableObject
     private readonly EndOfTheRoadViewModel _endOfTheRoadVm;
     private readonly UnderbellyViewModel _underbellyVm;
     private readonly WildThingsViewModel _wildThingsVm;
+    private readonly HellfireViewModel _hellfireVm;
+    private readonly TheHiveViewModel _theHiveVm;
+    private readonly DecisionsDecisionsViewModel _decisionsDecisionsVm;
+    private readonly BelowFreezingPointViewModel _belowFreezingPointVm;
 
     [ObservableProperty]
     private byte _currentFile;
@@ -57,39 +62,31 @@ public partial class InGameScenarioViewModel : ObservableObject
     [ObservableProperty]
     private string _playerCountDisplay = string.Empty;
 
-    // Used in Underbelly, Flashback
     [ObservableProperty]
     private byte _itemRandom;
 
-    // Used in Underbelly, Flashback
     [ObservableProperty]
     private byte _itemRandom2;
 
-    // Used in Underbelly, Flashback, Hellfire
     [ObservableProperty]
     private byte _puzzleRandom;
 
-    // Used in Desperate Times, however this seems more like generic random seed then scenario specific
-    // used in calculations unrelated to Desperate Times
+    // generic random seed
     [ObservableProperty]
     private byte _gasRandom;
 
     [ObservableProperty]
     private int _gasRandomOrderDisplay;
 
-    // Used in "Underbelly" and "Flashback" (Existing properties)
     [ObservableProperty]
     private short _escapeTime;
 
-    // Used for Below Freezing Point and Hive (Existing properties)
     [ObservableProperty]
     private byte _pass1;
 
-    // Used for Below Freezing Point (Existing properties)
     [ObservableProperty]
     private byte _pass2;
 
-    // Used in Hellfire and Decisions,decisions (with pass6) (Existing properties)
     [ObservableProperty]
     private byte _pass3;
 
@@ -102,15 +99,12 @@ public partial class InGameScenarioViewModel : ObservableObject
     [ObservableProperty]
     private byte _passUnderbelly3;
 
-    // Used for Hellfire, also displayed raw in "End of the Road" (Existing properties)
     [ObservableProperty]
     private short _pass4;
 
-    // Use unclear ?? (Existing properties)
     [ObservableProperty]
     private byte _pass5;
 
-    // Used for Decisions,decisions (with pass3) (Existing properties)
     [ObservableProperty]
     private byte _pass6;
 
@@ -127,6 +121,10 @@ public partial class InGameScenarioViewModel : ObservableObject
         _endOfTheRoadVm = new EndOfTheRoadViewModel();
         _underbellyVm = new UnderbellyViewModel();
         _wildThingsVm = new WildThingsViewModel();
+        _hellfireVm = new HellfireViewModel();
+        _theHiveVm = new TheHiveViewModel();
+        _decisionsDecisionsVm = new DecisionsDecisionsViewModel();
+        _belowFreezingPointVm = new BelowFreezingPointViewModel();
 
         dataManager.InGameScenarioObservable
             .ObserveOnThreadPool()
@@ -210,11 +208,22 @@ public partial class InGameScenarioViewModel : ObservableObject
                 _wildThingsVm.Update(scenario);
                 CurrentScenarioSpecificViewModel = _wildThingsVm;
                 break;
-            // TODO:
             case Scenario.Hellfire:
+                _hellfireVm.Update(scenario);
+                CurrentScenarioSpecificViewModel = _hellfireVm;
+                break;
             case Scenario.TheHive:
+                _theHiveVm.Update(scenario);
+                CurrentScenarioSpecificViewModel = _theHiveVm;
+                break;
             case Scenario.DecisionsDecisions:
+                _decisionsDecisionsVm.Update(scenario);
+                CurrentScenarioSpecificViewModel = _decisionsDecisionsVm;
+                break;
             case Scenario.BelowFreezingPoint:
+                _belowFreezingPointVm.Update(scenario);
+                CurrentScenarioSpecificViewModel = _belowFreezingPointVm;
+                break;
             // unused for now
             case Scenario.Unknown:
             case Scenario.Outbreak:

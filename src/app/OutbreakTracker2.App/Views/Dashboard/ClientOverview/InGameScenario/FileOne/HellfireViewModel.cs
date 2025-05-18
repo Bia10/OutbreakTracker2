@@ -18,7 +18,7 @@ public partial class HellfireViewModel : ObservableObject
     [ObservableProperty]
     private string _hellfireDisplay = string.Empty;
 
-    private void Update(DecodedInGameScenario scenario)
+    public void Update(DecodedInGameScenario scenario)
     {
         if (!IsValidScenario(scenario.ScenarioName))
             return;
