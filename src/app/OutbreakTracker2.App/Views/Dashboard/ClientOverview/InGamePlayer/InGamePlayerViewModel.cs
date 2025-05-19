@@ -53,7 +53,7 @@ public partial class InGamePlayerViewModel : ObservableObject
         _conditions = new PlayerConditionsViewModel();
         _attributes = new PlayerAttributesViewModel();
         _position = new PlayerPositionViewModel(dataManager);
-        _inventory = new InventoryViewModel(dataManager);
+        _inventory = new InventoryViewModel(player, dataManager);
 
         Update(player);
     }

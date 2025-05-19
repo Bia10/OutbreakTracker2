@@ -8,6 +8,8 @@ namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
 
 public partial class InventoryViewModel : ObservableObject
 {
+    private readonly IDataManager _dataManager;
+
     [ObservableProperty]
     private ObservableCollection<ItemSlotViewModel> _equippedItems = [];
 
@@ -26,11 +28,22 @@ public partial class InventoryViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<ItemSlotViewModel> _specialDeadSlots = [];
 
-    private readonly IDataManager _dataManager;
+    [ObservableProperty]
+    private string _playerStatus;
 
-    public InventoryViewModel(IDataManager dataManager)
+    [ObservableProperty]
+    private string _playerName;
+
+    public bool IsDeadOrZombie => PlayerStatus is "Dead" or "Zombie";
+    public bool HasSpecialInventory => PlayerName is "Yoko" or "Cindy" or "David";
+    public bool HasSpecialDeadInventory => IsDeadOrZombie && HasSpecialInventory;
+
+    public InventoryViewModel(DecodedInGamePlayer player, IDataManager dataManager)
     {
+        _playerStatus = player.Status;
+        _playerName = player.CharacterName;
         _dataManager = dataManager;
+
         InitializeCollections();
     }
 
@@ -103,6 +116,9 @@ public partial class InventoryViewModel : ObservableObject
         }
     }
 
+    // Note: Item slotIndex 0 implies that item is not spawned on map
+    // Item pickedUp 0 implies its not inside player inventory
+    // as such, for practical matters item which is neither on map nor in inventory is invalid
     private static bool IsValidItem(DecodedItem item)
         => item is not { SlotIndex: 0, PickedUp: 0 };
 }

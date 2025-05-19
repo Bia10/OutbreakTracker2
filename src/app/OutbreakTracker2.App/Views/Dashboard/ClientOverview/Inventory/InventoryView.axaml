@@ -35,7 +35,7 @@
                     </ItemsControl>
                 </StackPanel>
             </Grid>
-            <StackPanel>
+            <StackPanel IsVisible="{Binding !IsDeadOrZombie}">
                 <TextBlock Margin="0,0,0,5" Text="Main" />
                 <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding MainSlots}">
                     <ItemsControl.ItemsPanel>
@@ -45,7 +45,8 @@
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
             </StackPanel>
-            <StackPanel>
+
+            <StackPanel IsVisible="{Binding HasSpecialInventory}">
                 <TextBlock Margin="0,0,0,5" Text="Special" />
                 <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding SpecialSlots}">
                     <ItemsControl.ItemsPanel>
@@ -55,7 +56,8 @@
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
             </StackPanel>
-            <StackPanel>
+
+            <StackPanel IsVisible="{Binding IsDeadOrZombie}">
                 <TextBlock Margin="0,0,0,5" Text="Dead" />
                 <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding DeadSlots}">
                     <ItemsControl.ItemsPanel>
@@ -65,7 +67,8 @@
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
             </StackPanel>
-            <StackPanel>
+
+            <StackPanel IsVisible="{Binding HasSpecialDeadInventory}">
                 <TextBlock Margin="0,0,0,5" Text="Special dead" />
                 <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding SpecialDeadSlots}">
                     <ItemsControl.ItemsPanel>
