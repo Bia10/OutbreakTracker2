@@ -46,7 +46,7 @@
                 </ItemsControl>
             </StackPanel>
 
-            <StackPanel IsVisible="{Binding HasSpecialInventory}">
+            <StackPanel IsVisible="{Binding IsSpecialInventoryVisible}">
                 <TextBlock Margin="0,0,0,5" Text="Special" />
                 <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding SpecialSlots}">
                     <ItemsControl.ItemsPanel>
@@ -68,7 +68,7 @@
                 </ItemsControl>
             </StackPanel>
 
-            <StackPanel IsVisible="{Binding HasSpecialDeadInventory}">
+            <StackPanel IsVisible="{Binding IsSpecialDeadInventoryVisible}">
                 <TextBlock Margin="0,0,0,5" Text="Special dead" />
                 <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding SpecialDeadSlots}">
                     <ItemsControl.ItemsPanel>

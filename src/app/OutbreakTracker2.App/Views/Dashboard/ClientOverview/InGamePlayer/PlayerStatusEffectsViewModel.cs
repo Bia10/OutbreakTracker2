@@ -17,17 +17,40 @@ public partial class PlayerStatusEffectsViewModel : ObservableObject
     [ObservableProperty]
     private string _herbTime = string.Empty;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AreEffectsVisible))]
+    private bool _isBleedActive;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AreEffectsVisible))]
+    private bool _isAntiVirusActive;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AreEffectsVisible))]
+    private bool _isAntiVirusGActive;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AreEffectsVisible))]
+    private bool _isHerbActive;
+
+    public bool AreEffectsVisible => IsBleedActive || IsAntiVirusActive || IsAntiVirusGActive || IsHerbActive;
+
     public void Update(
-        ushort bleedTime,
-        ushort antiVirusTime,
-        ushort antiVirusGTime,
-        ushort herbTime,
+        ushort bleedTimeValue,
+        ushort antiVirusTimeValue,
+        ushort antiVirusGTimeValue,
+        ushort herbTimeValue,
         string status,
         byte currentGameFile)
     {
-        BleedTime = TimeUtility.FormatBleedTime(bleedTime, status);
-        AntiVirusTime = TimeUtility.FormatAntivirusOrHerbTime(antiVirusTime, herbTime);
-        AntiVirusGTime = TimeUtility.FormatAntivirusGTime(antiVirusGTime, currentGameFile);
-        HerbTime = TimeUtility.FormatAntivirusOrHerbTime(antiVirusTime, herbTime);
+        IsBleedActive = bleedTimeValue > 0;
+        IsAntiVirusActive = antiVirusTimeValue > 0;
+        IsAntiVirusGActive = antiVirusGTimeValue > 0;
+        IsHerbActive = herbTimeValue > 0;
+
+        BleedTime = TimeUtility.FormatBleedTime(bleedTimeValue, status);
+        AntiVirusTime = TimeUtility.FormatAntivirusOrHerbTime(antiVirusTimeValue, herbTimeValue);
+        AntiVirusGTime = TimeUtility.FormatAntivirusGTime(antiVirusGTimeValue, currentGameFile);
+        HerbTime = TimeUtility.FormatAntivirusOrHerbTime(antiVirusTimeValue, herbTimeValue);
     }
 }

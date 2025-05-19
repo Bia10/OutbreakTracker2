@@ -29,6 +29,8 @@ public partial class InventoryViewModel : ObservableObject
     private ObservableCollection<ItemSlotViewModel> _specialDeadSlots = [];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSpecialInventoryVisible))]
+    [NotifyPropertyChangedFor(nameof(IsSpecialDeadInventoryVisible))]
     private string _playerStatus;
 
     [ObservableProperty]
@@ -36,7 +38,8 @@ public partial class InventoryViewModel : ObservableObject
 
     public bool IsDeadOrZombie => PlayerStatus is "Dead" or "Zombie";
     public bool HasSpecialInventory => PlayerName is "Yoko" or "Cindy" or "David";
-    public bool HasSpecialDeadInventory => IsDeadOrZombie && HasSpecialInventory;
+    public bool IsSpecialInventoryVisible => HasSpecialInventory && !IsDeadOrZombie;
+    public bool IsSpecialDeadInventoryVisible => HasSpecialInventory && IsDeadOrZombie;
 
     public InventoryViewModel(DecodedInGamePlayer player, IDataManager dataManager)
     {
