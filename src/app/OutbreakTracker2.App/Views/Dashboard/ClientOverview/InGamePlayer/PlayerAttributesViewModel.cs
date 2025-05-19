@@ -5,7 +5,7 @@ namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer;
 public partial class PlayerAttributesViewModel : ObservableObject
 {
     [ObservableProperty]
-    private float _critBonus;
+    private float _criticalBonus;
 
     [ObservableProperty]
     private float _size;
@@ -17,12 +17,12 @@ public partial class PlayerAttributesViewModel : ObservableObject
     private float _speed;
 
     public void Update(
-        float critBonus,
+        float criticalBonus,
         float size,
         float power,
         float speed)
     {
-        CritBonus = critBonus;
+        CriticalBonus = criticalBonus;
         Size = size;
         Power = power;
         Speed = speed;

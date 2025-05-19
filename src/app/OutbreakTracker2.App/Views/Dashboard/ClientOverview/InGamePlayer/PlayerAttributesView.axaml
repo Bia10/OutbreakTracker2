@@ -10,10 +10,12 @@
     d:DesignWidth="200"
     x:DataType="vm:PlayerAttributesViewModel"
     mc:Ignorable="d">
+
+    <!-- Todo: Well since this info is not dynamically updated beside the critical bonus maybe we don't need to pollute the player card with it? -->
     <suki:GroupBox Header="Attributes">
         <StackPanel Margin="0">
             <TextBlock Text="{Binding Power, StringFormat='Power: {0:P1}'}" />
-            <TextBlock Text="{Binding CritBonus, StringFormat='Crit Bonus: {0:F2}%'}" />
+            <TextBlock Text="{Binding CriticalBonus, StringFormat='Critical Bonus: {0:F2}%'}" />
             <TextBlock Text="{Binding Speed, StringFormat='Speed: {0:P1}'}" />
             <TextBlock Text="{Binding Size, StringFormat='Size: {0:P1}'}" />
         </StackPanel>
