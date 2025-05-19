@@ -20,7 +20,7 @@ public sealed class GameClient : IDisposable
     public void Attach(Process process)
     {
         Process = process ?? throw new ArgumentNullException(nameof(process));
-        Handle = NativeMethods.OpenProcess(
+        Handle = SafeNativeMethods.OpenProcess(
             ProcessAccessFlags.VmRead | ProcessAccessFlags.QueryInformation,
             false,
             Process.Id
@@ -38,7 +38,7 @@ public sealed class GameClient : IDisposable
 
         if (IsAttached)
         {
-            NativeMethods.CloseHandle(Handle);
+            SafeNativeMethods.CloseHandle(Handle);
             Handle = nint.Zero;
         }
 

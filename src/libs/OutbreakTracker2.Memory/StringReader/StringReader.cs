@@ -2,29 +2,12 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace OutbreakTracker2.Memory;
+namespace OutbreakTracker2.Memory.StringReader;
 
-public sealed class MemoryReader : IMemoryReader
+public sealed class StringReader : IStringReader
 {
-    public T Read<T>(nint hProcess, nint address) where T : struct
-    {
-        int size = Marshal.SizeOf<T>();
-        byte[] buffer = new byte[size];
-        NativeMethods.ReadProcessMemory(hProcess, address, buffer, buffer.Length, out _);
-        GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-
-        try
-        {
-            return Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
-        }
-        finally
-        {
-            handle.Free();
-        }
-    }
-
     // This has to be a bit overcomplicated as Outbreak supports multiple char widths like halfwidth and fullwidth character forms
-    public string ReadString(nint hProcess, nint address, Encoding? encoding = null)
+    public string Read(nint hProcess, nint address, Encoding? encoding = null)
     {
         // Under some bizzare scenario, if the null terminator is not found, we can read up to MAX of 1MB of data
         const int maxSafeLength = 1048576;
@@ -51,7 +34,7 @@ public sealed class MemoryReader : IMemoryReader
         {
             while (bytes.Count < maxSafeLength)
             {
-                bool success = NativeMethods.ReadProcessMemory(hProcess, address + bytes.Count, buffer, 1, out int bytesRead);
+                bool success = SafeNativeMethods.ReadProcessMemory(hProcess, address + bytes.Count, buffer, 1, out int bytesRead);
 
                 if (!HandleReadResult(ref consecutiveFails, success, bytes.Count, bytesRead, address, out bool shouldBreak))
                     if (shouldBreak) break;

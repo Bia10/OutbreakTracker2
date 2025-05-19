@@ -1,4 +1,5 @@
-﻿using OutbreakTracker2.Memory;
+﻿using OutbreakTracker2.Memory.MemoryReader;
+using OutbreakTracker2.Memory.StringReader;
 
 namespace OutbreakTracker2.PCSX2;
 
@@ -6,9 +7,9 @@ public interface IEEmemMemory
 {
     public nint BaseAddress { get; }
 
-    public IMemoryReader MemoryReader { get; }
+    public ISafeMemoryReader MemoryReader { get; }
 
-    public ValueTask<bool> InitializeAsync(GameClient gameClient, CancellationToken cancellationToken);
+    public IStringReader StringReader { get; }
 
     public nint GetAddressFromPtr(nint ptrOffset);
 

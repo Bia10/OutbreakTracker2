@@ -1,4 +1,5 @@
-﻿using OutbreakTracker2.Memory;
+﻿using OutbreakTracker2.Memory.MemoryReader;
+using OutbreakTracker2.Memory.StringReader;
 using OutbreakTracker2.WinInterop.Structs;
 
 namespace OutbreakTracker2.PCSX2;
@@ -9,15 +10,18 @@ public sealed class EEmemMemory : IEEmemMemory
 
     public nint BaseAddress { get; private set; }
 
-    public IMemoryReader MemoryReader { get; }
+    public ISafeMemoryReader MemoryReader { get; }
 
-    public EEmemMemory(GameClient gameClient, IMemoryReader memoryReader)
+    public IStringReader StringReader { get; }
+
+    public EEmemMemory(GameClient gameClient, ISafeMemoryReader memoryReader, IStringReader stringReader)
     {
         _gameClient = gameClient ?? throw new ArgumentNullException(nameof(gameClient));
         MemoryReader = memoryReader ?? throw new ArgumentNullException(nameof(memoryReader));
+        StringReader = stringReader ?? throw new ArgumentNullException(nameof(stringReader));
     }
 
-    public async ValueTask<bool> InitializeAsync(GameClient gameClient, CancellationToken cancellationToken)
+    public async ValueTask<bool> InitializeAsync(CancellationToken cancellationToken)
     {
         const int maxAttempts = 20;
         const int delayBetweenAttemptsMs = 100;
@@ -26,7 +30,7 @@ public sealed class EEmemMemory : IEEmemMemory
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            BaseAddress = GetEEmemBaseAddress(gameClient);
+            BaseAddress = GetEEmemBaseAddress(_gameClient);
             if (BaseAddress != nint.Zero)
                 return true;
 
@@ -42,13 +46,13 @@ public sealed class EEmemMemory : IEEmemMemory
         nint baseAddress = gameClient.MainModuleBase;
 
         // Read DOS Header
-        Pe32.ImageDosHeader dosHeader = MemoryReader.Read<Pe32.ImageDosHeader>(gameClient.Handle, baseAddress);
+        Pe32.ImageDosHeader dosHeader = MemoryReader.ReadStruct<Pe32.ImageDosHeader>(gameClient.Handle, baseAddress);
         if (dosHeader.Magic != 0x5A4D) // "MZ"
             return nint.Zero;
 
         // Read NT Headers
         nint ntHeadersAddr = baseAddress + dosHeader.LfaNew;
-        Pe32.ImageNtHeaders64 ntHeaders = MemoryReader.Read<Pe32.ImageNtHeaders64>(gameClient.Handle, ntHeadersAddr);
+        Pe32.ImageNtHeaders64 ntHeaders = MemoryReader.ReadStruct<Pe32.ImageNtHeaders64>(gameClient.Handle, ntHeadersAddr);
         if (ntHeaders.Signature != 0x00004550) // "PE\0\0"
             return nint.Zero;
 
@@ -67,7 +71,7 @@ public sealed class EEmemMemory : IEEmemMemory
             nint nameRvaPtr = namesAddr + (i * 4);
             uint nameRva = MemoryReader.Read<uint>(gameClient.Handle, nameRvaPtr);
             nint namePtr = baseAddress + (int)nameRva;
-            string name = MemoryReader.ReadString(gameClient.Handle, namePtr);
+            string name = StringReader.Read(gameClient.Handle, namePtr);
 
             if (name.Equals("EEmem", StringComparison.Ordinal))
             {

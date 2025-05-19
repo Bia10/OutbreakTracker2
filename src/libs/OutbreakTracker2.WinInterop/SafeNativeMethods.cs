@@ -3,7 +3,7 @@ using OutbreakTracker2.WinInterop.Enums;
 
 namespace OutbreakTracker2.WinInterop;
 
-public static partial class NativeMethods
+public static partial class SafeNativeMethods
 {
     [LibraryImport("kernel32.dll", EntryPoint = "OpenProcess", SetLastError = true)]
     public static partial nint OpenProcess(ProcessAccessFlags dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, int dwProcessId);

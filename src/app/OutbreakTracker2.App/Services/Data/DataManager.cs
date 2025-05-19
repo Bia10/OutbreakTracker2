@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using OutbreakTracker2.Memory;
+using OutbreakTracker2.Memory.MemoryReader;
+using OutbreakTracker2.Memory.StringReader;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Readers;
 using OutbreakTracker2.PCSX2;
@@ -87,9 +88,9 @@ public sealed class DataManager : IDataManager, IDisposable
 
         _logger.LogInformation("Attempting to initialize DataManager and EEmemory connection");
 
-        _eememMemory = new EEmemMemory(gameClient, new MemoryReader());
+        _eememMemory = new EEmemMemory(gameClient, new SafeMemoryReader(), new StringReader());
 
-        bool eememMemoryReady = await _eememMemory.InitializeAsync(gameClient, cancellationToken).ConfigureAwait(false);
+        bool eememMemoryReady = await _eememMemory.InitializeAsync(cancellationToken).ConfigureAwait(false);
         if (!eememMemoryReady)
         {
             _logger.LogError("Failed to initialize EEmemory after multiple attempts within DataManager");

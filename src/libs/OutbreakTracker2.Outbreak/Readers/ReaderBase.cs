@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using OutbreakTracker2.Memory;
+using OutbreakTracker2.Extensions;
+using OutbreakTracker2.Memory.MemoryReader;
+using OutbreakTracker2.Memory.StringReader;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Extensions;
@@ -8,34 +10,35 @@ using OutbreakTracker2.PCSX2;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
-using OutbreakTracker2.Extensions;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
 public abstract class ReaderBase
 {
+    protected readonly ILogger Logger;
     private readonly GameClient _gameClient;
     private readonly IEEmemMemory _eEmemMemory;
-    private readonly IMemoryReader _memoryReader;
-    protected readonly ILogger Logger;
+    private readonly ISafeMemoryReader _memoryReader;
+    private readonly IStringReader _stringReader;
     private const bool EnableLogging = false;
     protected GameFile CurrentFile { get; }
 
     protected ReaderBase(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
     {
+        Logger = logger;
         _gameClient = gameClient;
         _eEmemMemory = eememMemory;
         _memoryReader = eememMemory.MemoryReader;
-        Logger = logger;
+        _stringReader = eememMemory.StringReader;
 
         CurrentFile = GetGameFile();
     }
 
-    private T Read<T>(nint address) where T : struct
+    private T Read<T>(nint address) where T : unmanaged
         => _memoryReader.Read<T>(_gameClient.Handle, address);
 
     private string ReadString(nint address, Encoding? encoding = null)
-        => _memoryReader.ReadString(_gameClient.Handle, address, encoding);
+        => _stringReader.Read(_gameClient.Handle, address, encoding);
 
     private GameFile GetGameFile()
     {
@@ -66,7 +69,7 @@ public abstract class ReaderBase
         (nint[] File1, nint[] File2) offsets,
         T errorValue,
         [CallerMemberName] string methodName = ""
-    ) where T : struct
+    ) where T : unmanaged
         => ReadValueFromOffsets(offsets.File1, offsets.File2, methodName, errorValue);
 
     protected T ReadSlotValue<T>(
@@ -74,7 +77,7 @@ public abstract class ReaderBase
         (nint[] File1, nint[] File2) offsets,
         T errorValue,
         [CallerMemberName] string methodName = ""
-    ) where T : struct
+    ) where T : unmanaged
         => ReadSlotValue(slotIndex, offsets.File1, offsets.File2, errorValue, methodName);
 
     protected string ReadSlotString(
@@ -90,7 +93,7 @@ public abstract class ReaderBase
         nint[] offsetsFile2,
         T errorValue,
         [CallerMemberName] string methodName = ""
-    ) where T : struct
+    ) where T : unmanaged
     {
         if (!TryComputeLobbyAddress(slotIndex, offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
         {
@@ -109,7 +112,7 @@ public abstract class ReaderBase
         nint basePtr,
         ReadOnlySpan<nint> offsets = default,
         [CallerMemberName] string methodName = ""
-    ) where T : struct
+    ) where T : unmanaged
     {
         nint address = ComputeAddress(basePtr, offsets);
         T result = Read<T>(address);
@@ -198,7 +201,7 @@ public abstract class ReaderBase
     }
 
     protected T ReadValueFromOffsets<T>(nint[] offsetsFile1, nint[] offsetsFile2, string methodName, T errorValue)
-        where T : struct
+        where T : unmanaged
     {
         if (!TryComputeAddress(offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
         {
