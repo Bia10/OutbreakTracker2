@@ -10,7 +10,8 @@
     d:DesignWidth="800"
     x:DataType="inGameDoors:InGameDoorsViewModel"
     mc:Ignorable="d">
-    <ItemsControl Padding="8" ItemsSource="{Binding DoorsView}">
+
+    <ItemsControl ItemsSource="{Binding DoorsView}">
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
                 <WrapPanel />

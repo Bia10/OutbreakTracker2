@@ -15,7 +15,7 @@
         <ItemsControl ItemsSource="{Binding LobbySlotsView}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <WrapPanel HorizontalAlignment="Center" Orientation="Horizontal" />
+                    <WrapPanel HorizontalAlignment="Left" VerticalAlignment="Top" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>

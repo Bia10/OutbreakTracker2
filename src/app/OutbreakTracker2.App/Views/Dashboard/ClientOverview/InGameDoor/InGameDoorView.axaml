@@ -11,14 +11,9 @@
     d:DesignWidth="280"
     x:DataType="inGameDoor:InGameDoorViewModel"
     mc:Ignorable="d">
-    <suki:GlassCard
-        MinWidth="200"
-        MaxWidth="300"
-        Margin="5">
-        <Grid
-            Margin="8"
-            ColumnDefinitions="Auto, Auto, *"
-            RowDefinitions="Auto, Auto, Auto, Auto">
+
+    <suki:GlassCard Margin="5">
+        <Grid ColumnDefinitions="Auto, Auto, *" RowDefinitions="Auto, Auto, Auto, Auto">
             <TextBlock
                 Grid.Row="0"
                 Grid.Column="0"
@@ -28,16 +23,10 @@
                 FontSize="16"
                 FontWeight="SemiBold"
                 Text="Door Status" />
-            <TextBlock
-                Grid.Row="1"
-                Grid.Column="0"
-                Margin="0,0,5,0"
-                VerticalAlignment="Center"
-                FontWeight="SemiBold"
-                Text="HP:" />
+
             <avalonia:MaterialIcon
                 Grid.Row="1"
-                Grid.Column="1"
+                Grid.Column="0"
                 Width="16"
                 Height="16"
                 Margin="0,0,5,0"
@@ -46,19 +35,20 @@
                 ToolTip.Tip="Current Health Points" />
             <TextBlock
                 Grid.Row="1"
-                Grid.Column="2"
-                VerticalAlignment="Center"
-                Text="{Binding Hp}" />
-            <TextBlock
-                Grid.Row="2"
-                Grid.Column="0"
+                Grid.Column="1"
                 Margin="0,0,5,0"
                 VerticalAlignment="Center"
                 FontWeight="SemiBold"
-                Text="Flag:" />
+                Text="HP:" />
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                Text="{Binding Hp}" />
+
             <avalonia:MaterialIcon
                 Grid.Row="2"
-                Grid.Column="1"
+                Grid.Column="0"
                 Width="16"
                 Height="16"
                 Margin="0,0,5,0"
@@ -67,25 +57,33 @@
                 ToolTip.Tip="Door Flag Status" />
             <TextBlock
                 Grid.Row="2"
-                Grid.Column="2"
-                VerticalAlignment="Center"
-                Text="{Binding Flag}" />
-            <TextBlock
-                Grid.Row="3"
-                Grid.Column="0"
+                Grid.Column="1"
                 Margin="0,0,5,0"
                 VerticalAlignment="Center"
                 FontWeight="SemiBold"
-                Text="Status:" />
+                Text="Flag:" />
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                Text="{Binding Flag}" />
+
             <avalonia:MaterialIcon
                 Grid.Row="3"
-                Grid.Column="1"
+                Grid.Column="0"
                 Width="16"
                 Height="16"
                 Margin="0,0,5,0"
                 VerticalAlignment="Center"
                 Kind="Information"
                 ToolTip.Tip="Door Operational Status" />
+            <TextBlock
+                Grid.Row="3"
+                Grid.Column="1"
+                Margin="0,0,5,0"
+                VerticalAlignment="Center"
+                FontWeight="SemiBold"
+                Text="Status:" />
             <TextBlock
                 Grid.Row="3"
                 Grid.Column="2"
