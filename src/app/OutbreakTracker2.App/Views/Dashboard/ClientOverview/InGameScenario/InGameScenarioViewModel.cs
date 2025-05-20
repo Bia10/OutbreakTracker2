@@ -25,6 +25,8 @@ public partial class InGameScenarioViewModel : ObservableObject
     private string _scenarioName = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsScenarioActive))]
+    [NotifyPropertyChangedFor(nameof(IsScenarioNotActive))]
     private int _frameCounter;
 
     [ObservableProperty]
@@ -103,6 +105,9 @@ public partial class InGameScenarioViewModel : ObservableObject
 
     [ObservableProperty]
     private ObservableObject? _currentScenarioSpecificViewModel;
+
+    public bool IsScenarioActive => FrameCounter > 0;
+    public bool IsScenarioNotActive => FrameCounter <= 0;
 
     public InGameScenarioViewModel(
         ILogger<InGameScenarioViewModel> logger,
