@@ -130,7 +130,7 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
         _filterSubscription = _filterUpdateSubject
             .Debounce(TimeSpan.FromMilliseconds(100))
             .SubscribeOnThreadPool()
-            .SubscribeAwait(async (_, ct) => await ApplyLogFiltersAsync(ct).ConfigureAwait(false), AwaitOperation.Drop);
+            .SubscribeAwait((_, ct) => ApplyLogFiltersAsync(ct), AwaitOperation.Drop);
 
         if (_dataStorageService.Entries.Count is 0)
             _logger.LogWarning("Log data storage service entries are empty");

@@ -29,11 +29,6 @@ public class ScrollToDataGridItemBehavior : Behavior<DataGrid>
         }
     }
 
-    protected override void OnDetaching()
-    {
-        base.OnDetaching();
-    }
-
     private void OnItemToScrollToChanged(object? item)
     {
         DataGrid? dataGrid = AssociatedObject;

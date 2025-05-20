@@ -14,16 +14,18 @@ namespace OutbreakTracker2.App.Views.Dashboard;
 
 public partial class DashboardViewModel : PageBase
 {
+    private readonly ILogger<DashboardViewModel> _logger;
+
     [ObservableProperty]
     private bool _isClientRunning;
 
     [ObservableProperty]
     private object? _currentView;
 
-    private readonly ILogger<DashboardViewModel> _logger;
-
     public ClientNotRunningViewModel? ClientNotRunningViewModel { get; }
+
     public ClientOverviewViewModel? ClientOverviewViewModel { get; }
+
     public ClientAlreadyRunningViewModel? ClientAlreadyRunningViewModel { get; }
 
     public DashboardViewModel(
@@ -71,12 +73,14 @@ public partial class DashboardViewModel : PageBase
 
     private void HandleMonitoredProcess()
     {
+        _logger.LogInformation("Monitored process is running");
         IsClientRunning = true;
         CurrentView = ClientOverviewViewModel;
     }
 
     private void HandleUnmonitoredProcess(List<int> processIds)
     {
+        _logger.LogInformation("Unmonitored process is running");
         IsClientRunning = true;
         ClientAlreadyRunningViewModel!.UpdateProcesses(processIds);
         CurrentView = ClientAlreadyRunningViewModel;
@@ -84,6 +88,7 @@ public partial class DashboardViewModel : PageBase
 
     private void HandleNoRunningProcess()
     {
+        _logger.LogInformation("No running process found");
         IsClientRunning = false;
         CurrentView = ClientNotRunningViewModel;
     }

@@ -109,6 +109,7 @@ public sealed class DataManager : IDataManager, IDisposable
         Observable<Unit> slowUpdateTrigger = Observable.Interval(_slowUpdateInterval, cancellationToken);
 
         IDisposable fastSubscription = fastUpdateTrigger
+            .Where(_ => IsInScenario())
             .ObserveOnThreadPool()
             .SubscribeAwait(async ValueTask (_, ct) =>
             {
@@ -127,6 +128,7 @@ public sealed class DataManager : IDataManager, IDisposable
             }, AwaitOperation.Drop);
 
         IDisposable slowSubscription = slowUpdateTrigger
+            .Where(_ => !IsInScenario())
             .ObserveOnThreadPool()
             .SubscribeAwait(async ValueTask (_, ct) =>
             {
@@ -253,6 +255,9 @@ public sealed class DataManager : IDataManager, IDisposable
         _lobbySlotReader?.UpdateLobbySlots();
         _lobbySlotsSubject.OnNext(_lobbySlotReader?.DecodedLobbySlots ?? []);
     }
+
+    private bool IsInScenario()
+        => _inGameScenarioReader is not null && _inGameScenarioReader.IsInScenario();
 
     public void Dispose()
     {

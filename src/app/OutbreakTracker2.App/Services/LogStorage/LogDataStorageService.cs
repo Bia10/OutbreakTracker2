@@ -7,37 +7,26 @@ using System.Threading.Tasks;
 
 namespace OutbreakTracker2.App.Services.LogStorage;
 
-public class LogDataStorageService : ILogDataStorageService, IDisposable
+public class LogDataStorageService : ILogDataStorageService, IAsyncDisposable
 {
     private readonly Channel<LogModel> _logChannel = Channel.CreateUnbounded<LogModel>();
     private readonly Task _processingTask;
     private readonly CancellationTokenSource _cts = new();
+    private bool _isDisposed;
 
-    public ObservableFixedSizeRingBuffer<LogModel> Entries { get; private set; }
+    public ObservableFixedSizeRingBuffer<LogModel> Entries { get; }
 
-    public int MaxCapacity { get; } = 1000;
+    public int MaxCapacity => 1000;
 
     public LogDataStorageService()
     {
         Entries = new ObservableFixedSizeRingBuffer<LogModel>(MaxCapacity);
-
         _processingTask = Task.Run(() => ProcessLogChannelAsync(_cts.Token));
     }
 
-    /// <summary>
-    /// Adds a log entry to the internal channel for asynchronous processing.
-    /// </summary>
-    /// <returns>A ValueTask representing the asynchronous write operation.</returns>
-    public async ValueTask AddEntryAsync(LogModel logModel, CancellationToken cancellationToken)
-    {
-        await _logChannel.Writer.WriteAsync(logModel, cancellationToken).ConfigureAwait(false);
-    }
+    public ValueTask AddEntryAsync(LogModel logModel, CancellationToken cancellationToken)
+        => _logChannel.Writer.WriteAsync(logModel, cancellationToken);
 
-    /// <summary>
-    /// Background task that reads log entries from the channel and adds them to the Entries ring buffer.
-    /// This method runs entirely on a background thread, and modifications to Entries
-    /// do NOT need to be marshaled to the UI thread.
-    /// </summary>
     private async Task ProcessLogChannelAsync(CancellationToken cancellationToken)
     {
         try
@@ -45,7 +34,6 @@ public class LogDataStorageService : ILogDataStorageService, IDisposable
             await foreach (LogModel logModel in _logChannel.Reader.ReadAllAsync(cancellationToken))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
                 Entries.AddLast(logModel);
             }
         }
@@ -59,11 +47,10 @@ public class LogDataStorageService : ILogDataStorageService, IDisposable
         }
     }
 
-    /// <summary>
-    /// Disposes the LogDataStorageService and its resources.
-    /// </summary>
-    public async void Dispose()
+    public async ValueTask DisposeAsync()
     {
+        if (_isDisposed) return;
+
         await _cts.CancelAsync().ConfigureAwait(false);
 
         _logChannel.Writer.Complete();
@@ -74,15 +61,16 @@ public class LogDataStorageService : ILogDataStorageService, IDisposable
         }
         catch (OperationCanceledException)
         {
-            Console.WriteLine("Log processing task was canceled.");
+            Console.WriteLine("Log processing task was canceled during DisposeAsync.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error awaiting log processing task completion: {ex}");
+            Console.WriteLine($"Error awaiting log processing task completion during DisposeAsync: {ex}");
         }
         finally
         {
             _cts.Dispose();
+            _isDisposed = true;
         }
     }
 }

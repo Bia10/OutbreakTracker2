@@ -91,7 +91,7 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
         ).AddTo(_disposables);
 
         ISukiToast launchToast = _toastService.CreateInfoToastWithCancelButton(
-            "Launch client", "Cancel client launch", toast =>
+            "Launch client", "Cancel client launch", _ =>
             {
                 if (!cts.IsCancellationRequested)
                 {
@@ -145,7 +145,7 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
                 );
 
             launchAndInitializePipeline.Timeout(TimeSpan.FromSeconds(LaunchTimeout))
-                .SubscribeAwait(onNextAsync: async (success, token) =>
+                .SubscribeAwait(onNextAsync: async (_, _) =>
                     {
                         await _toastService.DismissToastAsync(launchToast);
                         _logger.LogInformation("Client launched and data manager initialized successfully");
@@ -181,7 +181,6 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
                         catch (Exception ex)
                         {
                             _logger.LogError(ex, "Error in client launch/data manager stream error handler");
-                            throw;
                         }
                     }, onCompleted: async void (result) =>
                     {
@@ -193,7 +192,6 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
                         catch (Exception ex)
                         {
                             _logger.LogError(ex, "Error in client launch/data manager stream completed handler");
-                            throw; // TODO handle exception
                         }
                     }, configureAwait: true, cancelOnCompleted: true
                 ).AddTo(_disposables);

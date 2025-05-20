@@ -226,6 +226,9 @@ public class InGameScenarioReader : ReaderBase
         return items;
     }
 
+    public bool IsInScenario()
+        => GetFrameCount() > 0 && GetScenarioStatus() > 0;
+
     public void UpdateScenario(bool debug = false)
     {
         if (CurrentFile is GameFile.Unknown) return;

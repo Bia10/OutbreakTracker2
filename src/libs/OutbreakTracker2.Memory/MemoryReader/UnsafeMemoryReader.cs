@@ -12,7 +12,7 @@ public unsafe class UnsafeMemoryReader : IUnsafeMemoryReader
 {
     private const int StackAllocThreshold = 8192;
 
-    public unsafe T Read<T>(nint hProcess, nint address) where T : unmanaged
+    public T Read<T>(nint hProcess, nint address) where T : unmanaged
     {
         int size = Unsafe.SizeOf<T>();
         switch (size)

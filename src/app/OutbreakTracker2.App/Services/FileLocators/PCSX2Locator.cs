@@ -33,11 +33,11 @@ public class Pcsx2Locator : IPcsx2Locator
         Environment.SpecialFolder.LocalApplicationData
     ];
 
-    public async ValueTask<string?> FindOutbreakFile1Async(CancellationToken ct = default)
-        => await LocateIsoFile(File1Name, ct).ConfigureAwait(false);
+    public ValueTask<string?> FindOutbreakFile1Async(CancellationToken ct = default)
+        => LocateIsoFile(File1Name, ct);
 
-    public async ValueTask<string?> FindOutbreakFile2Async(CancellationToken ct = default)
-        => await LocateIsoFile(File2Name, ct).ConfigureAwait(false);
+    public ValueTask<string?> FindOutbreakFile2Async(CancellationToken ct = default)
+        => LocateIsoFile(File2Name, ct);
 
     private async ValueTask<string?> LocateIsoFile(string fileName, CancellationToken ct)
     {
@@ -135,8 +135,8 @@ public class Pcsx2Locator : IPcsx2Locator
                 .ToArray();
 
             Channel<string> resultChannel = Channel.CreateBounded<string>(1);
-            IEnumerable<Task> _ = drives.Select(async drive =>
-                await ScanDriveAsync(drive, resultChannel.Writer, linkedCts.Token).ConfigureAwait(false));
+            IEnumerable<Task> _ = drives.Select(drive =>
+                ScanDriveAsync(drive, resultChannel.Writer, linkedCts.Token));
 
             return await (await Task.WhenAny(resultChannel.Reader.ReadAsync(linkedCts.Token)
                     .AsTask(), Task.Delay(Timeout.InfiniteTimeSpan, linkedCts.Token)

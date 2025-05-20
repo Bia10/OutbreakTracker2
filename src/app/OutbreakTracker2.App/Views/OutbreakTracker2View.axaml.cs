@@ -1,10 +1,9 @@
-using System.Runtime.CompilerServices;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using SukiUI.Controls;
 using SukiUI.Enums;
 using SukiUI.Models;
+using System.Runtime.CompilerServices;
 
 namespace OutbreakTracker2.App.Views;
 
@@ -35,7 +34,4 @@ public partial class OutbreakTracker2View : SukiWindow
 
         vm.BackgroundStyle = cStyle;
     }
-
-    private void InputElement_OnPointerPressed(object? sender, PointerPressedEventArgs e)
-        => IsMenuVisible = !IsMenuVisible;
 }
