@@ -22,7 +22,7 @@
             <ItemsControl IsVisible="{Binding PlayersView, Converter={StaticResource CollectionIsNullOrEmptyConverter}, ConverterParameter=Inverse}" ItemsSource="{Binding PlayersView}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Vertical" Spacing="15" />
+                        <UniformGrid Columns="4" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>

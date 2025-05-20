@@ -10,15 +10,15 @@
     d:DesignWidth="400"
     x:DataType="vm:PlayerGaugesViewModel"
     mc:Ignorable="d">
-    <WrapPanel HorizontalAlignment="Left" ItemSpacing="10">
-        <suki:GroupBox MinWidth="180" Header="Health">
+    <WrapPanel HorizontalAlignment="Left" ItemSpacing="5">
+        <suki:GroupBox MinWidth="140" Header="Health">
             <StackPanel
                 Margin="5"
                 HorizontalAlignment="Center"
-                Spacing="8">
+                Spacing="4">
                 <suki:CircleProgressBar
                     IsIndeterminate="False"
-                    StrokeWidth="10"
+                    StrokeWidth="8"
                     Value="{Binding HealthPercentage}">
                     <TextBlock
                         Margin="0,2,0,0"
@@ -35,14 +35,14 @@
                 </TextBlock>
             </StackPanel>
         </suki:GroupBox>
-        <suki:GroupBox MinWidth="180" Header="Virus">
+        <suki:GroupBox MinWidth="140" Header="Virus">
             <StackPanel
                 Margin="5"
                 HorizontalAlignment="Center"
-                Spacing="8">
+                Spacing="4">
                 <suki:CircleProgressBar
                     IsIndeterminate="False"
-                    StrokeWidth="10"
+                    StrokeWidth="8"
                     Value="{Binding VirusPercentage}">
                     <TextBlock
                         Margin="0,2,0,0"

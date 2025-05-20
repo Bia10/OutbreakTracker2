@@ -3,6 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
     xmlns:vm="clr-namespace:OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer"
@@ -11,13 +12,75 @@
     x:DataType="vm:PlayerAttributesViewModel"
     mc:Ignorable="d">
 
-    <!-- Todo: Well since this info is not dynamically updated beside the critical bonus maybe we don't need to pollute the player card with it? -->
     <suki:GroupBox Header="Attributes">
-        <StackPanel Margin="0">
-            <TextBlock Text="{Binding Power, StringFormat='Power: {0:P1}'}" />
-            <TextBlock Text="{Binding CriticalBonus, StringFormat='Critical Bonus: {0:F2}%'}" />
-            <TextBlock Text="{Binding Speed, StringFormat='Speed: {0:P1}'}" />
-            <TextBlock Text="{Binding Size, StringFormat='Size: {0:P1}'}" />
-        </StackPanel>
+        <WrapPanel ItemSpacing="4" Orientation="Horizontal">
+            <suki:GlassCard
+                Margin="0"
+                Padding="8"
+                CornerRadius="6">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <material:MaterialIcon
+                        Width="16"
+                        Height="16"
+                        Margin="0,0,6,0"
+                        Kind="ArmFlex" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="{Binding Power, StringFormat='Power: {0:P1}'}" />
+                </StackPanel>
+            </suki:GlassCard>
+
+            <suki:GlassCard
+                Margin="0"
+                Padding="8"
+                CornerRadius="6">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <material:MaterialIcon
+                        Width="16"
+                        Height="16"
+                        Margin="0,0,6,0"
+                        Kind="Target" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="{Binding CriticalBonus, StringFormat='Critical Bonus: {0:F2}%'}" />
+                </StackPanel>
+            </suki:GlassCard>
+
+            <suki:GlassCard
+                Margin="0"
+                Padding="8"
+                CornerRadius="6">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <material:MaterialIcon
+                        Width="16"
+                        Height="16"
+                        Margin="0,0,6,0"
+                        Kind="Speedometer" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="{Binding Speed, StringFormat='Speed: {0:P1}'}" />
+                </StackPanel>
+            </suki:GlassCard>
+
+            <suki:GlassCard
+                Margin="0"
+                Padding="8"
+                CornerRadius="6">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <material:MaterialIcon
+                        Width="16"
+                        Height="16"
+                        Margin="0,0,6,0"
+                        Kind="Resize" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="{Binding Size, StringFormat='Size: {0:P1}'}" />
+                </StackPanel>
+            </suki:GlassCard>
+        </WrapPanel>
     </suki:GroupBox>
 </UserControl>

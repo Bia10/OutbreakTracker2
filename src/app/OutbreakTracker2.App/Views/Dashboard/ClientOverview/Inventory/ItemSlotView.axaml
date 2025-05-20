@@ -7,15 +7,16 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
     d:DesignHeight="60"
-    d:DesignWidth="135"
+    d:DesignWidth="120"
     x:DataType="inventory:ItemSlotViewModel"
     mc:Ignorable="d">
+
     <suki:GlassCard
-        Width="135"
+        Width="120"
         Height="60"
         Margin="2"
         Padding="5"
-        CornerRadius="8">
+        CornerRadius="4">
         <Grid RowDefinitions="Auto,*,Auto">
             <TextBlock
                 Grid.Row="0"
