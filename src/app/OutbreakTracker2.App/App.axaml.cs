@@ -19,7 +19,6 @@ using OutbreakTracker2.App.Views.Dashboard;
 using OutbreakTracker2.App.Views.Dashboard.ClientAlreadyRunning;
 using OutbreakTracker2.App.Views.Dashboard.ClientNotRunning;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview;
-using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Debug;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameDoors;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameEnemies;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
@@ -104,7 +103,6 @@ public class App : Application
             .AddView<ClientNotRunningView, ClientNotRunningViewModel>(services)
             .AddView<ClientAlreadyRunningView, ClientAlreadyRunningViewModel>(services)
             .AddView<ClientOverviewView, ClientOverviewViewModel>(services)
-            .AddView<DebugView, DebugViewModel>(services)
             .AddView<InGameScenarioView, InGameScenarioViewModel>(services)
             .AddView<InGamePlayersView, InGamePlayersViewModel>(services)
             .AddView<InGameEnemiesView, InGameEnemiesViewModel>(services)
