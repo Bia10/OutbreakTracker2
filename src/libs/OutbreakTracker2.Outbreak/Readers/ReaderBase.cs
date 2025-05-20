@@ -20,7 +20,6 @@ public abstract class ReaderBase
     private readonly IEEmemMemory _eEmemMemory;
     private readonly ISafeMemoryReader _memoryReader;
     private readonly IStringReader _stringReader;
-    private const bool EnableLogging = false;
     protected GameFile CurrentFile { get; }
 
     protected ReaderBase(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
@@ -47,18 +46,18 @@ public abstract class ReaderBase
 
         if (f1Byte is 0x53)
         {
-            Logger.LogDebug("Detected GameFile.FileOne");
+            Logger.LogInformation("Game file detected: {GameFile}. Signature byte: 0x{SignatureByte:X2}", GameFile.FileOne, f1Byte);
             return GameFile.FileOne;
         }
 
         if (f2Byte is 0x53)
         {
-            Logger.LogDebug("Detected GameFile.FileTwo");
+            Logger.LogInformation("Game file detected: {GameFile}. Signature byte: 0x{SignatureByte:X2}", GameFile.FileTwo, f2Byte);
             return GameFile.FileTwo;
         }
 
         Logger.LogWarning(
-            "Failed to detect GameFile. f1Byte: {F1Byte}, f2Byte: {F2Byte}",
+            "Failed to detect game file. FileOne signature byte: 0x{F1Byte:X2}, FileTwo signature byte: 0x{F2Byte:X2}. Defaulting to Unknown",
             f1Byte, f2Byte
         );
 
@@ -97,14 +96,12 @@ public abstract class ReaderBase
     {
         if (!TryComputeLobbyAddress(slotIndex, offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
         {
-            Logger.LogError(errorMessage);
+            Logger.LogCritical("Failed to read slot value for method '{MethodName}' due to address computation error: {ErrorMessage}", methodName, errorMessage);
             return errorValue;
         }
 
         T result = Read<T>(address);
-        if (EnableLogging)
-            Logger.LogTrace("[{MethodName}] Successfully read type {Type} at 0x{Address:X} obtained value {Result}", methodName, typeof(T), address, result);
-
+        Logger.LogDebug("[{MethodName}] Read value of type {Type} at address 0x{Address:X} for slot {SlotIndex}. Value: {Result}", methodName, typeof(T).Name, address, slotIndex, result);
         return result;
     }
 
@@ -116,13 +113,9 @@ public abstract class ReaderBase
     {
         nint address = ComputeAddress(basePtr, offsets);
         T result = Read<T>(address);
-
-        if (EnableLogging)
-            Logger.LogTrace("[{MethodName}] Read {Type} at 0x{Address:X}: {Result}", methodName, typeof(T), address, result);
-
+        Logger.LogDebug("[{MethodName}] Read value of type {Type} at address 0x{Address:X}. Value: {Result}", methodName, typeof(T).Name, address, result);
         return result;
     }
-
 
     protected string ReadSlotValue(
         int slotIndex,
@@ -134,15 +127,12 @@ public abstract class ReaderBase
     {
         if (!TryComputeLobbyAddress(slotIndex, offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
         {
-            Logger.LogError(errorMessage);
+            Logger.LogCritical("Failed to read slot string for method '{MethodName}' due to address computation error: {ErrorMessage}", methodName, errorMessage);
             return errorValue;
         }
 
         string result = ReadString(address);
-
-        if (EnableLogging)
-            Logger.LogTrace("[{MethodName}] Successfully read string at 0x{Address:X} obtained value {Result}", methodName, address, result);
-
+        Logger.LogDebug("[{MethodName}] Read string at address 0x{Address:X} for slot {SlotIndex}. Value: '{Result}'", methodName, address, slotIndex, result);
         return result;
     }
 
@@ -159,7 +149,8 @@ public abstract class ReaderBase
 
         if (!slotIndex.IsSlotIndexValid())
         {
-            errorMessage = $"[{methodName}] Invalid slot index: {slotIndex}. Valid range is 0 to {GameConstants.MaxLobbySlots - 1}.";
+            errorMessage = $"[{methodName}] Invalid slot index provided: {slotIndex}. Expected range: 0 to {GameConstants.MaxLobbySlots - 1}.";
+            Logger.LogWarning("[{MethodName}] Invalid slot index provided: {SlotIndex}. Expected range: 0 to {MaxLobbySlots}", methodName, slotIndex, GameConstants.MaxLobbySlots - 1);
             return false;
         }
 
@@ -168,16 +159,21 @@ public abstract class ReaderBase
 
         if (!basePtr.IsNeitherNullNorNegative())
         {
-            errorMessage = $"[{methodName}] Invalid base pointer for slot index {slotIndex}.";
+            errorMessage = $"[{methodName}] Failed to obtain a valid base pointer for slot index {slotIndex}. Current game file: {CurrentFile}.";
+            Logger.LogWarning("[{MethodName}] Failed to obtain a valid base pointer for slot index {SlotIndex}. Current game file: {CurrentFile}", methodName, slotIndex, CurrentFile);
             return false;
         }
 
         address = ComputeAddress(basePtr, offsets);
 
         if (address.IsNeitherNullNorNegative())
+        {
+            Logger.LogTrace("[{MethodName}] Successfully computed lobby address 0x{Address:X} for slot {SlotIndex} using base pointer 0x{BasePointer:X}", methodName, address, slotIndex, basePtr);
             return true;
+        }
 
-        errorMessage = $"[{methodName}] Invalid address for slot index {slotIndex}: {address:X}";
+        errorMessage = $"[{methodName}] Computed address 0x{address:X} for slot index {slotIndex} is invalid (null or negative).";
+        Logger.LogWarning("[{MethodName}] Computed address 0x{Address:X} for slot index {SlotIndex} is invalid (null or negative)", methodName, address, slotIndex);
         return false;
     }
 
@@ -194,9 +190,13 @@ public abstract class ReaderBase
         address = ComputeAddress(offsets);
 
         if (address.IsNeitherNullNorNegative())
+        {
+            Logger.LogTrace("[{MethodName}] Successfully computed address 0x{Address:X} using offsets for current game file {GameFile}", methodName, address, CurrentFile);
             return true;
+        }
 
-        errorMessage = $"[{methodName}] Invalid address: {address:X}";
+        errorMessage = $"[{methodName}] Computed address 0x{address:X} is invalid (null or negative) using provided offsets for current game file {CurrentFile}.";
+        Logger.LogWarning("[{MethodName}] Computed address 0x{Address:X} is invalid (null or negative) using provided offsets for current game file {GameFile}", methodName, address, CurrentFile);
         return false;
     }
 
@@ -205,14 +205,12 @@ public abstract class ReaderBase
     {
         if (!TryComputeAddress(offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
         {
-            Logger.LogError(errorMessage);
+            Logger.LogCritical("Failed to read value of type {Type} for method '{MethodName}' due to address computation error: {ErrorMessage}", typeof(T).Name, methodName, errorMessage);
             return errorValue;
         }
 
         T result = Read<T>(address);
-        if (EnableLogging)
-            Logger.LogTrace("[{MethodName}] Successfully read type {Type} at 0x{Address:X} obtained value {Result}", methodName, typeof(T), address, result);
-
+        Logger.LogDebug("[{MethodName}] Read value of type {Type} at address 0x{Address:X}. Value: {Result}", methodName, typeof(T).Name, address, result);
         return result;
     }
 
@@ -220,14 +218,12 @@ public abstract class ReaderBase
     {
         if (!TryComputeAddress(offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
         {
-            Logger.LogError(errorMessage);
+            Logger.LogCritical("Failed to read string for method '{MethodName}' due to address computation error: {ErrorMessage}", methodName, errorMessage);
             return errorValue;
         }
 
         string result = ReadString(address);
-        if (EnableLogging)
-            Logger.LogTrace("[{MethodName}] Successfully read string at 0x{Address:X} obtained value {Result}", methodName, address, result);
-
+        Logger.LogDebug("[{MethodName}] Read string at address 0x{Address:X}. Value: '{Result}'", methodName, address, result);
         return result;
     }
 
@@ -235,51 +231,73 @@ public abstract class ReaderBase
         where TFileOne : struct, Enum
         where TFileTwo : struct, Enum
     {
-        return CurrentFile switch
+        string scenarioName = CurrentFile switch
         {
             GameFile.FileOne => EnumUtility.GetEnumString(scenarioId, defaultFileOne),
             GameFile.FileTwo => EnumUtility.GetEnumString(scenarioId, defaultFileTwo),
-            _ => throw new InvalidOperationException($"[{nameof(GetScenarioString)}] Unrecognized game file: {CurrentFile}")
+            _ => throw new InvalidOperationException($"[{nameof(GetScenarioString)}] Unrecognized game file '{CurrentFile}'. Cannot determine scenario string.")
         };
+
+        Logger.LogDebug("[{MethodName}] Retrieved scenario string '{ScenarioName}' for ID {ScenarioId} with game file {GameFile}", nameof(GetScenarioString), scenarioName, scenarioId, CurrentFile);
+        return scenarioName;
     }
 
     protected nint[] GetOffsets(nint[] offsetsFile1, nint[] offsetsFile2)
     {
-        return CurrentFile switch
+        nint[] offsets = CurrentFile switch
         {
             GameFile.FileOne => offsetsFile1,
             GameFile.FileTwo => offsetsFile2,
             _ => []
         };
+
+        Logger.LogTrace("[{MethodName}] Selected offsets based on current game file {GameFile}", nameof(GetOffsets), CurrentFile);
+        return offsets;
     }
 
     protected nint GetLobbyBasePointer(int slotIndex)
     {
-        return CurrentFile switch
+        nint basePointer = CurrentFile switch
         {
             GameFile.FileOne => FileOnePtrs.GetLobbyAddress(slotIndex),
             GameFile.FileTwo => FileTwoPtrs.GetLobbyAddress(slotIndex),
             _ => nint.Zero
         };
+
+        Logger.LogTrace("[{MethodName}] Determined lobby base pointer 0x{BasePointer:X} for slot {SlotIndex} with game file {GameFile}", nameof(GetLobbyBasePointer), basePointer, slotIndex, CurrentFile);
+        return basePointer;
     }
 
     protected nint GetLobbyRoomPlayerBasePointer(int characterId)
     {
-        return CurrentFile switch
+        nint basePointer = CurrentFile switch
         {
             GameFile.FileOne => FileOnePtrs.GetLobbyRoomPlayerAddress(characterId),
             GameFile.FileTwo => FileTwoPtrs.GetLobbyRoomPlayerAddress(characterId),
             _ => nint.Zero
         };
+
+        Logger.LogTrace("[{MethodName}] Determined lobby room player base pointer 0x{BasePointer:X} for character ID {CharacterId} with game file {GameFile}", nameof(GetLobbyRoomPlayerBasePointer), basePointer, characterId, CurrentFile);
+        return basePointer;
     }
 
     protected nint ComputeAddress(nint basePtr, params ReadOnlySpan<nint> offsets)
-        => offsets.Length is 0
+    {
+        nint computedAddress = offsets.Length is 0
             ? _eEmemMemory.GetAddressFromPtr(basePtr)
             : _eEmemMemory.GetAddressFromPtrChain(basePtr, offsets);
 
+        Logger.LogTrace("[{MethodName}] Computed address 0x{ComputedAddress:X} from base pointer 0x{BasePointer:X} with {OffsetCount} offsets", nameof(ComputeAddress), computedAddress, basePtr, offsets.Length);
+        return computedAddress;
+    }
+
     protected nint ComputeAddress(params ReadOnlySpan<nint> offsets)
-        => offsets.Length is 1
+    {
+        nint computedAddress = offsets.Length is 1
             ? _eEmemMemory.GetAddressFromPtr(offsets[0])
             : _eEmemMemory.GetAddressFromPtrChain(offsets[0], offsets);
+
+        Logger.LogTrace("[{MethodName}] Computed address 0x{ComputedAddress:X} from {OffsetCount} offsets (first offset: 0x{FirstOffset:X})", nameof(ComputeAddress), computedAddress, offsets.Length, offsets.Length > 0 ? offsets[0] : 0);
+        return computedAddress;
+    }
 }

@@ -22,7 +22,7 @@ public static class DataStoreLoggerSinkExtensions
         }
         catch (Exception ex)
         {
-            logger?.Error("Exception occurred while configuring DataStoreLoggerSink ex: {Ex}", ex);
+            logger?.Error(ex, "Exception occurred while configuring DataStoreLoggerSink");
             throw;
         }
 

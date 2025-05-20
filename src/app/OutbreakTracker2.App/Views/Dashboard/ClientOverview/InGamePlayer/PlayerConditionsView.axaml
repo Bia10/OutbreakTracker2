@@ -21,29 +21,31 @@
     <suki:GroupBox Header="Condition and Status">
         <WrapPanel Margin="0" HorizontalAlignment="Left">
             <StackPanel
-                Margin="5"
+                Margin="3"
                 Orientation="Horizontal"
-                Spacing="5">
+                Spacing="3">
                 <suki:GlassCard
-                    Width="210"
-                    Height="60"
+                    Padding="8"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
                     CornerRadius="5"
                     IsInteractive="False">
                     <StackPanel
                         HorizontalAlignment="Left"
                         Orientation="Horizontal"
-                        Spacing="8">
+                        Spacing="5">
                         <avalonia:MaterialIcon
-                            Width="24"
-                            Height="24"
-                            Foreground="LightGray"
+                            Width="20"
+                            Height="20"
                             Kind="{Binding ConditionMessage, Converter={StaticResource ConditionToIconConverter}}" />
                         <TextBlock
-                            FontSize="14"
+                            VerticalAlignment="Center"
+                            FontSize="12"
                             FontWeight="Bold"
                             Text="{Binding ConditionTitle}" />
                         <TextBlock
-                            FontSize="14"
+                            VerticalAlignment="Center"
+                            FontSize="12"
                             FontWeight="Bold"
                             Foreground="{DynamicResource SukiLowText}"
                             Text="{Binding ConditionMessage}" />
@@ -51,29 +53,31 @@
                 </suki:GlassCard>
             </StackPanel>
             <StackPanel
-                Margin="5"
+                Margin="3"
                 Orientation="Horizontal"
-                Spacing="5">
+                Spacing="3">
                 <suki:GlassCard
-                    Width="210"
-                    Height="60"
+                    Padding="8"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
                     CornerRadius="5"
                     IsInteractive="False">
                     <StackPanel
                         HorizontalAlignment="Left"
                         Orientation="Horizontal"
-                        Spacing="8">
+                        Spacing="5">
                         <avalonia:MaterialIcon
-                            Width="24"
-                            Height="24"
-                            Foreground="LightGray"
+                            Width="20"
+                            Height="20"
                             Kind="{Binding StatusMessage, Converter={StaticResource StatusToIconConverter}}" />
                         <TextBlock
-                            FontSize="14"
+                            VerticalAlignment="Center"
+                            FontSize="12"
                             FontWeight="Bold"
                             Text="{Binding StatusTitle}" />
                         <TextBlock
-                            FontSize="14"
+                            VerticalAlignment="Center"
+                            FontSize="12"
                             FontWeight="Bold"
                             Foreground="{DynamicResource SukiLowText}"
                             Text="{Binding StatusMessage}" />

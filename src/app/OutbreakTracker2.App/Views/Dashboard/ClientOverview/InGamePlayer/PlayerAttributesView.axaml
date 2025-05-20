@@ -27,7 +27,7 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         FontWeight="SemiBold"
-                        Text="{Binding Power, StringFormat='Power: {0:P1}'}" />
+                        Text="{Binding Power, StringFormat='Power: {0:P0}'}" />
                 </StackPanel>
             </suki:GlassCard>
 
@@ -44,7 +44,7 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         FontWeight="SemiBold"
-                        Text="{Binding CriticalBonus, StringFormat='Critical Bonus: {0:F2}%'}" />
+                        Text="{Binding CriticalBonus, StringFormat='Critical Bonus: {0:P0}'}" />
                 </StackPanel>
             </suki:GlassCard>
 
@@ -61,7 +61,7 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         FontWeight="SemiBold"
-                        Text="{Binding Speed, StringFormat='Speed: {0:P1}'}" />
+                        Text="{Binding Speed, StringFormat='Speed: {0:P0}'}" />
                 </StackPanel>
             </suki:GlassCard>
 
@@ -78,7 +78,7 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         FontWeight="SemiBold"
-                        Text="{Binding Size, StringFormat='Size: {0:P1}'}" />
+                        Text="{Binding Size, StringFormat='Size: {0:P0}'}" />
                 </StackPanel>
             </suki:GlassCard>
         </WrapPanel>
