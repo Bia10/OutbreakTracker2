@@ -31,7 +31,7 @@ public class OutbreakTracker2Views
         return this;
     }
 
-    public bool TryCreateView(IServiceProvider provider, Type viewModelType, [NotNullWhen(true)] out Control? view)
+    public bool TryCreateView(IServiceProvider? provider, Type viewModelType, [NotNullWhen(true)] out Control? view)
     {
         object viewModel = provider.GetRequiredService(viewModelType);
 
@@ -58,7 +58,7 @@ public class OutbreakTracker2Views
         return view is not null;
     }
 
-    public Control CreateView<TViewModel>(IServiceProvider provider) where TViewModel : ObservableObject
+    public Control CreateView<TViewModel>(IServiceProvider? provider) where TViewModel : ObservableObject
     {
         Type viewModelType = typeof(TViewModel);
 

@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using OutbreakTracker2.App.Views.Common;
 using OutbreakTracker2.Outbreak.Models;
 using System;
 
@@ -44,10 +45,12 @@ public partial class LobbyRoomPlayerViewModel : ObservableObject
     public byte DataPlayerId => NameId;
     public Ulid ViewModelId => Id;
 
-    public LobbyRoomPlayerViewModel() { }
+    public CharacterBustViewModel PlayerBustViewModel { get; }
 
-    public LobbyRoomPlayerViewModel(DecodedLobbyRoomPlayer model)
+    public LobbyRoomPlayerViewModel(DecodedLobbyRoomPlayer model, CharacterBustViewModel characterBustViewModel)
     {
+        PlayerBustViewModel = characterBustViewModel;
+
         Update(model);
     }
 
@@ -64,6 +67,8 @@ public partial class LobbyRoomPlayerViewModel : ObservableObject
         NpcPower = model.NpcPower;
 
         DisplayName = NpcType == "Main Characters" ? CharacterName : NpcName;
+
+        _ = PlayerBustViewModel.UpdateBustAsync(DisplayName);
     }
 
     public override bool Equals(object? obj)

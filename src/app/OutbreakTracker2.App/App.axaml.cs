@@ -14,7 +14,9 @@ using OutbreakTracker2.App.Services.FileLocators;
 using OutbreakTracker2.App.Services.LogStorage;
 using OutbreakTracker2.App.Services.ProcessLauncher;
 using OutbreakTracker2.App.Services.ProcessLocator;
+using OutbreakTracker2.App.Services.TextureAtlas;
 using OutbreakTracker2.App.Services.Toasts;
+using OutbreakTracker2.App.Views.Common;
 using OutbreakTracker2.App.Views.Dashboard;
 using OutbreakTracker2.App.Views.Dashboard.ClientAlreadyRunning;
 using OutbreakTracker2.App.Views.Dashboard.ClientNotRunning;
@@ -25,6 +27,7 @@ using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoom;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer.Factory;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlots;
 using OutbreakTracker2.App.Views.Log;
 using OutbreakTracker2.App.Views.Logging;
@@ -33,12 +36,15 @@ using Serilog;
 using SukiUI.Dialogs;
 using SukiUI.Toasts;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace OutbreakTracker2.App;
 
 public class App : Application
 {
+    private IServiceProvider? _serviceProvider;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -55,10 +61,12 @@ public class App : Application
             ServiceCollection services = new();
             services.AddSingleton(desktop);
             OutbreakTracker2Views views = ConfigureViews(services);
-            IServiceProvider serviceProvider = ConfigureServicesAndLogging(services, configuration);
+
+            _serviceProvider = ConfigureServicesAndLogging(services, configuration);
+
             ConfigureExceptionHandling();
             DataTemplates.Add(new ViewLocator(views));
-            desktop.MainWindow = views.CreateView<Views.OutbreakTracker2ViewModel>(serviceProvider) as Window;
+            desktop.MainWindow = views.CreateView<Views.OutbreakTracker2ViewModel>(_serviceProvider) as Window;
 
             Log.Information("Application initialized successfully!");
         }
@@ -159,6 +167,30 @@ public class App : Application
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
         services.AddSingleton<IPcsx2Locator, Pcsx2Locator>();
 
+        services.AddSingleton<ITextureAtlas>(serviceProvider =>
+        {
+            TextureAtlasInfo uiAtlasInfo = TextureAtlasInfo.CreateFromLuaData();
+            const string imageFilePath = "Assets/ui.png";
+
+            string baseDirectory = AppContext.BaseDirectory;
+            string fullPath = Path.Combine(baseDirectory, imageFilePath);
+
+            Stream stream;
+            if (File.Exists(fullPath))
+                stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read);
+            else
+            {
+                ILogger<TextureAtlas> logger = serviceProvider.GetRequiredService<ILogger<TextureAtlas>>();
+                logger.LogCritical("Image file not found at '{FullPath}' for TextureAtlas. Ensure 'ui.png' is copied to output directory", fullPath);
+                throw new FileNotFoundException($"Image file not found at '{fullPath}' for TextureAtlas.");
+            }
+
+            return new TextureAtlas(stream, uiAtlasInfo);
+        });
+
+        services.AddTransient<CharacterBustViewModel>();
+        services.AddTransient<ILobbyRoomPlayerViewModelFactory, LobbyRoomPlayerViewModelFactory>();
+
         ServiceProviderOptions providerOptions = new()
         {
             ValidateOnBuild = true,
@@ -166,5 +198,11 @@ public class App : Application
         };
 
         return services.BuildServiceProvider(providerOptions);
+    }
+
+    public void OnExit()
+    {
+        (_serviceProvider as IDisposable)?.Dispose();
+        Log.Information("Application exited!");
     }
 }

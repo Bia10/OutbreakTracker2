@@ -4,6 +4,7 @@ using ObservableCollections;
 using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.App.Services.Dispatcher;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer.Factory;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
@@ -44,8 +45,11 @@ public partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
 
     public string PlayersDisplay => $"{CurPlayer}/{MaxPlayer}";
 
-    public LobbyRoomViewModel(IDataManager dataManager, ILogger<LobbyRoomViewModel> logger,
-        IDispatcherService dispatcherService)
+    public LobbyRoomViewModel(
+        IDataManager dataManager,
+        ILogger<LobbyRoomViewModel> logger,
+        IDispatcherService dispatcherService,
+        ILobbyRoomPlayerViewModelFactory playerVmFactory)
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
@@ -127,7 +131,7 @@ public partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
                             }
                             else
                             {
-                                vmToAddToList = new LobbyRoomPlayerViewModel(incomingData);
+                                vmToAddToList = playerVmFactory.Create(incomingData);
                                 _logger.LogDebug("Creating new VM {Ulid} for incoming data at index {Index} (PlayerId {PlayerId})",
                                     vmToAddToList.ViewModelId, i, incomingData.NameId);
                             }
