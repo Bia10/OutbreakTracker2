@@ -8,11 +8,11 @@ namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer.Fa
 public class LobbyRoomPlayerViewModelFactory : ILobbyRoomPlayerViewModelFactory
 {
     private readonly ILogger<LobbyRoomPlayerViewModelFactory> _logger;
-    private readonly ICharacterBustViewModelFactory _characterBustViewModelFactory; // Inject the specific factory
+    private readonly ICharacterBustViewModelFactory _characterBustViewModelFactory;
 
     public LobbyRoomPlayerViewModelFactory(
         ILogger<LobbyRoomPlayerViewModelFactory> logger,
-        ICharacterBustViewModelFactory characterBustViewModelFactory) // Inject the specific factory
+        ICharacterBustViewModelFactory characterBustViewModelFactory)
     {
         _logger = logger;
         _characterBustViewModelFactory = characterBustViewModelFactory;
