@@ -15,6 +15,7 @@ using OutbreakTracker2.App.Services.LogStorage;
 using OutbreakTracker2.App.Services.ProcessLauncher;
 using OutbreakTracker2.App.Services.ProcessLocator;
 using OutbreakTracker2.App.Services.TextureAtlas;
+using OutbreakTracker2.App.Services.TextureAtlas.Models;
 using OutbreakTracker2.App.Services.Toasts;
 using OutbreakTracker2.App.Views.Common;
 using OutbreakTracker2.App.Views.Dashboard;
@@ -52,26 +53,47 @@ public class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        try
         {
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .Build();
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                IConfigurationRoot configuration = new ConfigurationBuilder()
+                    .AddJsonFile("appsettings.json")
+                    .Build();
 
-            ServiceCollection services = new();
-            services.AddSingleton(desktop);
-            OutbreakTracker2Views views = ConfigureViews(services);
+                ServiceCollection services = new();
+                services.AddSingleton(desktop);
+                OutbreakTracker2Views views = ConfigureViews(services);
 
-            _serviceProvider = ConfigureServicesAndLogging(services, configuration);
+                _serviceProvider = ConfigureServicesAndLogging(services, configuration);
 
-            ConfigureExceptionHandling();
-            DataTemplates.Add(new ViewLocator(views));
-            desktop.MainWindow = views.CreateView<Views.OutbreakTracker2ViewModel>(_serviceProvider) as Window;
+                ITextureAtlasService textureAtlasService = _serviceProvider.GetRequiredService<ITextureAtlasService>();
+                try
+                {
+                    textureAtlasService.LoadAtlases();
+                }
+                catch (Exception ex)
+                {
+                    Log.Fatal(ex, "Failed to load texture atlas data. Application cannot start");
+                    Environment.Exit(1);
+                    return;
+                }
 
-            Log.Information("Application initialized successfully!");
+                ConfigureExceptionHandling();
+                DataTemplates.Add(new ViewLocator(views));
+                desktop.MainWindow = views.CreateView<Views.OutbreakTracker2ViewModel>(_serviceProvider) as Window;
+
+                Log.Information("Application initialized successfully!");
+            }
+
+            base.OnFrameworkInitializationCompleted();
         }
-
-        base.OnFrameworkInitializationCompleted();
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Application failed to initialize");
+            // Todo: show msgBox to user
+            throw;
+        }
     }
 
     private static void ConfigureExceptionHandling()
@@ -120,7 +142,9 @@ public class App : Application
             .AddView<ItemSlotView, ItemSlotViewModel>(services)
             .AddView<LogView, LogViewModel>(services);
 
-    private static IServiceProvider ConfigureServicesAndLogging(IServiceCollection services, IConfiguration configuration)
+    private static IServiceProvider ConfigureServicesAndLogging(
+        IServiceCollection services,
+        IConfiguration configuration)
     {
         IServiceProvider serviceProvider = ConfigureServices(services, configuration);
 
@@ -142,7 +166,9 @@ public class App : Application
         loggerFactory.AddSerilog(Log.Logger);
     }
 
-    private static ServiceProvider ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    private static ServiceProvider ConfigureServices(
+        IServiceCollection services,
+        IConfiguration configuration)
     {
         services.AddSingleton(configuration);
 
@@ -167,25 +193,20 @@ public class App : Application
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
         services.AddSingleton<IPcsx2Locator, Pcsx2Locator>();
 
-        services.AddSingleton<ITextureAtlas>(serviceProvider =>
+        services.AddSingleton<ITextureAtlasService, TextureAtlasService>();
+
+        // Register a factory for ITextureAtlas that injects its own logger
+        //services.AddTransient<ITextureAtlas, TextureAtlas>(); // Register TextureAtlas as transient first
+
+        // Then register the Func<Stream, SpriteSheet, ITextureAtlas> delegate for TextureAtlasService
+        services.AddSingleton<Func<Stream, SpriteSheet, ITextureAtlas>>(serviceProvider =>
         {
-            TextureAtlasInfo uiAtlasInfo = TextureAtlasInfo.CreateFromLuaData();
-            const string imageFilePath = "Assets/ui.png";
-
-            string baseDirectory = AppContext.BaseDirectory;
-            string fullPath = Path.Combine(baseDirectory, imageFilePath);
-
-            Stream stream;
-            if (File.Exists(fullPath))
-                stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read);
-            else
+            // This factory will be used by TextureAtlasService
+            return (imageStream, spriteSheet) =>
             {
                 ILogger<TextureAtlas> logger = serviceProvider.GetRequiredService<ILogger<TextureAtlas>>();
-                logger.LogCritical("Image file not found at '{FullPath}' for TextureAtlas. Ensure 'ui.png' is copied to output directory", fullPath);
-                throw new FileNotFoundException($"Image file not found at '{fullPath}' for TextureAtlas.");
-            }
-
-            return new TextureAtlas(stream, uiAtlasInfo);
+                return new TextureAtlas(imageStream, spriteSheet, logger);
+            };
         });
 
         services.AddTransient<CharacterBustViewModel>();
@@ -203,6 +224,13 @@ public class App : Application
     public void OnExit()
     {
         (_serviceProvider as IDisposable)?.Dispose();
+
+        if (_serviceProvider?.GetService<ITextureAtlasService>() is TextureAtlasService atlasService)
+        {
+            foreach (ITextureAtlas atlas in atlasService.GetAllAtlases().Values)
+                (atlas as IDisposable)?.Dispose();
+        }
+
         Log.Information("Application exited!");
     }
 }

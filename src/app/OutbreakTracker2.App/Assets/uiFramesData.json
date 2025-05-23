@@ -1,0 +1,1078 @@
+{
+  "frames": [
+    {
+      "name": "below freezing point",
+      "x": 830,
+      "y": 784,
+      "width": 256,
+      "height": 192
+    },
+    {
+      "name": "bustAlyssa ",
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustCindy ",
+      "x": 0,
+      "y": 256,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustDavid ",
+      "x": 0,
+      "y": 512,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustGeorge ",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustJim ",
+      "x": 0,
+      "y": 1024,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustKevin ",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMark ",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustYoko ",
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "dead",
+      "x": 436,
+      "y": 576,
+      "width": 30,
+      "height": 11
+    },
+    {
+      "name": "decisions,decisions",
+      "x": 512,
+      "y": 844,
+      "width": 256,
+      "height": 192
+    },
+    {
+      "name": "desperate times",
+      "x": 1024,
+      "y": 0,
+      "width": 256,
+      "height": 196
+    },
+    {
+      "name": "elimination 1",
+      "x": 1024,
+      "y": 196,
+      "width": 256,
+      "height": 196
+    },
+    {
+      "name": "elimination 2",
+      "x": 256,
+      "y": 256,
+      "width": 256,
+      "height": 196
+    },
+    {
+      "name": "elimination 3",
+      "x": 512,
+      "y": 256,
+      "width": 256,
+      "height": 196
+    },
+    {
+      "name": "end of the road",
+      "x": 768,
+      "y": 256,
+      "width": 256,
+      "height": 196
+    },
+    {
+      "name": "equip",
+      "x": 946,
+      "y": 452,
+      "width": 39,
+      "height": 15
+    },
+    {
+      "name": "flashback",
+      "x": 1024,
+      "y": 392,
+      "width": 256,
+      "height": 196
+    },
+    {
+      "name": "healthmask",
+      "x": 436,
+      "y": 560,
+      "width": 95,
+      "height": 16
+    },
+    {
+      "name": "hellfire",
+      "x": 512,
+      "y": 1036,
+      "width": 256,
+      "height": 192
+    },
+    {
+      "name": "iconAlyssa",
+      "x": 256,
+      "y": 560,
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "iconCindy",
+      "x": 276,
+      "y": 560,
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "iconDavid",
+      "x": 296,
+      "y": 560,
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "iconGeorge",
+      "x": 316,
+      "y": 560,
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "iconJim",
+      "x": 336,
+      "y": 560,
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "iconKevin",
+      "x": 356,
+      "y": 560,
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "iconMark",
+      "x": 376,
+      "y": 560,
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "iconNPC",
+      "x": 396,
+      "y": 560,
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "iconYoko",
+      "x": 416,
+      "y": 560,
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "invDouble",
+      "x": 256,
+      "y": 452,
+      "width": 210,
+      "height": 108
+    },
+    {
+      "name": "inventorymask",
+      "x": 834,
+      "y": 488,
+      "width": 96,
+      "height": 98
+    },
+    {
+      "name": "invSingle",
+      "x": 466,
+      "y": 452,
+      "width": 112,
+      "height": 108
+    },
+    {
+      "name": "invSpecial",
+      "x": 512,
+      "y": 608,
+      "width": 62,
+      "height": 56
+    },
+    {
+      "name": "ispecialmask",
+      "x": 531,
+      "y": 560,
+      "width": 46,
+      "height": 48
+    },
+    {
+      "name": "outbreak",
+      "x": 768,
+      "y": 976,
+      "width": 256,
+      "height": 192
+    },
+    {
+      "name": "showdown 1",
+      "x": 256,
+      "y": 588,
+      "width": 256,
+      "height": 196
+    },
+    {
+      "name": "showdown 2",
+      "x": 578,
+      "y": 452,
+      "width": 256,
+      "height": 196
+    },
+    {
+      "name": "showdown 3",
+      "x": 834,
+      "y": 588,
+      "width": 256,
+      "height": 196
+    },
+    {
+      "name": "statusbar",
+      "x": 834,
+      "y": 452,
+      "width": 112,
+      "height": 36
+    },
+    {
+      "name": "the hive",
+      "x": 1024,
+      "y": 976,
+      "width": 256,
+      "height": 192
+    },
+    {
+      "name": "training ground",
+      "x": 574,
+      "y": 648,
+      "width": 256,
+      "height": 196
+    },
+    {
+      "name": "underbelly",
+      "x": 256,
+      "y": 784,
+      "width": 256,
+      "height": 196
+    },
+    {
+      "name": "virus50",
+      "x": 512,
+      "y": 576,
+      "width": 15,
+      "height": 15
+    },
+    {
+      "name": "virus80",
+      "x": 512,
+      "y": 591,
+      "width": 15,
+      "height": 15
+    },
+    {
+      "name": "virus90",
+      "x": 985,
+      "y": 452,
+      "width": 15,
+      "height": 15
+    },
+    {
+      "name": "virusOK",
+      "x": 1000,
+      "y": 452,
+      "width": 15,
+      "height": 15
+    },
+    {
+      "name": "wild things",
+      "x": 256,
+      "y": 980,
+      "width": 256,
+      "height": 196
+    },
+    {
+      "name": "key",
+      "x": 946,
+      "y": 467,
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "title bar",
+      "x": 768,
+      "y": 1172,
+      "width": 300,
+      "height": 24
+    },
+    {
+      "name": "slot bar",
+      "x": 768,
+      "y": 1200,
+      "width": 300,
+      "height": 30
+    },
+
+    {
+      "name": "bustAlyssa",
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustCindy",
+      "x": 0,
+      "y": 256,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustDavid",
+      "x": 0,
+      "y": 512,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustGeorge",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustJim",
+      "x": 0,
+      "y": 1024,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustKevin",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMark",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustYoko",
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustUnknown",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustAL:B",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustBILLY",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustBONE",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustCONRAD",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustDANNY",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustDANNY:B",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustDUSTIN",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustHUNK",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustHUNK:B",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustKARL",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustLUKE",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMIGUEL",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMr.RED",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustRAYMOND",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustRODNEY",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustAARON",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustARNOLD",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustAUSTIN",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustAXEMAN",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustBOB",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustCLINT",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustDON",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustELLIOTT",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustGILL",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustGILL:B",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMARVIN",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMr.GOLD",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustTONY",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustANDY",
+      "x": 0,
+      "y": 1024,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustCHUCK",
+      "x": 0,
+      "y": 1024,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustDEREK",
+      "x": 0,
+      "y": 1024,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustJEAN",
+      "x": 0,
+      "y": 1024,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustKURT:B",
+      "x": 0,
+      "y": 1024,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMATTHEW",
+      "x": 0,
+      "y": 1024,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMICKEY",
+      "x": 0,
+      "y": 1024,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMr.GREEN",
+      "x": 0,
+      "y": 1024,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustPETER",
+      "x": 0,
+      "y": 1024,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustSAMUEL",
+      "x": 0,
+      "y": 1024,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustWILL",
+      "x": 0,
+      "y": 1024,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustAL",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustAL:C",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustARTHUR",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustCARTER",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustDORIAN",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustETHAN",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustFRANK",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustFRED",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustFROST",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustFROST:B",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustGARY",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustGARY:B",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustGREG",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustHARRY",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustHARSH",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustHOWARD",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustISAAC",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustJAKE",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustKEITH",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustKURT",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustLEN",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMACDOWELL",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMATT",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMr.BLUE",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustNICOLAS",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustPATRICK",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustRICHARD",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustSEAN",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustBEN",
+      "x": 0,
+      "y": 512,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustERIC",
+      "x": 0,
+      "y": 512,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustLLOYD",
+      "x": 0,
+      "y": 512,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustAXEMAN ",
+      "x": 0,
+      "y": 512,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMr.BLACK",
+      "x": 0,
+      "y": 512,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustNATHAN",
+      "x": 0,
+      "y": 512,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustPHILIP",
+      "x": 0,
+      "y": 512,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustROBERT",
+      "x": 0,
+      "y": 512,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustRODRIGUEZ",
+      "x": 0,
+      "y": 512,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustROGER",
+      "x": 0,
+      "y": 512,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustELENA",
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustKATE",
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustLAURA",
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMONICA",
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMs.WHITE",
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustREGAN",
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustRITA",
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustYOKO:Z",
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustAMELIA",
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMs.PEACH",
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustREGAN:B",
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustDOROTHY",
+      "x": 0,
+      "y": 256,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustGINGER",
+      "x": 0,
+      "y": 256,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustKATHY",
+      "x": 0,
+      "y": 256,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustLINDA",
+      "x": 0,
+      "y": 256,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMARY",
+      "x": 0,
+      "y": 256,
+      "width": 256,
+      "height": 256
+    },
+    {
+      "name": "bustMs.WATER",
+      "x": 0,
+      "y": 256,
+      "width": 256,
+      "height": 256
+    }
+  ],
+  "sheetContentWidth": 1280,
+  "sheetContentHeight": 1280
+}
