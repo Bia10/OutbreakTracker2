@@ -194,14 +194,8 @@ public class App : Application
         services.AddSingleton<IPcsx2Locator, Pcsx2Locator>();
 
         services.AddSingleton<ITextureAtlasService, TextureAtlasService>();
-
-        // Register a factory for ITextureAtlas that injects its own logger
-        //services.AddTransient<ITextureAtlas, TextureAtlas>(); // Register TextureAtlas as transient first
-
-        // Then register the Func<Stream, SpriteSheet, ITextureAtlas> delegate for TextureAtlasService
         services.AddSingleton<Func<Stream, SpriteSheet, ITextureAtlas>>(serviceProvider =>
         {
-            // This factory will be used by TextureAtlasService
             return (imageStream, spriteSheet) =>
             {
                 ILogger<TextureAtlas> logger = serviceProvider.GetRequiredService<ILogger<TextureAtlas>>();
@@ -210,6 +204,7 @@ public class App : Application
         });
 
         services.AddTransient<CharacterBustViewModel>();
+        services.AddTransient<ICharacterBustViewModelFactory, CharacterBustViewModelFactory>();
         services.AddTransient<ILobbyRoomPlayerViewModelFactory, LobbyRoomPlayerViewModelFactory>();
 
         ServiceProviderOptions providerOptions = new()
