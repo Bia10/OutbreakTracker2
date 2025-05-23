@@ -203,8 +203,12 @@ public class App : Application
             };
         });
 
+        services.AddTransient<ImageViewModel>();
+        services.AddSingleton<IImageViewModelFactory, ImageViewModelFactory>();
         services.AddTransient<CharacterBustViewModel>();
-        services.AddTransient<ICharacterBustViewModelFactory, CharacterBustViewModelFactory>();
+        services.AddSingleton<ICharacterBustViewModelFactory, CharacterBustViewModelFactory>();
+        services.AddTransient<ScenarioImageViewModel>();
+        services.AddSingleton<IScenarioImageViewModelFactory, ScenarioImageViewModelFactory>();
         services.AddTransient<ILobbyRoomPlayerViewModelFactory, LobbyRoomPlayerViewModelFactory>();
 
         ServiceProviderOptions providerOptions = new()

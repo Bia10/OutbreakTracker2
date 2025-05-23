@@ -4,7 +4,7 @@ using System;
 
 namespace OutbreakTracker2.App.Views.Common;
 
-public class CharacterBustViewModelFactory : ICharacterBustViewModelFactory
+public sealed class CharacterBustViewModelFactory : ICharacterBustViewModelFactory
 {
     private readonly ILogger<CharacterBustViewModelFactory> _logger;
     private readonly IServiceProvider _serviceProvider;
@@ -19,12 +19,12 @@ public class CharacterBustViewModelFactory : ICharacterBustViewModelFactory
 
     public CharacterBustViewModel Create()
     {
-        _logger.LogInformation("Creating a new CharacterBustViewModel instance");
+        _logger.LogDebug("Creating a new CharacterBustViewModel instance");
 
         CharacterBustViewModel newCharacterBustViewModel =
             _serviceProvider.GetRequiredService<CharacterBustViewModel>();
 
-        _logger.LogInformation("CharacterBustViewModel created successfully");
+        _logger.LogDebug("CharacterBustViewModel created successfully");
         return newCharacterBustViewModel;
     }
 }

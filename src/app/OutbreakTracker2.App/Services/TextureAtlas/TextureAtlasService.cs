@@ -16,7 +16,7 @@ public class TextureAtlasService : ITextureAtlasService
     private readonly ILogger<TextureAtlasService> _logger;
     private readonly Func<Stream, SpriteSheet, ITextureAtlas> _textureAtlasFactory;
     private readonly List<(string jsonPath, string imagePath, string name)> _atlasConfigs;
-    private readonly Dictionary<string, ITextureAtlas> _loadedAtlases = new();
+    private readonly Dictionary<string, ITextureAtlas> _loadedAtlases = [];
 
     public TextureAtlasService(ILogger<TextureAtlasService> logger, Func<Stream, SpriteSheet, ITextureAtlas> textureAtlasFactory)
     {

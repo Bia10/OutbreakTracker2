@@ -19,7 +19,7 @@ public class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
     private readonly IDisposable _subscription;
     private readonly ILogger<InGamePlayersViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
-    private readonly Dictionary<string, InGamePlayerViewModel> _viewModelCache = new();
+    private readonly Dictionary<string, InGamePlayerViewModel> _viewModelCache = [];
     private readonly ObservableList<InGamePlayerViewModel> _players = [];
     public NotifyCollectionChangedSynchronizedViewList<InGamePlayerViewModel> PlayersView { get; }
 

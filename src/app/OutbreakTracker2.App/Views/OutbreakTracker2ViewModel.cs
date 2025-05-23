@@ -179,5 +179,5 @@ internal partial class OutbreakTracker2ViewModel : ObservableObject
 
     [RelayCommand]
     private static void OpenUrl(string url)
-        => UrlUtilities.OpenUrl(url);
+        => UrlUtility.OpenUrl(url);
 }

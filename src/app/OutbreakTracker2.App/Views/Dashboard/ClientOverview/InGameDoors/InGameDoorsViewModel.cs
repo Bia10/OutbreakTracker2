@@ -19,7 +19,7 @@ public class InGameDoorsViewModel : ObservableObject, IDisposable
     private readonly IDisposable _subscription;
     private readonly ILogger<InGameDoorsViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
-    private readonly Dictionary<string, InGameDoorViewModel> _viewModelCache = new();
+    private readonly Dictionary<string, InGameDoorViewModel> _viewModelCache = [];
 
     private ObservableList<InGameDoorViewModel> Doors { get; } = [];
     public NotifyCollectionChangedSynchronizedViewList<InGameDoorViewModel> DoorsView { get; }

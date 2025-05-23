@@ -13,7 +13,7 @@ public sealed class SpriteSheet
     public int SheetContentHeight { get; set; }
 
     [JsonIgnore]
-    public Dictionary<string, Frame> FrameLookup { get; private set; } = new();
+    public Dictionary<string, Frame> FrameLookup { get; private set; } = [];
 
     /// <summary>
     /// Builds a lookup dictionary for frames by their name.

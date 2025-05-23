@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace OutbreakTracker2.App.Utilities;
 
-public class UrlUtilities
+public static class UrlUtility
 {
     public static void OpenUrl(string url)
     {

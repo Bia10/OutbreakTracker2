@@ -19,7 +19,7 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
     private readonly ILogger<InGameEnemiesViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
     private readonly IDisposable _subscription;
-    private readonly Dictionary<string, InGameEnemyViewModel> _viewModelCache = new();
+    private readonly Dictionary<string, InGameEnemyViewModel> _viewModelCache = [];
     private readonly ObservableList<InGameEnemyViewModel> _enemies = [];
 
     public NotifyCollectionChangedSynchronizedViewList<InGameEnemyViewModel> EnemiesView { get; }

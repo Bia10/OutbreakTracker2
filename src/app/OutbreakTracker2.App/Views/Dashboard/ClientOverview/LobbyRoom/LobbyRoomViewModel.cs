@@ -58,8 +58,8 @@ public partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
         PlayersView =
             _playersInternal.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
-        _subscription = new CompositeDisposable
-        {
+        _subscription =
+        [
             dataManager.LobbyRoomObservable.ObserveOnThreadPool()
                 .SubscribeAwait(async (lobbyData, cancellationToken) =>
                 {
@@ -272,7 +272,7 @@ public partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
                         _logger.LogError(ex, "Error during lobby room players snapshot processing cycle");
                     }
                 }, AwaitOperation.Drop)
-        };
+        ];
     }
 
     private static bool IsPlayerActive(DecodedLobbyRoomPlayer player)
