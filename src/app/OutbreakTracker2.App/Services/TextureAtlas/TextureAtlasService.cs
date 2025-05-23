@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.App.Services.TextureAtlas.Models;
+using OutbreakTracker2.Outbreak.Enums;
+using OutbreakTracker2.Outbreak.Enums.Character;
+using OutbreakTracker2.Outbreak.Utility;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -104,4 +107,23 @@ public class TextureAtlasService : ITextureAtlasService
 
     public Task LoadAtlasesAsync()
         => LoadAtlasesInternalAsync();
+
+    public string GetSpriteNameFromCharacterType(CharacterBaseType characterType)
+    {
+        string spriteName = EnumUtility.GetEnumString(characterType, CharacterBaseType.Unknown);
+
+        if (!spriteName.StartsWith("bust", StringComparison.OrdinalIgnoreCase))
+            spriteName = $"bust{spriteName}";
+
+        _logger.LogDebug("Obtained sprite name '{SpriteName}' for character type '{CharacterType}'", spriteName, characterType);
+        return spriteName;
+    }
+
+    public string GetSpriteNameFromScenarioName(Scenario scenarioName)
+    {
+        string spriteName = EnumUtility.GetEnumString(scenarioName, Scenario.Unknown);
+
+        _logger.LogDebug("Obtained sprite name '{SpriteName}' for scenario name '{ScenarioName}'", spriteName, scenarioName);
+        return spriteName;
+    }
 }

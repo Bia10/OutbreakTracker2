@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.App.Views.Common;
+using OutbreakTracker2.Outbreak.Enums.Character;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Utility;
 using System;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer;
@@ -68,7 +70,8 @@ public partial class LobbyRoomPlayerViewModel : ObservableObject
 
         DisplayName = NpcType == "Main Characters" ? CharacterName : NpcName;
 
-        _ = PlayerBustViewModel.UpdateBustAsync(DisplayName);
+        if (EnumUtility.TryParseByValueOrMember(DisplayName, out CharacterBaseType charType))
+            _ = PlayerBustViewModel.UpdateBustAsync(charType);
     }
 
     public override bool Equals(object? obj)

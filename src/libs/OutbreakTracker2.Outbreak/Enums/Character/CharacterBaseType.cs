@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Outbreak.Enums.Character;
 
-internal enum CharacterBaseType : byte
+public enum CharacterBaseType : byte
 {
     [EnumMember(Value = "Kevin")]
     Kevin = 0,
