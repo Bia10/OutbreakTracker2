@@ -4,6 +4,7 @@ using ObservableCollections;
 using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.App.Services.Dispatcher;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer.Factory;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
 using System;
@@ -26,7 +27,8 @@ public class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
     public InGamePlayersViewModel(
         IDataManager dataManager,
         ILogger<InGamePlayersViewModel> logger,
-        IDispatcherService dispatcherService)
+        IDispatcherService dispatcherService,
+        IInGamePlayerViewModelFactory inGamePlayerViewModelFactory)
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
@@ -71,7 +73,7 @@ public class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
                         else
                         {
                             _logger.LogDebug("Creating new ViewModel on TP for {UniqueId}", playerUniqueId);
-                            InGamePlayerViewModel newVm = new(incomingPlayer, dataManager);
+                            InGamePlayerViewModel newVm = inGamePlayerViewModelFactory.Create(incomingPlayer);
                             desiredViewModels.Add(newVm);
                         }
                     }

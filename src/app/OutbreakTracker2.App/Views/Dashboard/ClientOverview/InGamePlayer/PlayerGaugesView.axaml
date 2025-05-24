@@ -18,11 +18,12 @@
                 Spacing="4">
                 <suki:CircleProgressBar
                     IsIndeterminate="False"
-                    StrokeWidth="8"
+                    StrokeWidth="12"
                     Value="{Binding HealthPercentage}">
                     <TextBlock
                         Margin="0,2,0,0"
                         Classes="Success"
+                        FontWeight="Bold"
                         IsVisible="True"
                         Text="{Binding HealthPercentage, StringFormat='{}{0:F2}%'}" />
                 </suki:CircleProgressBar>
@@ -42,11 +43,12 @@
                 Spacing="4">
                 <suki:CircleProgressBar
                     IsIndeterminate="False"
-                    StrokeWidth="8"
+                    StrokeWidth="12"
                     Value="{Binding VirusPercentage}">
                     <TextBlock
                         Margin="0,2,0,0"
                         Classes="Danger"
+                        FontWeight="Bold"
                         IsVisible="True"
                         Text="{Binding VirusPercentage, StringFormat='{}{0:F2}%'}" />
                 </suki:CircleProgressBar>

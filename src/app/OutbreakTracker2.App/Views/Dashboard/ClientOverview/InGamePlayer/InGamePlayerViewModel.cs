@@ -1,7 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.App.Services.Data;
+using OutbreakTracker2.App.Views.Common;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
+using OutbreakTracker2.Outbreak.Enums.Character;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer;
 
@@ -43,9 +46,15 @@ public partial class InGamePlayerViewModel : ObservableObject
     [ObservableProperty]
     private InventoryViewModel _inventory;
 
+    [ObservableProperty]
+    private CharacterBustViewModel _playerBustViewModel;
+
     private readonly IDataManager _dataManager;
 
-    public InGamePlayerViewModel(DecodedInGamePlayer player, IDataManager dataManager)
+    public InGamePlayerViewModel(
+        DecodedInGamePlayer player,
+        IDataManager dataManager,
+        ICharacterBustViewModelFactory characterBustViewModelFactory)
     {
         _dataManager = dataManager;
         _gauges = new PlayerGaugesViewModel();
@@ -54,6 +63,7 @@ public partial class InGamePlayerViewModel : ObservableObject
         _attributes = new PlayerAttributesViewModel();
         _position = new PlayerPositionViewModel(dataManager);
         _inventory = new InventoryViewModel(player, dataManager);
+        _playerBustViewModel = characterBustViewModelFactory.Create();
 
         Update(player);
     }
@@ -87,6 +97,9 @@ public partial class InGamePlayerViewModel : ObservableObject
             player.DeadInventory,
             player.SpecialDeadInventory
         );
+
+        if (EnumUtility.TryParseByValueOrMember(CharacterType, out CharacterBaseType charType))
+            _ = PlayerBustViewModel.UpdateBustAsync(charType);
     }
 
     public override bool Equals(object? obj)

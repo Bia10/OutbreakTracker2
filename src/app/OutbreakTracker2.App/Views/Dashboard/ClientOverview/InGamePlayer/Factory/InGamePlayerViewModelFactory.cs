@@ -1,0 +1,35 @@
+﻿using Microsoft.Extensions.Logging;
+using OutbreakTracker2.App.Services.Data;
+using OutbreakTracker2.App.Views.Common;
+using OutbreakTracker2.Outbreak.Models;
+using System;
+
+namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer.Factory;
+
+public class InGamePlayerViewModelFactory : IInGamePlayerViewModelFactory
+{
+    private readonly ILogger<InGamePlayerViewModelFactory> _logger;
+    private readonly IDataManager _dataManager;
+    private readonly ICharacterBustViewModelFactory _characterBustViewModelFactory;
+
+    public InGamePlayerViewModelFactory(
+        ILogger<InGamePlayerViewModelFactory> logger,
+        IDataManager dataManager,
+        ICharacterBustViewModelFactory characterBustViewModelFactory)
+    {
+        _logger = logger;
+        _dataManager = dataManager;
+        _characterBustViewModelFactory = characterBustViewModelFactory;
+    }
+
+    public InGamePlayerViewModel Create(DecodedInGamePlayer playerData)
+    {
+        if (playerData is null)
+        {
+            _logger.LogError("Player data is null. Cannot create InGamePlayerViewModel");
+            throw new ArgumentNullException(nameof(playerData));
+        }
+
+        return new InGamePlayerViewModel(playerData, _dataManager, _characterBustViewModelFactory);
+    }
+}

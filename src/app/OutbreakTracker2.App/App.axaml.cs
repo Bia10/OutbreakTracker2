@@ -24,6 +24,7 @@ using OutbreakTracker2.App.Views.Dashboard.ClientNotRunning;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameDoors;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameEnemies;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer.Factory;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
@@ -214,6 +215,8 @@ public class App : Application
         services.AddTransient<IImageViewModelFactory, ImageViewModelFactory>();
         services.AddTransient<IScenarioImageViewModelFactory, ScenarioImageViewModelFactory>();
         services.AddTransient<ILobbySlotViewModelFactory, LobbySlotViewModelFactory>();
+        services.AddTransient<IInGamePlayerViewModelFactory, InGamePlayerViewModelFactory>();
+
 
         services.AddSingleton<LobbySlotsViewModel>();
 
