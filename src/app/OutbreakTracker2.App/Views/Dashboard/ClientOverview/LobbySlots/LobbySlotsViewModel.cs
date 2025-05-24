@@ -4,6 +4,7 @@ using ObservableCollections;
 using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.App.Services.Dispatcher;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlot;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlot.Factory;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
 using System;
@@ -14,7 +15,7 @@ using System.Threading.Tasks;
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlots;
 
 // NOTE: Currently this relies on weird magic:
-// The array index is of incoming data is used to pair with ULID of existing VMs.
+// The array index of incoming data is used to pair with ULID of existing VMs.
 // This is not ideal, but it works for now.
 // The assumption is that the incoming data is in the same order as the VMs in the cache.
 public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
@@ -30,7 +31,8 @@ public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
     public LobbySlotsViewModel(
         IDataManager dataManager,
         ILogger<LobbySlotsViewModel> logger,
-        IDispatcherService dispatcherService)
+        IDispatcherService dispatcherService,
+        ILobbySlotViewModelFactory lobbySlotVmFactory)
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
@@ -46,131 +48,93 @@ public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
 
                 try
                 {
-                    List<LobbySlotViewModel> desiredViewModels = new(lobbySlotsSnapshot.Length);
-                    HashSet<Ulid> activeVmUlids = [];
-
-                    Dictionary<int, DecodedLobbySlot> incomingDataByIndex = new(lobbySlotsSnapshot.Length);
-                    for (int i = 0; i < lobbySlotsSnapshot.Length; i++)
-                    {
-                        incomingDataByIndex[i] = lobbySlotsSnapshot[i];
-                    }
+                    List<LobbySlotViewModel> desiredViewModelsForUiList = new(lobbySlotsSnapshot.Length);
+                    HashSet<Ulid> activeIncomingUlids = [];
 
                     for (int i = 0; i < lobbySlotsSnapshot.Length; i++)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
                         DecodedLobbySlot incomingData = lobbySlotsSnapshot[i];
-                        LobbySlotViewModel vmToAddToList;
+                        LobbySlotViewModel vmToUse;
 
-                        List<LobbySlotViewModel> currentListSnapshot;
-                        try
+                        if (i < _lobbySlotsInternal.Count)
                         {
-                            currentListSnapshot = [.. _lobbySlotsInternal];
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error taking snapshot of _lobbySlotsInternal on ThreadPool");
-                            throw;
-                        }
-
-                        if (i < currentListSnapshot.Count)
-                        {
-                            LobbySlotViewModel potentialVmToReuse = currentListSnapshot[i];
-                            if (_viewModelCache.TryGetValue(potentialVmToReuse.Id, out LobbySlotViewModel? existingAndCachedVm))
+                            LobbySlotViewModel currentVmInList = _lobbySlotsInternal[i];
+                            if (_viewModelCache.TryGetValue(currentVmInList.Id, out LobbySlotViewModel? cachedVm))
                             {
-                                vmToAddToList = existingAndCachedVm;
-                                _logger.LogTrace("Reusing existing VM {Ulid} for index {Index}", vmToAddToList.Id, i);
+                                vmToUse = cachedVm;
+                                _logger.LogTrace("Reusing cached VM {Ulid} for index {Index}", vmToUse.Id, i);
                             }
                             else
                             {
-                                _logger.LogWarning("VM {Ulid} from old list snapshot at index {Index} not found in cache. Creating new", potentialVmToReuse.Id, i);
-                                vmToAddToList = new LobbySlotViewModel(incomingData);
+                                vmToUse = lobbySlotVmFactory.Create(incomingData);
+                                _logger.LogWarning("VM {Ulid} from old list snapshot at index {Index} not found in cache or its ULID changed. Creating new VM for incoming data", currentVmInList.Id, i);
                             }
                         }
                         else
                         {
-                            vmToAddToList = new LobbySlotViewModel(incomingData);
-                            _logger.LogDebug("Creating new VM {Ulid} for new index {Index}", vmToAddToList.Id, i);
+                            vmToUse = lobbySlotVmFactory.Create(incomingData);
+                            _logger.LogDebug("Creating new VM {Ulid} for new index {Index}", vmToUse.Id, i);
                         }
 
-                        desiredViewModels.Add(vmToAddToList);
-                        activeVmUlids.Add(vmToAddToList.Id);
+                        vmToUse.Update(incomingData);
+                        desiredViewModelsForUiList.Add(vmToUse);
+                        activeIncomingUlids.Add(vmToUse.Id);
                     }
 
                     IReadOnlyDictionary<Ulid, LobbySlotViewModel> cacheAsKvpDict = _viewModelCache;
-                    List<Ulid> ulidsToRemove = cacheAsKvpDict.Keys.Except(activeVmUlids).ToList();
+                    List<Ulid> ulidsToRemoveFromCache = cacheAsKvpDict.Keys
+                        .Except(activeIncomingUlids)
+                        .ToList();
 
-                    _logger.LogInformation("ViewModel preparation complete on thread pool. {DesiredCount} desired VMs. {RemovedCount} VMs to remove", desiredViewModels.Count, ulidsToRemove.Count);
+                    _logger.LogInformation(
+                        "ViewModel preparation complete on thread pool. {DesiredCount} desired VMs. {RemovedCount} VMs to remove from cache",
+                        desiredViewModelsForUiList.Count, ulidsToRemoveFromCache.Count);
 
                     await _dispatcherService.InvokeOnUIAsync(() =>
                     {
                         _logger.LogInformation("Applying lobby slot updates on UI thread");
 
-                        foreach (Ulid ulid in ulidsToRemove)
+                        foreach (Ulid ulid in ulidsToRemoveFromCache)
                         {
                             if (_viewModelCache.Remove(ulid))
-                            {
                                 _logger.LogDebug("Removing VM from cache on UI thread for ULID: {Ulid}", ulid);
-                            }
                             else
-                            {
                                 _logger.LogWarning("Attempted to remove VM {Ulid} from cache but it was not found", ulid);
-                            }
                         }
 
-                        foreach (LobbySlotViewModel vm in desiredViewModels)
+                        foreach (LobbySlotViewModel vm in desiredViewModelsForUiList)
                         {
-                            if (_viewModelCache.ContainsKey(vm.Id))
-                                continue;
-
-                            _viewModelCache[vm.Id] = vm;
-                            _logger.LogTrace("Adding new VM to cache on UI thread for ULID: {Ulid}", vm.Id);
+                            if (!_viewModelCache.ContainsKey(vm.Id))
+                            {
+                                _viewModelCache[vm.Id] = vm;
+                                _logger.LogTrace("Adding new VM to cache on UI thread for ULID: {Ulid}", vm.Id);
+                            }
                         }
 
                         _logger.LogTrace("Cache count after additions: {Count}", _viewModelCache.Count);
 
-                        for (int i = 0; i < desiredViewModels.Count; i++)
-                        {
-                            LobbySlotViewModel vm = desiredViewModels[i];
-                            DecodedLobbySlot incomingData = incomingDataByIndex[i];
-
-                            vm.Update(incomingData);
-                            _logger.LogTrace("Updating VM properties on UI thread for ULID {Ulid} (Slot {Slot})", vm.Id, incomingData.SlotNumber); // Use VM Ulid and data SlotNumber for logging
-                        }
-
-                        _logger.LogTrace("Properties updated for {Count} VMs", desiredViewModels.Count);
-
-                        HashSet<Ulid> desiredVmUlidsLookup = new(desiredViewModels.Select(vm => vm.Id));
                         for (int i = _lobbySlotsInternal.Count - 1; i >= 0; i--)
                         {
                             LobbySlotViewModel currentVmInList = _lobbySlotsInternal[i];
-                            if (desiredVmUlidsLookup.Contains(currentVmInList.Id))
-                                continue;
-
-                            _logger.LogDebug("Removing VM from UI list: ULID {Ulid}", currentVmInList.Id);
-                            _lobbySlotsInternal.RemoveAt(i);
+                            if (!activeIncomingUlids.Contains(currentVmInList.Id))
+                            {
+                                _logger.LogDebug("Removing VM from UI list: ULID {Ulid} at index {Index} (no longer active)",
+                                    currentVmInList.Id, i);
+                                _lobbySlotsInternal.RemoveAt(i);
+                            }
                         }
 
-                        _logger.LogTrace("UI list count after removals: {Count}", _lobbySlotsInternal.Count);
-
-
-                        for (int i = 0; i < desiredViewModels.Count; i++)
+                        for (int i = 0; i < desiredViewModelsForUiList.Count; i++)
                         {
-                            LobbySlotViewModel desiredVm = desiredViewModels[i];
-                            int currentIndexInList = -1;
+                            LobbySlotViewModel desiredVm = desiredViewModelsForUiList[i];
+                            int currentIndexInList = _lobbySlotsInternal.IndexOf(desiredVm);
 
-                            for (int j = 0; j < _lobbySlotsInternal.Count; j++)
+                            if (currentIndexInList == -1)
                             {
-                                if (_lobbySlotsInternal[j].Id != desiredVm.Id)
-                                    continue;
-
-                                currentIndexInList = j;
-                                break;
-                            }
-
-                            if (currentIndexInList is -1)
-                            {
-                                _logger.LogDebug("Inserting VM into UI list: ULID {Ulid} at index {Index}", desiredVm.Id, i);
+                                _logger.LogDebug("Inserting VM into UI list: ULID {Ulid} at index {Index}",
+                                    desiredVm.Id, i);
 
                                 if (i <= _lobbySlotsInternal.Count)
                                     _lobbySlotsInternal.Insert(i, desiredVm);
@@ -182,17 +146,13 @@ public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
                                 _logger.LogDebug("Moving VM in UI list: ULID {Ulid} from index {FromIndex} to index {ToIndex}", desiredVm.Id, currentIndexInList, i);
                                 _lobbySlotsInternal.Move(currentIndexInList, i);
                             }
-                            else
-                            {
-                                _logger.LogTrace("VM {Ulid} already in correct position {Index}", desiredVm.Id, i);
-                            }
                         }
 
-                        _logger.LogTrace("UI list count after adds/moves: {Count}", _lobbySlotsInternal.Count);
+                        _logger.LogTrace("UI list count after adds/moves/removals: {Count}", _lobbySlotsInternal.Count);
 
-                        if (_lobbySlotsInternal.Count != desiredViewModels.Count)
+                        if (_lobbySlotsInternal.Count != desiredViewModelsForUiList.Count)
                             _logger.LogWarning("_lobbySlotsInternal count ({InternalCount}) differs from desiredViewModels count ({DesiredCount}) after sync. This indicates a potential sync logic error",
-                                _lobbySlotsInternal.Count, desiredViewModels.Count);
+                                _lobbySlotsInternal.Count, desiredViewModelsForUiList.Count);
 
                         _logger.LogInformation("UI update complete. LobbySlots UI list count: {Count}", _lobbySlotsInternal.Count);
                     }, cancellationToken).ConfigureAwait(false);
@@ -212,8 +172,6 @@ public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        // We assume that singleton view/vm is not disposed multiple times.
-
         _logger.LogDebug("Disposing LobbySlotsViewModel asynchronously");
 
         _subscription.Dispose();

@@ -52,7 +52,7 @@ public class ScenarioImageViewModel : ObservableObject
         return ImageViewModel.UpdateImageAsync(spriteName, $"Scenario Image for {Scenario.TrainingGround}");
     }
 
-    private void OnImageViewModelSourceImageChanged(object? sender, PropertyChangedEventArgs e)
+    private void OnImageViewModelSourceImageChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (sender is not ImageViewModel _)
         {
@@ -61,14 +61,14 @@ public class ScenarioImageViewModel : ObservableObject
             return;
         }
 
-        if (string.IsNullOrEmpty(e.PropertyName))
+        if (string.IsNullOrEmpty(eventArgs.PropertyName))
         {
-            _logger.LogWarning("[{MethodName}] PropertyChangedEventArgs is null or empty: {PropertyName}",
-                nameof(OnImageViewModelSourceImageChanged), e.PropertyName);
+            _logger.LogWarning("[{MethodName}] PropertyChangedEventArgs.PropertyName is null or empty: {PropertyName}",
+                nameof(OnImageViewModelSourceImageChanged), eventArgs.PropertyName);
             return;
         }
 
-        if (e.PropertyName.Equals(nameof(ImageViewModel.SourceImage), StringComparison.Ordinal))
+        if (eventArgs.PropertyName.Equals(nameof(ImageViewModel.SourceImage), StringComparison.Ordinal))
             OnPropertyChanged(nameof(ScenarioImage));
     }
 }

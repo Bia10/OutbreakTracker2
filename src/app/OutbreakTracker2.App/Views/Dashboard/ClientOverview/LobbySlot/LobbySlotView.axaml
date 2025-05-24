@@ -23,7 +23,7 @@
         MaxWidth="350"
         Margin="3">
         <Grid
-            Margin="8"
+            Margin="5"
             ColumnDefinitions="Auto,Auto,*,Auto"
             RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
             <TextBlock
@@ -56,6 +56,18 @@
                 VerticalAlignment="Top"
                 Kind="{Binding IsPasswordProtectedBool, Converter={x:Static converters:BoolToIconConverters.Password}}"
                 ToolTip.Tip="Password Protected Status" />
+
+            <Image
+                Grid.Row="2"
+                Grid.Column="0"
+                Grid.ColumnSpan="3"
+                Width="200"
+                Height="200"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Source="{Binding ScenarioImageViewModel.ScenarioImage}"
+                Stretch="Uniform" />
+
             <TextBlock
                 Grid.Row="3"
                 Grid.Column="0"

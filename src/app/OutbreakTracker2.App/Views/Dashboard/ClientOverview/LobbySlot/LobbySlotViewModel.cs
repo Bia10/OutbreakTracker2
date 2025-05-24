@@ -1,12 +1,18 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.Logging;
+using OutbreakTracker2.App.Views.Common;
 using OutbreakTracker2.Outbreak.Common;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Utility;
 using System;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlot;
 
 public partial class LobbySlotViewModel : ObservableObject
 {
+    private readonly ILogger<LobbySlotViewModel> _logger;
+
     [ObservableProperty]
     private Ulid _id = Ulid.NewUlid();
 
@@ -42,9 +48,20 @@ public partial class LobbySlotViewModel : ObservableObject
 
     public Ulid UniqueSlotId => Id;
 
-    public LobbySlotViewModel(DecodedLobbySlot model)
+    public ScenarioImageViewModel ScenarioImageViewModel { get; }
+
+    public LobbySlotViewModel(
+        ILogger<LobbySlotViewModel> logger,
+        IScenarioImageViewModelFactory scenarioImageViewModelFactory,
+        DecodedLobbySlot initialData)
     {
-        Update(model);
+        _logger = logger;
+
+        ScenarioImageViewModel = scenarioImageViewModelFactory.Create();
+
+        Update(initialData);
+
+        _logger.LogInformation("LobbySlotViewModel initialized for ULID: {Ulid}", _id);
     }
 
     public void Update(DecodedLobbySlot model)
@@ -60,6 +77,16 @@ public partial class LobbySlotViewModel : ObservableObject
 
         OnPropertyChanged(nameof(IsPasswordProtectedBool));
         OnPropertyChanged(nameof(PlayersDisplay));
+
+        if (EnumUtility.TryParseByValueOrMember(ScenarioId, out Scenario scenarioType))
+        {
+            _ = ScenarioImageViewModel.UpdateImageAsync(scenarioType);
+        }
+        else
+        {
+            _logger.LogWarning("ScenarioName '{ScenarioName}' could not be parsed to a ScenarioType. Displaying default image", ScenarioId);
+            _ = ScenarioImageViewModel.UpdateToDefaultImageAsync();
+        }
     }
 
     public override bool Equals(object? obj)

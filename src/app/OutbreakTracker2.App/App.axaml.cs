@@ -29,6 +29,7 @@ using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoom;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer.Factory;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlot.Factory;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlots;
 using OutbreakTracker2.App.Views.Log;
 using OutbreakTracker2.App.Views.Logging;
@@ -204,16 +205,17 @@ public class App : Application
         });
 
         services.AddTransient<ImageViewModel>();
-        services.AddSingleton<IImageViewModelFactory, ImageViewModelFactory>();
-
         services.AddTransient<CharacterBustViewModel>();
-        services.AddSingleton<ICharacterBustViewModelFactory, CharacterBustViewModelFactory>();
-
         services.AddTransient<ScenarioImageViewModel>();
-        services.AddSingleton<IScenarioImageViewModelFactory, ScenarioImageViewModelFactory>();
-
         services.AddTransient<LobbyRoomViewModel>();
+
+        services.AddTransient<ICharacterBustViewModelFactory, CharacterBustViewModelFactory>();
         services.AddTransient<ILobbyRoomPlayerViewModelFactory, LobbyRoomPlayerViewModelFactory>();
+        services.AddTransient<IImageViewModelFactory, ImageViewModelFactory>();
+        services.AddTransient<IScenarioImageViewModelFactory, ScenarioImageViewModelFactory>();
+        services.AddTransient<ILobbySlotViewModelFactory, LobbySlotViewModelFactory>();
+
+        services.AddSingleton<LobbySlotsViewModel>();
 
         ServiceProviderOptions providerOptions = new()
         {
