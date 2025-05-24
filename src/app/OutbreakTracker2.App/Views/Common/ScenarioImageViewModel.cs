@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.App.Services.TextureAtlas;
 using OutbreakTracker2.Outbreak.Enums;
+using System;
 using System.Threading.Tasks;
 
 namespace OutbreakTracker2.App.Views.Common;
@@ -24,16 +25,28 @@ public class ScenarioImageViewModel : ObservableObject
         ImageViewModel = imageViewModelFactory.Create();
 
         _logger.LogInformation("ScenarioImageViewModel initialized");
-        _ = UpdateScenarioImageAsync(Scenario.Unknown);
+        _ = UpdateImageAsync(Scenario.Unknown);
     }
 
-    public ValueTask UpdateScenarioImageAsync(Scenario scenarioType)
+    public ValueTask UpdateImageAsync(Scenario scenarioType)
     {
         string spriteName = _textureAtlasService.GetSpriteNameFromScenarioName(scenarioType);
+        if (spriteName.StartsWith("unknown", StringComparison.Ordinal))
+            return ValueTask.CompletedTask;
+
         _logger.LogDebug("Requesting scenario image update for scenario: {ScenarioType}", scenarioType);
 
         return ImageViewModel.UpdateImageAsync(spriteName, $"Scenario Image for {scenarioType}");
     }
 
+    public ValueTask UpdateToDefaultImageAsync()
+    {
+        string spriteName = _textureAtlasService.GetSpriteNameFromScenarioName(Scenario.TrainingGround);
+        _logger.LogDebug("Requesting scenario image update for scenario: {ScenarioType}", Scenario.TrainingGround);
+
+        return ImageViewModel.UpdateImageAsync(spriteName, $"Scenario Image for {Scenario.TrainingGround}");
+    }
+
+    // Todo: this won't automatically notify the UI when the image changes
     public CroppedBitmap? CurrentScenarioImage => ImageViewModel.SourceImage;
 }

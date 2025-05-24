@@ -35,5 +35,6 @@ public class CharacterBustViewModel : ObservableObject
         return ImageViewModel.UpdateImageAsync(spriteName, $"Character Bust for {characterType}");
     }
 
+    // Todo: this won't automatically notify the UI when the image changes
     public CroppedBitmap? PlayerBust => ImageViewModel.SourceImage;
 }

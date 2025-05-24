@@ -3,10 +3,13 @@ using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.App.Services.Dispatcher;
+using OutbreakTracker2.App.Views.Common;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer.Factory;
 using OutbreakTracker2.Outbreak.Common;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Utility;
 using R3;
 using System;
 using System.Collections.Generic;
@@ -24,6 +27,8 @@ public partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
     private readonly Dictionary<Ulid, LobbyRoomPlayerViewModel> _viewModelCache = [];
     private readonly ObservableList<LobbyRoomPlayerViewModel> _playersInternal = [];
     public NotifyCollectionChangedSynchronizedViewList<LobbyRoomPlayerViewModel> PlayersView { get; }
+
+    public ScenarioImageViewModel ScenarioImageViewModel { get; }
 
     [ObservableProperty]
     private string _status = string.Empty;
@@ -49,11 +54,13 @@ public partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
         IDataManager dataManager,
         ILogger<LobbyRoomViewModel> logger,
         IDispatcherService dispatcherService,
-        ILobbyRoomPlayerViewModelFactory playerVmFactory)
+        ILobbyRoomPlayerViewModelFactory playerVmFactory,
+        IScenarioImageViewModelFactory scenarioImageVmFactory)
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
         _logger.LogInformation("Initializing LobbyRoomViewModel");
+        ScenarioImageViewModel = scenarioImageVmFactory.Create();
 
         PlayersView =
             _playersInternal.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
@@ -218,7 +225,6 @@ public partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
                                                 desiredVm.ViewModelId, i, _playersInternal.Count);
                                             _playersInternal.Add(desiredVm); // Fallback add
                                         }
-
                                     }
                                     else if (currentIndexInList != i)
                                     {
@@ -288,6 +294,16 @@ public partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
         CurPlayer = model.CurPlayer;
         Difficulty = model.Difficulty;
         ScenarioName = model.ScenarioName;
+
+        if (EnumUtility.TryParseByValueOrMember(ScenarioName, out Scenario scenarioType))
+        {
+            _ = ScenarioImageViewModel.UpdateImageAsync(scenarioType);
+        }
+        else
+        {
+            _logger.LogWarning("ScenarioName '{ScenarioName}' could not be parsed to a ScenarioType. Displaying default image", ScenarioName);
+            _ = ScenarioImageViewModel.UpdateToDefaultImageAsync();
+        }
 
         OnPropertyChanged(nameof(PlayersDisplay));
     }

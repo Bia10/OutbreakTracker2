@@ -205,10 +205,14 @@ public class App : Application
 
         services.AddTransient<ImageViewModel>();
         services.AddSingleton<IImageViewModelFactory, ImageViewModelFactory>();
+
         services.AddTransient<CharacterBustViewModel>();
         services.AddSingleton<ICharacterBustViewModelFactory, CharacterBustViewModelFactory>();
+
         services.AddTransient<ScenarioImageViewModel>();
         services.AddSingleton<IScenarioImageViewModelFactory, ScenarioImageViewModelFactory>();
+
+        services.AddTransient<LobbyRoomViewModel>();
         services.AddTransient<ILobbyRoomPlayerViewModelFactory, LobbyRoomPlayerViewModelFactory>();
 
         ServiceProviderOptions providerOptions = new()

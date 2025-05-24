@@ -124,6 +124,6 @@ public class TextureAtlasService : ITextureAtlasService
         string spriteName = EnumUtility.GetEnumString(scenarioName, Scenario.Unknown);
 
         _logger.LogDebug("Obtained sprite name '{SpriteName}' for scenario name '{ScenarioName}'", spriteName, scenarioName);
-        return spriteName;
+        return spriteName.ToLowerInvariant();
     }
 }
