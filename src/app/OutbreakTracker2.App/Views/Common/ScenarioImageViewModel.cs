@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using OutbreakTracker2.App.Services.TextureAtlas;
 using OutbreakTracker2.Outbreak.Enums;
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace OutbreakTracker2.App.Views.Common;
@@ -15,6 +16,8 @@ public class ScenarioImageViewModel : ObservableObject
 
     private ImageViewModel ImageViewModel { get; }
 
+    public CroppedBitmap? ScenarioImage => ImageViewModel.SourceImage;
+
     public ScenarioImageViewModel(
         ILogger<ScenarioImageViewModel> logger,
         ITextureAtlasService textureAtlasService,
@@ -23,6 +26,8 @@ public class ScenarioImageViewModel : ObservableObject
         _logger = logger;
         _textureAtlasService = textureAtlasService;
         ImageViewModel = imageViewModelFactory.Create();
+
+        ImageViewModel.PropertyChanged += OnImageViewModelSourceImageChanged;
 
         _logger.LogInformation("ScenarioImageViewModel initialized");
         _ = UpdateImageAsync(Scenario.Unknown);
@@ -47,6 +52,23 @@ public class ScenarioImageViewModel : ObservableObject
         return ImageViewModel.UpdateImageAsync(spriteName, $"Scenario Image for {Scenario.TrainingGround}");
     }
 
-    // Todo: this won't automatically notify the UI when the image changes
-    public CroppedBitmap? CurrentScenarioImage => ImageViewModel.SourceImage;
+    private void OnImageViewModelSourceImageChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is not ImageViewModel _)
+        {
+            _logger.LogWarning("[{MethodName}] Unexpected sender: {Sender}",
+                nameof(OnImageViewModelSourceImageChanged), sender?.GetType());
+            return;
+        }
+
+        if (string.IsNullOrEmpty(e.PropertyName))
+        {
+            _logger.LogWarning("[{MethodName}] PropertyChangedEventArgs is null or empty: {PropertyName}",
+                nameof(OnImageViewModelSourceImageChanged), e.PropertyName);
+            return;
+        }
+
+        if (e.PropertyName.Equals(nameof(ImageViewModel.SourceImage), StringComparison.Ordinal))
+            OnPropertyChanged(nameof(ScenarioImage));
+    }
 }

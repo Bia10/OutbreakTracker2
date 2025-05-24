@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.App.Services.TextureAtlas;
 using OutbreakTracker2.Outbreak.Enums.Character;
+using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace OutbreakTracker2.App.Views.Common;
@@ -14,6 +16,8 @@ public class CharacterBustViewModel : ObservableObject
 
     private ImageViewModel ImageViewModel { get; }
 
+    public CroppedBitmap? PlayerBustImage => ImageViewModel.SourceImage;
+
     public CharacterBustViewModel(
         ILogger<CharacterBustViewModel> logger,
         ITextureAtlasService textureAtlasService,
@@ -22,6 +26,8 @@ public class CharacterBustViewModel : ObservableObject
         _logger = logger;
         _textureAtlasService = textureAtlasService;
         ImageViewModel = imageViewModelFactory.Create();
+
+        ImageViewModel.PropertyChanged += OnImageViewModelSourceImageChanged;
 
         _logger.LogDebug("CharacterBustViewModel initialized");
         _ = UpdateBustAsync(CharacterBaseType.Kevin);
@@ -35,6 +41,23 @@ public class CharacterBustViewModel : ObservableObject
         return ImageViewModel.UpdateImageAsync(spriteName, $"Character Bust for {characterType}");
     }
 
-    // Todo: this won't automatically notify the UI when the image changes
-    public CroppedBitmap? PlayerBust => ImageViewModel.SourceImage;
+    private void OnImageViewModelSourceImageChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is not ImageViewModel _)
+        {
+            _logger.LogWarning("[{MethodName}] Unexpected sender: {Sender}",
+                nameof(OnImageViewModelSourceImageChanged), sender?.GetType());
+            return;
+        }
+
+        if (string.IsNullOrEmpty(e.PropertyName))
+        {
+            _logger.LogWarning("[{MethodName}] PropertyChangedEventArgs is null or empty: {PropertyName}",
+                nameof(OnImageViewModelSourceImageChanged), e.PropertyName);
+            return;
+        }
+
+        if (e.PropertyName.Equals(nameof(ImageViewModel.SourceImage), StringComparison.Ordinal))
+            OnPropertyChanged(nameof(PlayerBustImage));
+    }
 }

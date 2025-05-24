@@ -51,12 +51,10 @@
                         Grid.Row="2"
                         Grid.Column="0"
                         Grid.ColumnSpan="3"
-                        Width="300"
-                        Height="200"
                         Margin="0,5,0,10"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        Source="{Binding ScenarioImageViewModel.CurrentScenarioImage}"
+                        Source="{Binding ScenarioImageViewModel.ScenarioImage}"
                         Stretch="Uniform" />
                     <StackPanel
                         Grid.Row="3"
