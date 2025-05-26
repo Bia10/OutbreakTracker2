@@ -20,6 +20,9 @@ public partial class ItemSlotViewModel : ObservableObject
     private string _itemName = string.Empty;
 
     [ObservableProperty]
+    private string _itemCount = string.Empty;
+
+    [ObservableProperty]
     private string _debugInfo = string.Empty;
 
     public ItemSlotViewModel(
@@ -30,9 +33,10 @@ public partial class ItemSlotViewModel : ObservableObject
         ItemImageViewModel = itemImageViewModelFactory.Create();
     }
 
-    public void UpdateDisplay(string name, string debug)
+    public void UpdateDisplay(string name, string count, string debug)
     {
         ItemName = name;
+        ItemCount = count;
         DebugInfo = debug;
 
 if (!name.Equals("Empty", StringComparison.Ordinal))

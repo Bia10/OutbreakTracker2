@@ -90,14 +90,14 @@ public partial class InventoryViewModel : ObservableObject
 
     private void UpdateSlot(ItemSlotViewModel slot, byte itemId)
     {
-        (string name, string debug) = LookupItemDetails(itemId);
-        slot.UpdateDisplay(name, debug);
+        (string name, string count, string debug) = LookupItemDetails(itemId);
+        slot.UpdateDisplay(name, count, debug);
     }
 
-    private (string Name, string Debug) LookupItemDetails(byte itemId)
+    private (string Name, string Count, string Debug) LookupItemDetails(byte itemId)
     {
         if (itemId is 0x0)
-            return ("Empty", "0x00 | 0");
+            return ("Empty", "0", "0x00 | 0");
 
         DecodedItem? item = _dataManager.InGameScenario.Items
             .AsValueEnumerable()
@@ -105,8 +105,8 @@ public partial class InventoryViewModel : ObservableObject
             .FirstOrDefault(item => item.Id.Equals(itemId));
 
         return item is not null
-            ? (item.TypeName, $"0x{itemId:X2} | {itemId}")
-            : ("Unknown", $"0x{itemId:X2} | {itemId}");
+            ? (item.TypeName, item.Quantity.ToString(), $"0x{itemId:X2} | {itemId}")
+            : ("Unknown", "0", $"0x{itemId:X2} | {itemId}");
     }
 
     private void InitializeSection(ObservableCollection<ItemSlotViewModel> collection, int count)
