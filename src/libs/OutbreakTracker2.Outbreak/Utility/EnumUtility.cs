@@ -6,6 +6,7 @@ namespace OutbreakTracker2.Outbreak.Utility;
 
 public static class EnumUtility
 {
+    // TODO: this will introduce boxing
     public static string GetEnumString<TEnum>(object? value, TEnum defaultValue)
         where TEnum : struct, Enum
     {
@@ -43,6 +44,39 @@ public static class EnumUtility
         }
 
         result = default;
+        return false;
+    }
+
+    // TODO: this will introduce boxing
+    public static bool TryParseByValueOrMember<TEnum>(object? value, out TEnum result)
+        where TEnum : struct, Enum
+    {
+        result = default;
+
+        switch (value)
+        {
+            case null: return false;
+            case TEnum enumInstance:
+                result = enumInstance;
+                return true;
+        }
+
+        if (FastEnum.TryParse(value.ToString()!, out result))
+        {
+            if (FastEnum.IsDefined(result))
+                return true;
+        }
+
+        foreach (TEnum enumValue in FastEnum.GetValues<TEnum>())
+        {
+            string? memberValue = enumValue.GetEnumMemberValue();
+            if (string.IsNullOrEmpty(memberValue) || !string.Equals(value.ToString(), memberValue, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            result = enumValue;
+            return true;
+        }
+
         return false;
     }
 

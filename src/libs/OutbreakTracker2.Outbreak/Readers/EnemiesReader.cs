@@ -55,18 +55,18 @@ public class EnemiesReader : ReaderBase
         _ => 0xFF
     };
 
-    public short GetCurHealth(int enemyId) => CurrentFile switch
+    public ushort GetCurHealth(int enemyId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<short>(FileOnePtrs.GetEnemyAddress(enemyId), [FileOnePtrs.EnemyHpOffset]),
-        GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.GetEnemyAddress(enemyId), [FileTwoPtrs.EnemyHpOffset]),
-        _ => short.MaxValue
+        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetEnemyAddress(enemyId), [FileOnePtrs.EnemyHpOffset]),
+        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetEnemyAddress(enemyId), [FileTwoPtrs.EnemyHpOffset]),
+        _ => ushort.MaxValue
     };
 
-    public short GetMaxHealth(int enemyId) => CurrentFile switch
+    public ushort GetMaxHealth(int enemyId) => CurrentFile switch
     {
-        GameFile.FileOne => ReadValue<short>(FileOnePtrs.GetEnemyAddress(enemyId), [FileOnePtrs.EnemyMaxHpOffset]),
-        GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.GetEnemyAddress(enemyId), [FileTwoPtrs.EnemyMaxHpOffset]),
-        _ => short.MaxValue
+        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetEnemyAddress(enemyId), [FileOnePtrs.EnemyMaxHpOffset]),
+        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetEnemyAddress(enemyId), [FileTwoPtrs.EnemyMaxHpOffset]),
+        _ => ushort.MaxValue
     };
 
     public static string GetEnemyName(byte nameId)
@@ -126,8 +126,8 @@ public class EnemiesReader : ReaderBase
                         DecodedEnemies2[i].SlotId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x1]);
                         DecodedEnemies2[i].NameId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x2]);
                         DecodedEnemies2[i].TypeId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x3]);
-                        DecodedEnemies2[i].CurHp = ReadValue<short>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x1C]);
-                        DecodedEnemies2[i].MaxHp = ReadValue<short>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x1E]);
+                        DecodedEnemies2[i].CurHp = ReadValue<ushort>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x1C]);
+                        DecodedEnemies2[i].MaxHp = ReadValue<ushort>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x1E]);
                         DecodedEnemies2[i].RoomId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x22]);
                         DecodedEnemies2[i].Status = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x45]);
                         break;
@@ -136,8 +136,8 @@ public class EnemiesReader : ReaderBase
                         DecodedEnemies2[i].SlotId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x1]);
                         DecodedEnemies2[i].NameId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x2]);
                         DecodedEnemies2[i].TypeId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x3]);
-                        DecodedEnemies2[i].CurHp = ReadValue<short>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x1C]);
-                        DecodedEnemies2[i].MaxHp = ReadValue<short>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x1E]);
+                        DecodedEnemies2[i].CurHp = ReadValue<ushort>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x1C]);
+                        DecodedEnemies2[i].MaxHp = ReadValue<ushort>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x1E]);
                         DecodedEnemies2[i].RoomId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x22]);
                         DecodedEnemies2[i].Status = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x45]);
                         break;

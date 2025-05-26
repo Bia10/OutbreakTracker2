@@ -38,11 +38,11 @@ public sealed record DecodedEnemy
 
     [JsonInclude]
     [JsonPropertyName(nameof(CurHp))]
-    public short CurHp { get; set; }
+    public ushort CurHp { get; set; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(MaxHp))]
-    public short MaxHp { get; set; }
+    public ushort MaxHp { get; set; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(BossType))]
