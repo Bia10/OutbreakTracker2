@@ -18,6 +18,9 @@ using OutbreakTracker2.App.Services.TextureAtlas;
 using OutbreakTracker2.App.Services.TextureAtlas.Models;
 using OutbreakTracker2.App.Services.Toasts;
 using OutbreakTracker2.App.Views.Common;
+using OutbreakTracker2.App.Views.Common.Character;
+using OutbreakTracker2.App.Views.Common.Item;
+using OutbreakTracker2.App.Views.Common.ScenarioImg;
 using OutbreakTracker2.App.Views.Dashboard;
 using OutbreakTracker2.App.Views.Dashboard.ClientAlreadyRunning;
 using OutbreakTracker2.App.Views.Dashboard.ClientNotRunning;
@@ -28,6 +31,7 @@ using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayer.Factory;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGamePlayers;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameScenario;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory.Factory;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoom;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer.Factory;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlot.Factory;
@@ -209,6 +213,7 @@ public class App : Application
         services.AddTransient<CharacterBustViewModel>();
         services.AddTransient<ScenarioImageViewModel>();
         services.AddTransient<LobbyRoomViewModel>();
+        services.AddTransient<ItemImageViewModel>();
 
         services.AddTransient<ICharacterBustViewModelFactory, CharacterBustViewModelFactory>();
         services.AddTransient<ILobbyRoomPlayerViewModelFactory, LobbyRoomPlayerViewModelFactory>();
@@ -216,7 +221,8 @@ public class App : Application
         services.AddTransient<IScenarioImageViewModelFactory, ScenarioImageViewModelFactory>();
         services.AddTransient<ILobbySlotViewModelFactory, LobbySlotViewModelFactory>();
         services.AddTransient<IInGamePlayerViewModelFactory, InGamePlayerViewModelFactory>();
-
+        services.AddTransient<IItemSlotViewModelFactory, ItemSlotViewModelFactory>();
+        services.AddTransient<IItemImageViewModelFactory, ItemImageViewModelFactory>();
 
         services.AddSingleton<LobbySlotsViewModel>();
 

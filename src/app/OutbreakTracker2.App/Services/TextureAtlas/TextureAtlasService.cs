@@ -26,7 +26,7 @@ public class TextureAtlasService : ITextureAtlasService
         [
             // TODO: maybe load from appsettings.json?
             ("Assets/uiFramesData.json", "Assets/ui.png", "UI"),
-            //("Assets/itemsFramesData.json", "Assets/items.png", "Items")
+            ("Assets/itemsFramesData.json", "Assets/items.png", "Items")
         ];
     }
 
@@ -125,5 +125,28 @@ public class TextureAtlasService : ITextureAtlasService
 
         _logger.LogDebug("Obtained sprite name '{SpriteName}' for scenario name '{ScenarioName}'", spriteName, scenarioName);
         return spriteName.ToLowerInvariant();
+    }
+
+    public string GetSpriteNameFromItemType(ItemType itemType)
+    {
+        string spriteName = EnumUtility.GetEnumString(itemType, ItemType.Unknown);
+
+        if (!spriteName.StartsWith("item", StringComparison.OrdinalIgnoreCase))
+            spriteName = $"item{spriteName}";
+
+        _logger.LogDebug("Obtained sprite name '{SpriteName}' for item type '{ItemType}'", spriteName, itemType);
+        return spriteName;
+    }
+
+    public string GetSpriteNameFromItemName(string itemName)
+    {
+        string spriteName = itemName;
+
+        // TODO: the format is a bit weird (GameFile/ItemTypeName)
+        if (!itemName.StartsWith("File Two/", StringComparison.OrdinalIgnoreCase))
+            spriteName = $"FileTwo/{itemName}";
+
+        _logger.LogDebug("Obtained sprite name '{SpriteName}' for item id '{ItemId}'", spriteName, itemName);
+        return spriteName;
     }
 }

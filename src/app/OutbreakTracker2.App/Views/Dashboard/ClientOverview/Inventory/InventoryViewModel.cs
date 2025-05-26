@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.App.Services.Data;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory.Factory;
 using OutbreakTracker2.Outbreak.Models;
 using System.Collections.ObjectModel;
 using ZLinq;
@@ -9,6 +10,7 @@ namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
 public partial class InventoryViewModel : ObservableObject
 {
     private readonly IDataManager _dataManager;
+    private readonly IItemSlotViewModelFactory _itemSlotViewModelFactory;
 
     [ObservableProperty]
     private ObservableCollection<ItemSlotViewModel> _equippedItems = [];
@@ -41,11 +43,15 @@ public partial class InventoryViewModel : ObservableObject
     public bool IsSpecialInventoryVisible => HasSpecialInventory && !IsDeadOrZombie;
     public bool IsSpecialDeadInventoryVisible => HasSpecialInventory && IsDeadOrZombie;
 
-    public InventoryViewModel(DecodedInGamePlayer player, IDataManager dataManager)
+    public InventoryViewModel(
+        DecodedInGamePlayer player,
+        IDataManager dataManager,
+        IItemSlotViewModelFactory itemSlotViewModelFactory)
     {
         _playerStatus = player.Status;
         _playerName = player.CharacterName;
         _dataManager = dataManager;
+        _itemSlotViewModelFactory = itemSlotViewModelFactory;
 
         InitializeCollections();
     }
@@ -84,12 +90,11 @@ public partial class InventoryViewModel : ObservableObject
 
     private void UpdateSlot(ItemSlotViewModel slot, byte itemId)
     {
-        (string name, string debug) = LookupItem(itemId);
-        slot.ItemName = name;
-        slot.DebugInfo = debug;
+        (string name, string debug) = LookupItemDetails(itemId);
+        slot.UpdateDisplay(name, debug);
     }
 
-    private (string Name, string Debug) LookupItem(byte itemId)
+    private (string Name, string Debug) LookupItemDetails(byte itemId)
     {
         if (itemId is 0x0)
             return ("Empty", "0x00 | 0");
@@ -104,24 +109,15 @@ public partial class InventoryViewModel : ObservableObject
             : ("Unknown", $"0x{itemId:X2} | {itemId}");
     }
 
-    private static void InitializeSection(ObservableCollection<ItemSlotViewModel> collection, int count)
+    private void InitializeSection(ObservableCollection<ItemSlotViewModel> collection, int count)
     {
         for (int i = 0; i < count; i++)
         {
-            ItemSlotViewModel slotItem = new()
-            {
-                SlotNumber = i + 1,
-                ItemName = "Empty",
-                DebugInfo = "0x00 | 0"
-            };
-
+            ItemSlotViewModel slotItem = _itemSlotViewModelFactory.Create(i + 1);
             collection.Add(slotItem);
         }
     }
 
-    // Note: Item slotIndex 0 implies that item is not spawned on map
-    // Item pickedUp 0 implies its not inside player inventory
-    // as such, for practical matters item which is neither on map nor in inventory is invalid
     private static bool IsValidItem(DecodedItem item)
         => item is not { SlotIndex: 0, PickedUp: 0 };
 }

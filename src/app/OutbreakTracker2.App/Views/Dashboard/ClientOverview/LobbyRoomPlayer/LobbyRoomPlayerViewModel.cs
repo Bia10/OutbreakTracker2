@@ -1,5 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using OutbreakTracker2.App.Views.Common;
+using OutbreakTracker2.App.Views.Common.Character;
 using OutbreakTracker2.Outbreak.Enums.Character;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;

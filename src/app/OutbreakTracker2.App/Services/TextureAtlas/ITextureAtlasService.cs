@@ -7,15 +7,19 @@ namespace OutbreakTracker2.App.Services.TextureAtlas;
 
 public interface ITextureAtlasService
 {
-    ITextureAtlas GetAtlas(string name);
+    public ITextureAtlas GetAtlas(string name);
 
-    IReadOnlyDictionary<string, ITextureAtlas> GetAllAtlases();
+    public IReadOnlyDictionary<string, ITextureAtlas> GetAllAtlases();
 
-    void LoadAtlases();
+    public void LoadAtlases();
 
-    Task LoadAtlasesAsync();
+    public Task LoadAtlasesAsync();
 
-    string GetSpriteNameFromCharacterType(CharacterBaseType characterType);
+    public string GetSpriteNameFromCharacterType(CharacterBaseType characterType);
 
-    string GetSpriteNameFromScenarioName(Scenario scenarioName);
+    public string GetSpriteNameFromScenarioName(Scenario scenarioName);
+
+    public string GetSpriteNameFromItemType(ItemType itemType);
+
+    public string GetSpriteNameFromItemName(string itemName);
 }

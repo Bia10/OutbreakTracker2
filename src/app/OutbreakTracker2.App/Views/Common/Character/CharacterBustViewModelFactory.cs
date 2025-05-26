@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 
-namespace OutbreakTracker2.App.Views.Common;
+namespace OutbreakTracker2.App.Views.Common.Character;
 
 public sealed class CharacterBustViewModelFactory : ICharacterBustViewModelFactory
 {

@@ -1,0 +1,2820 @@
+{
+  "frames": [
+    {
+      "name": "File One/Handgun",
+      "x": 0,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Handgun SG",
+      "x": 48,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Handgun GL",
+      "x": 96,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Magnum Handgun",
+      "x": 144,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Magnum Revolver",
+      "x": 192,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Revolver",
+      "x": 240,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Burst Handgun",
+      "x": 288,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(9)",
+      "x": 336,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Submachine Gun",
+      "x": 384,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Shotgun",
+      "x": 432,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Shotgun E",
+      "x": 480,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Hunting Rifle",
+      "x": 528,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Assault Rifle",
+      "x": 576,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Mine Detector",
+      "x": 624,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Rocket Launcher",
+      "x": 672,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Grenade Launcher (BURST)",
+      "x": 720,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Grenade Launcher (FLAME)",
+      "x": 720,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Grenade Launcher (ACID)",
+      "x": 720,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Grenade Launcher (Fire Extinguishing)",
+      "x": 720,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Grenade Launcher (BOW GAS)",
+      "x": 720,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Pesticide Spray",
+      "x": 768,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Flame Spray",
+      "x": 816,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Stun Gun",
+      "x": 864,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Nail Gun",
+      "x": 912,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Ampoule Shooter",
+      "x": 960,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Survival Knife",
+      "x": 1008,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Folding Knife",
+      "x": 1056,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Butcher Knife",
+      "x": 1104,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Iron Pipe",
+      "x": 1152,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Curved Iron Pipe",
+      "x": 1200,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Bent Iron Pipe",
+      "x": 1248,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Long Pole",
+      "x": 1296,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Square Timber",
+      "x": 1344,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Bomb Switch",
+      "x": 1392,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Axe",
+      "x": 1440,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Scrub Brush",
+      "x": 1488,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Wooden Pole",
+      "x": 1536,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Throwable Stick",
+      "x": 1584,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Spear",
+      "x": 1632,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Molotov Cocktail",
+      "x": 1680,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Hammer",
+      "x": 1728,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Crutch",
+      "x": 1776,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Stun Rod",
+      "x": 1824,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Concrete Piece",
+      "x": 1872,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Broken Crutch",
+      "x": 1920,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(150)",
+      "x": 1968,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Empty Bottle",
+      "x": 0,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Red Chemical Bottle",
+      "x": 48,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Green Chemical Bottle",
+      "x": 96,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Yellow Chemical Bottle",
+      "x": 144,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Gray Chemical Bottle",
+      "x": 192,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Handgun Magazine",
+      "x": 1968,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Handgun SG Magazine",
+      "x": 240,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Handgun GL Magazine",
+      "x": 288,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Magnum Clip",
+      "x": 336,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Magnum Revolver S.Loader",
+      "x": 384,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Revolver S.Loader",
+      "x": 432,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Sub Machine Gun Clip",
+      "x": 480,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Assault Rifle Clip",
+      "x": 528,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(208)",
+      "x": 576,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Burst Hg Magazine",
+      "x": 624,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/45 Auto Magazine",
+      "x": 672,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Handgun HP Magazine",
+      "x": 720,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Hand Gun Rounds 9mm",
+      "x": 768,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Magnum Hg rounds",
+      "x": 816,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Magnum Revolver Rounds",
+      "x": 864,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Revolver Rounds",
+      "x": 912,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Shotgun Rounds",
+      "x": 960,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Rifle Rounds",
+      "x": 1008,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Rocket Rounds",
+      "x": 1056,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Burst Rounds",
+      "x": 1104,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Flame Rounds",
+      "x": 1152,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Acid Rounds",
+      "x": 1200,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Fire Extinguisher Rounds",
+      "x": 1248,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/BOW Gas Rounds",
+      "x": 1296,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/45 Auto Rounds",
+      "x": 1344,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Green Herb",
+      "x": 1392,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Blue Herb",
+      "x": 1440,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Red Herb",
+      "x": 1488,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Mixed Herb (G+G)",
+      "x": 1536,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Mixed Herb (G+G+G)",
+      "x": 1584,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Mixed Herb (G+R)",
+      "x": 1632,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Mixed Herb (G+B)",
+      "x": 1680,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Mixed Herb (G+G+B)",
+      "x": 1728,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Mixed Herb (G+R+B)",
+      "x": 1776,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/First Aid Spray",
+      "x": 1824,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Recovery Medicine",
+      "x": 1872,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Hemostat",
+      "x": 1920,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Daylight",
+      "x": 1968,
+      "y": 48,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Mixed Herb(R+B)",
+      "x": 0,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Antidote",
+      "x": 48,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Recovery Medicine (L)",
+      "x": 96,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Anti Virus",
+      "x": 144,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Anti Virus (L)",
+      "x": 192,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Recovery Medicine Base",
+      "x": 240,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Kevin's 45 Auto",
+      "x": 288,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Mark's Handgun",
+      "x": 336,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(402)",
+      "x": 384,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Jim's Coin",
+      "x": 432,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(404)",
+      "x": 480,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Medical Set",
+      "x": 528,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Tool Box",
+      "x": 576,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Folding Knife(David's)",
+      "x": 624,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Monkey Wrench",
+      "x": 672,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Vinyl Tape",
+      "x": 720,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Junk Parts",
+      "x": 768,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Picking Tool",
+      "x": 816,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Knapsack",
+      "x": 864,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Herb Case",
+      "x": 912,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/I-Shaped Pick",
+      "x": 960,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/S-Shaped Pick",
+      "x": 1008,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/W-Shaped Pick",
+      "x": 1056,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/P-Shaped Pick",
+      "x": 1104,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Lighter",
+      "x": 1152,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Alcohol Bottle",
+      "x": 1200,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Bottle + Newspaper",
+      "x": 1248,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Broken Handgun",
+      "x": 0,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Broken Shotgun",
+      "x": 432,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Battery",
+      "x": 1296,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Broken Handgun SG",
+      "x": 0,
+      "y": 0,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Staff Room Key",
+      "x": 1344,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(10101)",
+      "x": 1392,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(10102)",
+      "x": 1440,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Forklift Key",
+      "x": 1488,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Storage Key",
+      "x": 1536,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Detonator Handle",
+      "x": 1584,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Detonator Main Unit",
+      "x": 1632,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Detonator",
+      "x": 1680,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(10150)",
+      "x": 1728,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Charlie's ID tag",
+      "x": 1776,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Len's ID tag",
+      "x": 1776,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Gold Key",
+      "x": 1824,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Silver Key",
+      "x": 1872,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Security Room Card Key",
+      "x": 1920,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(10211)",
+      "x": 1968,
+      "y": 96,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(12800)",
+      "x": 0,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(12801)",
+      "x": 0,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(12805)",
+      "x": 48,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(12806)",
+      "x": 96,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Chain Key",
+      "x": 144,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Male Nurse's Diary",
+      "x": 192,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Researcher's Diary",
+      "x": 192,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Research Request",
+      "x": 240,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/UMB No.3",
+      "x": 288,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/VP-017",
+      "x": 336,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/V-JOLT",
+      "x": 384,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Wrench",
+      "x": 432,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Frozen Wrench",
+      "x": 480,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Lab Cardkey",
+      "x": 528,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Turntable Key",
+      "x": 576,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(13507)",
+      "x": 624,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Hand Burner",
+      "x": 672,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(13509)",
+      "x": 720,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(13510)",
+      "x": 768,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(13511)",
+      "x": 816,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Brass Spectacles",
+      "x": 864,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(14101)",
+      "x": 912,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/V-Poison",
+      "x": 960,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/P-Base",
+      "x": 1008,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Reagent Case",
+      "x": 1056,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Sealed Reagent Case",
+      "x": 1104,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/P-Base(sealed)",
+      "x": 1152,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/T-Blood",
+      "x": 1200,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(14108)",
+      "x": 1248,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(14109)",
+      "x": 1296,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/P-Base(depleted)",
+      "x": 1344,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(14111)",
+      "x": 1392,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File One/Unknown(9*)",
+      "x": 1440,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Handgun",
+      "x": 1488,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Handgun SG",
+      "x": 1536,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Handgun GL",
+      "x": 1584,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Magnum Handgun",
+      "x": 1632,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Magnum Revolver",
+      "x": 1680,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Handgun HP",
+      "x": 1728,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/S&W model 500",
+      "x": 1776,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Revolver",
+      "x": 1824,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Burst Handgun",
+      "x": 1872,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Submachine Gun",
+      "x": 1920,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Shotgun",
+      "x": 1968,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Shotgun E",
+      "x": 0,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Hunting Rifle",
+      "x": 48,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Assault Rifle",
+      "x": 96,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Capsule Shooter(BLUE)",
+      "x": 144,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Capsule Shooter(RED)",
+      "x": 144,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Capsule Shooter(GREEN)",
+      "x": 144,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Capsule Shooter(WHITE)",
+      "x": 144,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Mine Detector",
+      "x": 192,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Rocket Launcher",
+      "x": 240,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Grenade Launcher (BURST)",
+      "x": 288,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Grenade Launcher (FLAME)",
+      "x": 288,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Grenade Launcher (ACID)",
+      "x": 288,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Pesticide Spray",
+      "x": 336,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Flame Spray",
+      "x": 384,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Stun Gun",
+      "x": 432,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Nail Gun",
+      "x": 480,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Ampoule Shooter",
+      "x": 528,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Survival Knife",
+      "x": 576,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Folding Knife",
+      "x": 624,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Butcher Knife",
+      "x": 672,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Iron Pipe",
+      "x": 720,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Curved Iron Pipe",
+      "x": 768,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Bent Iron Pipe",
+      "x": 816,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Long Pole",
+      "x": 864,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Square Timber",
+      "x": 912,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Bomb Switch",
+      "x": 960,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Axe",
+      "x": 1008,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Scrub Brush",
+      "x": 1056,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Wooden Pole",
+      "x": 1104,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Throwable Stick",
+      "x": 1152,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Spear",
+      "x": 1200,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Molotov Cocktail",
+      "x": 1248,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Hammer",
+      "x": 1296,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Crutch",
+      "x": 1344,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Stun Rod",
+      "x": 1392,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Concrete Piece",
+      "x": 1440,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Broken Crutch",
+      "x": 1488,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(150)",
+      "x": 1536,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Empty Bottle",
+      "x": 1584,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Red Chemical Bottle",
+      "x": 1632,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Green Chemical Bottle",
+      "x": 1680,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Yellow Chemical Bottle",
+      "x": 1728,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Gray Chemical Bottle",
+      "x": 1776,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Time Bomb(before ignition)",
+      "x": 1824,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Handgun Magazine",
+      "x": 1536,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Handgun SG Magazine",
+      "x": 1872,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Handgun GL Magazine",
+      "x": 1920,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Magnum Clip",
+      "x": 1968,
+      "y": 192,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Magnum Revolver S.Loader",
+      "x": 0,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Revolver S.Loader",
+      "x": 48,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Sub Machine Gun Clip",
+      "x": 96,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Assault Rifle Clip",
+      "x": 144,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Burst Hg Magazine",
+      "x": 192,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/45 Auto Magazine",
+      "x": 240,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Handgun HP Magazine",
+      "x": 288,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Hand Gun Rounds 9mm",
+      "x": 336,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Magnum Hg rounds",
+      "x": 384,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Magnum Revolver Rounds",
+      "x": 432,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Revolver Rounds",
+      "x": 480,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Shotgun Rounds",
+      "x": 528,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Rifle Rounds",
+      "x": 576,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Rocket Rounds",
+      "x": 624,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Burst Rounds",
+      "x": 672,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Flame Rounds",
+      "x": 720,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Acid Rounds",
+      "x": 768,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/45 Auto Rounds",
+      "x": 816,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/High Power Revolver Rounds",
+      "x": 864,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Green Herb",
+      "x": 912,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Blue Herb",
+      "x": 960,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Red Herb",
+      "x": 1008,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Mixed Herb (G+G)",
+      "x": 1056,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Mixed Herb (G+G+G)",
+      "x": 1104,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Mixed Herb (G+R)",
+      "x": 1152,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Mixed Herb (G+B)",
+      "x": 1200,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Mixed Herb (G+G+B)",
+      "x": 1248,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Mixed Herb (G+R+B)",
+      "x": 1296,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/First Aid Spray",
+      "x": 1344,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Recovery Medicine",
+      "x": 1392,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Hemostat",
+      "x": 1440,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Daylight",
+      "x": 1488,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Mixed Herb(R+B)",
+      "x": 1536,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Antidote",
+      "x": 1584,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Anti Virus",
+      "x": 1632,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Recovery Medicine Base",
+      "x": 1680,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Kevin's 45 Auto",
+      "x": 1728,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Mark's Handgun",
+      "x": 1776,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Jim's Coin",
+      "x": 1824,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Medical Set",
+      "x": 1872,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Tool Box",
+      "x": 1920,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Folding Knife(David's)",
+      "x": 1968,
+      "y": 240,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Monkey Wrench",
+      "x": 0,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Vinyl Tape",
+      "x": 48,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Junk Parts",
+      "x": 96,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Picking Tool",
+      "x": 144,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Knapsack",
+      "x": 192,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Herb Case",
+      "x": 240,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/I-Shaped Pick",
+      "x": 288,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/S-Shaped Pick",
+      "x": 336,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/W-Shaped Pick",
+      "x": 384,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/P-Shaped Pick",
+      "x": 432,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Bandage",
+      "x": 480,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Lucky Coin",
+      "x": 528,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Charm",
+      "x": 576,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Lighter",
+      "x": 624,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Alcohol Bottle",
+      "x": 672,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Bottle + Newspaper",
+      "x": 720,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Broken Handgun",
+      "x": 1488,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Broken Shotgun",
+      "x": 1968,
+      "y": 144,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Battery",
+      "x": 768,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Examination Room Key",
+      "x": 816,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/ID Card Lv1",
+      "x": 864,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/ID Card Lv2",
+      "x": 912,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/MO Disk",
+      "x": 960,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/MO Disk(Code A)",
+      "x": 1008,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/MO Disk(Code G)",
+      "x": 1056,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Valve Handle (6 Sided)",
+      "x": 1104,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Valve Handle (4 Sided)",
+      "x": 1152,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Crowbar",
+      "x": 1200,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Model Grenade Launcher",
+      "x": 1248,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(10650)",
+      "x": 1296,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(10651)",
+      "x": 1296,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(10652)",
+      "x": 1296,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Employee Area Key",
+      "x": 1344,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/B2F Key",
+      "x": 1392,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Ventilation Tower Key",
+      "x": 1440,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(11003)",
+      "x": 1488,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Repair Tape",
+      "x": 1536,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(11005)",
+      "x": 1584,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Founder's Emblem(Werner/Gold)",
+      "x": 1632,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Founder's Emblem(Oral/Blue)",
+      "x": 1680,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Model Train Wheel",
+      "x": 1728,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(11010)",
+      "x": 1776,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(11050)",
+      "x": 1296,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(11051)",
+      "x": 1296,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(11052)",
+      "x": 1296,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Joker Key",
+      "x": 1824,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Onyx Plate",
+      "x": 1872,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Sapphire Plate",
+      "x": 1920,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Ruby Plate",
+      "x": 1968,
+      "y": 288,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Emerald Plate",
+      "x": 0,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Amethyst Plate",
+      "x": 48,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Padlock Key",
+      "x": 96,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Ace Key",
+      "x": 144,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Gas Canister",
+      "x": 192,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Plywood Board",
+      "x": 240,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Film A",
+      "x": 288,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Used Gas Canister",
+      "x": 336,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unicorn Medal",
+      "x": 384,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12000)",
+      "x": 432,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12001)",
+      "x": 480,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12002)",
+      "x": 528,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12003)",
+      "x": 576,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12004)",
+      "x": 624,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12005)",
+      "x": 672,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12006)",
+      "x": 720,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12007)",
+      "x": 768,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12008)",
+      "x": 816,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12009)",
+      "x": 864,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12010)",
+      "x": 912,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12011)",
+      "x": 960,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12012)",
+      "x": 1008,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12013)",
+      "x": 1056,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12014)",
+      "x": 1104,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12015)",
+      "x": 1152,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12016)",
+      "x": 1200,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12017)",
+      "x": 1248,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12018)",
+      "x": 1296,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12019)",
+      "x": 1344,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12020)",
+      "x": 1392,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Auxiliary Building Key",
+      "x": 1440,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Administrator's Office Key",
+      "x": 1488,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Rusty Key",
+      "x": 1536,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Syringe (empty)",
+      "x": 1584,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Syringe (solvent)",
+      "x": 1632,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Pendant",
+      "x": 1680,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12506)",
+      "x": 1728,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12507)",
+      "x": 1776,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12508)",
+      "x": 1824,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12509)",
+      "x": 1872,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12510)",
+      "x": 1920,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(12511)",
+      "x": 1968,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Auxiliary Building Key - NOTE: doesnt make sense as such name alrdy exists",
+      "x": 0,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Administrator's Office Key - NOTE: doesnt make sense as such name alrdy exists",
+      "x": 48,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Rusty Key - NOTE: doesnt make sense as such name alrdy exists",
+      "x": 96,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Syringe (empty) - NOTE: doesnt make sense as such name alrdy exists",
+      "x": 144,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Syringe (solvent) - NOTE: doesnt make sense as such name alrdy exists",
+      "x": 192,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Pendant - NOTE: doesnt make sense as such name alrdy exists",
+      "x": 240,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Bolt Cutters - NOTE: doesnt make sense as such name alrdy exists",
+      "x": 288,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Elephant Key",
+      "x": 336,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Alligator Key",
+      "x": 384,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Lion Key",
+      "x": 432,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Office Key",
+      "x": 480,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Mr. Racoon Medal",
+      "x": 528,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Lion Emblem (RED)",
+      "x": 576,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Lion Emblem (BLUE)",
+      "x": 624,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Blank Tape",
+      "x": 672,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Parade BGM Tape",
+      "x": 720,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(9)",
+      "x": 768,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused2)",
+      "x": 816,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused3)",
+      "x": 864,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused4)",
+      "x": 912,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused5)",
+      "x": 960,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused6)",
+      "x": 1008,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused7)",
+      "x": 1056,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused8)",
+      "x": 1104,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused9)",
+      "x": 1152,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused10)",
+      "x": 1200,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused11)",
+      "x": 1248,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused12)",
+      "x": 1296,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused13)",
+      "x": 1344,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused14)",
+      "x": 1392,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused15)",
+      "x": 1440,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused16)",
+      "x": 1488,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused17)",
+      "x": 1536,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused18)",
+      "x": 1584,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused19)",
+      "x": 1632,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused20)",
+      "x": 1680,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused21)",
+      "x": 1728,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused22)",
+      "x": 1776,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused23)",
+      "x": 1824,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused24)",
+      "x": 1872,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused25)",
+      "x": 1920,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Unknown(Unused26)",
+      "x": 1968,
+      "y": 384,
+      "width": 48,
+      "height": 48
+    }
+  ],
+  "sheetContentWidth": 2016,
+  "sheetContentHeight": 384
+}

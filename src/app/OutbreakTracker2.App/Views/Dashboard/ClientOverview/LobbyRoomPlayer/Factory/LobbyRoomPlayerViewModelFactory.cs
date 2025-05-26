@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using OutbreakTracker2.App.Views.Common;
+using OutbreakTracker2.App.Views.Common.Character;
 using OutbreakTracker2.Outbreak.Models;
 using System;
 

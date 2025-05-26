@@ -7,7 +7,7 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
-namespace OutbreakTracker2.App.Views.Common;
+namespace OutbreakTracker2.App.Views.Common.Character;
 
 public class CharacterBustViewModel : ObservableObject
 {

@@ -15,6 +15,7 @@ public partial class ImageViewModel : ObservableObject
     private readonly ILogger<ImageViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
     private readonly ITextureAtlas? _uiAtlas;
+    private readonly ITextureAtlas? _itemsAtlas;
 
     [ObservableProperty]
     private CroppedBitmap? _sourceImage;
@@ -28,15 +29,27 @@ public partial class ImageViewModel : ObservableObject
         _dispatcherService = dispatcherService;
 
         _uiAtlas = textureAtlasService.GetAtlas("UI");
-        if (_uiAtlas is not null) return;
+        if (_uiAtlas is null)
+        {
+            _logger.LogError("UI Texture Atlas could not be retrieved by ImageViewModel");
+            throw new InvalidOperationException("UI Texture Atlas could not be retrieved by ImageViewModel");
+        }
 
-        _logger.LogError("UI Texture Atlas could not be retrieved by ImageViewModel");
-        throw new InvalidOperationException("UI Texture Atlas could not be retrieved by ImageViewModel");
+        _itemsAtlas = textureAtlasService.GetAtlas("Items");
+        if (_itemsAtlas is null)
+        {
+            _logger.LogError("Items Texture Atlas could not be retrieved by ImageViewModel");
+            throw new InvalidOperationException("Items Texture Atlas could not be retrieved by ImageViewModel");
+        }
     }
 
     public async ValueTask UpdateImageAsync(string spriteName, string debugContext = "")
     {
-        if (_uiAtlas is null)
+        ITextureAtlas? selectedAtlas = spriteName.StartsWith("File", StringComparison.Ordinal)
+            ? _itemsAtlas
+            : _uiAtlas;
+
+        if (selectedAtlas is null)
         {
             _logger.LogError("Cannot update image: UI Texture Atlas is null. Context: {DebugContext}", debugContext);
             return;
@@ -44,7 +57,7 @@ public partial class ImageViewModel : ObservableObject
 
         CroppedBitmap? newImage = null;
 
-        Rect sourceRect = _uiAtlas.GetSourceRectangle(spriteName);
+        Rect sourceRect = selectedAtlas.GetSourceRectangle(spriteName);
         if (sourceRect.Width <= 0 || sourceRect.Height <= 0)
         {
             _logger.LogWarning(
@@ -53,7 +66,7 @@ public partial class ImageViewModel : ObservableObject
         }
         else
         {
-            if (_uiAtlas.Texture is null)
+            if (selectedAtlas.Texture is null)
             {
                 _logger.LogWarning(
                     "Texture atlas texture is null. Cannot create CroppedBitmap for sprite '{SpriteName}'. Context: {DebugContext}",
@@ -65,7 +78,7 @@ public partial class ImageViewModel : ObservableObject
             {
                 // Note: tbh not rly sure why CroppedBitmap is not thread safe, but it seems to be the case
                 // i.e. why does a CroppedBitmap needs to be created on the UI thread?
-                newImage = await _dispatcherService.InvokeOnUIAsync(() => ImageUtility.GetCroppedBitmap(_uiAtlas.Texture, sourceRect))
+                newImage = await _dispatcherService.InvokeOnUIAsync(() => ImageUtility.GetCroppedBitmap(selectedAtlas.Texture, sourceRect))
                     .ConfigureAwait(true);
             }
             catch (Exception ex)

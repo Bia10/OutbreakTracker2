@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.App.Services.Dispatcher;
-using OutbreakTracker2.App.Views.Common;
+using OutbreakTracker2.App.Views.Common.ScenarioImg;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbyRoomPlayer.Factory;
 using OutbreakTracker2.Outbreak.Common;

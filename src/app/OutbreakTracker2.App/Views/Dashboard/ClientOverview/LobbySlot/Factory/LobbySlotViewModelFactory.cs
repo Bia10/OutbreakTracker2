@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OutbreakTracker2.App.Views.Common;
+using OutbreakTracker2.App.Views.Common.ScenarioImg;
 using OutbreakTracker2.Outbreak.Models;
 using System;
 

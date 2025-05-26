@@ -1,7 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.App.Services.Data;
-using OutbreakTracker2.App.Views.Common;
+using OutbreakTracker2.App.Views.Common.Character;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
+using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory.Factory;
 using OutbreakTracker2.Outbreak.Enums.Character;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
@@ -54,7 +55,8 @@ public partial class InGamePlayerViewModel : ObservableObject
     public InGamePlayerViewModel(
         DecodedInGamePlayer player,
         IDataManager dataManager,
-        ICharacterBustViewModelFactory characterBustViewModelFactory)
+        ICharacterBustViewModelFactory characterBustViewModelFactory,
+        IItemSlotViewModelFactory itemSlotViewModelFactory)
     {
         _dataManager = dataManager;
         _gauges = new PlayerGaugesViewModel();
@@ -62,7 +64,7 @@ public partial class InGamePlayerViewModel : ObservableObject
         _conditions = new PlayerConditionsViewModel();
         _attributes = new PlayerAttributesViewModel();
         _position = new PlayerPositionViewModel(dataManager);
-        _inventory = new InventoryViewModel(player, dataManager);
+        _inventory = new InventoryViewModel(player, dataManager, itemSlotViewModelFactory);
         _playerBustViewModel = characterBustViewModelFactory.Create();
 
         Update(player);

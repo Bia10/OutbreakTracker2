@@ -1,4 +1,4 @@
-﻿namespace OutbreakTracker2.App.Views.Common;
+﻿namespace OutbreakTracker2.App.Views.Common.Character;
 
 public interface ICharacterBustViewModelFactory
 {
