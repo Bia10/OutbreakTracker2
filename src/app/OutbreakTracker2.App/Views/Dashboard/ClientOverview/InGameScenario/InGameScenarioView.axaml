@@ -336,6 +336,21 @@
 
             <ContentControl Content="{Binding CurrentScenarioSpecificViewModel}" />
 
+            <suki:GroupBox
+                Header="Scenario Entities"
+                IsVisible="{Binding IsScenarioActive}">
+                <WrapPanel ItemSpacing="4">
+                    <Button
+                        Content="View Scenario Items"
+                        Command="{Binding ShowItemsDialogCommand}"
+                        HorizontalAlignment="Left" />
+                    <Button
+                        Content="View Scenario Enemies"
+                        Command="{Binding ShowEnemiesDialogCommand}"
+                        HorizontalAlignment="Left" />
+                </WrapPanel>
+            </suki:GroupBox>
+
         </StackPanel>
     </ScrollViewer>
 </UserControl>
