@@ -12,6 +12,8 @@ using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.App.Services.Dispatcher;
 using OutbreakTracker2.App.Services.FileLocators;
 using OutbreakTracker2.App.Services.LogStorage;
+using OutbreakTracker2.App.Services.Notifications;
+using OutbreakTracker2.App.Services.PlayerTracking;
 using OutbreakTracker2.App.Services.ProcessLauncher;
 using OutbreakTracker2.App.Services.ProcessLocator;
 using OutbreakTracker2.App.Services.TextureAtlas;
@@ -72,7 +74,7 @@ public class App : Application
                 OutbreakTracker2Views views = ConfigureViews(services);
 
                 _serviceProvider = ConfigureServicesAndLogging(services, configuration);
-
+                _serviceProvider.GetRequiredService<NotificationService>();
                 ITextureAtlasService textureAtlasService = _serviceProvider.GetRequiredService<ITextureAtlasService>();
                 try
                 {
@@ -185,6 +187,8 @@ public class App : Application
 
         services.AddSingleton<IDispatcherService, DispatcherService>();
         services.AddSingleton<IToastService, ToastService>();
+        services.AddSingleton<IPlayerStateTracker, PlayerStateTracker>();
+        services.AddSingleton<NotificationService>();
 
         services.AddSingleton<ILogDataStorageService, LogDataStorageService>();
         services.AddSingleton<LogViewerViewModel>();

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.App.Services.Data;
+using OutbreakTracker2.App.Services.PlayerTracking;
 using OutbreakTracker2.App.Views.Common.Character;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory.Factory;
@@ -56,7 +57,8 @@ public partial class InGamePlayerViewModel : ObservableObject
         DecodedInGamePlayer player,
         IDataManager dataManager,
         ICharacterBustViewModelFactory characterBustViewModelFactory,
-        IItemSlotViewModelFactory itemSlotViewModelFactory)
+        IItemSlotViewModelFactory itemSlotViewModelFactory,
+        IPlayerStateTracker playerStateTracker)
     {
         _dataManager = dataManager;
         _gauges = new PlayerGaugesViewModel();
@@ -68,6 +70,7 @@ public partial class InGamePlayerViewModel : ObservableObject
         _playerBustViewModel = characterBustViewModelFactory.Create();
 
         Update(player);
+        playerStateTracker.PublishPlayerUpdate(player);
     }
 
     public void Update(DecodedInGamePlayer player)
