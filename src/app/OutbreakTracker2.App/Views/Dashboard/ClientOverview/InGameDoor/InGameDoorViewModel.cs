@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameDoor;
@@ -14,6 +15,11 @@ public partial class InGameDoorViewModel : ObservableObject
     [ObservableProperty]
     private string _status = string.Empty;
 
+    [ObservableProperty]
+    private Color _calculatedBorderColor;
+
+    public IBrush BorderBrush => new SolidColorBrush(CalculatedBorderColor);
+
     public string UniqueId { get; private set; }
 
     public InGameDoorViewModel(DecodedDoor doorData)
@@ -25,24 +31,20 @@ public partial class InGameDoorViewModel : ObservableObject
     public void Update(DecodedDoor doorData)
     {
         if (UniqueId != doorData.Id)
-            return; 
+            return;
 
         Hp = doorData.Hp;
         Flag = doorData.Flag;
         Status = doorData.Status;
+        CalculatedBorderColor = GetBorderColor();
 
-        UpdateAppearance();
+        OnPropertyChanged(nameof(BorderBrush));
     }
 
-    private void UpdateAppearance()
+    private Color GetBorderColor()
     {
-        bool isBlueBorder = Hp == 500 || Hp == 0 || Flag == 0x00 || Flag == 0x0A || Flag == 0x0C || Flag == 0x2C || Flag == 0x82;
-        // TODO:
-        if (isBlueBorder)
-        {
-        }
-        else
-        {
-        }
+        bool isBlueBorder = Hp is 500 || Hp is 0 || Flag is 0x00 || Flag is 0x0A || Flag is 0x0C || Flag is 0x2C || Flag is 0x82;
+
+        return isBlueBorder ? Color.FromArgb(255, 0, 100, 255) : Color.FromArgb(0, 0, 0, 0);
     }
 }

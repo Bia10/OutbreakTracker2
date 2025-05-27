@@ -29,13 +29,13 @@
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 FontSize="12"
-                FontWeight="Bold"
+                FontWeight="Heavy"
                 Text="{Binding ItemCount}" />
             <TextBlock
                 Margin="2"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
-                FontSize="12"
+                FontSize="10"
                 FontWeight="Bold"
                 Text="{Binding SlotNumber}" />
 

@@ -130,14 +130,14 @@ public partial class InGameEnemyViewModel : ObservableObject
 
     public static string GetEnemiesHealthStatusStringForFileTwo(int slotId, byte nameId, ushort curHp, ushort maxHp)
     {
-        if (slotId is < 0 or >= GameConstants.MaxEnemies2)
-            return $"Invalid enemy SlotId({slotId})";
+        //if (slotId is < 0 or >= GameConstants.MaxEnemies2)
+            //return $"Invalid enemy SlotId({slotId})";
 
         bool enemyTypeParsed = EnumUtility.TryParseByValueOrMember(nameId, out EnemyType enemyType);
         if (!enemyTypeParsed)
             return $"Failed to parse enemyType for nameId {nameId}";
 
-        string healthString = $"{curHp}/{maxHp}";
+        string healthString = $"CurHp: {curHp}/{maxHp} :MaxHp";
 
         if (curHp is 0x7fff || enemyType is EnemyType.Drainer11
                             || enemyType is EnemyType.Drainer12

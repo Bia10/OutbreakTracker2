@@ -30,20 +30,9 @@
                 FontWeight="SemiBold"
                 Text="Health:" />
             <Grid ColumnDefinitions="Auto, Auto, Auto, *" RowDefinitions="Auto, Auto">
-                <TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    Margin="0,0,10,0"
-                    FontSize="12"
-                    Text="{Binding CurrentHp, StringFormat='CurHp: {0}'}" />
-                <TextBlock
-                    Grid.Row="0"
-                    Grid.Column="1"
-                    FontSize="12"
-                    Text="{Binding MaxHp, StringFormat='MaxHp: {0}'}" />
                 <ProgressBar
                     Grid.Row="0"
-                    Grid.Column="2"
+                    Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Margin="10,0,0,0"
                     VerticalAlignment="Center"
@@ -51,8 +40,8 @@
                     Value="{Binding HealthPercentage}" />
                 <TextBlock
                     Grid.Row="1"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="4"
+                    Grid.Column="1"
+                    Grid.ColumnSpan="2"
                     FontSize="12"
                     Text="{Binding HealthStatus}" />
             </Grid>

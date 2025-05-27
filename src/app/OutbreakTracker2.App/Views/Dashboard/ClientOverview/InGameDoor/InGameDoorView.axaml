@@ -12,7 +12,11 @@
     x:DataType="inGameDoor:InGameDoorViewModel"
     mc:Ignorable="d">
 
-    <suki:GlassCard Margin="5">
+    <suki:GlassCard
+        Margin="5"
+        BorderBrush="{Binding BorderBrush}"
+        BorderThickness="6"
+        CornerRadius="8">
         <Grid ColumnDefinitions="Auto, Auto, *" RowDefinitions="Auto, Auto, Auto, Auto">
             <TextBlock
                 Grid.Row="0"
