@@ -1,36 +1,91 @@
 ﻿using FastEnumUtility;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Rooms;
+using System.Runtime.CompilerServices;
 
 namespace OutbreakTracker2.Outbreak.Utility;
 
 public static class EnumUtility
 {
-    // TODO: this will introduce boxing
+    // Note: Currently used types have overloads which won't box, tho unhandled types will box.
     public static string GetEnumString<TEnum>(object? value, TEnum defaultValue)
         where TEnum : struct, Enum
     {
         if (value is null)
             return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
 
-        string valueString = value.ToString()!;
-
-        if (string.IsNullOrEmpty(valueString) || !FastEnum.TryParse(valueString, out TEnum result)
-                                              || !FastEnum.IsDefined(result))
-            return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
-
-        string? enumValue = result.GetEnumMemberValue();
-
-        if (!string.IsNullOrEmpty(enumValue))
-            return enumValue;
+        if (TryParseByValueOrMember(value, out TEnum result) && FastEnum.IsDefined(result))
+        {
+            string? enumValue = result.GetEnumMemberValue();
+            if (!string.IsNullOrEmpty(enumValue))
+                return enumValue;
+        }
 
         return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string GetEnumString<TEnum>(byte value, TEnum defaultValue)
+        where TEnum : struct, Enum
+    {
+        if (TryParseByValueOrMember(value, out TEnum result) && FastEnum.IsDefined(result))
+        {
+            string? enumValue = result.GetEnumMemberValue();
+            if (!string.IsNullOrEmpty(enumValue))
+                return enumValue;
+        }
+
+        return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
+    }
+
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string GetEnumString<TEnum>(short value, TEnum defaultValue)
+        where TEnum : struct, Enum
+    {
+        if (TryParseByValueOrMember(value, out TEnum result) && FastEnum.IsDefined(result))
+        {
+            string? enumValue = result.GetEnumMemberValue();
+            if (!string.IsNullOrEmpty(enumValue))
+                return enumValue;
+        }
+
+        return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string GetEnumString<TEnum>(int value, TEnum defaultValue)
+        where TEnum : struct, Enum
+    {
+        if (TryParseByValueOrMember(value, out TEnum result) && FastEnum.IsDefined(result))
+        {
+            string? enumValue = result.GetEnumMemberValue();
+            if (!string.IsNullOrEmpty(enumValue))
+                return enumValue;
+        }
+
+        return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string GetEnumString<TEnum>(TEnum value, TEnum defaultValue)
+        where TEnum : struct, Enum
+    {
+        if (FastEnum.IsDefined(value))
+        {
+            string? enumValue = value.GetEnumMemberValue();
+            if (!string.IsNullOrEmpty(enumValue))
+                return enumValue;
+        }
+
+        return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
+    }
+
+
     public static bool TryParseByValueOrMember<TEnum>(string value, out TEnum result)
         where TEnum : struct, Enum
     {
-        if (FastEnum.TryParse(value, out result))
+        if (FastEnum.TryParse(value.AsSpan(), out result))
             return true;
 
         foreach (TEnum enumValue in FastEnum.GetValues<TEnum>())
@@ -47,8 +102,8 @@ public static class EnumUtility
         return false;
     }
 
-    // TODO: this will introduce boxing
-    public static bool TryParseByValueOrMember<TEnum>(object? value, out TEnum result)
+    // This serves as a routing hub for potentially boxed value types.
+    private static bool TryParseByValueOrMember<TEnum>(object? value, out TEnum result)
         where TEnum : struct, Enum
     {
         result = default;
@@ -56,12 +111,25 @@ public static class EnumUtility
         switch (value)
         {
             case null: return false;
-            case TEnum enumInstance:
-                result = enumInstance;
-                return true;
+            // If the object is already the correct enum type (no boxing needed)
+            case TEnum enumInstance: result = enumInstance; return true;
+            // If the object is a string, use the string overload directly
+            case string str: return TryParseByValueOrMember(str, out result);
+ // Unbox byte and call the byte overload
+            case byte b: return TryParseByValueOrMember(b, out result);
+ // Unbox short and call the short overload
+            case short s: return TryParseByValueOrMember(s, out result);
+ // Unbox int and call the int overload
+            case int i: return TryParseByValueOrMember(i, out result);
         }
 
-        if (FastEnum.TryParse(value.ToString()!, out result))
+        // For unhandled value types (like char, float, custom structs) or reference types,
+        // ToString() will still cause boxing if 'value' is a value type.
+        string? valueString = value.ToString();
+        if (string.IsNullOrEmpty(valueString))
+            return false;
+
+        if (FastEnum.TryParse(valueString.AsSpan(), out result))
         {
             if (FastEnum.IsDefined(result))
                 return true;
@@ -70,7 +138,7 @@ public static class EnumUtility
         foreach (TEnum enumValue in FastEnum.GetValues<TEnum>())
         {
             string? memberValue = enumValue.GetEnumMemberValue();
-            if (string.IsNullOrEmpty(memberValue) || !string.Equals(value.ToString(), memberValue, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(memberValue) || !string.Equals(valueString, memberValue, StringComparison.OrdinalIgnoreCase))
                 continue;
 
             result = enumValue;
@@ -78,6 +146,62 @@ public static class EnumUtility
         }
 
         return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryParseByValueOrMember<TEnum>(byte value, out TEnum result)
+        where TEnum : struct, Enum
+    {
+        result = default;
+
+        Span<char> charBuffer = stackalloc char[3];
+        if (value.TryFormat(charBuffer, out int charsWritten))
+        {
+            if (FastEnum.TryParse(charBuffer[..charsWritten], out result) && FastEnum.IsDefined(result))
+                return true;
+        }
+
+        return TryParseByValueOrMember(value.ToString(), out result);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryParseByValueOrMember<TEnum>(short value, out TEnum result)
+        where TEnum : struct, Enum
+    {
+        result = default;
+
+        Span<char> charBuffer = stackalloc char[6];
+        if (value.TryFormat(charBuffer, out int charsWritten))
+        {
+            if (FastEnum.TryParse(charBuffer[..charsWritten], out result) && FastEnum.IsDefined(result))
+                return true;
+        }
+
+        return TryParseByValueOrMember(value.ToString(), out result);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryParseByValueOrMember<TEnum>(int value, out TEnum result)
+        where TEnum : struct, Enum
+    {
+        result = default;
+
+        Span<char> charBuffer = stackalloc char[11];
+        if (value.TryFormat(charBuffer, out int charsWritten))
+        {
+            if (FastEnum.TryParse(charBuffer[..charsWritten], out result) && FastEnum.IsDefined(result))
+                return true;
+        }
+
+        return TryParseByValueOrMember(value.ToString(), out result);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryParseByValueOrMember<TEnum>(TEnum value, out TEnum result)
+        where TEnum : struct, Enum
+    {
+        result = value;
+        return FastEnum.IsDefined(value);
     }
 
     public static string GetRoomName(this Scenario scenarioName, int roomId)
