@@ -52,6 +52,7 @@ public partial class InGamePlayerViewModel : ObservableObject
     private CharacterBustViewModel _playerBustViewModel;
 
     private readonly IDataManager _dataManager;
+    private readonly IPlayerStateTracker _playerStateTracker;
 
     public InGamePlayerViewModel(
         DecodedInGamePlayer player,
@@ -68,13 +69,16 @@ public partial class InGamePlayerViewModel : ObservableObject
         _position = new PlayerPositionViewModel(dataManager);
         _inventory = new InventoryViewModel(player, dataManager, itemSlotViewModelFactory);
         _playerBustViewModel = characterBustViewModelFactory.Create();
+        _playerStateTracker = playerStateTracker;
 
         Update(player);
-        playerStateTracker.PublishPlayerUpdate(player);
     }
 
     public void Update(DecodedInGamePlayer player)
-        => UpdateProperties(player);
+    {
+        UpdateProperties(player);
+        _playerStateTracker.PublishPlayerUpdate(player);
+    }
 
     private void UpdateProperties(DecodedInGamePlayer player)
     {

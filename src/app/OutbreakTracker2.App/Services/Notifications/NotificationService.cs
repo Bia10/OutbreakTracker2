@@ -5,7 +5,7 @@ using System;
 
 namespace OutbreakTracker2.App.Services.Notifications;
 
-public class NotificationService : IDisposable
+public sealed class NotificationService : IDisposable
 {
     private readonly IDisposable _subscription;
 
