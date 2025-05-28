@@ -19,7 +19,7 @@ public class InGameDoorsViewModel : ObservableObject, IDisposable
     private readonly IDisposable _subscription;
     private readonly ILogger<InGameDoorsViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
-    private readonly Dictionary<string, InGameDoorViewModel> _viewModelCache = [];
+    private readonly Dictionary<Ulid, InGameDoorViewModel> _viewModelCache = [];
 
     private ObservableList<InGameDoorViewModel> Doors { get; } = [];
     public NotifyCollectionChangedSynchronizedViewList<InGameDoorViewModel> DoorsView { get; }
@@ -53,7 +53,7 @@ public class InGameDoorsViewModel : ObservableObject, IDisposable
 
                             _logger.LogInformation("Processed {Count} filtered door entries on thread pool", filteredIncomingDoors.Count);
 
-                            Dictionary<string, DecodedDoor> incomingDoorDataMap = filteredIncomingDoors
+                            Dictionary<Ulid, DecodedDoor> incomingDoorDataMap = filteredIncomingDoors
                                 .AsValueEnumerable()
                                 .ToDictionary(door => door.Id);
 
@@ -96,7 +96,7 @@ public class InGameDoorsViewModel : ObservableObject, IDisposable
                                     }
                                 }
 
-                                HashSet<string> desiredUniqueIdsLookup = new(desiredViewModels.Select(vm => vm.UniqueId));
+                                HashSet<Ulid> desiredUniqueIdsLookup = new(desiredViewModels.Select(vm => vm.UniqueId));
                                 for (int i = Doors.Count - 1; i >= 0; i--)
                                 {
                                     InGameDoorViewModel currentVmInList = Doors[i];
@@ -113,7 +113,7 @@ public class InGameDoorsViewModel : ObservableObject, IDisposable
                                     InGameDoorViewModel desiredVm = desiredViewModels[i];
 
                                     int currentIndexInDoors;
-                                    if (i < Doors.Count && Doors[i].UniqueId.Equals(desiredVm.UniqueId, StringComparison.Ordinal))
+                                    if (i < Doors.Count && Doors[i].UniqueId.Equals(desiredVm.UniqueId))
                                     {
                                         currentIndexInDoors = i;
                                         _logger.LogTrace("ViewModel {UniqueId} already in correct position", desiredVm.UniqueId);

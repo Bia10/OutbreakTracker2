@@ -4,10 +4,9 @@ namespace OutbreakTracker2.Outbreak.Models;
 
 public sealed record DecodedDoor
 {
-    // Generate a unique Id ist not possible to create one from properties since they duplicate
     [JsonInclude]
     [JsonPropertyName(nameof(Id))]
-    public string Id { get; set; } = Guid.CreateVersion7().ToString();
+    public Ulid Id { get; set; } = Ulid.NewUlid();
 
     [JsonInclude]
     [JsonPropertyName(nameof(Hp))]

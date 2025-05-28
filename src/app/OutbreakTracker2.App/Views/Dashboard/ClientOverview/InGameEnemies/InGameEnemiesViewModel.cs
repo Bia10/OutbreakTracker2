@@ -19,7 +19,7 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
     private readonly ILogger<InGameEnemiesViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
     private readonly IDisposable _subscription;
-    private readonly Dictionary<string, InGameEnemyViewModel> _viewModelCache = [];
+    private readonly Dictionary<Ulid, InGameEnemyViewModel> _viewModelCache = [];
     private readonly ObservableList<InGameEnemyViewModel> _enemies = [];
 
     public NotifyCollectionChangedSynchronizedViewList<InGameEnemyViewModel> EnemiesView { get; }
@@ -58,7 +58,7 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
 
                             _logger.LogInformation("Processed {Count} filtered enemy entries on thread pool", filteredIncomingEnemies.Count);
 
-                            Dictionary<string, DecodedEnemy> incomingEnemyDataMap = filteredIncomingEnemies
+                            Dictionary<Ulid, DecodedEnemy> incomingEnemyDataMap = filteredIncomingEnemies
                                 .AsValueEnumerable()
                                 .ToDictionary(enemy => enemy.Id);
 
@@ -97,7 +97,7 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
                                         _logger.LogWarning("Enemy data not found in map for VM {UniqueId} during UI update. This should not happen", vm.UniqueId);
                                     }
 
-                                HashSet<string> desiredUniqueIdsLookup = new(desiredViewModels.Select(vm => vm.UniqueId));
+                                HashSet<Ulid> desiredUniqueIdsLookup = new(desiredViewModels.Select(vm => vm.UniqueId));
                                 for (int i = _enemies.Count - 1; i >= 0; i--)
                                 {
                                     InGameEnemyViewModel currentVmInList = _enemies[i];
@@ -114,7 +114,7 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
                                     InGameEnemyViewModel desiredVm = desiredViewModels[i];
 
                                     int currentIndexInEnemies;
-                                    if (i < _enemies.Count && _enemies[i].UniqueId.Equals(desiredVm.UniqueId, StringComparison.Ordinal))
+                                    if (i < _enemies.Count && _enemies[i].UniqueId.Equals(desiredVm.UniqueId))
                                     {
                                         currentIndexInEnemies = i;
                                         _logger.LogTrace("ViewModel {UniqueId} already in correct position", desiredVm.UniqueId);

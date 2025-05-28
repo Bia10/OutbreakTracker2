@@ -1,6 +1,7 @@
 ﻿using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
+using System;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameDoor;
 
@@ -20,7 +21,7 @@ public partial class InGameDoorViewModel : ObservableObject
 
     public IBrush BorderBrush => new SolidColorBrush(CalculatedBorderColor);
 
-    public string UniqueId { get; private set; }
+    public Ulid UniqueId { get; private set; }
 
     public InGameDoorViewModel(DecodedDoor doorData)
     {

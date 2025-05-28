@@ -6,6 +6,7 @@ using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Enemy;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
+using System;
 
 namespace OutbreakTracker2.App.Views.Dashboard.ClientOverview.InGameEnemy;
 
@@ -43,7 +44,7 @@ public partial class InGameEnemyViewModel : ObservableObject
 
     public IBrush BorderBrush => new SolidColorBrush(RawBorderColor);
 
-    public string UniqueId { get; }
+    public Ulid UniqueId { get; }
 
     private readonly IDataManager _dataManager;
 
