@@ -348,6 +348,10 @@
                         Content="View Scenario Enemies"
                         Command="{Binding ShowEnemiesDialogCommand}"
                         HorizontalAlignment="Left" />
+                    <Button
+                        Content="View Scenario Doors"
+                        Command="{Binding ShowDoorsDialogCommand}"
+                        HorizontalAlignment="Left" />
                 </WrapPanel>
             </suki:GroupBox>
 

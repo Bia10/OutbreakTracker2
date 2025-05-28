@@ -28,7 +28,7 @@ public class TextureAtlas : ITextureAtlas, IDisposable
     {
         if (_spriteSheet is null)
         {
-            _logger.LogWarning("SpriteSheet is null. Cannot get source rectangle for '{Name}'", name); 
+            _logger.LogWarning("SpriteSheet is null. Cannot get source rectangle for '{Name}'", name);
             return new Rect();
         }
 

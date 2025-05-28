@@ -14,6 +14,9 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<DecodedEnemy> _enemies = [];
 
+    [ObservableProperty]
+    private ObservableCollection<DecodedDoor> _doors = [];
+
     public void UpdateItems(DecodedItem[] newItems)
     {
         List<DecodedItem> newItemsList = newItems.ToList();
@@ -66,9 +69,7 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
             DecodedEnemy? existingEnemy = Enemies.FirstOrDefault(e => e.SlotId == newEnemy.SlotId && e.Id == newEnemy.Id);
 
             if (existingEnemy is null)
-            {
                 Enemies.Add(newEnemy);
-            }
             else
             {
                 int index = Enemies.IndexOf(existingEnemy);
@@ -88,6 +89,39 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
                     existingEnemy.RoomName != newEnemy.RoomName)
                 {
                     Enemies[index] = newEnemy;
+                }
+            }
+        }
+    }
+
+    public void UpdateDoors(DecodedDoor[] newDoors)
+    {
+        List<DecodedDoor> newDoorsList = newDoors.ToList();
+
+        for (int i = Doors.Count - 1; i >= 0; i--)
+        {
+            DecodedDoor existingDoor = Doors[i];
+            if (newDoorsList.All(newDoor => newDoor.Id != existingDoor.Id))
+                Doors.RemoveAt(i);
+        }
+
+        foreach (DecodedDoor newDoor in newDoorsList)
+        {
+            DecodedDoor? existingDoor = Doors.FirstOrDefault(d => d.Id == newDoor.Id);
+
+            if (existingDoor is null)
+                Doors.Add(newDoor);
+            else
+            {
+                int index = Doors.IndexOf(existingDoor);
+                if (index is -1)
+                    continue;
+
+                if (existingDoor.Hp != newDoor.Hp ||
+                    existingDoor.Flag != newDoor.Flag ||
+                    existingDoor.Status != newDoor.Status)
+                {
+                    Doors[index] = newDoor;
                 }
             }
         }

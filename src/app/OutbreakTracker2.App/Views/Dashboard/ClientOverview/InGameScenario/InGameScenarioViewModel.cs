@@ -191,6 +191,24 @@ public partial class InGameScenarioViewModel : ObservableObject
                     throw;
                 }
             }, AwaitOperation.Drop);
+
+        dataManager.DoorsObservable.ObserveOnThreadPool()
+            .SubscribeAwait(async (doors, cancellationToken) =>
+            {
+                _logger.LogTrace("Processing doors data on thread pool");
+                try
+                {
+                    await dispatcherService.InvokeOnUIAsync(() =>
+                    {
+                        ScenarioEntitiesVm.UpdateDoors(doors);
+                    }, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            }, AwaitOperation.Drop);
     }
 
     [RelayCommand]
@@ -205,7 +223,7 @@ public partial class InGameScenarioViewModel : ObservableObject
                 .TryShow();
         });
     }
-    
+
     [RelayCommand]
     private Task ShowEnemiesDialogAsync()
     {
@@ -214,6 +232,19 @@ public partial class InGameScenarioViewModel : ObservableObject
             DialogManager.CreateDialog()
                 .WithTitle("Scenario Enemies")
                 .WithContent(new ScenarioEnemiesView { DataContext = ScenarioEntitiesVm })
+                .WithActionButton("Close ", _ => { }, true)
+                .TryShow();
+        });
+    }
+
+    [RelayCommand]
+    private Task ShowDoorsDialogAsync()
+    {
+        return _dispatcherService.InvokeOnUIAsync(() =>
+        {
+            DialogManager.CreateDialog()
+                .WithTitle("Scenario Doors")
+                .WithContent(new ScenarioDoorsView { DataContext = ScenarioEntitiesVm })
                 .WithActionButton("Close ", _ => { }, true)
                 .TryShow();
         });

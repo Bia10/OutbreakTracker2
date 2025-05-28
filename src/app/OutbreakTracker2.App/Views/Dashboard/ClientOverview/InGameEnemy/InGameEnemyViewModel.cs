@@ -169,7 +169,7 @@ public partial class InGameEnemyViewModel : ObservableObject
         {
             EnemyType.Mine or EnemyType.GasolineTank or EnemyType.Fire => Color.FromArgb(255, 255, 80, 40),
             EnemyType.Mouse or EnemyType.Rafflesia or EnemyType.Typewriter => Color.FromArgb(255, 0, 255, 0),
-            _ => Color.FromArgb(255, 255, 255, 255) 
+            _ => Color.FromArgb(255, 255, 255, 255)
         };
     }
 
