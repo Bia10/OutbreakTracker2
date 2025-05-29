@@ -351,7 +351,6 @@ public class InGamePlayerReader : ReaderBase
             DecodedInGamePlayers[i].MaxVirus = GetMaxVirus(i);
             DecodedInGamePlayers[i].VirusPercentage = GetVirusPercentage(DecodedInGamePlayers[i].CurVirus, DecodedInGamePlayers[i].MaxVirus);
             DecodedInGamePlayers[i].CritBonus = GetCritBonus(i);
-            // TODO: Decode byte -> name -> icon/img
             DecodedInGamePlayers[i].SpecialItem = GetSpecialItem(i);
             DecodedInGamePlayers[i].EquippedItem = GetEquippedItem(i);
             DecodedInGamePlayers[i].RoomId = GetRoomId(i);

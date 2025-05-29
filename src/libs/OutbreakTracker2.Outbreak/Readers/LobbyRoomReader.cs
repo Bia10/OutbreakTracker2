@@ -25,7 +25,6 @@ public sealed class LobbyRoomReader : ReaderBase
     public short GetCurPlayers()
         => ReadValue(LobbyRoomOffsets.CurPlayers, (short)-1);
 
-    // TODO: this seems to return wrong data
     public short GetMaxPlayers()
         => ReadValue(LobbyRoomOffsets.MaxPlayers, (short)-1);
 
@@ -40,6 +39,9 @@ public sealed class LobbyRoomReader : ReaderBase
 
     public short GetTime()
         => ReadValue(LobbyRoomOffsets.Time, (short)-1);
+
+    public static string GetMaxPlayersString(short maxPlayers)
+        => EnumUtility.GetEnumString(maxPlayers, RoomMaxPlayers.Two);
 
     public static string GetDifficultyName(short difficulty)
         => EnumUtility.GetEnumString(difficulty, RoomDifficulty.Unknown);
@@ -76,7 +78,7 @@ public sealed class LobbyRoomReader : ReaderBase
         DecodedLobbyRoom = new DecodedLobbyRoom
         {
             CurPlayer = GetCurPlayers(),
-            MaxPlayer = GetMaxPlayers(),
+            MaxPlayer = short.Parse(GetMaxPlayersString(GetMaxPlayers())),
             Difficulty = GetDifficultyName(GetDifficulty()),
             Status = GetStatusName(GetStatus()),
             ScenarioName = GetScenarioName(GetScenarioId()),
