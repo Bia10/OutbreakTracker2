@@ -33,8 +33,12 @@ public class OutbreakTracker2Views
 
     public bool TryCreateView(IServiceProvider? provider, Type viewModelType, [NotNullWhen(true)] out Control? view)
     {
-        object viewModel = provider.GetRequiredService(viewModelType);
+        view = null;
 
+        if (provider is null)
+            return false;
+
+        object viewModel = provider.GetRequiredService(viewModelType);
         return TryCreateView(viewModel, out view);
     }
 

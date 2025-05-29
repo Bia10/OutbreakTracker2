@@ -40,6 +40,8 @@ using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlot.Factory;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlots;
 using OutbreakTracker2.App.Views.Log;
 using OutbreakTracker2.App.Views.Logging;
+using OutbreakTracker2.Memory.MemoryReader;
+using OutbreakTracker2.Memory.StringReader;
 using R3;
 using Serilog;
 using SukiUI.Dialogs;
@@ -47,6 +49,7 @@ using SukiUI.Toasts;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using StringReader = OutbreakTracker2.Memory.StringReader.StringReader;
 
 namespace OutbreakTracker2.App;
 
@@ -198,11 +201,12 @@ public class App : Application
             loggingBuilder.AddSerilog(Log.Logger, dispose: false);
         });
 
-        services.AddSingleton<IProcessLocator, ProcessLocator>();
-        services.AddSingleton<IDataManager, DataManager>();
-        services.AddSingleton<IProcessLauncher, ProcessLauncher>();
         services.AddSingleton<IPcsx2Locator, Pcsx2Locator>();
-
+        services.AddSingleton<IProcessLocator, ProcessLocator>();
+        services.AddSingleton<IProcessLauncher, ProcessLauncher>();
+        services.AddSingleton<ISafeMemoryReader, SafeMemoryReader>();
+        services.AddSingleton<IStringReader, StringReader>();
+        services.AddSingleton<IDataManager, DataManager>();
         services.AddSingleton<ITextureAtlasService, TextureAtlasService>();
         services.AddSingleton<Func<Stream, SpriteSheet, ITextureAtlas>>(serviceProvider =>
         {

@@ -38,7 +38,6 @@ public static class EnumUtility
         return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
     }
 
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string GetEnumString<TEnum>(short value, TEnum defaultValue)
         where TEnum : struct, Enum
@@ -81,7 +80,6 @@ public static class EnumUtility
         return defaultValue.GetEnumMemberValue() ?? defaultValue.ToString();
     }
 
-
     public static bool TryParseByValueOrMember<TEnum>(string value, out TEnum result)
         where TEnum : struct, Enum
     {
@@ -115,11 +113,11 @@ public static class EnumUtility
             case TEnum enumInstance: result = enumInstance; return true;
             // If the object is a string, use the string overload directly
             case string str: return TryParseByValueOrMember(str, out result);
- // Unbox byte and call the byte overload
+            // Unbox byte and call the byte overload
             case byte b: return TryParseByValueOrMember(b, out result);
- // Unbox short and call the short overload
+            // Unbox short and call the short overload
             case short s: return TryParseByValueOrMember(s, out result);
- // Unbox int and call the int overload
+            // Unbox int and call the int overload
             case int i: return TryParseByValueOrMember(i, out result);
         }
 

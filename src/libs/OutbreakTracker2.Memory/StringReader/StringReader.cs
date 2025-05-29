@@ -1,4 +1,5 @@
-﻿using OutbreakTracker2.WinInterop;
+﻿using Microsoft.Extensions.Logging;
+using OutbreakTracker2.WinInterop;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -6,22 +7,26 @@ namespace OutbreakTracker2.Memory.StringReader;
 
 public sealed class StringReader : IStringReader
 {
+    private readonly ILogger<StringReader> _logger;
+
+    public StringReader(ILogger<StringReader> logger)
+    {
+        _logger = logger;
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+    }
+
     // This has to be a bit overcomplicated as Outbreak supports multiple char widths like halfwidth and fullwidth character forms
     public string Read(nint hProcess, nint address, Encoding? encoding = null)
     {
         // Under some bizzare scenario, if the null terminator is not found, we can read up to MAX of 1MB of data
         const int maxSafeLength = 1048576;
-        //Console.WriteLine($"Starting ReadString at address 0x{address:X8}");
+        _logger.LogDebug("Starting ReadString at address 0x{Address:X8}", address);
 
         if (address == nint.Zero)
         {
-            //Console.WriteLine("Attempted to read from NULL pointer");
+            _logger.LogWarning("Attempted to read from NULL pointer");
             return string.Empty;
         }
-
-        // TODO: move to app
-        // Register the encoding provider if not already registered
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
         // Default to Shift-JIS for Japanese games with fullwidth Latin
         encoding ??= Encoding.GetEncoding(932);
@@ -41,7 +46,7 @@ public sealed class StringReader : IStringReader
 
                 if (buffer[0] is 0)
                 {
-                    //Console.WriteLine($"Null terminator found at offset {bytes.Count}");
+                    _logger.LogDebug("Null terminator found at offset {BytesCount}", bytes.Count);
                     break;
                 }
 
@@ -53,14 +58,14 @@ public sealed class StringReader : IStringReader
         }
         catch (Exception ex)
         {
-            //Console.WriteLine($"Critical error during memory read: {ex.Message}");
+            _logger.LogError(ex, "Critical error during memory read: {ExMessage}", ex.Message);
             result = string.Empty;
         }
 
         return result;
     }
 
-    private static void LogByteDetails(byte @byte, int offset, List<byte> bytes, Encoding encoding)
+    private void LogByteDetails(byte @byte, int offset, List<byte> bytes, Encoding encoding)
     {
         StringBuilder multiByteInfo = new();
         if (encoding.CodePage is 932 && offset > 0 && IsShiftJisLeadByte(bytes[offset - 1]))
@@ -75,17 +80,17 @@ public sealed class StringReader : IStringReader
                 /* Ignore decoding errors */
             }
 
-        //Console.WriteLine($"Byte 0x{@byte:X2} @ {offset} - {GetByteInterpretations(@byte)}{multiByteInfo}");
+        _logger.LogTrace("Byte 0x{B:X2} @ {Offset} - {S}{MultiByteInfo}", @byte, offset, GetByteInterpretations(@byte), multiByteInfo);
     }
 
     private static bool IsShiftJisLeadByte(byte @byte)
         => @byte is >= 0x81 and <= 0x9F or >= 0xE0 and <= 0xEF;
 
-    private static string ProcessFinalBytes(List<byte> bytes, Encoding encoding)
+    private string ProcessFinalBytes(List<byte> bytes, Encoding encoding)
     {
         if (bytes.Count is 0)
         {
-            //Console.WriteLine("Empty string read from memory");
+            _logger.LogDebug("Empty string read from memory");
             return string.Empty;
         }
 
@@ -93,15 +98,15 @@ public sealed class StringReader : IStringReader
 
         if (result.Contains('\ufffd'))
         {
-            //Console.WriteLine("Encoding issues detected. Trying fallback encodings...");
+            _logger.LogWarning("Encoding issues detected. Trying fallback encodings...");
             TryFallbackEncodings(bytes);
         }
 
-        //Console.WriteLine($"Read {bytes.Count} bytes: \"{result}\"");
+        _logger.LogDebug("Read {BytesCount} bytes: \"{Result}\"", bytes.Count, result);
         return result;
     }
 
-    private static void TryFallbackEncodings(List<byte> bytes)
+    private void TryFallbackEncodings(List<byte> bytes)
     {
         Encoding[] encodings =
         [
@@ -115,7 +120,7 @@ public sealed class StringReader : IStringReader
             try
             {
                 string decoded = encoding.GetString([.. bytes]);
-                //Console.WriteLine($"Fallback {encoding.EncodingName}: {decoded} | Bytes: {BitConverter.ToString([.. bytes])}");
+                _logger.LogTrace($"Fallback {encoding.EncodingName}: {decoded} | Bytes: {BitConverter.ToString([.. bytes])}");
             }
             catch
             {
@@ -123,20 +128,18 @@ public sealed class StringReader : IStringReader
             }
     }
 
-    private static bool HandleReadResult(ref int consecutiveFails, bool success, int offset, int bytesRead, nint address, out bool shouldBreak)
+    private bool HandleReadResult(ref int consecutiveFails, bool success, int offset, int bytesRead, nint address, out bool shouldBreak)
     {
         shouldBreak = false;
         if (!success)
         {
             int lastError = Marshal.GetLastWin32Error();
-            //Console.WriteLine($"ReadProcessMemory failed at offset {offset} " +
-                              //$"(Address: 0x{address + offset:X8}) " +
-                              //$"Error: 0x{lastError:X8} ({new Win32Exception(lastError).Message})");
+            _logger.LogWarning("ReadProcessMemory failed at offset {Offset} (Address: 0x{Address:X8}) Error: 0x{LastError:X8} ({Message})", offset, address + offset, lastError, new System.ComponentModel.Win32Exception(lastError).Message);
             consecutiveFails++;
 
             if (consecutiveFails >= 3)
             {
-                //Console.WriteLine("Aborting read after 3 consecutive failures");
+                _logger.LogError("Aborting read after 3 consecutive failures");
                 shouldBreak = true;
             }
 
@@ -147,7 +150,7 @@ public sealed class StringReader : IStringReader
 
         if (bytesRead != 1)
         {
-            //Console.WriteLine($"Partial read at offset {offset} Requested: 1, Got: {bytesRead}");
+            _logger.LogWarning("Partial read at offset {Offset} Requested: 1, Got: {BytesRead}", offset, bytesRead);
             return false;
         }
 

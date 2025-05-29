@@ -11,12 +11,11 @@ using System.Threading.Tasks;
 
 namespace OutbreakTracker2.App.Services.Data;
 
-// TODO: some kind of guarantee of uniqueness before emitting would be nice
-// currently we emit the same data over and over
-// but that could imply having to wrangle with how to compare the composite data
 public sealed class DataManager : IDataManager, IDisposable
 {
     private readonly ILogger<IDataManager> _logger;
+    private readonly ISafeMemoryReader _safeMemoryReader;
+    private readonly IStringReader _stringReader;
     private IDisposable? _updateSubscription;
     private EEmemMemory? _eememMemory;
     private DoorReader? _doorReader;
@@ -56,9 +55,11 @@ public sealed class DataManager : IDataManager, IDisposable
     private readonly TimeSpan _fastUpdateInterval = TimeSpan.FromMilliseconds(500);
     private readonly TimeSpan _slowUpdateInterval = TimeSpan.FromMilliseconds(1000);
 
-    public DataManager(ILogger<DataManager> logger)
+    public DataManager(ILogger<DataManager> logger, ISafeMemoryReader safeMemoryReader, IStringReader stringReader)
     {
         _logger = logger;
+        _safeMemoryReader = safeMemoryReader;
+        _stringReader = stringReader;
         SetupObservables();
     }
 
@@ -76,19 +77,15 @@ public sealed class DataManager : IDataManager, IDisposable
     public async ValueTask InitializeAsync(GameClient gameClient, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(gameClient);
-        if (IsInitialized) return;
-
-        _logger.LogInformation("Initializing data manager...");
-
         if (IsInitialized)
         {
-            _logger.LogWarning("DataManager is already initialized");
+            _logger.LogWarning("DataManager is already initialized. Skipping re-initialization.");
             return;
         }
 
         _logger.LogInformation("Attempting to initialize DataManager and EEmemory connection");
 
-        _eememMemory = new EEmemMemory(gameClient, new SafeMemoryReader(), new StringReader());
+        _eememMemory = new EEmemMemory(gameClient, _safeMemoryReader, _stringReader);
 
         bool eememMemoryReady = await _eememMemory.InitializeAsync(cancellationToken).ConfigureAwait(false);
         if (!eememMemoryReady)
@@ -171,6 +168,7 @@ public sealed class DataManager : IDataManager, IDisposable
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error occurred during core game data update.");
             return ValueTask.FromException(ex);
         }
     }
@@ -193,6 +191,7 @@ public sealed class DataManager : IDataManager, IDisposable
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error occurred during lobby data update.");
             return ValueTask.FromException(ex);
         }
     }
