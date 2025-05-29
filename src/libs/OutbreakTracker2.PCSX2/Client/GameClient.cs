@@ -3,7 +3,7 @@ using OutbreakTracker2.WinInterop.Enums;
 using System.ComponentModel;
 using System.Diagnostics;
 
-namespace OutbreakTracker2.PCSX2;
+namespace OutbreakTracker2.PCSX2.Client;
 
 public sealed class GameClient : IDisposable
 {

@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
-using OutbreakTracker2.Memory.MemoryReader;
-using OutbreakTracker2.Memory.StringReader;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Readers;
-using OutbreakTracker2.PCSX2;
+using OutbreakTracker2.PCSX2.Client;
+using OutbreakTracker2.PCSX2.EEmem;
 using R3;
 using System;
 using System.Threading;
@@ -14,10 +13,11 @@ namespace OutbreakTracker2.App.Services.Data;
 public sealed class DataManager : IDataManager, IDisposable
 {
     private readonly ILogger<IDataManager> _logger;
-    private readonly ISafeMemoryReader _safeMemoryReader;
-    private readonly IStringReader _stringReader;
+    private readonly IEEmemMemory _eememMemory;
+    private GameClient? _gameClient;
+
     private IDisposable? _updateSubscription;
-    private EEmemMemory? _eememMemory;
+
     private DoorReader? _doorReader;
     private EnemiesReader? _enemiesReader;
     private InGamePlayerReader? _inGamePlayerReader;
@@ -55,11 +55,10 @@ public sealed class DataManager : IDataManager, IDisposable
     private readonly TimeSpan _fastUpdateInterval = TimeSpan.FromMilliseconds(500);
     private readonly TimeSpan _slowUpdateInterval = TimeSpan.FromMilliseconds(1000);
 
-    public DataManager(ILogger<DataManager> logger, ISafeMemoryReader safeMemoryReader, IStringReader stringReader)
+    public DataManager(ILogger<DataManager> logger, IEEmemMemory eememMemory)
     {
         _logger = logger;
-        _safeMemoryReader = safeMemoryReader;
-        _stringReader = stringReader;
+        _eememMemory = eememMemory;
         SetupObservables();
     }
 
@@ -76,7 +75,8 @@ public sealed class DataManager : IDataManager, IDisposable
 
     public async ValueTask InitializeAsync(GameClient gameClient, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(gameClient);
+        _gameClient = gameClient ?? throw new ArgumentNullException(nameof(gameClient));
+
         if (IsInitialized)
         {
             _logger.LogWarning("DataManager is already initialized. Skipping re-initialization.");
@@ -85,22 +85,19 @@ public sealed class DataManager : IDataManager, IDisposable
 
         _logger.LogInformation("Attempting to initialize DataManager and EEmemory connection");
 
-        _eememMemory = new EEmemMemory(gameClient, _safeMemoryReader, _stringReader);
-
-        bool eememMemoryReady = await _eememMemory.InitializeAsync(cancellationToken).ConfigureAwait(false);
-        if (!eememMemoryReady)
+        bool eememInitialized = await _eememMemory.InitializeAsync(_gameClient, cancellationToken);
+        if (!eememInitialized)
         {
-            _logger.LogError("Failed to initialize EEmemory after multiple attempts within DataManager");
-            throw new InvalidOperationException("Failed to initialize EEmemory: PCSX2 memory not ready or 'EEmem' export not found.");
+            throw new InvalidOperationException("Failed to initialize EEmemory.");
         }
 
-        _doorReader = new DoorReader(gameClient, _eememMemory, _logger);
-        _enemiesReader = new EnemiesReader(gameClient, _eememMemory, _logger);
-        _inGamePlayerReader = new InGamePlayerReader(gameClient, _eememMemory, _logger);
-        _inGameScenarioReader = new InGameScenarioReader(gameClient, _eememMemory, _logger);
-        _lobbyRoomPlayerReader = new LobbyRoomPlayerReader(gameClient, _eememMemory, _logger);
-        _lobbyRoomReader = new LobbyRoomReader(gameClient, _eememMemory, _logger);
-        _lobbySlotReader = new LobbySlotReader(gameClient, _eememMemory, _logger);
+        _doorReader = new DoorReader(_gameClient, _eememMemory, _logger);
+        _enemiesReader = new EnemiesReader(_gameClient, _eememMemory, _logger);
+        _inGamePlayerReader = new InGamePlayerReader(_gameClient, _eememMemory, _logger);
+        _inGameScenarioReader = new InGameScenarioReader(_gameClient, _eememMemory, _logger);
+        _lobbyRoomPlayerReader = new LobbyRoomPlayerReader(_gameClient, _eememMemory, _logger);
+        _lobbyRoomReader = new LobbyRoomReader(_gameClient, _eememMemory, _logger);
+        _lobbySlotReader = new LobbySlotReader(_gameClient, _eememMemory, _logger);
 
         Observable<Unit> fastUpdateTrigger = Observable.Interval(_fastUpdateInterval, cancellationToken);
         Observable<Unit> slowUpdateTrigger = Observable.Interval(_slowUpdateInterval, cancellationToken);

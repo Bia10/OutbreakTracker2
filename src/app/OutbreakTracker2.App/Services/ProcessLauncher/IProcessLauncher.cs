@@ -1,4 +1,4 @@
-﻿using OutbreakTracker2.PCSX2;
+﻿using OutbreakTracker2.PCSX2.Client;
 using R3;
 using System.Diagnostics;
 using System.Threading;

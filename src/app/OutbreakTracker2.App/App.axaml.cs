@@ -42,6 +42,8 @@ using OutbreakTracker2.App.Views.Log;
 using OutbreakTracker2.App.Views.Logging;
 using OutbreakTracker2.Memory.MemoryReader;
 using OutbreakTracker2.Memory.StringReader;
+using OutbreakTracker2.PCSX2.Client;
+using OutbreakTracker2.PCSX2.EEmem;
 using R3;
 using Serilog;
 using SukiUI.Dialogs;
@@ -206,6 +208,8 @@ public class App : Application
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
         services.AddSingleton<ISafeMemoryReader, SafeMemoryReader>();
         services.AddSingleton<IStringReader, StringReader>();
+        services.AddSingleton<IGameClientFactory, GameClientFactory>();
+        services.AddSingleton<IEEmemMemory, EEmemMemory>();
         services.AddSingleton<IDataManager, DataManager>();
         services.AddSingleton<ITextureAtlasService, TextureAtlasService>();
         services.AddSingleton<Func<Stream, SpriteSheet, ITextureAtlas>>(serviceProvider =>

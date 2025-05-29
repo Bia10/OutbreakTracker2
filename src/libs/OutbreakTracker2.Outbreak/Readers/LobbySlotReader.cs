@@ -6,7 +6,8 @@ using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Offsets;
 using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.Outbreak.Utility;
-using OutbreakTracker2.PCSX2;
+using OutbreakTracker2.PCSX2.Client;
+using OutbreakTracker2.PCSX2.EEmem;
 using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;

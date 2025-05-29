@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using OutbreakTracker2.App.Services.Data;
 using OutbreakTracker2.App.Services.ProcessLauncher;
 using OutbreakTracker2.App.Services.Toasts;
-using OutbreakTracker2.PCSX2;
+using OutbreakTracker2.PCSX2.Client;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

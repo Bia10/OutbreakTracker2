@@ -1,6 +1,6 @@
 ﻿using Cysharp.Diagnostics;
 using Microsoft.Extensions.Logging;
-using OutbreakTracker2.PCSX2;
+using OutbreakTracker2.PCSX2.Client;
 using R3;
 using System;
 using System.Collections.Concurrent;
