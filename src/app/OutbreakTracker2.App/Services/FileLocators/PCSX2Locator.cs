@@ -123,6 +123,8 @@ public class Pcsx2Locator : IPcsx2Locator
         using CancellationTokenSource timeoutCts = new(timeout);
         using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
 
+        Channel<string> resultChannel = Channel.CreateBounded<string>(1);
+
         try
         {
             string? specialPath = CheckSpecialFolders();
@@ -134,14 +136,27 @@ public class Pcsx2Locator : IPcsx2Locator
                 .Select(driveInfo => driveInfo.RootDirectory.FullName)
                 .ToArray();
 
-            Channel<string> resultChannel = Channel.CreateBounded<string>(1);
-            IEnumerable<Task> _ = drives.Select(drive =>
-                ScanDriveAsync(drive, resultChannel.Writer, linkedCts.Token));
+            List<Task> scanTasks = drives.Select(drive => ScanDriveAsync(drive, resultChannel.Writer, linkedCts.Token))
+                .ToList();
 
-            return await (await Task.WhenAny(resultChannel.Reader.ReadAsync(linkedCts.Token)
-                    .AsTask(), Task.Delay(Timeout.InfiniteTimeSpan, linkedCts.Token)
-                    .ContinueWith(string? (_) => null, TaskContinuationOptions.ExecuteSynchronously)!
-            ).ConfigureAwait(false)).ConfigureAwait(false);
+            Task writingCompletion = Task.WhenAll(scanTasks).ContinueWith(_ =>
+            {
+                resultChannel.Writer.Complete();
+            }, linkedCts.Token, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+
+            Task<string> channelReadTask = resultChannel.Reader.ReadAsync(linkedCts.Token).AsTask();
+
+            Task completedTask = await Task.WhenAny(channelReadTask, writingCompletion, Task.Delay(Timeout.InfiniteTimeSpan, linkedCts.Token)).ConfigureAwait(false);
+
+            if (completedTask == channelReadTask)
+                return await channelReadTask.ConfigureAwait(false);
+            else if (completedTask == writingCompletion)
+                return null;
+            else
+            {
+                linkedCts.Token.ThrowIfCancellationRequested();
+                return null;
+            }
         }
         catch (OperationCanceledException ex) when (timeoutCts.IsCancellationRequested)
         {
@@ -156,6 +171,7 @@ public class Pcsx2Locator : IPcsx2Locator
         finally
         {
             await linkedCts.CancelAsync().ConfigureAwait(false);
+            resultChannel.Writer.TryComplete();
         }
     }
 

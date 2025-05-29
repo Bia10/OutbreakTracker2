@@ -70,6 +70,7 @@ public sealed class SafeMemoryReader : ISafeMemoryReader
             _logger.LogError("Marshal.SizeOf<{TypeName}>() returned a negative size: {Size}. This indicates a potential issue with the type definition.", typeof(T).FullName, size);
             throw new InvalidOperationException($"Marshal.SizeOf<{typeof(T).FullName}>() returned a negative size: {size}.");
         }
+
         if (size == 0)
         {
             _logger.LogWarning("Attempted to read a struct with zero size ({TypeName}) at address 0x{Address:X}. Returning default value.", typeof(T).FullName, address);

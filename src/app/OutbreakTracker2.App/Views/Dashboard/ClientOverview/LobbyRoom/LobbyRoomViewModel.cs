@@ -23,7 +23,7 @@ public partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
 {
     private readonly ILogger<LobbyRoomViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
-    private readonly CompositeDisposable _subscription;
+    private readonly IDisposable _subscription;
     private readonly Dictionary<Ulid, LobbyRoomPlayerViewModel> _viewModelCache = [];
     private readonly ObservableList<LobbyRoomPlayerViewModel> _playersInternal = [];
     public NotifyCollectionChangedSynchronizedViewList<LobbyRoomPlayerViewModel> PlayersView { get; }
@@ -65,220 +65,222 @@ public partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
         PlayersView =
             _playersInternal.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
-        _subscription =
-        [
-            dataManager.LobbyRoomObservable.ObserveOnThreadPool()
-                .SubscribeAwait(async (lobbyData, cancellationToken) =>
+        IDisposable lobbyRoomDataSubscription = dataManager.LobbyRoomObservable.ObserveOnThreadPool()
+            .SubscribeAwait(async (lobbyData, cancellationToken) =>
+            {
+                _logger.LogTrace("Processing lobby room data on thread pool");
+                try
                 {
-                    _logger.LogTrace("Processing lobby room data on thread pool");
+                    await _dispatcherService.InvokeOnUIAsync(() =>
+                        {
+                            _logger.LogTrace("Updating LobbyRoomViewModel properties on UI thread");
+                            UpdateLobbyProperties(lobbyData);
+                        }, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogInformation("Lobby room data processing cancelled");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during lobby room data processing cycle");
+                }
+            }, AwaitOperation.Drop);
+
+        IDisposable lobbyRoomPlayersSubscription = dataManager.LobbyRoomPlayersObservable.ObserveOnThreadPool()
+            .SubscribeAwait(async (incomingPlayersSnapshot, cancellationToken) =>
+            {
+                _logger.LogInformation(
+                    "Processing lobby room players snapshot on thread pool with {Length} entries",
+                    incomingPlayersSnapshot.Length);
+
+                List<DecodedLobbyRoomPlayer> filteredIncomingPlayers = incomingPlayersSnapshot.AsValueEnumerable()
+                    .Where(IsPlayerActive)
+                    .ToList();
+
+                _logger.LogInformation("Processed {Count} filtered player entries on thread pool",
+                    filteredIncomingPlayers.Count);
+
+                try
+                {
+                    List<LobbyRoomPlayerViewModel> desiredViewModels = new(filteredIncomingPlayers.Count);
+                    HashSet<Ulid> desiredVmUlids = [];
+                    List<LobbyRoomPlayerViewModel> currentListSnapshot;
                     try
                     {
-                        await _dispatcherService.InvokeOnUIAsync(() =>
-                            {
-                                _logger.LogTrace("Updating LobbyRoomViewModel properties on UI thread");
-                                UpdateLobbyProperties(lobbyData);
-                            }, cancellationToken)
-                            .ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        _logger.LogInformation("Lobby room data processing cancelled");
+                        currentListSnapshot = [.. _playersInternal];
+                        _logger.LogTrace("Created snapshot of current UI list with {Count} items on ThreadPool",
+                            currentListSnapshot.Count);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error during lobby room data processing cycle");
+                        _logger.LogError(ex, "Error taking snapshot of _playersInternal on ThreadPool");
+                        throw;
                     }
-                }, AwaitOperation.Drop),
 
-            dataManager.LobbyRoomPlayersObservable.ObserveOnThreadPool()
-                .SubscribeAwait(async (incomingPlayersSnapshot, cancellationToken) =>
-                {
-                    _logger.LogInformation(
-                        "Processing lobby room players snapshot on thread pool with {Length} entries",
-                        incomingPlayersSnapshot.Length);
+                    for (int i = 0; i < filteredIncomingPlayers.Count; i++)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
 
-                    List<DecodedLobbyRoomPlayer> filteredIncomingPlayers = incomingPlayersSnapshot.AsValueEnumerable()
-                        .Where(IsPlayerActive)
+                        DecodedLobbyRoomPlayer incomingData = filteredIncomingPlayers[i];
+                        LobbyRoomPlayerViewModel vmToAddToList;
+
+                        if (i < currentListSnapshot.Count && _viewModelCache.TryGetValue(
+                                currentListSnapshot[i].ViewModelId,
+                                out LobbyRoomPlayerViewModel? existingAndCachedVm))
+                        {
+                            vmToAddToList = existingAndCachedVm;
+                            _logger.LogTrace("Reusing existing VM from cache {Ulid} for incoming data at index {Index} (PlayerId {PlayerId})",
+                                vmToAddToList.ViewModelId, i, incomingData.NameId);
+                        }
+                        else
+                        {
+                            vmToAddToList = playerVmFactory.Create(incomingData);
+                            _logger.LogDebug("Creating new VM {Ulid} for incoming data at index {Index} (PlayerId {PlayerId})",
+                                vmToAddToList.ViewModelId, i, incomingData.NameId);
+                        }
+
+                        desiredViewModels.Add(vmToAddToList);
+                        desiredVmUlids.Add(vmToAddToList.ViewModelId);
+                    }
+
+                    List<Ulid> vmUlidsToRemoveFromCache = _viewModelCache.Keys.Except(desiredVmUlids)
                         .ToList();
 
-                    _logger.LogInformation("Processed {Count} filtered player entries on thread pool",
-                        filteredIncomingPlayers.Count);
+                    _logger.LogInformation("Player ViewModel preparation complete on thread pool. {DesiredCount} desired VMs. {RemovedCount} VMs to potentially remove from cache",
+                        desiredViewModels.Count, vmUlidsToRemoveFromCache.Count);
 
-                    try
-                    {
-                        List<LobbyRoomPlayerViewModel> desiredViewModels = new(filteredIncomingPlayers.Count);
-                        HashSet<Ulid> desiredVmUlids = [];
-                        List<LobbyRoomPlayerViewModel> currentListSnapshot;
-                        try
+                    await _dispatcherService.InvokeOnUIAsync(() =>
                         {
-                            currentListSnapshot = [.. _playersInternal];
-                            _logger.LogTrace("Created snapshot of current UI list with {Count} items on ThreadPool",
-                                currentListSnapshot.Count);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error taking snapshot of _playersInternal on ThreadPool");
-                            throw;
-                        }
+                            _logger.LogInformation("Applying player updates and list synchronization on UI thread");
 
-                        for (int i = 0; i < filteredIncomingPlayers.Count; i++)
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            DecodedLobbyRoomPlayer incomingData = filteredIncomingPlayers[i];
-                            LobbyRoomPlayerViewModel vmToAddToList;
-
-                            if (i < currentListSnapshot.Count && _viewModelCache.TryGetValue(
-                                    currentListSnapshot[i].ViewModelId,
-                                    out LobbyRoomPlayerViewModel? existingAndCachedVm))
+                            foreach (Ulid ulidToRemove in vmUlidsToRemoveFromCache)
                             {
-                                vmToAddToList = existingAndCachedVm;
-                                _logger.LogTrace("Reusing existing VM from cache {Ulid} for incoming data at index {Index} (PlayerId {PlayerId})",
-                                    vmToAddToList.ViewModelId, i, incomingData.NameId);
-                            }
-                            else
-                            {
-                                vmToAddToList = playerVmFactory.Create(incomingData);
-                                _logger.LogDebug("Creating new VM {Ulid} for incoming data at index {Index} (PlayerId {PlayerId})",
-                                    vmToAddToList.ViewModelId, i, incomingData.NameId);
-                            }
-
-                            desiredViewModels.Add(vmToAddToList);
-                            desiredVmUlids.Add(vmToAddToList.ViewModelId);
-                        }
-
-                        List<Ulid> vmUlidsToRemoveFromCache = _viewModelCache.Keys.Except(desiredVmUlids)
-                            .ToList();
-
-                        _logger.LogInformation("Player ViewModel preparation complete on thread pool. {DesiredCount} desired VMs. {RemovedCount} VMs to potentially remove from cache",
-                            desiredViewModels.Count, vmUlidsToRemoveFromCache.Count);
-
-                        await _dispatcherService.InvokeOnUIAsync(() =>
-                            {
-                                _logger.LogInformation("Applying player updates and list synchronization on UI thread");
-
-                                foreach (Ulid ulidToRemove in vmUlidsToRemoveFromCache)
+                                if (_viewModelCache.Remove(ulidToRemove, out LobbyRoomPlayerViewModel? _))
                                 {
-                                    if (_viewModelCache.Remove(ulidToRemove, out LobbyRoomPlayerViewModel? _))
-                                    {
-                                        _logger.LogDebug("Removing VM from cache on UI for ULID {Ulid}", ulidToRemove);
-                                    }
-                                    else
-                                    {
-                                        _logger.LogWarning("Attempted to remove VM with ULID {Ulid} from cache but it was not found",
-                                            ulidToRemove);
-                                    }
-                                }
-
-                                _logger.LogTrace("Cache count after removals: {Count}", _viewModelCache.Count);
-
-                                if (desiredViewModels.Count != filteredIncomingPlayers.Count)
-                                {
-                                    _logger.LogError("Internal error: desiredViewModels count ({DesiredCount}) does not match incomingPlayersSnapshot length ({SnapshotLength})." +
-                                                     " Cannot update properties reliably", desiredViewModels.Count, incomingPlayersSnapshot.Length);
+                                    _logger.LogDebug("Removing VM from cache on UI for ULID {Ulid}", ulidToRemove);
                                 }
                                 else
                                 {
-                                    for (int i = 0; i < desiredViewModels.Count; i++)
-                                    {
-                                        LobbyRoomPlayerViewModel vm = desiredViewModels[i];
-                                        DecodedLobbyRoomPlayer playerData = filteredIncomingPlayers[i];
-
-                                        if (_viewModelCache.TryAdd(vm.ViewModelId, vm))
-                                        {
-                                            _logger.LogTrace("Adding new VM to cache on UI thread for ULID {Ulid} (PlayerId {PlayerId})", vm.ViewModelId, vm.DataPlayerId);
-                                        }
-
-                                        vm.Update(playerData);
-                                        _logger.LogTrace("Updating LobbyRoomPlayerViewModel properties on UI thread for ULID {Ulid} (PlayerId {PlayerId})",
-                                            vm.ViewModelId, vm.DataPlayerId);
-                                    }
-
-                                    _logger.LogTrace("Properties updated for {Count} VMs", desiredViewModels.Count);
+                                    _logger.LogWarning("Attempted to remove VM with ULID {Ulid} from cache but it was not found",
+                                        ulidToRemove);
                                 }
+                            }
 
-                                _logger.LogTrace("Cache count after additions/updates: {Count}", _viewModelCache.Count);
+                            _logger.LogTrace("Cache count after removals: {Count}", _viewModelCache.Count);
 
+                            if (desiredViewModels.Count != filteredIncomingPlayers.Count)
+                            {
+                                _logger.LogError("Internal error: desiredViewModels count ({DesiredCount}) does not match incomingPlayersSnapshot length ({SnapshotLength})." +
+                                                 " Cannot update properties reliably", desiredViewModels.Count, incomingPlayersSnapshot.Length);
+                            }
+                            else
+                            {
                                 for (int i = 0; i < desiredViewModels.Count; i++)
                                 {
-                                    LobbyRoomPlayerViewModel desiredVm = desiredViewModels[i];
-                                    int currentIndexInList = -1;
+                                    LobbyRoomPlayerViewModel vm = desiredViewModels[i];
+                                    DecodedLobbyRoomPlayer playerData = filteredIncomingPlayers[i];
 
-                                    for (int j = 0; j < _playersInternal.Count; j++)
+                                    if (_viewModelCache.TryAdd(vm.ViewModelId, vm))
                                     {
-                                        if (_playersInternal[j].ViewModelId == desiredVm.ViewModelId)
-                                        {
-                                            currentIndexInList = j;
-                                            break;
-                                        }
+                                        _logger.LogTrace("Adding new VM to cache on UI thread for ULID {Ulid} (PlayerId {PlayerId})", vm.ViewModelId, vm.DataPlayerId);
                                     }
 
-                                    if (currentIndexInList is -1)
-                                    {
-                                        _logger.LogDebug("Inserting VM into UI list: ULID {Ulid} at index {Index}", desiredVm.ViewModelId, i);
+                                    vm.Update(playerData);
+                                    _logger.LogTrace("Updating LobbyRoomPlayerViewModel properties on UI thread for ULID {Ulid} (PlayerId {PlayerId})",
+                                        vm.ViewModelId, vm.DataPlayerId);
+                                }
 
-                                        if (i <= _playersInternal.Count)
-                                            _playersInternal.Insert(i, desiredVm);
-                                        else
-                                        {
-                                            _logger.LogError("Internal error: Attempted to insert VM ULID {Ulid} at index {Index} which is out of bounds for list count {Count}",
-                                                desiredVm.ViewModelId, i, _playersInternal.Count);
-                                            _playersInternal.Add(desiredVm); // Fallback add
-                                        }
+                                _logger.LogTrace("Properties updated for {Count} VMs", desiredViewModels.Count);
+                            }
+
+                            _logger.LogTrace("Cache count after additions/updates: {Count}", _viewModelCache.Count);
+
+                            for (int i = 0; i < desiredViewModels.Count; i++)
+                            {
+                                LobbyRoomPlayerViewModel desiredVm = desiredViewModels[i];
+                                int currentIndexInList = -1;
+
+                                for (int j = 0; j < _playersInternal.Count; j++)
+                                {
+                                    if (_playersInternal[j].ViewModelId == desiredVm.ViewModelId)
+                                    {
+                                        currentIndexInList = j;
+                                        break;
                                     }
-                                    else if (currentIndexInList != i)
-                                    {
-                                        _logger.LogDebug("Moving VM in UI list: ULID {Ulid} from index {FromIndex} to index {ToIndex}", desiredVm.ViewModelId, currentIndexInList, i);
+                                }
 
-                                        if (i >= 0 && i < _playersInternal.Count)
-                                        {
-                                            _playersInternal.Move(currentIndexInList, i);
-                                        }
-                                        else
-                                        {
-                                            _logger.LogError("Internal error: Attempted to move VM ULID {Ulid} from index {FromIndex} to invalid target index {ToIndex} for list count {Count}",
-                                                desiredVm.ViewModelId, currentIndexInList, i, _playersInternal.Count);
-                                        }
+                                if (currentIndexInList is -1)
+                                {
+                                    _logger.LogDebug("Inserting VM into UI list: ULID {Ulid} at index {Index}", desiredVm.ViewModelId, i);
+
+                                    if (i <= _playersInternal.Count)
+                                        _playersInternal.Insert(i, desiredVm);
+                                    else
+                                    {
+                                        _logger.LogError("Internal error: Attempted to insert VM ULID {Ulid} at index {Index} which is out of bounds for list count {Count}",
+                                            desiredVm.ViewModelId, i, _playersInternal.Count);
+                                        _playersInternal.Add(desiredVm); // Fallback add
+                                    }
+                                }
+                                else if (currentIndexInList != i)
+                                {
+                                    _logger.LogDebug("Moving VM in UI list: ULID {Ulid} from index {FromIndex} to index {ToIndex}", desiredVm.ViewModelId, currentIndexInList, i);
+
+                                    if (i >= 0 && i < _playersInternal.Count)
+                                    {
+                                        _playersInternal.Move(currentIndexInList, i);
                                     }
                                     else
                                     {
-                                        _logger.LogTrace("VM ULID {Ulid} already in correct position {Index}", desiredVm.ViewModelId, i);
+                                        _logger.LogError("Internal error: Attempted to move VM ULID {Ulid} from index {FromIndex} to invalid target index {ToIndex} for list count {Count}",
+                                            desiredVm.ViewModelId, currentIndexInList, i, _playersInternal.Count);
                                     }
                                 }
-
-                                for (int i = _playersInternal.Count - 1; i >= 0; i--)
+                                else
                                 {
-                                    LobbyRoomPlayerViewModel currentVmInList = _playersInternal[i];
-                                    if (!desiredVmUlids.Contains(currentVmInList.ViewModelId))
-                                    {
-                                        _logger.LogDebug("Removing VM from UI list: ULID {Ulid}", currentVmInList.ViewModelId);
-                                        _playersInternal.RemoveAt(i);
-                                    }
+                                    _logger.LogTrace("VM ULID {Ulid} already in correct position {Index}", desiredVm.ViewModelId, i);
                                 }
+                            }
 
-                                _logger.LogTrace("UI list count after removals: {Count}", _playersInternal.Count);
+                            _logger.LogTrace("UI list count after moves/inserts: {Count}", _playersInternal.Count);
 
-                                if (_playersInternal.Count != desiredViewModels.Count)
-                                    _logger.LogWarning(
-                                        "_playersInternal count ({InternalCount}) differs from desiredViewModels count ({DesiredCount}) after sync. This indicates a potential sync logic error",
-                                        _playersInternal.Count, desiredViewModels.Count);
 
-                                _logger.LogInformation("UI update complete. Players UI list count: {Count}", _playersInternal.Count);
-                            }, cancellationToken)
-                            .ConfigureAwait(false);
+                            for (int i = _playersInternal.Count - 1; i >= 0; i--)
+                            {
+                                LobbyRoomPlayerViewModel currentVmInList = _playersInternal[i];
+                                if (!desiredVmUlids.Contains(currentVmInList.ViewModelId))
+                                {
+                                    _logger.LogDebug("Removing VM from UI list: ULID {Ulid}", currentVmInList.ViewModelId);
+                                    _playersInternal.RemoveAt(i);
+                                }
+                            }
 
-                        _logger.LogInformation("Finished processing lobby room players snapshot cycle");
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        _logger.LogInformation("Lobby room players snapshot processing cancelled");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error during lobby room players snapshot processing cycle");
-                    }
-                }, AwaitOperation.Drop)
-        ];
+                            _logger.LogTrace("UI list count after removals: {Count}", _playersInternal.Count);
+
+                            if (_playersInternal.Count != desiredViewModels.Count)
+                                _logger.LogWarning(
+                                    "_playersInternal count ({InternalCount}) differs from desiredViewModels count ({DesiredCount}) after sync. This indicates a potential sync logic error",
+                                    _playersInternal.Count, desiredViewModels.Count);
+
+                            _logger.LogInformation("UI update complete. Players UI list count: {Count}", _playersInternal.Count);
+                        }, cancellationToken)
+                        .ConfigureAwait(false);
+
+                    _logger.LogInformation("Finished processing lobby room players snapshot cycle");
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogInformation("Lobby room players snapshot processing cancelled");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during lobby room players snapshot processing cycle");
+                }
+            }, AwaitOperation.Drop);
+
+        _subscription = Disposable.Combine(lobbyRoomDataSubscription, lobbyRoomPlayersSubscription);
     }
 
     private static bool IsPlayerActive(DecodedLobbyRoomPlayer player)

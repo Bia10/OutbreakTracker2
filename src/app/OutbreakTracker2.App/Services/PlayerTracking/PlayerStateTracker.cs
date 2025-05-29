@@ -45,7 +45,7 @@ public sealed class PlayerStateTracker : IPlayerStateTracker
             .TrackStatus("Bleed", (_, charName) => ($"{charName} is now BLEEDING!", ToastType.Warning))
             .TrackGeneralChange(
                 (currentPlayer, lastKnownPlayerState) => currentPlayer.CurrentHealth <= 0 && lastKnownPlayerState.CurrentHealth > 0,
-                (currentPlayer) => new PlayerStateChangeEventArgs($"{currentPlayer.CharacterName} health dropped to 0!", "Player Status", ToastType.Error))
+                currentPlayer => new PlayerStateChangeEventArgs($"{currentPlayer.CharacterName} health dropped to 0!", "Player Status", ToastType.Error))
             .BuildRules();
 
         return playerTrackingRules;
