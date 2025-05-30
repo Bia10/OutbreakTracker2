@@ -47,7 +47,10 @@ public sealed class LobbyRoomReader : ReaderBase
         => EnumUtility.GetEnumString(difficulty, RoomDifficulty.Unknown);
 
     public static string GetStatusName(byte status)
-        => EnumUtility.GetEnumString(status, RoomStatus.Unknown);
+    {
+        string result = EnumUtility.GetEnumString(status, RoomStatus.Unknown);
+        return result.Equals("Unknown", StringComparison.OrdinalIgnoreCase) ? $"{result}({status})" : result;
+    }
 
     public string GetScenarioName(short scenarioId)
         => GetScenarioString(scenarioId,

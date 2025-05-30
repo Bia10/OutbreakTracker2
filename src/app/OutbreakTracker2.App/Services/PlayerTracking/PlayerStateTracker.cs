@@ -27,8 +27,7 @@ public sealed class PlayerStateTracker : IPlayerStateTracker
 
                 _lastKnownPlayerStates.TryGetValue(currentPlayer.Id, out DecodedInGamePlayer? lastKnownStateForThisPlayer);
 
-                DecodedInGamePlayer previousState = lastKnownStateForThisPlayer
-                                                    ?? new DecodedInGamePlayer { Id = currentPlayer.Id };
+                DecodedInGamePlayer previousState = lastKnownStateForThisPlayer ?? new DecodedInGamePlayer { Id = currentPlayer.Id };
 
                 IEnumerable<PlayerStateChangeEventArgs> notificationsToAdd =
                     (from rule in trackingRules
@@ -38,7 +37,6 @@ public sealed class PlayerStateTracker : IPlayerStateTracker
 
                 notifications.AddRange(notificationsToAdd);
 
-                // Update the last known state for THIS specific player
                 _lastKnownPlayerStates[currentPlayer.Id] = currentPlayer;
 
                 return notifications.ToObservable();
@@ -52,7 +50,7 @@ public sealed class PlayerStateTracker : IPlayerStateTracker
     {
         IReadOnlyList<PlayerStateTrackingRule> playerTrackingRules = new PlayerStateTrackerBuilder()
             .TrackCondition("danger", (_, charName) => ($"{charName} is now in DANGER!", ToastType.Error))
-            .TrackCondition("down", (_, charName) => ($"{charName} is DOWN!", ToastType.Error))
+            //.TrackCondition("down", (_, charName) => ($"{charName} is DOWN!", ToastType.Error))
             .TrackCondition("gas", (_, charName) => ($"{charName} is gassed!", ToastType.Warning))
             .TrackStatus("Dead", (_, charName) => ($"{charName} has DIED!", ToastType.Error))
             .TrackStatus("Zombie", (_, charName) => ($"{charName} turned into a ZOMBIE!", ToastType.Error))
@@ -62,6 +60,7 @@ public sealed class PlayerStateTracker : IPlayerStateTracker
                 (current, last) => current.CurHealth <= 0 && last.CurHealth > 0,
                 current => new PlayerStateChangeEventArgs($"{current.Name} health dropped to 0!", "Player Died", ToastType.Error))
             .BuildRules();
+
         return playerTrackingRules;
     }
 }

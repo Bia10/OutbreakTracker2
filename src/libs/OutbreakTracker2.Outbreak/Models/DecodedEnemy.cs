@@ -6,7 +6,7 @@ public sealed record DecodedEnemy
 {
     [JsonInclude]
     [JsonPropertyName(nameof(Id))]
-    public Ulid Id { get; set; } = Ulid.NewUlid();
+    public Ulid Id { get; set; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Enabled))]

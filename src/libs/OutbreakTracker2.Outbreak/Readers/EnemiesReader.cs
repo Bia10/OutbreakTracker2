@@ -17,7 +17,8 @@ public class EnemiesReader : ReaderBase
 
     public DecodedEnemy[] DecodedEnemies1 { get; private set; }
 
-    public EnemiesReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
+    public EnemiesReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
+        : base(gameClient, eememMemory, logger)
     {
         DecodedEnemies1 = new DecodedEnemy[GameConstants.MaxEnemies1];
         for (int i = 0; i < GameConstants.MaxEnemies1; i++)
@@ -94,7 +95,7 @@ public class EnemiesReader : ReaderBase
     public static string GetTyrantName(byte typeId)
         => EnumUtility.GetEnumString(typeId, TyrantType.Tyrant);
 
-    public void UpdateEnemies(bool debug = false)
+    public void UpdateEnemies()
     {
         DecodedEnemy[] newDecodedEnemies1 = new DecodedEnemy[GameConstants.MaxEnemies1];
 
@@ -127,6 +128,7 @@ public class EnemiesReader : ReaderBase
         for (int i = 0; i < GameConstants.MaxEnemies2; i++)
         {
             newDecodedEnemies2[i] = new DecodedEnemy();
+            newDecodedEnemies2[i].Id = GetPersistentUlidForEnemies2Slot(i);
 
             int curMobOffset = 0x60 * i;
 
@@ -194,5 +196,18 @@ public class EnemiesReader : ReaderBase
         foreach (string jsonObject in DecodedEnemies2.Select(enemy
                      => JsonSerializer.Serialize(enemy, DecodedEnemyJsonContext.Default.DecodedEnemy)))
             Logger.LogDebug("Decoded enemy: {JsonObject}", jsonObject);
+    }
+
+    private readonly Dictionary<int, Ulid> _enemies2SlotUlids = new();
+
+    private Ulid GetPersistentUlidForEnemies2Slot(int enemies2SlotIndex)
+    {
+        if (_enemies2SlotUlids.TryGetValue(enemies2SlotIndex, out Ulid ulid))
+            return ulid;
+
+        ulid = Ulid.NewUlid();
+        _enemies2SlotUlids.Add(enemies2SlotIndex, ulid);
+
+        return ulid;
     }
 }

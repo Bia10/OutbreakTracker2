@@ -6,7 +6,6 @@ using OutbreakTracker2.PCSX2.Client;
 using OutbreakTracker2.PCSX2.EEmem;
 using R3;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -54,8 +53,8 @@ public sealed class DataManager : IDataManager, IDisposable
     public DecodedLobbyRoomPlayer[] LobbyRoomPlayers => _lobbyRoomPlayersState.Value;
     public DecodedLobbySlot[] LobbySlots => _lobbySlotsState.Value;
 
-    private readonly TimeSpan _fastUpdateInterval = TimeSpan.FromMilliseconds(500);
-    private readonly TimeSpan _slowUpdateInterval = TimeSpan.FromMilliseconds(1000);
+    private readonly TimeSpan _fastUpdateInterval = TimeSpan.FromMilliseconds(250);
+    private readonly TimeSpan _slowUpdateInterval = TimeSpan.FromMilliseconds(500);
 
     public DataManager(ILogger<DataManager> logger, IEEmemMemory eememMemory)
     {
@@ -75,7 +74,7 @@ public sealed class DataManager : IDataManager, IDisposable
 
     private void SetupObservablesLogging()
     {
-        List<IDisposable> subscriptions =
+        IDisposable[] subscriptions =
         [
             DoorsObservable.Do(doors
                     => _logger.LogInformation("Doors data CHANGED: {Count} doors.", doors.Length))
@@ -85,24 +84,23 @@ public sealed class DataManager : IDataManager, IDisposable
                     => _logger.LogInformation("Enemies data CHANGED: {Count} enemies.", enemies.Length))
                 .Subscribe(),
 
-            InGamePlayersObservable.Do(players =>
-            {
-                _logger.LogInformation("InGamePlayers data CHANGED: {Count} players.", players.Length);
-                foreach (DecodedInGamePlayer? player in players)
-                {
-                    if (player is null) continue;
+            InGamePlayersObservable.Do(players
+                    => _logger.LogInformation("InGamePlayers data CHANGED: {Count} players.", players.Length))
+                .Subscribe(),
 
-                    _logger.LogWarning("Player Update - Name: '{Name}', Health:{Health}/{MaxHealth}",
-                        player.Name, player.CurHealth, player.MaxHealth);
-                }
-            }).Subscribe(),
+            InGameScenarioObservable
+                .Select(scenario => scenario.Status)
+                .DistinctUntilChanged()
+                .Do(status => _logger.LogWarning("InGameScenario STATUS CHANGED: {Status}", status))
+                .Subscribe(),
 
-            InGameScenarioObservable.Do(scenario
-                    => _logger.LogInformation("InGameScenario data CHANGED: {ScenarioDetails}", scenario.ToString()))
+            LobbyRoomObservable.Select(lobbyRoom => lobbyRoom.Status)
+                .DistinctUntilChanged()
+                .Do(status => _logger.LogWarning("LobbyRoom STATUS CHANGED: {Status}", status))
                 .Subscribe(),
         ];
 
-        _loggingSubscriptions = Disposable.Combine(subscriptions.ToArray());
+        _loggingSubscriptions = Disposable.Combine(subscriptions);
     }
 
     public async ValueTask InitializeAsync(GameClient gameClient, CancellationToken cancellationToken)

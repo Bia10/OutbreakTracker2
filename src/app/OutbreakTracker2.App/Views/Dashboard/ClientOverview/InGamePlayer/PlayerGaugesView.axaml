@@ -11,14 +11,14 @@
     x:DataType="vm:PlayerGaugesViewModel"
     mc:Ignorable="d">
     <WrapPanel HorizontalAlignment="Left" ItemSpacing="5">
-        <suki:GroupBox MinWidth="140" Header="Health">
+        <suki:GroupBox MinWidth="110" Header="Health">
             <StackPanel
                 Margin="5"
                 HorizontalAlignment="Center"
                 Spacing="4">
                 <suki:CircleProgressBar
                     IsIndeterminate="False"
-                    StrokeWidth="12"
+                    StrokeWidth="10"
                     Value="{Binding HealthPercentage}">
                     <TextBlock
                         Margin="0,2,0,0"
@@ -27,7 +27,7 @@
                         IsVisible="True"
                         Text="{Binding HealthPercentage, StringFormat='{}{0:F2}%'}" />
                 </suki:CircleProgressBar>
-                <TextBlock HorizontalAlignment="Center">
+                <TextBlock HorizontalAlignment="Center" FontSize="12">
                     <Run Text="Cur: " />
                     <Run Text="{Binding CurrentHealth}" />
                     <Run Text="/" />
@@ -36,14 +36,14 @@
                 </TextBlock>
             </StackPanel>
         </suki:GroupBox>
-        <suki:GroupBox MinWidth="140" Header="Virus">
+        <suki:GroupBox MinWidth="110" Header="Virus">
             <StackPanel
                 Margin="5"
                 HorizontalAlignment="Center"
                 Spacing="4">
                 <suki:CircleProgressBar
                     IsIndeterminate="False"
-                    StrokeWidth="12"
+                    StrokeWidth="10"
                     Value="{Binding VirusPercentage}">
                     <TextBlock
                         Margin="0,2,0,0"
@@ -52,7 +52,7 @@
                         IsVisible="True"
                         Text="{Binding VirusPercentage, StringFormat='{}{0:F2}%'}" />
                 </suki:CircleProgressBar>
-                <TextBlock HorizontalAlignment="Center">
+                <TextBlock HorizontalAlignment="Center" FontSize="12">
                     <Run Text="Cur: " />
                     <Run Text="{Binding CurVirus}" />
                     <Run Text="/" />

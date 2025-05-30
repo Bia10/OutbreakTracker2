@@ -13,7 +13,8 @@ public sealed class DoorReader : ReaderBase
 {
     public DecodedDoor[] DecodedDoors { get; private set; }
 
-    public DoorReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
+    public DoorReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
+        : base(gameClient, eememMemory, logger)
     {
         DecodedDoors = new DecodedDoor[GameConstants.MaxDoors];
         for (int i = 0; i < GameConstants.MaxDoors; i++)
@@ -78,8 +79,11 @@ public sealed class DoorReader : ReaderBase
 
         for (int i = 0; i < maxDoors; i++)
         {
+            Ulid doorUlid = GetPersistentUlidForDoorSlot(i);
+
             newDecodedDoors[i] = new DecodedDoor
             {
+                Id = doorUlid,
                 Hp = GetHealthPoints(i),
                 Flag = GetFlag(i),
                 Status = DecodeFlag(GetHealthPoints(i), GetFlag(i))
@@ -96,5 +100,18 @@ public sealed class DoorReader : ReaderBase
         foreach (string jsonObject in DecodedDoors.Select(door
                      => JsonSerializer.Serialize(door, DecodedDoorJsonContext.Default.DecodedDoor)))
             Logger.LogDebug("Decoded door: {JsonObject}", jsonObject);
+    }
+
+    private readonly Dictionary<int, Ulid> _doorSlotUlids = new();
+
+    private Ulid GetPersistentUlidForDoorSlot(int doorSlotIndex)
+    {
+        if (_doorSlotUlids.TryGetValue(doorSlotIndex, out Ulid ulid))
+            return ulid;
+
+        ulid = Ulid.NewUlid();
+        _doorSlotUlids.Add(doorSlotIndex, ulid);
+
+        return ulid;
     }
 }

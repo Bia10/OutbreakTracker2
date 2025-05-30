@@ -290,6 +290,8 @@ public partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
 
     private void UpdateLobbyProperties(DecodedLobbyRoom model)
     {
+        if (model.CurPlayer is <= 0 or > 4) return;
+
         Status = model.Status;
         TimeLeft = model.TimeLeft;
         MaxPlayer = model.MaxPlayer;
@@ -297,14 +299,17 @@ public partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
         Difficulty = model.Difficulty;
         ScenarioName = model.ScenarioName;
 
-        if (EnumUtility.TryParseByValueOrMember(ScenarioName, out Scenario scenarioType))
+        if (!string.IsNullOrEmpty(ScenarioName))
         {
-            _ = ScenarioImageViewModel.UpdateImageAsync(scenarioType);
-        }
-        else
-        {
-            _logger.LogWarning("ScenarioName '{ScenarioName}' could not be parsed to a ScenarioType. Displaying default image", ScenarioName);
-            _ = ScenarioImageViewModel.UpdateToDefaultImageAsync();
+            if (EnumUtility.TryParseByValueOrMember(ScenarioName, out Scenario scenarioType))
+            {
+                _ = ScenarioImageViewModel.UpdateImageAsync(scenarioType);
+            }
+            else
+            {
+                _logger.LogWarning("ScenarioName '{ScenarioName}' could not be parsed to a ScenarioType. Displaying default image", ScenarioName);
+                _ = ScenarioImageViewModel.UpdateToDefaultImageAsync();
+            }
         }
 
         OnPropertyChanged(nameof(PlayersDisplay));

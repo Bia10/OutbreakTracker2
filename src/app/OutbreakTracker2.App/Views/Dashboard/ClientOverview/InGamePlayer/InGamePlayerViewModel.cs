@@ -79,7 +79,7 @@ public partial class InGamePlayerViewModel : ObservableObject
     {
         UniqueNameId = player.NameId > 0
             ? $"NameId_{player.NameId}"
-            : $"Ulid_{player.Id}"; // Now using player.Id for uniqueness when NameId is 0
+            : $"Ulid_{player.Id}";
 
         CharacterName = player.Name;
         NameId = player.NameId;

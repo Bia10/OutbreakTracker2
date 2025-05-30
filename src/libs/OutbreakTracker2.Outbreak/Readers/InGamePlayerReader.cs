@@ -15,7 +15,8 @@ public class InGamePlayerReader : ReaderBase
 {
     public DecodedInGamePlayer[] DecodedInGamePlayers { get; private set; }
 
-    public InGamePlayerReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
+    public InGamePlayerReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
+        : base(gameClient, eememMemory, logger)
     {
         DecodedInGamePlayers = new DecodedInGamePlayer[GameConstants.MaxPlayers];
         for (int i = 0; i < GameConstants.MaxPlayers; i++)
@@ -344,6 +345,7 @@ public class InGamePlayerReader : ReaderBase
                 RoomId = GetRoomId(i),
                 CurHealth = GetCurHealth(i),
                 MaxHealth = GetMaxHealth(i),
+                HealthPercentage = GetHealthPercentage(GetCurHealth(i), GetMaxHealth(i)),
                 Type = GetCharacterTypeFromTypeId(GetType(i)),
                 EquippedItem = GetEquippedItem(i),
                 Inventory = GetInventory(i),
@@ -362,6 +364,7 @@ public class InGamePlayerReader : ReaderBase
                 PositionY = GetPositionY(i),
                 CurVirus = GetCurVirus(i),
                 MaxVirus = GetMaxVirus(i),
+                VirusPercentage = GetVirusPercentage(GetCurVirus(i), GetMaxVirus(i)),
                 CritBonus = GetCritBonus(i),
                 Name = GetCharacterName(GetNameId(i), GetCharacterTypeFromTypeId(GetType(i))),
                 Status = DecodeStatusText(GetStatus(i)),
@@ -383,13 +386,13 @@ public class InGamePlayerReader : ReaderBase
 
     private readonly Dictionary<int, Ulid> _playerSlotUlids = new();
 
-    private Ulid GetPersistentUlidForPlayerSlot(int characterId)
+    private Ulid GetPersistentUlidForPlayerSlot(int playerSlotIndex)
     {
-        if (_playerSlotUlids.TryGetValue(characterId, out Ulid ulid))
+        if (_playerSlotUlids.TryGetValue(playerSlotIndex, out Ulid ulid))
             return ulid;
 
         ulid = Ulid.NewUlid();
-        _playerSlotUlids.Add(characterId, ulid);
+        _playerSlotUlids.Add(playerSlotIndex, ulid);
 
         return ulid;
     }
