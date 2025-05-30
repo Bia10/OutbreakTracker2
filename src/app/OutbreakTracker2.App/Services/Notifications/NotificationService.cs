@@ -1,4 +1,6 @@
-﻿using OutbreakTracker2.App.Services.PlayerTracking;
+﻿using Microsoft.Extensions.Logging;
+using OutbreakTracker2.App.Services.Data;
+using OutbreakTracker2.App.Services.PlayerTracking;
 using OutbreakTracker2.App.Services.Toasts;
 using R3;
 using System;
@@ -7,11 +9,16 @@ namespace OutbreakTracker2.App.Services.Notifications;
 
 public sealed class NotificationService : IDisposable
 {
-    private readonly IDisposable _subscription;
+    private readonly IDisposable _playerStateChangeSubscription;
+    private readonly IDisposable _dataManagerSubscription;
 
-    public NotificationService(IToastService toastService, IPlayerStateTracker playerStateTracker)
+    public NotificationService(
+        IToastService toastService,
+        IPlayerStateTracker playerStateTracker,
+        IDataManager dataManager,
+        ILogger<NotificationService> logger)
     {
-        _subscription = playerStateTracker.PlayerStateChanges
+        _playerStateChangeSubscription = playerStateTracker.PlayerStateChanges
             .Subscribe(playerStateChangedEvent =>
             {
                 _ = playerStateChangedEvent.Type switch
@@ -23,10 +30,17 @@ public sealed class NotificationService : IDisposable
                     _ => toastService.InvokeInfoToastAsync(playerStateChangedEvent.Message, playerStateChangedEvent.Title)
                 };
             });
+
+        _dataManagerSubscription = dataManager.InGamePlayersObservable
+            .SelectMany(players => players.ToObservable())
+            .Subscribe(playerStateTracker.PublishPlayerUpdate,
+                ex => logger.LogError("Error processing player updates for notifications")
+            );
     }
 
     public void Dispose()
     {
-        _subscription.Dispose();
+        _playerStateChangeSubscription.Dispose();
+        _dataManagerSubscription.Dispose();
     }
 }

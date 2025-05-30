@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.App.Services.Data;
-using OutbreakTracker2.App.Services.PlayerTracking;
 using OutbreakTracker2.App.Views.Common.Character;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory.Factory;
 using OutbreakTracker2.Outbreak.Models;
@@ -13,21 +12,18 @@ public class InGamePlayerViewModelFactory : IInGamePlayerViewModelFactory
     private readonly ILogger<InGamePlayerViewModelFactory> _logger;
     private readonly IDataManager _dataManager;
     private readonly ICharacterBustViewModelFactory _characterBustViewModelFactory;
-private readonly IItemSlotViewModelFactory _itemSlotViewModelFactory;
-private readonly IPlayerStateTracker _playerStateTracker;
+    private readonly IItemSlotViewModelFactory _itemSlotViewModelFactory;
 
     public InGamePlayerViewModelFactory(
         ILogger<InGamePlayerViewModelFactory> logger,
         IDataManager dataManager,
         ICharacterBustViewModelFactory characterBustViewModelFactory,
-        IItemSlotViewModelFactory itemSlotViewModelFactory,
-        IPlayerStateTracker playerStateTracker)
+        IItemSlotViewModelFactory itemSlotViewModelFactory)
     {
         _logger = logger;
         _dataManager = dataManager;
         _characterBustViewModelFactory = characterBustViewModelFactory;
         _itemSlotViewModelFactory = itemSlotViewModelFactory;
-        _playerStateTracker = playerStateTracker;
     }
 
     public InGamePlayerViewModel Create(DecodedInGamePlayer playerData)
@@ -38,6 +34,6 @@ private readonly IPlayerStateTracker _playerStateTracker;
             throw new ArgumentNullException(nameof(playerData));
         }
 
-        return new InGamePlayerViewModel(playerData, _dataManager, _characterBustViewModelFactory, _itemSlotViewModelFactory, _playerStateTracker);
+        return new InGamePlayerViewModel(playerData, _dataManager, _characterBustViewModelFactory, _itemSlotViewModelFactory);
     }
 }

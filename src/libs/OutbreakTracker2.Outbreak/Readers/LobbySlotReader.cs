@@ -14,7 +14,7 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public sealed class LobbySlotReader : ReaderBase
 {
-    public DecodedLobbySlot[] DecodedLobbySlots { get; }
+    public DecodedLobbySlot[] DecodedLobbySlots { get; private set; }
 
     public LobbySlotReader(GameClient gameClient, IEEmemMemory memory, ILogger logger) : base(
         gameClient, memory, logger)
@@ -67,17 +67,18 @@ public sealed class LobbySlotReader : ReaderBase
         long start = Environment.TickCount64;
         List<string> errors = [];
 
+        DecodedLobbySlot[] newLobbySlotsData = new DecodedLobbySlot[GameConstants.MaxLobbySlots];
+
         for (int i = 0; i < GameConstants.MaxLobbySlots; i++)
         {
             if (debug) Logger.LogDebug("Decoding lobby at slot index: {SlotIndex}", i);
 
-            // TODO: reads wrong values
             byte passStatus = GetPass(i);
             Logger.LogDebug("Decoding lobby at slot index: {SlotIndex} current pass status: {PassStatus}", i, passStatus);
 
             try
             {
-                DecodedLobbySlots[i] = new DecodedLobbySlot
+                newLobbySlotsData[i] = new DecodedLobbySlot
                 {
                     SlotNumber = GetIndex(i),
                     CurPlayers = GetCurPlayers(i),
@@ -102,6 +103,8 @@ public sealed class LobbySlotReader : ReaderBase
             for (int i = 0; i < errors.Count; i++)
                 Logger.LogError("Error {I}: {Error}", i, errors[i]);
         }
+
+        DecodedLobbySlots = newLobbySlotsData;
 
         long duration = Environment.TickCount64 - start;
         if (!debug) return;

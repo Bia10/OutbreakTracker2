@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.App.Services.Data;
-using OutbreakTracker2.App.Services.PlayerTracking;
 using OutbreakTracker2.App.Views.Common.Character;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.Inventory.Factory;
@@ -52,14 +51,12 @@ public partial class InGamePlayerViewModel : ObservableObject
     private CharacterBustViewModel _playerBustViewModel;
 
     private readonly IDataManager _dataManager;
-    private readonly IPlayerStateTracker _playerStateTracker;
 
     public InGamePlayerViewModel(
         DecodedInGamePlayer player,
         IDataManager dataManager,
         ICharacterBustViewModelFactory characterBustViewModelFactory,
-        IItemSlotViewModelFactory itemSlotViewModelFactory,
-        IPlayerStateTracker playerStateTracker)
+        IItemSlotViewModelFactory itemSlotViewModelFactory)
     {
         _dataManager = dataManager;
         _gauges = new PlayerGaugesViewModel();
@@ -69,7 +66,6 @@ public partial class InGamePlayerViewModel : ObservableObject
         _position = new PlayerPositionViewModel(dataManager);
         _inventory = new InventoryViewModel(player, dataManager, itemSlotViewModelFactory);
         _playerBustViewModel = characterBustViewModelFactory.Create();
-        _playerStateTracker = playerStateTracker;
 
         Update(player);
     }
@@ -77,22 +73,21 @@ public partial class InGamePlayerViewModel : ObservableObject
     public void Update(DecodedInGamePlayer player)
     {
         UpdateProperties(player);
-        _playerStateTracker.PublishPlayerUpdate(player);
     }
 
     private void UpdateProperties(DecodedInGamePlayer player)
     {
         UniqueNameId = player.NameId > 0
             ? $"NameId_{player.NameId}"
-            : $"CharacterType_{player.CharacterType}";
+            : $"Ulid_{player.Id}"; // Now using player.Id for uniqueness when NameId is 0
 
-        CharacterName = player.CharacterName;
+        CharacterName = player.Name;
         NameId = player.NameId;
-        CharacterType = player.CharacterType;
-        IsEnabled = player.Enabled;
-        IsInGame = player.InGame;
+        CharacterType = player.Type;
+        IsEnabled = player.IsEnabled;
+        IsInGame = player.IsInGame;
 
-        Gauges.Update(player.CurrentHealth, player.MaximumHealth, player.HealthPercentage, player.CurVirus, player.MaxVirus, player.VirusPercentage);
+        Gauges.Update(player.CurHealth, player.MaxHealth, player.HealthPercentage, player.CurVirus, player.MaxVirus, player.VirusPercentage);
         StatusEffects.Update(player.BleedTime, player.AntiVirusTime, player.AntiVirusGTime, player.HerbTime, player.Status, _dataManager.InGameScenario.CurrentFile);
         Conditions.Update(player.Condition, player.Status);
         Attributes.Update(player.CritBonus, player.Size, player.Power, player.Speed);

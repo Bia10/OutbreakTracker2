@@ -49,7 +49,7 @@ public partial class InventoryViewModel : ObservableObject
         IItemSlotViewModelFactory itemSlotViewModelFactory)
     {
         _playerStatus = player.Status;
-        _playerName = player.CharacterName;
+        _playerName = player.Name;
         _dataManager = dataManager;
         _itemSlotViewModelFactory = itemSlotViewModelFactory;
 

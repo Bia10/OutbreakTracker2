@@ -14,7 +14,7 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public sealed class LobbyRoomReader : ReaderBase
 {
-    public DecodedLobbyRoom DecodedLobbyRoom { get; set; }
+    public DecodedLobbyRoom DecodedLobbyRoom { get; private set; }
 
     public LobbyRoomReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
         : base(gameClient, eememMemory, logger)

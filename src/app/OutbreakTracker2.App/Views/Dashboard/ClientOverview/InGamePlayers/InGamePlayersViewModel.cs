@@ -54,7 +54,8 @@ public class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
 
                     Dictionary<string, DecodedInGamePlayer> incomingPlayerDataMap = filteredIncomingPlayers
                         .AsValueEnumerable()
-                        .ToDictionary(player => player.NameId > 0 ? $"NameId_{player.NameId}" : $"CharacterType_{player.CharacterType}");
+                        .ToDictionary(player => player.NameId > 0 ? $"NameId_{player.NameId}" : $"Ulid_{player.Id}");
+
 
                     List<InGamePlayerViewModel> desiredViewModels = new(filteredIncomingPlayers.Count);
 
@@ -63,7 +64,7 @@ public class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
                         ct.ThrowIfCancellationRequested();
                         string playerUniqueId = incomingPlayer.NameId > 0
                             ? $"NameId_{incomingPlayer.NameId}"
-                            : $"CharacterType_{incomingPlayer.CharacterType}";
+                            : $"Ulid_{incomingPlayer.Id}";
 
                         if (_viewModelCache.TryGetValue(playerUniqueId, out InGamePlayerViewModel? existingVm))
                         {
@@ -159,8 +160,12 @@ public class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
             }, AwaitOperation.Drop);
     }
 
-    private static bool IsPlayerActive(DecodedInGamePlayer player)
-        => player.NameId > 0 || (player.NameId is 0 && !string.IsNullOrEmpty(player.CharacterType));
+    private static bool IsPlayerActive(DecodedInGamePlayer? player)
+    {
+        if (player is null) return false;
+
+        return player.NameId > 0 || (player.NameId is 0 && !string.IsNullOrEmpty(player.Type));
+    }
 
     public async ValueTask DisposeAsync()
     {

@@ -28,7 +28,7 @@ public sealed class ConditionTrackingRule : PlayerStateTrackingRule
 
     public override PlayerStateChangeEventArgs CreateNotification(DecodedInGamePlayer currentPlayer)
     {
-        var (message, type) = _toastDetailsFactory(currentPlayer.Condition, currentPlayer.CharacterName);
+        var (message, type) = _toastDetailsFactory(currentPlayer.Condition, currentPlayer.Name);
         return new PlayerStateChangeEventArgs(message, "Condition Update", type);
     }
 }
@@ -52,7 +52,7 @@ public sealed class StatusTrackingRule : PlayerStateTrackingRule
 
     public override PlayerStateChangeEventArgs CreateNotification(DecodedInGamePlayer currentPlayer)
     {
-        var (message, type) = _toastDetailsFactory(currentPlayer.Status, currentPlayer.CharacterName);
+        var (message, type) = _toastDetailsFactory(currentPlayer.Status, currentPlayer.Name);
         return new PlayerStateChangeEventArgs(message, "Status Update", type);
     }
 }

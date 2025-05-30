@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
+using OutbreakTracker2.App.Comparers;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Readers;
 using OutbreakTracker2.PCSX2.Client;
 using OutbreakTracker2.PCSX2.EEmem;
 using R3;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,8 +17,8 @@ public sealed class DataManager : IDataManager, IDisposable
     private readonly ILogger<IDataManager> _logger;
     private readonly IEEmemMemory _eememMemory;
     private GameClient? _gameClient;
-
     private IDisposable? _updateSubscription;
+    private IDisposable? _loggingSubscriptions;
 
     private DoorReader? _doorReader;
     private EnemiesReader? _enemiesReader;
@@ -26,31 +28,31 @@ public sealed class DataManager : IDataManager, IDisposable
     private LobbyRoomReader? _lobbyRoomReader;
     private LobbySlotReader? _lobbySlotReader;
 
-    private readonly Subject<DecodedDoor[]> _doorsSubject = new();
-    private readonly Subject<DecodedEnemy[]> _enemiesSubject = new();
-    private readonly Subject<DecodedInGamePlayer[]> _inGamePlayersSubject = new();
-    private readonly Subject<DecodedInGameScenario> _inGameScenarioSubject = new();
-    private readonly Subject<DecodedLobbyRoom> _lobbyRoomSubject = new();
-    private readonly Subject<DecodedLobbyRoomPlayer[]> _lobbyRoomPlayersSubject = new();
-    private readonly Subject<DecodedLobbySlot[]> _lobbySlotsSubject = new();
+    private readonly ReactiveProperty<DecodedDoor[]> _doorsState = new([]);
+    private readonly ReactiveProperty<DecodedEnemy[]> _enemiesState = new([]);
+    private readonly ReactiveProperty<DecodedInGamePlayer[]> _inGamePlayersState = new([]);
+    private readonly ReactiveProperty<DecodedInGameScenario> _inGameScenarioState = new(new DecodedInGameScenario());
+    private readonly ReactiveProperty<DecodedLobbyRoom> _lobbyRoomState = new(new DecodedLobbyRoom());
+    private readonly ReactiveProperty<DecodedLobbyRoomPlayer[]> _lobbyRoomPlayersState = new([]);
+    private readonly ReactiveProperty<DecodedLobbySlot[]> _lobbySlotsState = new([]);
 
-    public bool IsInitialized { get; private set; }
+    private bool IsInitialized { get; set; }
 
-    public Observable<DecodedDoor[]> DoorsObservable { get; private set; } = Observable.Empty<DecodedDoor[]>();
-    public Observable<DecodedEnemy[]> EnemiesObservable { get; private set; } = Observable.Empty<DecodedEnemy[]>();
-    public Observable<DecodedInGamePlayer[]> InGamePlayersObservable { get; private set; } = Observable.Empty<DecodedInGamePlayer[]>();
-    public Observable<DecodedInGameScenario> InGameScenarioObservable { get; private set; } = Observable.Empty<DecodedInGameScenario>();
-    public Observable<DecodedLobbyRoom> LobbyRoomObservable { get; private set; } = Observable.Empty<DecodedLobbyRoom>();
-    public Observable<DecodedLobbyRoomPlayer[]> LobbyRoomPlayersObservable { get; private set; } = Observable.Empty<DecodedLobbyRoomPlayer[]>();
-    public Observable<DecodedLobbySlot[]> LobbySlotsObservable { get; private set; } = Observable.Empty<DecodedLobbySlot[]>();
+    public Observable<DecodedDoor[]> DoorsObservable { get; }
+    public Observable<DecodedEnemy[]> EnemiesObservable { get; }
+    public Observable<DecodedInGamePlayer[]> InGamePlayersObservable { get; }
+    public Observable<DecodedInGameScenario> InGameScenarioObservable { get; }
+    public Observable<DecodedLobbyRoom> LobbyRoomObservable { get; }
+    public Observable<DecodedLobbyRoomPlayer[]> LobbyRoomPlayersObservable { get; }
+    public Observable<DecodedLobbySlot[]> LobbySlotsObservable { get; }
 
-    public DecodedDoor[] Doors => _doorReader?.DecodedDoors ?? [];
-    public DecodedEnemy[] Enemies => _enemiesReader?.DecodedEnemies2 ?? [];
-    public DecodedInGamePlayer[] InGamePlayers => _inGamePlayerReader?.DecodedInGamePlayers ?? [];
-    public DecodedInGameScenario InGameScenario => _inGameScenarioReader?.DecodedScenario ?? new DecodedInGameScenario();
-    public DecodedLobbyRoom LobbyRoom => _lobbyRoomReader?.DecodedLobbyRoom ?? new DecodedLobbyRoom();
-    public DecodedLobbyRoomPlayer[] LobbyRoomPlayers => _lobbyRoomPlayerReader?.DecodedLobbyRoomPlayers ?? [];
-    public DecodedLobbySlot[] LobbySlots => _lobbySlotReader?.DecodedLobbySlots ?? [];
+    public DecodedDoor[] Doors => _doorsState.Value;
+    public DecodedEnemy[] Enemies => _enemiesState.Value;
+    public DecodedInGamePlayer[] InGamePlayers => _inGamePlayersState.Value;
+    public DecodedInGameScenario InGameScenario => _inGameScenarioState.Value;
+    public DecodedLobbyRoom LobbyRoom => _lobbyRoomState.Value;
+    public DecodedLobbyRoomPlayer[] LobbyRoomPlayers => _lobbyRoomPlayersState.Value;
+    public DecodedLobbySlot[] LobbySlots => _lobbySlotsState.Value;
 
     private readonly TimeSpan _fastUpdateInterval = TimeSpan.FromMilliseconds(500);
     private readonly TimeSpan _slowUpdateInterval = TimeSpan.FromMilliseconds(1000);
@@ -59,18 +61,48 @@ public sealed class DataManager : IDataManager, IDisposable
     {
         _logger = logger;
         _eememMemory = eememMemory;
-        SetupObservables();
+
+        DoorsObservable = _doorsState.DistinctUntilChanged(new ArraySequenceComparer<DecodedDoor>());
+        EnemiesObservable = _enemiesState.DistinctUntilChanged(new ArraySequenceComparer<DecodedEnemy>());
+        InGamePlayersObservable = _inGamePlayersState.DistinctUntilChanged(new ArraySequenceComparer<DecodedInGamePlayer>());
+        InGameScenarioObservable = _inGameScenarioState.DistinctUntilChanged();
+        LobbyRoomObservable = _lobbyRoomState.DistinctUntilChanged();
+        LobbyRoomPlayersObservable = _lobbyRoomPlayersState.DistinctUntilChanged(new ArraySequenceComparer<DecodedLobbyRoomPlayer>());
+        LobbySlotsObservable = _lobbySlotsState.DistinctUntilChanged(new ArraySequenceComparer<DecodedLobbySlot>());
+
+        SetupObservablesLogging();
     }
 
-    private void SetupObservables()
+    private void SetupObservablesLogging()
     {
-        DoorsObservable = _doorsSubject.AsObservable();
-        EnemiesObservable = _enemiesSubject.AsObservable();
-        InGamePlayersObservable = _inGamePlayersSubject.AsObservable();
-        InGameScenarioObservable = _inGameScenarioSubject.AsObservable();
-        LobbyRoomObservable = _lobbyRoomSubject.AsObservable();
-        LobbyRoomPlayersObservable = _lobbyRoomPlayersSubject.AsObservable();
-        LobbySlotsObservable = _lobbySlotsSubject.AsObservable();
+        List<IDisposable> subscriptions =
+        [
+            DoorsObservable.Do(doors
+                    => _logger.LogInformation("Doors data CHANGED: {Count} doors.", doors.Length))
+                .Subscribe(),
+
+            EnemiesObservable.Do(enemies
+                    => _logger.LogInformation("Enemies data CHANGED: {Count} enemies.", enemies.Length))
+                .Subscribe(),
+
+            InGamePlayersObservable.Do(players =>
+            {
+                _logger.LogInformation("InGamePlayers data CHANGED: {Count} players.", players.Length);
+                foreach (DecodedInGamePlayer? player in players)
+                {
+                    if (player is null) continue;
+
+                    _logger.LogWarning("Player Update - Name: '{Name}', Health:{Health}/{MaxHealth}",
+                        player.Name, player.CurHealth, player.MaxHealth);
+                }
+            }).Subscribe(),
+
+            InGameScenarioObservable.Do(scenario
+                    => _logger.LogInformation("InGameScenario data CHANGED: {ScenarioDetails}", scenario.ToString()))
+                .Subscribe(),
+        ];
+
+        _loggingSubscriptions = Disposable.Combine(subscriptions.ToArray());
     }
 
     public async ValueTask InitializeAsync(GameClient gameClient, CancellationToken cancellationToken)
@@ -107,18 +139,9 @@ public sealed class DataManager : IDataManager, IDisposable
             .ObserveOnThreadPool()
             .SubscribeAwait(async ValueTask (_, ct) =>
             {
-                try
-                {
-                    await UpdateCoreGameDataAsync(ct).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    _logger.LogTrace("Fast update cancelled");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error during fast update cycle");
-                }
+                try { await UpdateCoreGameDataAsync(ct).ConfigureAwait(false); }
+                catch (OperationCanceledException) { _logger.LogTrace("Fast update cancelled"); }
+                catch (Exception ex) { _logger.LogError(ex, "Error during fast update cycle"); }
             }, AwaitOperation.Drop);
 
         IDisposable slowSubscription = slowUpdateTrigger
@@ -126,18 +149,9 @@ public sealed class DataManager : IDataManager, IDisposable
             .ObserveOnThreadPool()
             .SubscribeAwait(async ValueTask (_, ct) =>
             {
-                try
-                {
-                    await UpdateLobbyDataAsync(ct).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    _logger.LogTrace("Slow update cancelled");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error during slow update cycle");
-                }
+                try { await UpdateLobbyDataAsync(ct).ConfigureAwait(false); }
+                catch (OperationCanceledException) { _logger.LogTrace("Slow update cancelled"); }
+                catch (Exception ex) { _logger.LogError(ex, "Error during slow update cycle"); }
             }, AwaitOperation.Drop);
 
         _updateSubscription = Disposable.Combine(fastSubscription, slowSubscription);
@@ -146,23 +160,60 @@ public sealed class DataManager : IDataManager, IDisposable
         _logger.LogInformation("Data manager has been initialized and update loop started");
     }
 
+    public void UpdateDoors()
+    {
+        _doorReader?.UpdateDoors();
+        _doorsState.Value = _doorReader?.DecodedDoors ?? [];
+    }
+
+    public void UpdateEnemies()
+    {
+        _enemiesReader?.UpdateEnemies2();
+        _enemiesState.Value = _enemiesReader?.DecodedEnemies2 ?? [];
+    }
+
+    public void UpdateInGamePlayer()
+    {
+        _inGamePlayerReader?.UpdateInGamePlayers();
+        _inGamePlayersState.Value = _inGamePlayerReader?.DecodedInGamePlayers ?? [];
+    }
+
+    public void UpdateInGameScenario()
+    {
+        _inGameScenarioReader?.UpdateScenario();
+        _inGameScenarioState.Value = _inGameScenarioReader?.DecodedScenario ?? new DecodedInGameScenario();
+    }
+
+    public void UpdateLobbyRoom()
+    {
+        _lobbyRoomReader?.UpdateLobbyRoom();
+        _lobbyRoomState.Value = _lobbyRoomReader?.DecodedLobbyRoom ?? new DecodedLobbyRoom();
+    }
+
+    public void UpdateLobbyRoomPlayers()
+    {
+        _lobbyRoomPlayerReader?.UpdateRoomPlayers();
+        _lobbyRoomPlayersState.Value = _lobbyRoomPlayerReader?.DecodedLobbyRoomPlayers ?? [];
+    }
+
+    public void UpdateLobbySlots()
+    {
+        _lobbySlotReader?.UpdateLobbySlots();
+        _lobbySlotsState.Value = _lobbySlotReader?.DecodedLobbySlots ?? [];
+    }
+
     private ValueTask UpdateCoreGameDataAsync(CancellationToken cancellationToken)
     {
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
-
             UpdateInGameScenario();
             UpdateDoors();
             UpdateEnemies();
             UpdateInGamePlayer();
-
             return ValueTask.CompletedTask;
         }
-        catch (OperationCanceledException ex)
-        {
-            return ValueTask.FromCanceled(ex.CancellationToken);
-        }
+        catch (OperationCanceledException ex) { return ValueTask.FromCanceled(ex.CancellationToken); }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred during core game data update.");
@@ -175,17 +226,12 @@ public sealed class DataManager : IDataManager, IDisposable
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
-
             UpdateLobbyRoom();
             UpdateLobbyRoomPlayers();
             UpdateLobbySlots();
-
             return ValueTask.CompletedTask;
         }
-        catch (OperationCanceledException ex)
-        {
-            return ValueTask.FromCanceled(ex.CancellationToken);
-        }
+        catch (OperationCanceledException ex) { return ValueTask.FromCanceled(ex.CancellationToken); }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred during lobby data update.");
@@ -193,93 +239,21 @@ public sealed class DataManager : IDataManager, IDisposable
         }
     }
 
-    public void UpdateDoors()
-    {
-        _doorReader?.UpdateDoors();
-        _doorsSubject.OnNext(_doorReader?.DecodedDoors ?? []);
-    }
-
-    public void UpdateEnemies()
-    {
-        _enemiesReader?.UpdateEnemies2();
-        _enemiesSubject.OnNext(_enemiesReader?.DecodedEnemies2 ?? []);
-    }
-
-    public void UpdateInGamePlayer()
-    {
-        _inGamePlayerReader?.UpdateInGamePlayers();
-
-        DecodedInGamePlayer[]? decodedPlayers = _inGamePlayerReader?.DecodedInGamePlayers;
-
-        if (decodedPlayers is null)
-        {
-            _logger.LogWarning("DataManager is about to emit 0 players because the decoded players array is null");
-            _inGamePlayersSubject.OnNext([]);
-            return;
-        }
-
-        _logger.LogDebug("DataManager is about to emit {Count} players", decodedPlayers.Length);
-
-        foreach (DecodedInGamePlayer player in decodedPlayers)
-            _logger.LogTrace(
-                "DataManager Emitting Player - Name: '{Name}', Pos({X:F2}, {Y:F2}), Health:{Health}/{MaxHealth}({HealthPct:F2}%), Status:'{Status}', Condition:'{Condition}'",
-                player.CharacterName, player.PositionX, player.PositionY, player.CurrentHealth, player.MaximumHealth, player.HealthPercentage, player.Status, player.Condition);
-
-        _inGamePlayersSubject.OnNext(decodedPlayers);
-    }
-
-    public void UpdateInGameScenario()
-    {
-        _inGameScenarioReader?.UpdateScenario();
-        _inGameScenarioSubject.OnNext(_inGameScenarioReader?.DecodedScenario ?? new DecodedInGameScenario());
-    }
-
-    public void UpdateLobbyRoom()
-    {
-        _lobbyRoomReader?.UpdateLobbyRoom();
-        _lobbyRoomSubject.OnNext(_lobbyRoomReader?.DecodedLobbyRoom ?? new DecodedLobbyRoom());
-    }
-
-    public void UpdateLobbyRoomPlayers()
-    {
-        _lobbyRoomPlayerReader?.UpdateRoomPlayers();
-        _lobbyRoomPlayersSubject.OnNext(_lobbyRoomPlayerReader?.DecodedLobbyRoomPlayers ?? []);
-    }
-
-    public void UpdateLobbySlots()
-    {
-        _lobbySlotReader?.UpdateLobbySlots();
-        _lobbySlotsSubject.OnNext(_lobbySlotReader?.DecodedLobbySlots ?? []);
-    }
-
-    private bool IsInScenario()
-        => _inGameScenarioReader is not null && _inGameScenarioReader.IsInScenario();
+    private bool IsInScenario() => _inGameScenarioReader is not null && _inGameScenarioReader.IsInScenario();
 
     public void Dispose()
     {
         _logger.LogInformation("Disposing DataManager...");
         _updateSubscription?.Dispose();
+        _loggingSubscriptions?.Dispose();
 
-        _doorsSubject.OnCompleted();
-        _doorsSubject.Dispose();
-
-        _enemiesSubject.OnCompleted();
-        _enemiesSubject.Dispose();
-
-        _inGamePlayersSubject.OnCompleted();
-        _inGamePlayersSubject.Dispose();
-
-        _inGameScenarioSubject.OnCompleted();
-        _inGameScenarioSubject.Dispose();
-
-        _lobbyRoomSubject.OnCompleted();
-        _lobbyRoomSubject.Dispose();
-
-        _lobbyRoomPlayersSubject.OnCompleted();
-        _lobbyRoomPlayersSubject.Dispose();
-
-        _lobbySlotsSubject.OnCompleted();
-        _lobbySlotsSubject.Dispose();
+        _doorsState.Dispose();
+        _enemiesState.Dispose();
+        _inGamePlayersState.Dispose();
+        _inGameScenarioState.Dispose();
+        _lobbyRoomState.Dispose();
+        _lobbyRoomPlayersState.Dispose();
+        _lobbySlotsState.Dispose();
 
         IsInitialized = false;
         _logger.LogInformation("DataManager disposed");

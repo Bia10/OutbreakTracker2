@@ -13,7 +13,7 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public class InGamePlayerReader : ReaderBase
 {
-    public DecodedInGamePlayer[] DecodedInGamePlayers { get; }
+    public DecodedInGamePlayer[] DecodedInGamePlayers { get; private set; }
 
     public InGamePlayerReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
     {
@@ -328,49 +328,69 @@ public class InGamePlayerReader : ReaderBase
 
         if (debug) Logger.LogDebug("Decoding in-game players");
 
+        DecodedInGamePlayer[] newDecodedInGamePlayers = new DecodedInGamePlayer[GameConstants.MaxPlayers];
+
         for (int i = 0; i < GameConstants.MaxPlayers; i++)
         {
-            DecodedInGamePlayers[i].Enabled = GetIsEnabled(i);
-            if (!DecodedInGamePlayers[i].Enabled) continue;
+            if (GetIsEnabled(i) is false) continue;
 
-            DecodedInGamePlayers[i].InGame = GetIsInGame(i);
-            DecodedInGamePlayers[i].CurrentHealth = GetCurHealth(i);
-            DecodedInGamePlayers[i].MaximumHealth = GetMaxHealth(i);
-            DecodedInGamePlayers[i].HealthPercentage = GetHealthPercentage(DecodedInGamePlayers[i].CurrentHealth, DecodedInGamePlayers[i].MaximumHealth);
-            DecodedInGamePlayers[i].Size = GetSize(i);
-            DecodedInGamePlayers[i].Speed = GetSpeed(i);
-            DecodedInGamePlayers[i].Power = GetPower(i);
-            DecodedInGamePlayers[i].PositionX = GetPositionX(i);
-            DecodedInGamePlayers[i].PositionY = GetPositionY(i);
-            DecodedInGamePlayers[i].CharacterType = GetCharacterTypeFromTypeId(GetType(i));
-            DecodedInGamePlayers[i].NameId = GetNameId(i);
-            DecodedInGamePlayers[i].CharacterName = GetCharacterName(DecodedInGamePlayers[i].NameId, DecodedInGamePlayers[i].CharacterType);
-            DecodedInGamePlayers[i].Condition = DecodeCondition(DecodedInGamePlayers[i].CurrentHealth, DecodedInGamePlayers[i].MaximumHealth);
-            DecodedInGamePlayers[i].Status = DecodeStatusText(GetStatus(i));
-            DecodedInGamePlayers[i].CurVirus = GetCurVirus(i);
-            DecodedInGamePlayers[i].MaxVirus = GetMaxVirus(i);
-            DecodedInGamePlayers[i].VirusPercentage = GetVirusPercentage(DecodedInGamePlayers[i].CurVirus, DecodedInGamePlayers[i].MaxVirus);
-            DecodedInGamePlayers[i].CritBonus = GetCritBonus(i);
-            DecodedInGamePlayers[i].SpecialItem = GetSpecialItem(i);
-            DecodedInGamePlayers[i].EquippedItem = GetEquippedItem(i);
-            DecodedInGamePlayers[i].RoomId = GetRoomId(i);
-            DecodedInGamePlayers[i].BleedTime = GetBleedTime(i);
-            DecodedInGamePlayers[i].AntiVirusTime = GetAntiVirusTime(i);
-            DecodedInGamePlayers[i].AntiVirusGTime = GetAntiVirusGTime(i);
-            DecodedInGamePlayers[i].HerbTime = GetHerbTime(i);
-            DecodedInGamePlayers[i].Inventory = GetInventory(i);
-            DecodedInGamePlayers[i].SpecialInventory = GetSpecialInventory(i);
-            DecodedInGamePlayers[i].DeadInventory = GetDeadInventory(i);
-            DecodedInGamePlayers[i].SpecialDeadInventory = GetSpecialDeadInventory(i);
+            Ulid playerUlid = GetPersistentUlidForPlayerSlot(i);
+
+            newDecodedInGamePlayers[i] = new DecodedInGamePlayer
+            {
+                Id = playerUlid,
+                IsEnabled = GetIsEnabled(i),
+                IsInGame = GetIsInGame(i),
+                RoomId = GetRoomId(i),
+                CurHealth = GetCurHealth(i),
+                MaxHealth = GetMaxHealth(i),
+                Type = GetCharacterTypeFromTypeId(GetType(i)),
+                EquippedItem = GetEquippedItem(i),
+                Inventory = GetInventory(i),
+                SpecialItem = GetSpecialItem(i),
+                SpecialInventory = GetSpecialInventory(i),
+                DeadInventory = GetDeadInventory(i),
+                SpecialDeadInventory = GetSpecialDeadInventory(i),
+                BleedTime = GetBleedTime(i),
+                AntiVirusGTime = GetAntiVirusGTime(i),
+                HerbTime = GetHerbTime(i),
+                AntiVirusTime = GetAntiVirusTime(i),
+                Power = GetPower(i),
+                Size = GetSize(i),
+                Speed = GetSpeed(i),
+                PositionX = GetPositionX(i),
+                PositionY = GetPositionY(i),
+                CurVirus = GetCurVirus(i),
+                MaxVirus = GetMaxVirus(i),
+                CritBonus = GetCritBonus(i),
+                Name = GetCharacterName(GetNameId(i), GetCharacterTypeFromTypeId(GetType(i))),
+                Status = DecodeStatusText(GetStatus(i)),
+                Condition = DecodeCondition(GetCurHealth(i), GetMaxHealth(i))
+            };
         }
+
+        DecodedInGamePlayers = newDecodedInGamePlayers;
 
         long duration = Environment.TickCount64 - start;
 
         if (!debug) return;
 
-        Logger.LogDebug("Decoded enemies2 in {Duration}ms", duration);
-        foreach (string jsonObject in DecodedInGamePlayers.Select(inGamePlayer
-                     => JsonSerializer.Serialize(inGamePlayer, DecodedInGamePlayersJsonContext.Default.DecodedInGamePlayer)))
-            Logger.LogDebug("Decoded inGame player: {JsonObject}", jsonObject);
+        Logger.LogDebug("Decoded in-game players in {Duration}ms", duration);
+        foreach (string jsonObject in DecodedInGamePlayers.Select(player
+                     => JsonSerializer.Serialize(player, DecodedInGamePlayersJsonContext.Default.DecodedInGamePlayer)))
+            Logger.LogDebug("Decoded in-game player: {JsonObject}", jsonObject);
+    }
+
+    private readonly Dictionary<int, Ulid> _playerSlotUlids = new();
+
+    private Ulid GetPersistentUlidForPlayerSlot(int characterId)
+    {
+        if (_playerSlotUlids.TryGetValue(characterId, out Ulid ulid))
+            return ulid;
+
+        ulid = Ulid.NewUlid();
+        _playerSlotUlids.Add(characterId, ulid);
+
+        return ulid;
     }
 }

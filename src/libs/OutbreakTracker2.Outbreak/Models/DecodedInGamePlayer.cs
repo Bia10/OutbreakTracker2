@@ -5,32 +5,36 @@ namespace OutbreakTracker2.Outbreak.Models;
 public sealed record DecodedInGamePlayer
 {
     [JsonInclude]
-    [JsonPropertyName(nameof(Enabled))]
-    public bool Enabled { get; set; }
+    [JsonPropertyName(nameof(Id))]
+    public Ulid Id { get; set; }
 
     [JsonInclude]
-    [JsonPropertyName(nameof(InGame))]
-    public bool InGame { get; set; }
+    [JsonPropertyName(nameof(IsEnabled))]
+    public bool IsEnabled { get; set; }
 
     [JsonInclude]
-    [JsonPropertyName(nameof(CharacterType))]
-    public string CharacterType { get; set; } = string.Empty;
+    [JsonPropertyName(nameof(IsInGame))]
+    public bool IsInGame { get; set; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(Type))]
+    public string Type { get; set; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(NameId))]
     public byte NameId { get; set; }
 
     [JsonInclude]
-    [JsonPropertyName(nameof(CharacterName))]
-    public string CharacterName { get; set; } = string.Empty;
+    [JsonPropertyName(nameof(Name))]
+    public string Name { get; set; } = string.Empty;
 
     [JsonInclude]
-    [JsonPropertyName(nameof(CurrentHealth))]
-    public short CurrentHealth { get; set; }
+    [JsonPropertyName(nameof(CurHealth))]
+    public short CurHealth { get; set; }
 
     [JsonInclude]
-    [JsonPropertyName(nameof(MaximumHealth))]
-    public short MaximumHealth { get; set; }
+    [JsonPropertyName(nameof(MaxHealth))]
+    public short MaxHealth { get; set; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(HealthPercentage))]

@@ -1,5 +1,6 @@
 ﻿using OutbreakTracker2.Outbreak.Models;
 using R3;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,9 +9,9 @@ namespace OutbreakTracker2.App.Services.PlayerTracking;
 public sealed class PlayerStateTracker : IPlayerStateTracker
 {
     private readonly Subject<DecodedInGamePlayer> _playerUpdateSubject = new();
-    public Observable<PlayerStateChangeEventArgs> PlayerStateChanges { get; }
+    private readonly Dictionary<Ulid, DecodedInGamePlayer> _lastKnownPlayerStates = new();
 
-    private DecodedInGamePlayer _lastKnownPlayerState = new();
+    public Observable<PlayerStateChangeEventArgs> PlayerStateChanges { get; }
 
     public PlayerStateTracker()
     {
@@ -19,19 +20,33 @@ public sealed class PlayerStateTracker : IPlayerStateTracker
         PlayerStateChanges = _playerUpdateSubject
             .SelectMany(currentPlayer =>
             {
+                if (currentPlayer is null)
+                    return Observable.Empty<PlayerStateChangeEventArgs>();
+
                 List<PlayerStateChangeEventArgs> notifications = [];
+
+                _lastKnownPlayerStates.TryGetValue(currentPlayer.Id, out DecodedInGamePlayer? lastKnownStateForThisPlayer);
+
+                DecodedInGamePlayer previousState = lastKnownStateForThisPlayer
+                                                    ?? new DecodedInGamePlayer { Id = currentPlayer.Id };
+
                 IEnumerable<PlayerStateChangeEventArgs> notificationsToAdd =
                     (from rule in trackingRules
-                    where rule.ShouldTrigger(currentPlayer, _lastKnownPlayerState)
-                    select rule.CreateNotification(currentPlayer)
+                        where rule.ShouldTrigger(currentPlayer, previousState)
+                        select rule.CreateNotification(currentPlayer)
                     ).ToList();
 
                 notifications.AddRange(notificationsToAdd);
-                _lastKnownPlayerState = currentPlayer;
+
+                // Update the last known state for THIS specific player
+                _lastKnownPlayerStates[currentPlayer.Id] = currentPlayer;
 
                 return notifications.ToObservable();
             });
     }
+
+    public void PublishPlayerUpdate(DecodedInGamePlayer player)
+        => _playerUpdateSubject.OnNext(player);
 
     private static IReadOnlyList<PlayerStateTrackingRule> BuildDefaultRules()
     {
@@ -44,13 +59,9 @@ public sealed class PlayerStateTracker : IPlayerStateTracker
             .TrackStatus("Down", (_, charName) => ($"{charName} is now DOWNED!", ToastType.Warning))
             .TrackStatus("Bleed", (_, charName) => ($"{charName} is now BLEEDING!", ToastType.Warning))
             .TrackGeneralChange(
-                (currentPlayer, lastKnownPlayerState) => currentPlayer.CurrentHealth <= 0 && lastKnownPlayerState.CurrentHealth > 0,
-                currentPlayer => new PlayerStateChangeEventArgs($"{currentPlayer.CharacterName} health dropped to 0!", "Player Status", ToastType.Error))
+                (current, last) => current.CurHealth <= 0 && last.CurHealth > 0,
+                current => new PlayerStateChangeEventArgs($"{current.Name} health dropped to 0!", "Player Died", ToastType.Error))
             .BuildRules();
-
         return playerTrackingRules;
     }
-
-    public void PublishPlayerUpdate(DecodedInGamePlayer player)
-        => _playerUpdateSubject.OnNext(player);
 }

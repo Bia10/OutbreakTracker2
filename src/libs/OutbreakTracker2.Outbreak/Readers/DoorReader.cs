@@ -11,7 +11,7 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public sealed class DoorReader : ReaderBase
 {
-    public DecodedDoor[] DecodedDoors { get; }
+    public DecodedDoor[] DecodedDoors { get; private set; }
 
     public DoorReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger) : base(gameClient, eememMemory, logger)
     {
@@ -74,12 +74,19 @@ public sealed class DoorReader : ReaderBase
             _ => 0
         };
 
+        DecodedDoor[] newDecodedDoors = new DecodedDoor[GameConstants.MaxDoors];
+
         for (int i = 0; i < maxDoors; i++)
         {
-            DecodedDoors[i].Hp = GetHealthPoints(i);
-            DecodedDoors[i].Flag = GetFlag(i);
-            DecodedDoors[i].Status = DecodeFlag(DecodedDoors[i].Hp, DecodedDoors[i].Flag);
+            newDecodedDoors[i] = new DecodedDoor
+            {
+                Hp = GetHealthPoints(i),
+                Flag = GetFlag(i),
+                Status = DecodeFlag(GetHealthPoints(i), GetFlag(i))
+            };
         }
+
+        DecodedDoors = newDecodedDoors;
 
         long duration = Environment.TickCount64 - start;
 

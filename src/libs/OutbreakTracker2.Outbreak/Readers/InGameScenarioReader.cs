@@ -13,7 +13,7 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public class InGameScenarioReader : ReaderBase
 {
-    public DecodedInGameScenario DecodedScenario { get; }
+    public DecodedInGameScenario DecodedScenario { get; private set; }
 
     public InGameScenarioReader(GameClient gameClient, IEEmemMemory memory, ILogger logger)
         : base(gameClient, memory, logger)
@@ -238,39 +238,42 @@ public class InGameScenarioReader : ReaderBase
 
         if (debug) Logger.LogDebug("Decoding scenario");
 
-        DecodedScenario.CurrentFile = (byte)CurrentFile;
-        DecodedScenario.ScenarioName = GetScenarioName(GetScenarioId());
-        DecodedScenario.FrameCounter = GetFrameCount();
-        DecodedScenario.Status = GetScenarioStatus();
-        DecodedScenario.PlayerCount = GetPlayerCount();
-        DecodedScenario.WildThingsTime = GetWildThingsTime();
-        DecodedScenario.EscapeTime = GetEscapeTime();
-        DecodedScenario.FightTime = GetDesperateTimesFightTime();
-        DecodedScenario.FightTime2 = GetDesperateTimesFightTime2();
-        DecodedScenario.GarageTime = GetDesperateTimesGarageTime();
-        DecodedScenario.GasTime = GetDesperateTimesGasTime();
-        DecodedScenario.GasFlag = GetDesperateTimesGasFlag();
-        DecodedScenario.GasRandom = GetDesperateTimesGasRandom();
-        DecodedScenario.ItemRandom = GetItemRandom();
-        DecodedScenario.ItemRandom2 = GetItemRandom2();
-        DecodedScenario.PuzzleRandom = GetPuzzleRandom();
-        DecodedScenario.Coin = GetCoin();
-        DecodedScenario.KilledZombie = GetKilledZombies();
-        DecodedScenario.PassWildThings = GetPassWildThings();
-        DecodedScenario.PassDesperateTimes1 = GetPassDesperateTimes();
-        DecodedScenario.PassDesperateTimes2 = GetPassDesperateTimes2();
-        DecodedScenario.PassDesperateTimes3 = GetPassDesperateTimes3();
-        DecodedScenario.Pass1 = GetPass1();
-        DecodedScenario.Pass2 = GetPass2();
-        DecodedScenario.Pass3 = GetPass3();
-        DecodedScenario.PassUnderbelly1 = GetPassUnderBelly1();
-        DecodedScenario.PassUnderbelly2 = GetPassUnderBelly2();
-        DecodedScenario.PassUnderbelly3 = GetPassUnderBelly3();
-        DecodedScenario.Pass4 = GetPass4();
-        DecodedScenario.Pass5 = GetPass5();
-        DecodedScenario.Pass6 = GetPass6();
-        DecodedScenario.Difficulty = GetDifficultyName(GetDifficulty());
-        DecodedScenario.Items = GetItems();
+        DecodedScenario = new DecodedInGameScenario
+        {
+            CurrentFile = (byte)CurrentFile,
+            ScenarioName = GetScenarioName(GetScenarioId()),
+            FrameCounter = GetFrameCount(),
+            Status = GetScenarioStatus(),
+            PlayerCount = GetPlayerCount(),
+            WildThingsTime = GetWildThingsTime(),
+            EscapeTime = GetEscapeTime(),
+            FightTime = GetDesperateTimesFightTime(),
+            FightTime2 = GetDesperateTimesFightTime2(),
+            GarageTime = GetDesperateTimesGarageTime(),
+            GasTime = GetDesperateTimesGasTime(),
+            GasFlag = GetDesperateTimesGasFlag(),
+            GasRandom = GetDesperateTimesGasRandom(),
+            ItemRandom = GetItemRandom(),
+            ItemRandom2 = GetItemRandom2(),
+            PuzzleRandom = GetPuzzleRandom(),
+            Coin = GetCoin(),
+            KilledZombie = GetKilledZombies(),
+            PassWildThings = GetPassWildThings(),
+            PassDesperateTimes1 = GetPassDesperateTimes(),
+            PassDesperateTimes2 = GetPassDesperateTimes2(),
+            PassDesperateTimes3 = GetPassDesperateTimes3(),
+            Pass1 = GetPass1(),
+            Pass2 = GetPass2(),
+            Pass3 = GetPass3(),
+            PassUnderbelly1 = GetPassUnderBelly1(),
+            PassUnderbelly2 = GetPassUnderBelly2(),
+            PassUnderbelly3 = GetPassUnderBelly3(),
+            Pass4 = GetPass4(),
+            Pass5 = GetPass5(),
+            Pass6 = GetPass6(),
+            Difficulty = GetDifficultyName(GetDifficulty()),
+            Items = GetItems()
+        };
 
         long duration = Environment.TickCount64 - start;
 
