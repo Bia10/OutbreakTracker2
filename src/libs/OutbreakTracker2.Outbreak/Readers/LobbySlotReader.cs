@@ -16,48 +16,48 @@ public sealed class LobbySlotReader : ReaderBase
 {
     public DecodedLobbySlot[] DecodedLobbySlots { get; private set; }
 
-    public LobbySlotReader(GameClient gameClient, IEEmemMemory memory, ILogger logger) : base(
-        gameClient, memory, logger)
+    public LobbySlotReader(GameClient gameClient, IEEmemMemory memory, ILogger logger)
+        : base(gameClient, memory, logger)
     {
         DecodedLobbySlots = new DecodedLobbySlot[GameConstants.MaxLobbySlots];
         for (int i = 0; i < GameConstants.MaxLobbySlots; i++)
             DecodedLobbySlots[i] = new DecodedLobbySlot();
     }
 
-    public short GetIndex(int slotIndex)
-        => ReadSlotValue(slotIndex, LobbySlotOffsets.Index, (short)-1);
+    private short GetIndex(int slotIndex)
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.Index.File1, LobbySlotOffsets.Index.File2, (short)-1);
 
-    public short GetCurPlayers(int slotIndex)
-        => ReadSlotValue(slotIndex, LobbySlotOffsets.CurPlayers, (short)-1);
+    private short GetCurPlayers(int slotIndex)
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.CurPlayers.File1, LobbySlotOffsets.CurPlayers.File2, (short)-1);
 
-    public short GetMaxPlayers(int slotIndex)
-        => ReadSlotValue(slotIndex, LobbySlotOffsets.MaxPlayers, (short)-1);
+    private short GetMaxPlayers(int slotIndex)
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.MaxPlayers.File1, LobbySlotOffsets.MaxPlayers.File2, (short)-1);
 
-    public byte GetStatus(int slotIndex)
-        => ReadSlotValue(slotIndex, LobbySlotOffsets.Status, (byte)SlotStatus.Unknown);
+    private byte GetStatus(int slotIndex)
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.Status.File1, LobbySlotOffsets.Status.File2, (byte)SlotStatus.Unknown);
 
-    public byte GetPass(int slotIndex)
-        => ReadSlotValue(slotIndex, LobbySlotOffsets.Pass, (byte)SlotPass.NoPass);
+    private byte GetPass(int slotIndex)
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.Pass.File1, LobbySlotOffsets.Pass.File2, (byte)255);
 
-    public short GetScenarioId(int slotIndex)
-        => ReadSlotValue(slotIndex, LobbySlotOffsets.ScenarioId, (short)FileTwoLobbyScenario.Unknown);
+    private short GetScenarioId(int slotIndex)
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.ScenarioId.File1, LobbySlotOffsets.ScenarioId.File2, (short)FileTwoLobbyScenario.Unknown);
 
-    public short GetVersion(int slotIndex)
-        => ReadSlotValue(slotIndex, LobbySlotOffsets.Version, (short)GameVersion.Unknown);
+    private short GetVersion(int slotIndex)
+        => ReadSlotValue(slotIndex, LobbySlotOffsets.Version.File1, LobbySlotOffsets.Version.File2, (short)-1);
 
-    public string GetTitle(int slotIndex)
-        => ReadSlotString(slotIndex, LobbySlotOffsets.Title, string.Empty);
+    private string GetTitle(int slotIndex)
+        => ReadSlotString(slotIndex, LobbySlotOffsets.Title.File1, LobbySlotOffsets.Title.File2, string.Empty);
 
-    public static string GetStatusName(byte status)
+    private static string GetStatusName(byte status)
         => EnumUtility.GetEnumString(status, SlotStatus.Unknown);
 
-    public static string GetPassName(byte pass)
+    private static string GetPassName(byte pass)
         => EnumUtility.GetEnumString(pass, SlotPass.NoPass);
 
-    public static string GetVersionName(short version)
+    private static string GetVersionName(short version)
         => EnumUtility.GetEnumString(version, GameVersion.Unknown);
 
-    public string GetScenarioName(short scenarioId)
+    private string GetScenarioName(short scenarioId)
         => GetScenarioString(scenarioId, FileOneLobbyScenario.Unknown, FileTwoLobbyScenario.Unknown);
 
     public void UpdateLobbySlots(bool debug = false)

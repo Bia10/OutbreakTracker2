@@ -18,6 +18,7 @@ public static class FileOnePtrs
         return BaseLobbySlot + (slotIndex * LobbySlotStructSize);
     }
 
+    public const nint LobbySlotIndex = 0x0;
     public const nint LobbySlotPlayer = 0x2;
     public const nint LobbySlotMaxPlayer = 0x4;
     public const nint LobbySlotStatus = 0xE;

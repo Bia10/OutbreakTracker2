@@ -22,42 +22,42 @@ public sealed class LobbyRoomReader : ReaderBase
         DecodedLobbyRoom = new DecodedLobbyRoom();
     }
 
-    public short GetCurPlayers()
-        => ReadValue(LobbyRoomOffsets.CurPlayers, (short)-1);
+    private short GetCurPlayers()
+        => ReadValue(LobbyRoomOffsets.CurPlayers.File1, LobbyRoomOffsets.CurPlayers.File2, (short)-1);
 
-    public short GetMaxPlayers()
-        => ReadValue(LobbyRoomOffsets.MaxPlayers, (short)-1);
+    private short GetMaxPlayers()
+        => ReadValue(LobbyRoomOffsets.MaxPlayers.File1, LobbyRoomOffsets.MaxPlayers.File2, (short)-1);
 
-    public short GetDifficulty()
-        => ReadValue(LobbyRoomOffsets.Difficulty, (short)-1);
+    private short GetDifficulty()
+        => ReadValue(LobbyRoomOffsets.Difficulty.File1, LobbyRoomOffsets.Difficulty.File2, (short)-1);
 
-    public byte GetStatus()
-        => ReadValue(LobbyRoomOffsets.Status, (byte)0xFF);
+    private byte GetStatus()
+        => ReadValue(LobbyRoomOffsets.Status.File1, LobbyRoomOffsets.Status.File2, (byte)0xFF);
 
-    public short GetScenarioId()
-        => ReadValue(LobbyRoomOffsets.ScenarioId, (short)-1);
+    private short GetScenarioId()
+        => ReadValue(LobbyRoomOffsets.ScenarioId.File1, LobbyRoomOffsets.ScenarioId.File2, (short)-1);
 
-    public short GetTime()
-        => ReadValue(LobbyRoomOffsets.Time, (short)-1);
+    private short GetTime()
+        => ReadValue(LobbyRoomOffsets.Time.File1, LobbyRoomOffsets.Time.File2, (short)-1);
 
-    public static string GetMaxPlayersString(short maxPlayers)
+    private static string GetMaxPlayersString(short maxPlayers)
         => EnumUtility.GetEnumString(maxPlayers, RoomMaxPlayers.Two);
 
-    public static string GetDifficultyName(short difficulty)
+    private static string GetDifficultyName(short difficulty)
         => EnumUtility.GetEnumString(difficulty, RoomDifficulty.Unknown);
 
-    public static string GetStatusName(byte status)
+    private static string GetStatusName(byte status)
     {
         string result = EnumUtility.GetEnumString(status, RoomStatus.Unknown);
         return result.Equals("Unknown", StringComparison.OrdinalIgnoreCase) ? $"{result}({status})" : result;
     }
 
-    public string GetScenarioName(short scenarioId)
+    private string GetScenarioName(short scenarioId)
         => GetScenarioString(scenarioId,
             FileOneLobbyScenario.Unknown,
             FileTwoLobbyScenario.Unknown);
 
-    public string GetFormattedTimeString()
+    private string GetFormattedTimeString()
     {
         try
         {

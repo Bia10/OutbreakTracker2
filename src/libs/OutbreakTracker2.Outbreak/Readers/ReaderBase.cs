@@ -14,36 +14,99 @@ using System.Text;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
-public abstract class ReaderBase
+public abstract class ReaderBase : IDisposable
 {
     protected readonly ILogger Logger;
     private readonly GameClient _gameClient;
-    private readonly IEEmemMemory _eEmemMemory;
+    private readonly IEEmemMemory _eememMemory;
     private readonly ISafeMemoryReader _memoryReader;
     private readonly IStringReader _stringReader;
+
     protected GameFile CurrentFile { get; }
+
+    private bool _disposed;
 
     protected ReaderBase(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
     {
-        Logger = logger;
-        _gameClient = gameClient;
-        _eEmemMemory = eememMemory;
+        _gameClient = gameClient ?? throw new ArgumentNullException(nameof(gameClient));
+        _eememMemory = eememMemory ?? throw new ArgumentNullException(nameof(eememMemory));
+        Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
         _memoryReader = eememMemory.MemoryReader;
         _stringReader = eememMemory.StringReader;
 
         CurrentFile = GetGameFile();
     }
 
-    private T Read<T>(nint address) where T : unmanaged
-        => _memoryReader.Read<T>(_gameClient.Handle, address);
+    private T Read<T>(
+        nint address,
+        [CallerMemberName] string methodName = "")
+        where T : unmanaged
+    {
+        if (address == nint.Zero)
+        {
+            Logger.LogWarning("[{MethodName}] Attempted to read {Type} from a null address.",
+                methodName, typeof(T).Name);
+            return default;
+        }
 
-    private string ReadString(nint address, Encoding? encoding = null)
-        => _stringReader.Read(_gameClient.Handle, address, encoding);
+        try
+        {
+            T result = _memoryReader.Read<T>(_gameClient.Handle, address);
+            Logger.LogTrace("[{MethodName}] Successfully read {Type} from address 0x{Address:X}. Value: {Result}",
+                methodName, typeof(T).Name, address, result);
+            return result;
+        }
+        catch (AccessViolationException ex)
+        {
+            Logger.LogError(ex, "[{MethodName}] Access violation reading {Type} from address 0x{Address:X}",
+                methodName, typeof(T).Name, address);
+            return default;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "[{MethodName}] Unexpected error reading {Type} from address 0x{Address:X}",
+                methodName, typeof(T).Name, address);
+            return default;
+        }
+    }
+
+    private string ReadString(
+        nint address,
+        Encoding? encoding = null,
+        [CallerMemberName] string methodName = "")
+    {
+        if (address == nint.Zero)
+        {
+            Logger.LogWarning("[{MethodName}] Attempted to read string from a null address.", methodName);
+            return string.Empty;
+        }
+
+        try
+        {
+            string result = _stringReader.Read(_gameClient.Handle, address, encoding);
+            Logger.LogTrace("[{MethodName}] Successfully read string from address 0x{Address:X}. Value: '{Result}'",
+                methodName, address, result);
+            return result;
+        }
+        catch (AccessViolationException ex)
+        {
+            Logger.LogError(ex, "[{MethodName}] Access violation reading string from address 0x{Address:X}",
+                methodName, address);
+            return string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "[{MethodName}] Unexpected error reading string from address 0x{Address:X}",
+                methodName, address);
+            return string.Empty;
+        }
+    }
 
     private GameFile GetGameFile()
     {
-        byte f1Byte = Read<byte>(_eEmemMemory.GetAddressFromPtr(FileOnePtrs.DiscStart));
-        byte f2Byte = Read<byte>(_eEmemMemory.GetAddressFromPtr(FileTwoPtrs.DiscStart));
+        byte f1Byte = Read<byte>(_eememMemory.GetAddressFromPtr(FileOnePtrs.DiscStart));
+        byte f2Byte = Read<byte>(_eememMemory.GetAddressFromPtr(FileTwoPtrs.DiscStart));
 
         if (f1Byte is 0x53)
         {
@@ -65,199 +128,112 @@ public abstract class ReaderBase
         return GameFile.Unknown;
     }
 
-    protected T ReadValue<T>(
-        (nint[] File1, nint[] File2) offsets,
-        T errorValue,
-        [CallerMemberName] string methodName = ""
-    ) where T : unmanaged
-        => ReadValueFromOffsets(offsets.File1, offsets.File2, methodName, errorValue);
-
-    protected T ReadSlotValue<T>(
-        int slotIndex,
-        (nint[] File1, nint[] File2) offsets,
-        T errorValue,
-        [CallerMemberName] string methodName = ""
-    ) where T : unmanaged
-        => ReadSlotValue(slotIndex, offsets.File1, offsets.File2, errorValue, methodName);
-
-    protected string ReadSlotString(
-        int slotIndex,
-        (nint[] File1, nint[] File2) offsets,
-        string errorValue,
-        [CallerMemberName] string methodName = ""
-    ) => ReadSlotValue(slotIndex, offsets.File1, offsets.File2, errorValue, methodName);
-
-    protected T ReadSlotValue<T>(
-        int slotIndex,
-        nint[] offsetsFile1,
-        nint[] offsetsFile2,
-        T errorValue,
-        [CallerMemberName] string methodName = ""
-    ) where T : unmanaged
-    {
-        if (!TryComputeLobbyAddress(slotIndex, offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
-        {
-            Logger.LogCritical("Failed to read slot value for method '{MethodName}' due to address computation error: {ErrorMessage}", methodName, errorMessage);
-            return errorValue;
-        }
-
-        T result = Read<T>(address);
-        Logger.LogDebug("[{MethodName}] Read value of type {Type} at address 0x{Address:X} for slot {SlotIndex}. Value: {Result}", methodName, typeof(T).Name, address, slotIndex, result);
-        return result;
-    }
-
-    protected T ReadValue<T>(
+    private nint ComputeAddress(
         nint basePtr,
         ReadOnlySpan<nint> offsets = default,
-        [CallerMemberName] string methodName = ""
-    ) where T : unmanaged
+        [CallerMemberName] string methodName = "")
     {
-        nint address = ComputeAddress(basePtr, offsets);
-        T result = Read<T>(address);
-        Logger.LogDebug("[{MethodName}] Read value of type {Type} at address 0x{Address:X}. Value: {Result}", methodName, typeof(T).Name, address, result);
-        return result;
-    }
-
-    protected string ReadSlotValue(
-        int slotIndex,
-        nint[] offsetsFile1,
-        nint[] offsetsFile2,
-        string errorValue,
-        [CallerMemberName] string methodName = ""
-    )
-    {
-        if (!TryComputeLobbyAddress(slotIndex, offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
+        if (basePtr == nint.Zero)
         {
-            Logger.LogCritical("Failed to read slot string for method '{MethodName}' due to address computation error: {ErrorMessage}", methodName, errorMessage);
-            return errorValue;
+            Logger.LogWarning("[{MethodName}] Attempted to compute address with a null base pointer.", methodName);
+            return nint.Zero;
         }
 
-        string result = ReadString(address);
-        Logger.LogDebug("[{MethodName}] Read string at address 0x{Address:X} for slot {SlotIndex}. Value: '{Result}'", methodName, address, slotIndex, result);
-        return result;
-    }
+        nint computedAddress = offsets.IsEmpty
+            ? _eememMemory.GetAddressFromPtr(basePtr)
+            : _eememMemory.GetAddressFromPtrChain(basePtr, offsets);
 
-    protected bool TryComputeLobbyAddress(
-        int slotIndex,
-        nint[] offsetsFile1,
-        nint[] offsetsFile2,
-        string methodName,
-        out nint address,
-        [NotNullWhen(false)] out string? errorMessage)
-    {
-        address = nint.Zero;
-        errorMessage = null;
-
-        if (!slotIndex.IsSlotIndexValid())
+        if (computedAddress == nint.Zero && !offsets.IsEmpty)
         {
-            errorMessage = $"[{methodName}] Invalid slot index provided: {slotIndex}. Expected range: 0 to {GameConstants.MaxLobbySlots - 1}.";
-            Logger.LogWarning("[{MethodName}] Invalid slot index provided: {SlotIndex}. Expected range: 0 to {MaxLobbySlots}", methodName, slotIndex, GameConstants.MaxLobbySlots - 1);
-            return false;
+            Logger.LogWarning("[{MethodName}] Computed address is null (0x{ComputedAddress:X}) from base pointer 0x{BasePointer:X} with {OffsetCount} offsets. This may indicate an issue in the pointer chain.",
+                methodName, computedAddress, basePtr, offsets.Length);
+        }
+        else
+        {
+            Logger.LogTrace("[{MethodName}] Computed address 0x{ComputedAddress:X} from base pointer 0x{BasePointer:X} with {OffsetCount} offsets",
+                methodName, computedAddress, basePtr, offsets.Length);
         }
 
-        nint[] offsets = GetOffsets(offsetsFile1, offsetsFile2);
-        nint basePtr = GetLobbyBasePointer(slotIndex);
-
-        if (!basePtr.IsNeitherNullNorNegative())
-        {
-            errorMessage = $"[{methodName}] Failed to obtain a valid base pointer for slot index {slotIndex}. Current game file: {CurrentFile}.";
-            Logger.LogWarning("[{MethodName}] Failed to obtain a valid base pointer for slot index {SlotIndex}. Current game file: {CurrentFile}", methodName, slotIndex, CurrentFile);
-            return false;
-        }
-
-        address = ComputeAddress(basePtr, offsets);
-
-        if (address.IsNeitherNullNorNegative())
-        {
-            Logger.LogTrace("[{MethodName}] Successfully computed lobby address 0x{Address:X} for slot {SlotIndex} using base pointer 0x{BasePointer:X}", methodName, address, slotIndex, basePtr);
-            return true;
-        }
-
-        errorMessage = $"[{methodName}] Computed address 0x{address:X} for slot index {slotIndex} is invalid (null or negative).";
-        Logger.LogWarning("[{MethodName}] Computed address 0x{Address:X} for slot index {SlotIndex} is invalid (null or negative)", methodName, address, slotIndex);
-        return false;
+        return computedAddress;
     }
 
-    protected bool TryComputeAddress(
-        nint[] offsetsFile1,
-        nint[] offsetsFile2,
-        string methodName,
-        out nint address,
-        [NotNullWhen(false)] out string? errorMessage)
+    private nint ComputeAddress(
+        ReadOnlySpan<nint> offsets,
+        [CallerMemberName] string methodName = "")
     {
-        errorMessage = null;
-
-        nint[] offsets = GetOffsets(offsetsFile1, offsetsFile2);
-        address = ComputeAddress(offsets);
-
-        if (address.IsNeitherNullNorNegative())
+        if (offsets.IsEmpty)
         {
-            Logger.LogTrace("[{MethodName}] Successfully computed address 0x{Address:X} using offsets for current game file {GameFile}", methodName, address, CurrentFile);
-            return true;
+            Logger.LogWarning("[{MethodName}] Attempted to compute address with an empty offset list.", methodName);
+            return nint.Zero;
         }
 
-        errorMessage = $"[{methodName}] Computed address 0x{address:X} is invalid (null or negative) using provided offsets for current game file {CurrentFile}.";
-        Logger.LogWarning("[{MethodName}] Computed address 0x{Address:X} is invalid (null or negative) using provided offsets for current game file {GameFile}", methodName, address, CurrentFile);
-        return false;
-    }
+        nint computedAddress = offsets.Length is 1
+            ? _eememMemory.GetAddressFromPtr(offsets[0])
+            : _eememMemory.GetAddressFromPtrChain(offsets[0], offsets[1..]);
 
-    protected T ReadValueFromOffsets<T>(nint[] offsetsFile1, nint[] offsetsFile2, string methodName, T errorValue)
-        where T : unmanaged
-    {
-        if (!TryComputeAddress(offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
+        if (computedAddress == nint.Zero)
         {
-            Logger.LogCritical("Failed to read value of type {Type} for method '{MethodName}' due to address computation error: {ErrorMessage}", typeof(T).Name, methodName, errorMessage);
-            return errorValue;
+            Logger.LogWarning("[{MethodName}] Computed address is null (0x{ComputedAddress:X}) from {OffsetCount} offsets (first offset: 0x{FirstOffset:X}). This may indicate an issue in the pointer chain.",
+                methodName, computedAddress, offsets.Length, offsets[0]);
+        }
+        else
+        {
+            Logger.LogTrace("[{MethodName}] Computed address 0x{ComputedAddress:X} from {OffsetCount} offsets (first offset: 0x{FirstOffset:X})",
+                methodName, computedAddress, offsets.Length, offsets[0]);
         }
 
-        T result = Read<T>(address);
-        Logger.LogDebug("[{MethodName}] Read value of type {Type} at address 0x{Address:X}. Value: {Result}", methodName, typeof(T).Name, address, result);
-        return result;
+        return computedAddress;
     }
 
-    protected string ReadStringFromOffsets(nint[] offsetsFile1, nint[] offsetsFile2, string methodName, string errorValue)
+    private ReadOnlySpan<nint> GetOffsets(
+        ReadOnlySpan<nint> offsetsFile1,
+        ReadOnlySpan<nint> offsetsFile2,
+        [CallerMemberName] string methodName = "")
     {
-        if (!TryComputeAddress(offsetsFile1, offsetsFile2, methodName, out nint address, out string? errorMessage))
+        if (offsetsFile1.IsEmpty)
         {
-            Logger.LogCritical("Failed to read string for method '{MethodName}' due to address computation error: {ErrorMessage}", methodName, errorMessage);
-            return errorValue;
+            Logger.LogError("[{MethodName}] offsetsFile1 cannot be empty.", methodName);
+            return default;
         }
 
-        string result = ReadString(address);
-        Logger.LogDebug("[{MethodName}] Read string at address 0x{Address:X}. Value: '{Result}'", methodName, address, result);
-        return result;
-    }
-
-    protected string GetScenarioString<TFileOne, TFileTwo>(short scenarioId, TFileOne defaultFileOne, TFileTwo defaultFileTwo)
-        where TFileOne : struct, Enum
-        where TFileTwo : struct, Enum
-    {
-        string scenarioName = CurrentFile switch
+        if (offsetsFile2.IsEmpty)
         {
-            GameFile.FileOne => EnumUtility.GetEnumString(scenarioId, defaultFileOne),
-            GameFile.FileTwo => EnumUtility.GetEnumString(scenarioId, defaultFileTwo),
-            _ => throw new InvalidOperationException($"[{nameof(GetScenarioString)}] Unrecognized game file '{CurrentFile}'. Cannot determine scenario string.")
-        };
+            Logger.LogError("[{MethodName}] offsetsFile2 cannot be empty.", methodName);
+            return default;
+        }
 
-        Logger.LogDebug("[{MethodName}] Retrieved scenario string '{ScenarioName}' for ID {ScenarioId} with game file {GameFile}", nameof(GetScenarioString), scenarioName, scenarioId, CurrentFile);
-        return scenarioName;
-    }
-
-    protected nint[] GetOffsets(nint[] offsetsFile1, nint[] offsetsFile2)
-    {
-        nint[] offsets = CurrentFile switch
+        ReadOnlySpan<nint> offsets = CurrentFile switch
         {
             GameFile.FileOne => offsetsFile1,
             GameFile.FileTwo => offsetsFile2,
-            _ => []
+            _ => default
         };
 
-        Logger.LogTrace("[{MethodName}] Selected offsets based on current game file {GameFile}", nameof(GetOffsets), CurrentFile);
+        if (CurrentFile == GameFile.Unknown)
+        {
+            Logger.LogWarning("[{MethodName}] GetOffsets called with CurrentFile set to Unknown. Returning empty offsets array.",
+                methodName);
+        }
+        else
+        {
+            Logger.LogTrace("[{MethodName}] Selected offsets based on current game file {GameFile}",
+                methodName, CurrentFile);
+        }
+
         return offsets;
     }
 
-    protected nint GetLobbyBasePointer(int slotIndex)
+    private nint GetLobbyBasePointer(
+        int slotIndex,
+        [CallerMemberName] string methodName = "")
     {
+        if (!slotIndex.IsSlotIndexValid())
+        {
+            Logger.LogWarning("[{MethodName}] Invalid slot index provided: {SlotIndex}. Expected range: 0 to {MaxLobbySlots}",
+                methodName, slotIndex, GameConstants.MaxLobbySlots - 1);
+            return nint.Zero;
+        }
+
         nint basePointer = CurrentFile switch
         {
             GameFile.FileOne => FileOnePtrs.GetLobbyAddress(slotIndex),
@@ -265,11 +241,21 @@ public abstract class ReaderBase
             _ => nint.Zero
         };
 
-        Logger.LogTrace("[{MethodName}] Determined lobby base pointer 0x{BasePointer:X} for slot {SlotIndex} with game file {GameFile}", nameof(GetLobbyBasePointer), basePointer, slotIndex, CurrentFile);
+        if (basePointer == nint.Zero)
+            Logger.LogWarning(
+                "[{MethodName}] Failed to obtain a valid base pointer for slot index {SlotIndex}. Current game file: {CurrentFile}",
+                methodName, slotIndex, CurrentFile);
+        else
+            Logger.LogTrace(
+                "[{MethodName}] Determined lobby base pointer 0x{BasePointer:X} for slot {SlotIndex} with game file {GameFile}",
+                methodName, basePointer, slotIndex, CurrentFile);
+
         return basePointer;
     }
 
-    protected nint GetLobbyRoomPlayerBasePointer(int characterId)
+    protected nint GetLobbyRoomPlayerBasePointer(
+        int characterId,
+        [CallerMemberName] string methodName = "")
     {
         nint basePointer = CurrentFile switch
         {
@@ -278,27 +264,244 @@ public abstract class ReaderBase
             _ => nint.Zero
         };
 
-        Logger.LogTrace("[{MethodName}] Determined lobby room player base pointer 0x{BasePointer:X} for character ID {CharacterId} with game file {GameFile}", nameof(GetLobbyRoomPlayerBasePointer), basePointer, characterId, CurrentFile);
+        if (basePointer == nint.Zero)
+        {
+            Logger.LogWarning("[{MethodName}] Failed to obtain a valid lobby room player base pointer for character ID {CharacterId}. Current game file: {CurrentFile}",
+                methodName, characterId, CurrentFile);
+        }
+        else
+        {
+            Logger.LogTrace("[{MethodName}] Determined lobby room player base pointer 0x{BasePointer:X} for character ID {CharacterId} with game file {GameFile}",
+                methodName, basePointer, characterId, CurrentFile);
+        }
+
         return basePointer;
     }
 
-    protected nint ComputeAddress(nint basePtr, params ReadOnlySpan<nint> offsets)
+    private bool ValidateOffsetArrays(ReadOnlySpan<nint> offsetsFile1, ReadOnlySpan<nint> offsetsFile2, string methodName)
     {
-        nint computedAddress = offsets.Length is 0
-            ? _eEmemMemory.GetAddressFromPtr(basePtr)
-            : _eEmemMemory.GetAddressFromPtrChain(basePtr, offsets);
+        if (!offsetsFile1.IsEmpty && !offsetsFile2.IsEmpty)
+            return true;
 
-        Logger.LogTrace("[{MethodName}] Computed address 0x{ComputedAddress:X} from base pointer 0x{BasePointer:X} with {OffsetCount} offsets", nameof(ComputeAddress), computedAddress, basePtr, offsets.Length);
-        return computedAddress;
+        Logger.LogError("[{MethodName}] Offsets arrays cannot be empty.", methodName);
+        return false;
     }
 
-    protected nint ComputeAddress(params ReadOnlySpan<nint> offsets)
+    private bool TryComputeLobbyAddress(
+        int slotIndex, ReadOnlySpan<nint> offsetsFile1,
+        ReadOnlySpan<nint> offsetsFile2,
+        out nint address,
+        [CallerMemberName] string methodName = "")
     {
-        nint computedAddress = offsets.Length is 1
-            ? _eEmemMemory.GetAddressFromPtr(offsets[0])
-            : _eEmemMemory.GetAddressFromPtrChain(offsets[0], offsets);
+        address = nint.Zero;
 
-        Logger.LogTrace("[{MethodName}] Computed address 0x{ComputedAddress:X} from {OffsetCount} offsets (first offset: 0x{FirstOffset:X})", nameof(ComputeAddress), computedAddress, offsets.Length, offsets.Length > 0 ? offsets[0] : 0);
-        return computedAddress;
+        if (!ValidateOffsetArrays(offsetsFile1, offsetsFile2, methodName))
+            return false;
+
+        ReadOnlySpan<nint> offsets = GetOffsets(offsetsFile1, offsetsFile2, methodName);
+        nint basePtr = GetLobbyBasePointer(slotIndex, methodName);
+
+        if (basePtr == nint.Zero)
+            return false;
+
+        address = ComputeAddress(basePtr, offsets, methodName);
+
+        if (!address.IsNeitherNullNorNegative())
+            return false;
+
+        Logger.LogTrace("[{MethodName}] Successfully computed lobby address 0x{Address:X} for slot {SlotIndex} using base pointer 0x{BasePointer:X}",
+            methodName, address, slotIndex, basePtr);
+        return true;
+    }
+
+    private bool TryComputeAddress(
+        ReadOnlySpan<nint> offsetsFile1,
+        ReadOnlySpan<nint> offsetsFile2,
+        out nint address,
+        [NotNullWhen(false)] out string? errorMessage,
+        [CallerMemberName] string methodName = "")
+    {
+        address = nint.Zero;
+        errorMessage = null;
+
+        if (!ValidateOffsetArrays(offsetsFile1, offsetsFile2, methodName))
+        {
+            errorMessage = $"[{methodName}] Offsets arrays cannot be empty.";
+            return false;
+        }
+
+        ReadOnlySpan<nint> offsets = GetOffsets(offsetsFile1, offsetsFile2, methodName);
+
+        address = ComputeAddress(offsets, methodName);
+
+        if (address.IsNeitherNullNorNegative())
+        {
+            Logger.LogTrace("[{MethodName}] Successfully computed address 0x{Address:X} using offsets for current game file {GameFile}",
+                methodName, address, CurrentFile);
+            return true;
+        }
+
+        errorMessage = $"[{methodName}] Computed address 0x{address:X} is invalid (null or negative) using provided offsets for current game file {CurrentFile}.";
+        return false;
+    }
+
+    private TResult ReadValueFromOffsetsInternal<TResult>(
+        ReadOnlySpan<nint> offsetsFile1, ReadOnlySpan<nint> offsetsFile2,
+        TResult errorValue,
+        Func<nint, TResult> readOperation,
+        [CallerMemberName] string methodName = "")
+    {
+        if (!ValidateOffsetArrays(offsetsFile1, offsetsFile2, methodName))
+            return errorValue;
+
+        if (!TryComputeAddress(offsetsFile1, offsetsFile2, out nint address, out string? errorMessage, methodName))
+        {
+            Logger.LogError("Failed to read {Type} for method '{MethodName}' due to address computation error: {ErrorMessage}",
+                typeof(TResult).Name, methodName, errorMessage);
+            return errorValue;
+        }
+
+        TResult result = readOperation(address);
+
+        if (EqualityComparer<TResult>.Default.Equals(result, errorValue))
+        {
+            Logger.LogDebug("[{MethodName}] Read operation for {Type} at address 0x{Address:X} returned error value.",
+                methodName, typeof(TResult).Name, address);
+        }
+        else
+        {
+            Logger.LogDebug("[{MethodName}] Read {Type} at address 0x{Address:X}. Value: {Result}",
+                methodName, typeof(TResult).Name, address, result);
+        }
+
+        return result;
+    }
+
+    protected T ReadValue<T>(
+        ReadOnlySpan<nint> offsetsFile1, ReadOnlySpan<nint> offsetsFile2,
+        T errorValue,
+        [CallerMemberName] string methodName = ""
+    ) where T : unmanaged
+        => ReadValueFromOffsetsInternal(offsetsFile1, offsetsFile2, errorValue,
+            readOperation: address => Read<T>(address, methodName), methodName);
+
+    protected string ReadString(
+        ReadOnlySpan<nint> offsetsFile1, ReadOnlySpan<nint> offsetsFile2,
+        string errorValue,
+        [CallerMemberName] string methodName = ""
+    ) => ReadValueFromOffsetsInternal(offsetsFile1, offsetsFile2, errorValue,
+        readOperation: address => ReadString(address, null, methodName), methodName);
+
+    private TResult ReadSlotValueInternal<TResult>(
+        int slotIndex,
+        ReadOnlySpan<nint> offsetsFile1, ReadOnlySpan<nint> offsetsFile2,
+        TResult errorValue,
+        Func<nint, TResult> readOperation,
+        [CallerMemberName] string methodName = "")
+    {
+        if (!ValidateOffsetArrays(offsetsFile1, offsetsFile2, methodName))
+            return errorValue;
+
+        if (!TryComputeLobbyAddress(slotIndex, offsetsFile1, offsetsFile2, out nint address, methodName))
+            return errorValue;
+
+        TResult result = readOperation(address);
+
+        if (EqualityComparer<TResult>.Default.Equals(result, errorValue))
+        {
+            Logger.LogDebug("[{MethodName}] Read operation for {Type} at address 0x{Address:X} for slot {SlotIndex} returned error value.",
+                methodName, typeof(TResult).Name, address, slotIndex);
+        }
+        else
+        {
+            Logger.LogDebug("[{MethodName}] Read {Type} at address 0x{Address:X} for slot {SlotIndex}. Value: {Result}",
+                methodName, typeof(TResult).Name, address, slotIndex, result);
+        }
+
+        return result;
+    }
+
+    protected T ReadSlotValue<T>(
+        int slotIndex,
+        ReadOnlySpan<nint> offsetsFile1, ReadOnlySpan<nint> offsetsFile2,
+        T errorValue,
+        [CallerMemberName] string methodName = ""
+    ) where T : unmanaged
+        => ReadSlotValueInternal(slotIndex, offsetsFile1, offsetsFile2, errorValue,
+            readOperation: address => Read<T>(address, methodName), methodName);
+
+    protected string ReadSlotString(
+        int slotIndex,
+        ReadOnlySpan<nint> offsetsFile1, ReadOnlySpan<nint> offsetsFile2,
+        string errorValue,
+        [CallerMemberName] string methodName = ""
+    ) => ReadSlotValueInternal(slotIndex, offsetsFile1, offsetsFile2, errorValue,
+        readOperation: address => ReadString(address, null, methodName), methodName);
+
+    protected T ReadValue<T>(
+        nint basePtr,
+        ReadOnlySpan<nint> offsets = default,
+        [CallerMemberName] string methodName = ""
+    ) where T : unmanaged
+    {
+        nint address = ComputeAddress(basePtr, offsets, methodName);
+        T result = Read<T>(address, methodName);
+
+        if (EqualityComparer<T>.Default.Equals(result, default) && address != nint.Zero)
+        {
+            Logger.LogDebug("[{MethodName}] Read value of type {Type} at address 0x{Address:X} returned default value. This might indicate a read error.",
+                methodName, typeof(T).Name, address);
+        }
+
+        return result;
+    }
+
+    protected string GetScenarioString<TFileOne, TFileTwo>(
+        short scenarioId,
+        TFileOne defaultFileOne,
+        TFileTwo defaultFileTwo)
+        where TFileOne : struct, Enum
+        where TFileTwo : struct, Enum
+    {
+        string scenarioName = CurrentFile switch
+        {
+            GameFile.FileOne => EnumUtility.GetEnumString(scenarioId, defaultFileOne),
+            GameFile.FileTwo => EnumUtility.GetEnumString(scenarioId, defaultFileTwo),
+            _ => null!
+        };
+
+        if (string.IsNullOrEmpty(scenarioName))
+        {
+            Logger.LogError("[{MethodName}] Unrecognized game file '{CurrentFile}'. Cannot determine scenario string for ID {ScenarioId}.", nameof(GetScenarioString),
+                CurrentFile, scenarioId);
+            return "Unknown Scenario";
+        }
+
+        Logger.LogDebug("[{MethodName}] Retrieved scenario string '{ScenarioName}' for ID {ScenarioId} with game file {GameFile}", nameof(GetScenarioString),
+            scenarioName, scenarioId, CurrentFile);
+        return scenarioName;
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing)
+        {
+            if (_gameClient is IDisposable disposableGameClient)
+            {
+                disposableGameClient.Dispose();
+                Logger.LogDebug("Disposed GameClient.");
+            }
+        }
+
+        _disposed = true;
+        Logger.LogTrace("ReaderBase disposed.");
     }
 }
