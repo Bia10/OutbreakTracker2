@@ -3,6 +3,7 @@ using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Character;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Offsets;
 using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2.Client;
@@ -11,7 +12,7 @@ using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
-public class InGamePlayerReader : ReaderBase
+public sealed class InGamePlayerReader : ReaderBase
 {
     public DecodedInGamePlayer[] DecodedInGamePlayers { get; private set; }
 
@@ -23,266 +24,262 @@ public class InGamePlayerReader : ReaderBase
             DecodedInGamePlayers[i] = new DecodedInGamePlayer();
     }
 
-    public bool GetIsEnabled(int characterId) => CurrentFile switch
+    private nint GetInGamePlayerBasePointer(int characterId)
     {
-        GameFile.FileOne => ReadValue<bool>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.CharacterEnabledOffset]),
-        GameFile.FileTwo => ReadValue<bool>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.CharacterEnabledOffset]),
-        _ => false
-    };
+        return CurrentFile switch
+        {
+            GameFile.FileOne => FileOnePtrs.GetPlayerStartAddress(characterId),
+            GameFile.FileTwo => FileTwoPtrs.GetPlayerStartAddress(characterId),
+            _ => nint.Zero
+        };
+    }
 
-    public bool GetIsInGame(int characterId) => CurrentFile switch
+    private bool GetIsEnabled(int characterId)
     {
-        GameFile.FileOne => ReadValue<bool>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.CharacterInGameOffset]),
-        GameFile.FileTwo => ReadValue<bool>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.CharacterInGameOffset]),
-        _ => false
-    };
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.CharacterEnabledOffset);
+        return ReadValue<bool>(basePlayerAddress, offsets);
+    }
 
-    public short GetRoomId(int characterId) => CurrentFile switch
+    private bool GetIsInGame(int characterId)
     {
-        GameFile.FileOne => ReadValue<short>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.RoomIdOffset]),
-        GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.RoomIdOffset]),
-        _ => 0xFF
-    };
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.CharacterInGameOffset);
+        return ReadValue<bool>(basePlayerAddress, offsets);
+    }
 
-    public short GetCurHealth(int characterId) => CurrentFile switch
+    private short GetRoomId(int characterId)
     {
-        GameFile.FileOne => ReadValue<short>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.CurHpOffset]),
-        GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.CurHpOffset]),
-        _ => 0xFF
-    };
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.RoomIdOffset);
+        return ReadValue<short>(basePlayerAddress, offsets);
+    }
 
-    public short GetMaxHealth(int characterId) => CurrentFile switch
+    private short GetCurHealth(int characterId)
     {
-        GameFile.FileOne => ReadValue<short>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.MaxHpOffset]),
-        GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.MaxHpOffset]),
-        _ => 0xFF
-    };
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.CurHpOffset);
+        return ReadValue<short>(basePlayerAddress, offsets);
+    }
 
-    public byte GetType(int characterId) => CurrentFile switch
+    private short GetMaxHealth(int characterId)
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.CharacterTypeOffset]),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.CharacterTypeOffset]),
-        _ => 0xFF
-    };
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.MaxHpOffset);
+        return ReadValue<short>(basePlayerAddress, offsets);
+    }
 
-    public byte GetEquippedItem(int characterId) => CurrentFile switch
+    private byte GetCharacterType(int characterId)
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.EquippedItemOffset]),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.EquippedItemOffset]),
-        _ => 0xFF
-    };
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.CharacterTypeOffset);
+        return ReadValue<byte>(basePlayerAddress, offsets);
+    }
 
-    public byte[] GetInventory(int characterId)
+    private byte GetEquippedItem(int characterId)
+    {
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.EquippedItemOffset);
+        return ReadValue<byte>(basePlayerAddress, offsets);
+    }
+
+    private byte[] GetInventory(int characterId)
     {
         byte[] inventory = new byte[4];
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
         for (int i = 0; i < 4; i++)
         {
-            inventory[i] = CurrentFile switch
+            nint baseInventoryOffset = CurrentFile switch
             {
-                GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.InventoryOffset + i]),
-                GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.InventoryOffset + i]),
-                _ => 0
+                GameFile.FileOne => InGamePlayerOffsets.InventoryOffset.File1[0],
+                GameFile.FileTwo => InGamePlayerOffsets.InventoryOffset.File2[0],
+                _ => nint.Zero
             };
+
+            ReadOnlySpan<nint> offsets = [baseInventoryOffset + i];
+            inventory[i] = ReadValue<byte>(basePlayerAddress, offsets);
         }
 
         return inventory;
     }
 
-    public byte GetSpecialItem(int characterId) => CurrentFile switch
+    private byte GetSpecialItem(int characterId)
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.InventoryOffset + 4]),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.InventoryOffset + 4]),
-        _ => 0xFF
-    };
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        nint baseInventoryOffset = CurrentFile switch
+        {
+            GameFile.FileOne => InGamePlayerOffsets.InventoryOffset.File1[0],
+            GameFile.FileTwo => InGamePlayerOffsets.InventoryOffset.File2[0],
+            _ => nint.Zero
+        };
 
-    public byte[] GetSpecialInventory(int characterId)
+        ReadOnlySpan<nint> offsets = [baseInventoryOffset + 4];
+        return ReadValue<byte>(basePlayerAddress, offsets);
+    }
+
+    private byte[] GetSpecialInventory(int characterId)
     {
         byte[] specialInventory = new byte[4];
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
         for (int i = 0; i < 4; i++)
         {
-            nint curItemOffset;
-            switch (CurrentFile)
+            nint baseInventoryOffset = CurrentFile switch
             {
-                case GameFile.FileOne:
-                    curItemOffset = FileOnePtrs.InventoryOffset + 5 + i;
-                    specialInventory[i] = ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [curItemOffset]);
-                    break;
-                case GameFile.FileTwo:
-                    curItemOffset = FileTwoPtrs.InventoryOffset + 5 + i;
-                    specialInventory[i] = ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [curItemOffset]);
-                    break;
-                case GameFile.Unknown: break;
-                default: specialInventory[i] = 0; break;
-            }
+                GameFile.FileOne => InGamePlayerOffsets.InventoryOffset.File1[0],
+                GameFile.FileTwo => InGamePlayerOffsets.InventoryOffset.File2[0],
+                _ => nint.Zero
+            };
+
+            ReadOnlySpan<nint> offsets = [baseInventoryOffset + 5 + i];
+            specialInventory[i] = ReadValue<byte>(basePlayerAddress, offsets);
         }
 
         return specialInventory;
     }
 
-    public byte[] GetDeadInventory(int characterId)
+    private byte[] GetDeadInventory(int characterId)
     {
-        byte[] specialInventory = new byte[4];
+        byte[] deadInventory = new byte[4];
         for (int i = 0; i < 4; i++)
         {
             nint curItemOffset = (8 * characterId) + i;
-            switch (CurrentFile)
-            {
-                case GameFile.FileOne:
-                    specialInventory[i] = ReadValue<byte>(FileOnePtrs.DeadInventoryStart, [curItemOffset]);
-                    break;
-                case GameFile.FileTwo:
-                    specialInventory[i] = ReadValue<byte>(FileTwoPtrs.DeadInventoryStart, [curItemOffset]);
-                    break;
-                case GameFile.Unknown: break;
-                default: specialInventory[i] = 0; break;
-            }
+            nint fileOneAddress = FileOnePtrs.DeadInventoryStart + curItemOffset;
+            nint fileTwoAddress = FileTwoPtrs.DeadInventoryStart + curItemOffset;
+            deadInventory[i] = ReadValue<byte>([fileOneAddress], [fileTwoAddress], errorValue: 0);
         }
 
-        return specialInventory;
+        return deadInventory;
     }
 
-    public byte[] GetSpecialDeadInventory(int characterId)
+    private byte[] GetSpecialDeadInventory(int characterId)
     {
-        byte[] specialInventory = new byte[4];
+        byte[] specialDeadInventory = new byte[4];
         for (int i = 0; i < 4; i++)
         {
             nint curItemOffset = (8 * characterId) + 4 + i;
-            switch (CurrentFile)
-            {
-                case GameFile.FileOne:
-                    specialInventory[i] = ReadValue<byte>(FileOnePtrs.DeadInventoryStart, [curItemOffset]);
-                    break;
-                case GameFile.FileTwo:
-                    specialInventory[i] = ReadValue<byte>(FileTwoPtrs.DeadInventoryStart, [curItemOffset]);
-                    break;
-                case GameFile.Unknown: break;
-                default: specialInventory[i] = 0; break;
-            }
+            nint fileOneAddress = FileOnePtrs.DeadInventoryStart + curItemOffset;
+            nint fileTwoAddress = FileTwoPtrs.DeadInventoryStart + curItemOffset;
+            specialDeadInventory[i] = ReadValue<byte>([fileOneAddress], [fileTwoAddress], errorValue: 0);
         }
 
-        return specialInventory;
+        return specialDeadInventory;
     }
 
-    public ushort GetBleedTime(int characterId) => CurrentFile switch
+    private ushort GetBleedTime(int characterId)
     {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.BleedTimeOffset]),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.BleedTimeOffset]),
-        _ => 0xFF
-    };
-
-    // TODO: fix this
-    public ushort GetAntiVirusGTime(int characterId) => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.AntiVirusGTimeOffset]),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.AntiVirusGTimeOffset]),
-        _ => 0xFF
-    };
-
-    public ushort GetHerbTime(int characterId) => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.HerbTimeOffset]),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.HerbTimeOffset]),
-        _ => 0xFF
-    };
-
-    public ushort GetAntiVirusTime(int characterId) => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.AntiVirusTimeOffset]),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.AntiVirusTimeOffset]),
-        _ => 0xFF
-    };
-
-    public float GetPower(int characterId) => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.PowerOffset]),
-        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.PowerOffset]),
-        _ => 0xFF
-    };
-
-    public float GetSize(int characterId) => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.SizeOffset]),
-        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.SizeOffset]),
-        _ => 0xFF
-    };
-
-    public float GetSpeed(int characterId) => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.SpeedOffset]),
-        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.SpeedOffset]),
-        _ => 0xFF
-    };
-
-    public float GetPositionX(int characterId) => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.PositionXOffset]),
-        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.PositionXOffset]),
-        _ => 0xFF
-    };
-
-    public float GetPositionY(int characterId) => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.PositionYOffset]),
-        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.PositionYOffset]),
-        _ => 0xFF
-    };
-
-    public int GetCurVirus(int characterId) => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<int>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.VirusOffset]),
-        GameFile.FileTwo => ReadValue<int>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.VirusOffset]),
-        _ => 0xFF
-    };
-
-    public int GetMaxVirus(int characterId)
-    {
-        int charTypeOffset = 4 * GetType(characterId);
-
-        return CurrentFile switch
-        {
-            GameFile.FileOne => ReadValue<int>(FileOnePtrs.VirusMaxStart, [charTypeOffset]),
-            GameFile.FileTwo => ReadValue<int>(FileTwoPtrs.VirusMaxStart, [charTypeOffset]),
-            _ => 0xFF
-        };
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.BleedTimeOffset);
+        return ReadValue<ushort>(basePlayerAddress, offsets);
     }
 
-    public float GetCritBonus(int characterId) => CurrentFile switch
+    private ushort GetAntiVirusGTime(int characterId)
     {
-        GameFile.FileOne => ReadValue<float>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.CritBonusOffset]),
-        GameFile.FileTwo => ReadValue<float>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.CritBonusOffset]),
-        _ => 0xFF
-    };
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.AntiVirusGTimeOffset);
+        return ReadValue<ushort>(basePlayerAddress, offsets);
+    }
 
-    public byte GetNameId(int characterId) => CurrentFile switch
+    private ushort GetHerbTime(int characterId)
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.NameTypeOffset]),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.NameTypeOffset]),
-        _ => 0xFF
-    };
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.HerbTimeOffset);
+        return ReadValue<ushort>(basePlayerAddress, offsets);
+    }
 
-    public byte GetStatus(int characterId) => CurrentFile switch
+    private ushort GetAntiVirusTime(int characterId)
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetPlayerStartAddress(characterId), [FileOnePtrs.CharacterStatusOffset]),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetPlayerStartAddress(characterId), [FileTwoPtrs.CharacterStatusOffset]),
-        _ => 0xFF
-    };
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.AntiVirusTimeOffset);
+        return ReadValue<ushort>(basePlayerAddress, offsets);
+    }
 
-    public static string GetCharacterTypeFromTypeId(byte typeId)
+    private float GetPower(int characterId)
+    {
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.PowerOffset);
+        return ReadValue<float>(basePlayerAddress, offsets);
+    }
+
+    private float GetSize(int characterId)
+    {
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.SizeOffset);
+        return ReadValue<float>(basePlayerAddress, offsets);
+    }
+
+    private float GetSpeed(int characterId)
+    {
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.SpeedOffset);
+        return ReadValue<float>(basePlayerAddress, offsets);
+    }
+
+    private float GetPositionX(int characterId)
+    {
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.PositionXOffset);
+        return ReadValue<float>(basePlayerAddress, offsets);
+    }
+
+    private float GetPositionY(int characterId)
+    {
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.PositionYOffset);
+        return ReadValue<float>(basePlayerAddress, offsets);
+    }
+
+    private int GetCurVirus(int characterId)
+    {
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.VirusOffset);
+        return ReadValue<int>(basePlayerAddress, offsets);
+    }
+
+    private int GetMaxVirus(int characterId)
+    {
+        int charTypeOffset = 4 * GetCharacterType(characterId);
+        nint fileOneAddress = FileOnePtrs.VirusMaxStart + charTypeOffset;
+        nint fileTwoAddress = FileTwoPtrs.VirusMaxStart + charTypeOffset;
+        return ReadValue([fileOneAddress], [fileTwoAddress], errorValue: 0);
+    }
+
+    private float GetCritBonus(int characterId)
+    {
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.CritBonusOffset);
+        return ReadValue<float>(basePlayerAddress, offsets);
+    }
+
+    private byte GetNameId(int characterId)
+    {
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.NameTypeOffset);
+        return ReadValue<byte>(basePlayerAddress, offsets);
+    }
+
+    private byte GetStatus(int characterId)
+    {
+        nint basePlayerAddress = GetInGamePlayerBasePointer(characterId);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.CharacterStatusOffset);
+        return ReadValue<byte>(basePlayerAddress, offsets);
+    }
+
+    private static string GetCharacterTypeFromTypeId(byte typeId)
         => EnumUtility.GetEnumString(typeId, CharacterBaseType.Unknown);
 
-    public static string GetCharacterNpcNameFromNameId(byte nameId)
+    private static string GetCharacterNpcNameFromNameId(byte nameId)
         => EnumUtility.GetEnumString(nameId, CharacterNpcName.Unknown);
 
-    public static string GetCharacterName(byte nameId, string charType)
+    private static string GetCharacterName(byte nameId, string charType)
         => nameId is 0 ? charType : GetCharacterNpcNameFromNameId(nameId);
 
-    public static double GetHealthPercentage(short curHealth, short maxHealth)
+    private static double GetHealthPercentage(short curHealth, short maxHealth)
         => PercentageUtility.GetPercentage(curHealth, maxHealth, 3);
 
-    public static double GetVirusPercentage(int curVirus, int maxVirus)
+    private static double GetVirusPercentage(int curVirus, int maxVirus)
         => PercentageUtility.GetPercentage(curVirus, maxVirus, 3);
 
-    public string DecodeStatusText(byte status)
+    private string DecodeStatusText(byte status)
     {
         return status switch
         {
@@ -308,7 +305,7 @@ public class InGamePlayerReader : ReaderBase
         };
     }
 
-    public static string DecodeCondition(short curHp, short maxHp)
+    private static string DecodeCondition(short curHp, short maxHp)
     {
         return PercentageUtility.GetPercentage(curHp, maxHp) switch
         {
@@ -336,17 +333,25 @@ public class InGamePlayerReader : ReaderBase
             if (GetIsEnabled(i) is false) continue;
 
             Ulid playerUlid = GetPersistentUlidForPlayerSlot(i);
+            short curHealth = GetCurHealth(i);
+            short maxHealth = GetMaxHealth(i);
+            byte characterTypeId = GetCharacterType(i);
+            string characterType = GetCharacterTypeFromTypeId(characterTypeId);
+            int curVirus = GetCurVirus(i);
+            int maxVirus = GetMaxVirus(i);
+            byte nameId = GetNameId(i);
+            byte status = GetStatus(i);
 
             newDecodedInGamePlayers[i] = new DecodedInGamePlayer
             {
                 Id = playerUlid,
-                IsEnabled = GetIsEnabled(i),
+                IsEnabled = true,
                 IsInGame = GetIsInGame(i),
                 RoomId = GetRoomId(i),
-                CurHealth = GetCurHealth(i),
-                MaxHealth = GetMaxHealth(i),
-                HealthPercentage = GetHealthPercentage(GetCurHealth(i), GetMaxHealth(i)),
-                Type = GetCharacterTypeFromTypeId(GetType(i)),
+                CurHealth = curHealth,
+                MaxHealth = maxHealth,
+                HealthPercentage = GetHealthPercentage(curHealth, maxHealth),
+                Type = characterType,
                 EquippedItem = GetEquippedItem(i),
                 Inventory = GetInventory(i),
                 SpecialItem = GetSpecialItem(i),
@@ -362,13 +367,13 @@ public class InGamePlayerReader : ReaderBase
                 Speed = GetSpeed(i),
                 PositionX = GetPositionX(i),
                 PositionY = GetPositionY(i),
-                CurVirus = GetCurVirus(i),
-                MaxVirus = GetMaxVirus(i),
-                VirusPercentage = GetVirusPercentage(GetCurVirus(i), GetMaxVirus(i)),
+                CurVirus = curVirus,
+                MaxVirus = maxVirus,
+                VirusPercentage = GetVirusPercentage(curVirus, maxVirus),
                 CritBonus = GetCritBonus(i),
-                Name = GetCharacterName(GetNameId(i), GetCharacterTypeFromTypeId(GetType(i))),
-                Status = DecodeStatusText(GetStatus(i)),
-                Condition = DecodeCondition(GetCurHealth(i), GetMaxHealth(i))
+                Name = GetCharacterName(nameId, characterType),
+                Status = DecodeStatusText(status),
+                Condition = DecodeCondition(curHealth, maxHealth)
             };
         }
 

@@ -149,7 +149,7 @@ public static class FileOnePtrs
     public const nint VirusMaxStart = 0x6E6C70;
 
     public const nint PickupSpaceStart = 0x39680C; // 1 item - 60 bytes
-    public const nint PickupStructSize = 0x3C;
+    public const int PickupStructSize = 0x3C;
     public const nint ItemRoomIdOffset = 0x1;
     public const nint NumberOffset = 0x4;
     public const nint IdOffset = 0x6;
@@ -186,6 +186,7 @@ public static class FileOnePtrs
     public const nint Enemy11Start = 0x4287A0;
     public const nint Enemy12Start = 0x429530;
 
+    public const int EnemyListEntrySize = 0x60;
     public const nint EnemyEnabled = 0x0;
     public const nint EnemyInGame = 0x1;
     public const nint EnemyNameIdOffset = 0x3;

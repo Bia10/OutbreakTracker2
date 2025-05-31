@@ -177,7 +177,7 @@ public static class FileTwoPtrs
     public const nint InventoryOffset = 0xC94;       //3220
 
     public const nint PickupSpaceStart = 0x397B7C; // 1 item - 60 bytes settings byte on offset ITEM_PTR+37?
-    public const nint PickupStructSize = 0x3C;
+    public const int PickupStructSize = 0x3C;
     public const nint ItemRoomIdOffset = 0x1;
     public const nint NumberOffset = 0x4;
     public const nint IdOffset = 0x6;
@@ -252,6 +252,7 @@ public static class FileTwoPtrs
         };
     }
 
+    public const int EnemyListEntrySize = 0x60;
     public const nint EnemyEnabled = 0x0;
     public const nint EnemyInGame = 0x1;
     public const nint EnemyNameIdOffset = 0x3;

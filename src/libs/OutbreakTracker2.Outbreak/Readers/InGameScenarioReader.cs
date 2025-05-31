@@ -3,6 +3,7 @@ using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.LobbyRoom;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Offsets;
 using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2.Client;
@@ -11,7 +12,7 @@ using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
-public class InGameScenarioReader : ReaderBase
+public sealed class InGameScenarioReader : ReaderBase
 {
     public DecodedInGameScenario DecodedScenario { get; private set; }
 
@@ -21,206 +22,153 @@ public class InGameScenarioReader : ReaderBase
         DecodedScenario = new DecodedInGameScenario();
     }
 
-    public static string GetScenarioName(short scenarioId)
+    private static string GetScenarioName(short scenarioId)
         => EnumUtility.GetEnumString(scenarioId, Scenario.Unknown);
 
-    public static string GetDifficultyName(byte difficulty)
+    private static string GetDifficultyName(byte difficulty)
         => EnumUtility.GetEnumString(difficulty, RoomDifficulty.Unknown);
 
-    public static string GetItemTypeName(short typeId)
+    private static string GetItemTypeName(short typeId)
         => EnumUtility.GetEnumString(typeId, ItemType.Unknown);
 
-    public short GetScenarioId() => CurrentFile switch
+    private short GetScenarioId()
+        => ReadValue(InGameScenarioOffsets.ScenarioId.File1, InGameScenarioOffsets.ScenarioId.File2, (short)-1);
+
+    private int GetFrameCount()
+        => ReadValue(InGameScenarioOffsets.FrameCounter.File1, InGameScenarioOffsets.FrameCounter.File2, -1);
+
+    private byte GetScenarioStatus()
+        => ReadValue(InGameScenarioOffsets.ScenarioStatus.File1, InGameScenarioOffsets.ScenarioStatus.File2, (byte)0xFF);
+
+    private byte GetPlayerCount()
+        => ReadValue(InGameScenarioOffsets.PlayerNumber.File1, InGameScenarioOffsets.PlayerNumber.File2, (byte)0xFF);
+
+    private short GetWildThingsTime()
+        => ReadValue(InGameScenarioOffsets.WildThingsTime.File1, InGameScenarioOffsets.WildThingsTime.File2, (short)-1);
+
+    private short GetEscapeTime()
+        => ReadValue(InGameScenarioOffsets.EscapeTime.File1, InGameScenarioOffsets.EscapeTime.File2, (short)-1);
+
+    private int GetDesperateTimesFightTime()
+        => ReadValue(InGameScenarioOffsets.DesperateTimesFightTime.File1, InGameScenarioOffsets.DesperateTimesFightTime.File2, (short)-1);
+
+    private short GetDesperateTimesFightTime2()
+        => ReadValue(InGameScenarioOffsets.DesperateTimesFightTime2.File1, InGameScenarioOffsets.DesperateTimesFightTime2.File2, (short)-1);
+
+    private int GetDesperateTimesGarageTime()
+        => ReadValue(InGameScenarioOffsets.DesperateTimesGarageTime.File1, InGameScenarioOffsets.DesperateTimesGarageTime.File2, (short)-1);
+
+    private int GetDesperateTimesGasTime()
+        => ReadValue(InGameScenarioOffsets.DesperateTimesGasTime.File1, InGameScenarioOffsets.DesperateTimesGasTime.File2, (short)-1);
+
+    private int GetDesperateTimesGasFlag()
+        => ReadValue(InGameScenarioOffsets.DesperateTimesGasFlag.File1, InGameScenarioOffsets.DesperateTimesGasFlag.File2, (short)-1);
+
+    private byte GetDesperateTimesGasRandom()
+        => ReadValue(InGameScenarioOffsets.DesperateTimesGasRandom.File1, InGameScenarioOffsets.DesperateTimesGasRandom.File2, (byte)0xFF);
+
+    private byte GetItemRandom()
+        => ReadValue(InGameScenarioOffsets.ItemRandom.File1, InGameScenarioOffsets.ItemRandom.File2, (byte)0xFF);
+
+    private byte GetItemRandom2()
+        => ReadValue(InGameScenarioOffsets.ItemRandom2.File1, InGameScenarioOffsets.ItemRandom2.File2, (byte)0xFF);
+
+    private byte GetPuzzleRandom()
+        => ReadValue(InGameScenarioOffsets.PuzzleRandom.File1, InGameScenarioOffsets.PuzzleRandom.File2, (byte)0xFF);
+
+    private byte GetCoin()
     {
-        GameFile.FileOne => ReadValue<short>(FileOnePtrs.InGameScenarioId),
-        GameFile.FileTwo => ReadValue<short>(FileTwoPtrs.InGameScenarioId),
-        _ => -1
-    };
+        nint basePtr = GetFileSpecificOffsets(InGameScenarioOffsets.Coin)[0];
+        if (basePtr == nint.Zero) return 0xFF;
 
-    public int GetFrameCount() => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<int>(FileOnePtrs.InGameFrameCounter),
-        GameFile.FileTwo => ReadValue<int>(FileTwoPtrs.InGameFrameCounter),
-        _ => -1
-    };
-
-    public byte GetScenarioStatus() => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.ScenarioStatus),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.ScenarioStatus),
-        _ => 0xFF
-    };
-
-    public byte GetPlayerCount() => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.InGamePlayerNumber),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.IngamePlayerNumber),
-        _ => 0xFF
-    };
-
-    public short GetWildThingsTime()
-        => ReadValue<short>(FileTwoPtrs.WildThingsTime);
-
-    public short GetEscapeTime()
-        => ReadValue<short>(FileTwoPtrs.EscapeTime);
-
-    public int GetDesperateTimesFightTime()
-        => ReadValue<int>(FileTwoPtrs.DesperateTimesFightTime);
-
-    public short GetDesperateTimesFightTime2()
-        => ReadValue<short>(FileTwoPtrs.DesperateTimesFightTime2);
-
-    public int GetDesperateTimesGarageTime()
-        => ReadValue<short>(FileTwoPtrs.DesperateTimesGarageTime);
-
-    public int GetDesperateTimesGasTime()
-        => ReadValue<short>(FileTwoPtrs.DesperateTimesGasTime);
-
-    public int GetDesperateTimesGasFlag()
-        => ReadValue<short>(FileTwoPtrs.DesperateTimesGasFlag);
-
-    public byte GetDesperateTimesGasRandom()
-        => ReadValue<byte>(FileTwoPtrs.DesperateTimesGasRandom);
-
-    public byte GetItemRandom() => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<byte>(FileTwoPtrs.ItemRandom),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.ItemRandom),
-        _ => 0xFF
-    };
-
-    public byte GetItemRandom2() => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<byte>(FileTwoPtrs.ItemRandom2),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.ItemRandom2),
-        _ => 0xFF
-    };
-
-    public byte GetPuzzleRandom() => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<byte>(FileTwoPtrs.PuzzleRandom),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.PuzzleRandom),
-        _ => 0xFF
-    };
-
-    public byte GetCoin()
-    {
-        byte coin1 = ReadValue<byte>(FileTwoPtrs.Coin);
-        byte coin2 = ReadValue<byte>(FileTwoPtrs.Coin, [0x2]);
-        byte coin3 = ReadValue<byte>(FileTwoPtrs.Coin, [0x4]);
-        byte coin4 = ReadValue<byte>(FileTwoPtrs.Coin, [0x6]);
+        byte coin1 = ReadValue<byte>(basePtr, [0x0]);
+        byte coin2 = ReadValue<byte>(basePtr, [0x2]);
+        byte coin3 = ReadValue<byte>(basePtr, [0x4]);
+        byte coin4 = ReadValue<byte>(basePtr, [0x6]);
 
         return (byte)(coin1 + coin2 + coin3 + coin4);
     }
 
-    public byte GetKilledZombies()
-        => ReadValue<byte>(FileTwoPtrs.KilledZombie);
+    private byte GetKilledZombies()
+        => ReadValue(InGameScenarioOffsets.KilledZombies.File1, InGameScenarioOffsets.KilledZombies.File2, (byte)0xFF);
 
-    public byte GetPassWildThings()
-        => ReadValue<byte>(FileTwoPtrs.PassWildThings);
+    private byte GetPassWildThings()
+        => ReadValue(InGameScenarioOffsets.PassWildThings.File1, InGameScenarioOffsets.PassWildThings.File2, (byte)0xFF);
 
-    public short GetPassDesperateTimes()
-        => ReadValue<short>(FileTwoPtrs.PassDesperateTimes);
+    private short GetPassDesperateTimes()
+        => ReadValue(InGameScenarioOffsets.PassDesperateTimes.File1, InGameScenarioOffsets.PassDesperateTimes.File2, (short)-1);
 
-    public byte GetPassDesperateTimes2()
-        => ReadValue<byte>(FileTwoPtrs.PassDesperateTimes2);
+    private byte GetPassDesperateTimes2()
+        => ReadValue(InGameScenarioOffsets.PassDesperateTimes2.File1, InGameScenarioOffsets.PassDesperateTimes2.File2, (byte)0xFF);
 
-    public byte GetPassDesperateTimes3()
-        => ReadValue<byte>(FileTwoPtrs.PassDesperateTimes3);
+    private byte GetPassDesperateTimes3()
+        => ReadValue(default, InGameScenarioOffsets.PassDesperateTimes3.File2, (byte)0xFF);
 
-    public short GetPassUnderBelly1()
-        => ReadValue<byte>(FileTwoPtrs.PassUnderBelly1);
+    private short GetPassUnderBelly1()
+        => ReadValue(default, InGameScenarioOffsets.PassUnderBelly1.File2, (short)-1);
 
-    public byte GetPassUnderBelly2()
-        => ReadValue<byte>(FileTwoPtrs.PassUnderBelly2);
+    private byte GetPassUnderBelly2()
+        => ReadValue(default, InGameScenarioOffsets.PassUnderBelly2.File2, (byte)0xFF);
 
-    public byte GetPassUnderBelly3()
-        => ReadValue<byte>(FileTwoPtrs.PassUnderBelly3);
+    private byte GetPassUnderBelly3()
+        => ReadValue(default, InGameScenarioOffsets.PassUnderBelly3.File2, (byte)0xFF);
 
-    public byte GetPass1()
-        => ReadValue<byte>(FileOnePtrs.Pass1);
+    private byte GetPass1()
+        => ReadValue(InGameScenarioOffsets.Pass1.File1, default, (byte)0xFF);
 
-    public byte GetPass2()
-        => ReadValue<byte>(FileOnePtrs.Pass2);
+    private byte GetPass2()
+        => ReadValue(InGameScenarioOffsets.Pass2.File1, default, (byte)0xFF);
 
-    public byte GetPass3()
-        => ReadValue<byte>(FileOnePtrs.Pass3);
+    private byte GetPass3()
+        => ReadValue(InGameScenarioOffsets.Pass3.File1, default, (byte)0xFF);
 
-    public short GetPass4() => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<byte>(FileTwoPtrs.Pass4),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.Pass4),
-        _ => 0xFF
-    };
+    private short GetPass4()
+        => ReadValue(InGameScenarioOffsets.Pass4.File1, InGameScenarioOffsets.Pass4.File2, (short)-1);
 
-    public byte GetPass5()
-        => ReadValue<byte>(FileOnePtrs.Pass5);
+    private byte GetPass5()
+        => ReadValue(InGameScenarioOffsets.Pass5.File1, default, (byte)0xFF);
 
-    public byte GetPass6()
-        => ReadValue<byte>(FileOnePtrs.Pass6);
+    private byte GetPass6()
+        => ReadValue(InGameScenarioOffsets.Pass6.File1, default, (byte)0xFF);
 
-    public byte GetDifficulty() => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.Difficulty),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.Difficulty),
-        _ => 0xFF
-    };
+    private byte GetDifficulty()
+        => ReadValue(InGameScenarioOffsets.Difficulty.File1, InGameScenarioOffsets.Difficulty.File2, (byte)0xFF);
 
-    public DecodedItem[] GetItems()
+    private DecodedItem[] GetItems()
     {
         DecodedItem[] items = new DecodedItem[GameConstants.MaxItems - 1];
-        byte roomId = 0;
-        byte slotIndex = 0;
-        short typeId = 0;
-        byte mix = 0;
-        int present = 0;
-        short quantity = 0;
-        short pickedUp = 0;
+
+        nint pickupSpaceStart = GetFileSpecificOffsets(InGameScenarioOffsets.PickupSpaceStart)[0];
+        int pickupStructSize = GetFileSpecificSingleIntOffset(InGameScenarioOffsets.PickupStructSize);
+
+        if (pickupSpaceStart == nint.Zero || pickupStructSize is 0)
+        {
+            Logger.LogWarning("Failed to obtain valid pickup space start address or struct size. Returning empty items array.");
+            return items;
+        }
+
+        nint roomIdOffset = GetFileSpecificSingleNintOffset(InGameScenarioOffsets.ItemRoomIdOffset);
+        nint slotIndexOffset = GetFileSpecificSingleNintOffset(InGameScenarioOffsets.ItemNumberOffset);
+        nint typeIdOffset = GetFileSpecificSingleNintOffset(InGameScenarioOffsets.ItemIdOffset);
+        nint mixOffset = GetFileSpecificSingleNintOffset(InGameScenarioOffsets.ItemMixOffset);
+        nint presentOffset = GetFileSpecificSingleNintOffset(InGameScenarioOffsets.ItemPresentOffset);
+        nint quantityOffset = GetFileSpecificSingleNintOffset(InGameScenarioOffsets.ItemPickupCountOffset);
+        nint pickedUpOffset = GetFileSpecificSingleNintOffset(InGameScenarioOffsets.ItemPickupOffset);
 
         for (int i = 0; i < GameConstants.MaxItems - 1; i++)
         {
-            switch (CurrentFile)
-            {
-                case GameFile.FileOne:
-                    {
-                        nint itemBaseOffset = FileOnePtrs.PickupStructSize * i;
-                        roomId = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.RoomIdOffset]);
-                        slotIndex = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.NumberOffset]);
-                        typeId = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.IdOffset]);
-                        mix = ReadValue<byte>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.MixOffset]);
-                        present = ReadValue<int>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PresentOffset]);
-                        quantity = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PickupCountOffset]);
-                        pickedUp = ReadValue<short>(FileOnePtrs.PickupSpaceStart, [itemBaseOffset + FileOnePtrs.PickupOffset]);
-                        break;
-                    }
-                case GameFile.FileTwo:
-                    {
-                        nint itemBaseOffset = FileTwoPtrs.PickupStructSize * i;
-                        // TODO: this seems bugged
-                        roomId = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.RoomIdOffset]);
-                        slotIndex = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.NumberOffset]);
-                        typeId = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.IdOffset]);
-                        mix = ReadValue<byte>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.MixOffset]);
-                        present = ReadValue<int>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PresentOffset]);
-                        quantity = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PickupCountOffset]);
-                        pickedUp = ReadValue<short>(FileTwoPtrs.PickupSpaceStart, [itemBaseOffset + FileTwoPtrs.PickupOffset]);
-                        break;
-                    }
-                case GameFile.Unknown: break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(CurrentFile), CurrentFile, "Unrecognized current game file");
-            }
+            nint itemBaseOffset = (nint)pickupStructSize * i;
 
             items[i] = new DecodedItem
             {
                 Id = (short)(i + 1),
-                RoomId = roomId,
-                SlotIndex = slotIndex,
-                TypeName = GetItemTypeName(typeId),
-                Mix = mix,
-                Present = present,
-                Quantity = quantity,
-                PickedUp = pickedUp
+                RoomId = ReadValue<byte>(pickupSpaceStart, [itemBaseOffset + roomIdOffset]),
+                SlotIndex = ReadValue<byte>(pickupSpaceStart, [itemBaseOffset + slotIndexOffset]),
+                TypeName = GetItemTypeName(ReadValue<short>(pickupSpaceStart, [itemBaseOffset + typeIdOffset])),
+                Mix = ReadValue<byte>(pickupSpaceStart, [itemBaseOffset + mixOffset]),
+                Present = ReadValue<int>(pickupSpaceStart, [itemBaseOffset + presentOffset]),
+                Quantity = ReadValue<short>(pickupSpaceStart, [itemBaseOffset + quantityOffset]),
+                PickedUp = ReadValue<short>(pickupSpaceStart, [itemBaseOffset + pickedUpOffset])
             };
         }
 
@@ -262,15 +210,15 @@ public class InGameScenarioReader : ReaderBase
             PassDesperateTimes1 = GetPassDesperateTimes(),
             PassDesperateTimes2 = GetPassDesperateTimes2(),
             PassDesperateTimes3 = GetPassDesperateTimes3(),
-            Pass1 = GetPass1(),
-            Pass2 = GetPass2(),
-            Pass3 = GetPass3(),
+            Pass1 = CurrentFile == GameFile.FileOne ? GetPass1() : (byte)0,
+            Pass2 = CurrentFile == GameFile.FileOne ? GetPass2() : (byte)0,
+            Pass3 = CurrentFile == GameFile.FileOne ? GetPass3() : (byte)0,
             PassUnderbelly1 = GetPassUnderBelly1(),
             PassUnderbelly2 = GetPassUnderBelly2(),
             PassUnderbelly3 = GetPassUnderBelly3(),
             Pass4 = GetPass4(),
-            Pass5 = GetPass5(),
-            Pass6 = GetPass6(),
+            Pass5 = CurrentFile == GameFile.FileOne ? GetPass5() : (byte)0,
+            Pass6 = CurrentFile == GameFile.FileOne ? GetPass6() : (byte)0,
             Difficulty = GetDifficultyName(GetDifficulty()),
             Items = GetItems()
         };

@@ -3,6 +3,7 @@ using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Character;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Offsets;
 using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2.Client;
@@ -23,64 +24,46 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
             DecodedLobbyRoomPlayers[i] = new DecodedLobbyRoomPlayer();
     }
 
-    public bool GetPlayerCharEnabled(int characterId)
+    private bool GetPlayerCharEnabled(int characterId)
     {
         nint basePlayerAddress = GetLobbyRoomPlayerBasePointer(characterId);
-        nint offset = CurrentFile switch
-        {
-            GameFile.FileOne => FileOnePtrs.LobbyRoomPlayerEnabledOffset,
-            GameFile.FileTwo => FileTwoPtrs.LobbyRoomPlayerEnabledOffset,
-            _ => nint.Zero
-        };
-
-        return ReadValue<bool>(basePlayerAddress, [offset]);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(LobbyRoomPlayerOffsets.PlayerEnabled);
+        return ReadValue<bool>(basePlayerAddress, offsets);
     }
 
-    public byte GetPlayerCharNpcType(int characterId)
+    private byte GetPlayerCharNpcType(int characterId)
     {
         nint basePlayerAddress = GetLobbyRoomPlayerBasePointer(characterId);
-        nint offset = CurrentFile switch
-        {
-            GameFile.FileOne => FileOnePtrs.LobbyRoomPlayerNpcTypeOffset,
-            GameFile.FileTwo => FileTwoPtrs.LobbyRoomPlayerNpcTypeOffset,
-            _ => nint.Zero
-        };
-
-        return ReadValue<byte>(basePlayerAddress, [offset]);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(LobbyRoomPlayerOffsets.PlayerNpcType);
+        return ReadValue<byte>(basePlayerAddress, offsets);
     }
 
-    public byte GetPlayerCharNameId(int characterId)
+    private byte GetPlayerCharNameId(int characterId)
     {
         nint basePlayerAddress = GetLobbyRoomPlayerBasePointer(characterId);
-        nint offset = CurrentFile switch
-        {
-            GameFile.FileOne => FileOnePtrs.LobbyRoomPlayerNameIdOffset,
-            GameFile.FileTwo => FileTwoPtrs.LobbyRoomPlayerNameIdOffset,
-            _ => nint.Zero
-        };
-
-        return ReadValue<byte>(basePlayerAddress, [offset]);
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(LobbyRoomPlayerOffsets.PlayerNameId);
+        return ReadValue<byte>(basePlayerAddress, offsets);
     }
 
-    public static string GetCharacterNpcTypeName(byte characterType)
+    private static string GetCharacterNpcTypeName(byte characterType)
         => EnumUtility.GetEnumString(characterType, CharacterNpcType.Unknown);
 
-    public static string GetCharacterName(byte characterBaseType)
+    private static string GetCharacterName(byte characterBaseType)
         => EnumUtility.GetEnumString(characterBaseType, CharacterBaseType.Unknown);
 
-    public static string GetCharacterHealthName(byte characterBaseType)
+    private static string GetCharacterHealthName(byte characterBaseType)
         => EnumUtility.GetEnumString(characterBaseType, CharacterHealth.Unknown);
 
-    public static string GetCharacterPowerName(byte characterBaseType)
+    private static string GetCharacterPowerName(byte characterBaseType)
         => EnumUtility.GetEnumString(characterBaseType, CharacterPower.Unknown);
 
-    public static string GetCharacterNpcName(byte characterBaseType)
+    private static string GetCharacterNpcName(byte characterBaseType)
         => EnumUtility.GetEnumString(characterBaseType, CharacterNpcName.Unknown);
 
-    public static string GetCharacterNpcHealthName(byte characterBaseType)
+    private static string GetCharacterNpcHealthName(byte characterBaseType)
         => EnumUtility.GetEnumString(characterBaseType, CharacterNpcHealth.Unknown);
 
-    public static string GetCharacterNpcPowerName(byte characterBaseType)
+    private static string GetCharacterNpcPowerName(byte characterBaseType)
         => EnumUtility.GetEnumString(characterBaseType, CharacterNpcPower.Unknown);
 
     public void UpdateRoomPlayers(bool debug = false)

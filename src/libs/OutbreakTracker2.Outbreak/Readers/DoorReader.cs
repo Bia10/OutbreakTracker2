@@ -13,6 +13,15 @@ public sealed class DoorReader : ReaderBase
 {
     public DecodedDoor[] DecodedDoors { get; private set; }
 
+    private enum DoorPropertyType
+    {
+        Health,
+        Flag
+    }
+
+    private const ushort DefaultHealthErrorValue = 0xFF;
+    private const ushort DefaultFlagErrorValue = 0xFF;
+
     public DoorReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
         : base(gameClient, eememMemory, logger)
     {
@@ -21,21 +30,43 @@ public sealed class DoorReader : ReaderBase
             DecodedDoors[i] = new DecodedDoor();
     }
 
-    public ushort GetHealthPoints(int doorId) => CurrentFile switch
+    private T ReadDoorProperty<T>(int doorId, DoorPropertyType propertyType, T errorValue) where T : unmanaged
     {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetDoorHealthAddress(doorId)),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetDoorHealthAddress(doorId)),
-        _ => 0xFF
-    };
+        nint doorPropertyAddress;
 
-    public ushort GetFlag(int doorId) => CurrentFile switch
-    {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetDoorFlagAddress(doorId)),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetDoorFlagAddress(doorId)),
-        _ => 0xFF
-    };
+        switch (CurrentFile)
+        {
+            case GameFile.FileOne:
+                doorPropertyAddress = propertyType switch
+                {
+                    DoorPropertyType.Health => FileOnePtrs.GetDoorHealthAddress(doorId),
+                    DoorPropertyType.Flag => FileOnePtrs.GetDoorFlagAddress(doorId),
+                    _ => nint.Zero
+                };
+                break;
+            case GameFile.FileTwo:
+                doorPropertyAddress = propertyType switch
+                {
+                    DoorPropertyType.Health => FileTwoPtrs.GetDoorHealthAddress(doorId),
+                    DoorPropertyType.Flag => FileTwoPtrs.GetDoorFlagAddress(doorId),
+                    _ => nint.Zero
+                };
+                break;
+            default: return errorValue;
+        }
 
-    public static string DecodeFlag(ushort doorHp, ushort flag)
+        return doorPropertyAddress == nint.Zero
+            ? errorValue
+            : ReadValue([doorPropertyAddress], [doorPropertyAddress], errorValue);
+    }
+
+    private ushort GetHealthPoints(int doorId)
+        => ReadDoorProperty(doorId, DoorPropertyType.Health, DefaultHealthErrorValue);
+
+    private ushort GetFlag(int doorId)
+        => ReadDoorProperty(doorId, DoorPropertyType.Flag, DefaultFlagErrorValue);
+
+    private static string DecodeFlag(ushort doorHp, ushort flag)
     {
         if (doorHp is 500)
             return "unlocked";
@@ -80,13 +111,15 @@ public sealed class DoorReader : ReaderBase
         for (int i = 0; i < maxDoors; i++)
         {
             Ulid doorUlid = GetPersistentUlidForDoorSlot(i);
+            ushort curHp = GetHealthPoints(i);
+            ushort flag = GetFlag(i);
 
             newDecodedDoors[i] = new DecodedDoor
             {
                 Id = doorUlid,
-                Hp = GetHealthPoints(i),
-                Flag = GetFlag(i),
-                Status = DecodeFlag(GetHealthPoints(i), GetFlag(i))
+                Hp = curHp,
+                Flag = flag,
+                Status = DecodeFlag(curHp, flag)
             };
         }
 

@@ -41,8 +41,9 @@ public partial class InGameScenarioViewModel : ObservableObject
 
     // TODO: unknown statuses
     // 0 = scenario not in progress
-    // 1 = loading after cinematic sequence
+    // 1 = loading after intro cinematic sequence
     // 2 = scenario in progress
+    // 3 = scenario in progress - doors/scene loading
     // 4 = scenario in progress - cinematic sequence playing
     // 7 = loading scenario
     // 12 = finished (died)

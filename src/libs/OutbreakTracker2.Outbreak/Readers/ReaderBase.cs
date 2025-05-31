@@ -185,33 +185,20 @@ public abstract class ReaderBase : IDisposable
         return computedAddress;
     }
 
-    private ReadOnlySpan<nint> GetOffsets(
-        ReadOnlySpan<nint> offsetsFile1,
-        ReadOnlySpan<nint> offsetsFile2,
+    protected ReadOnlySpan<nint> GetFileSpecificOffsets(
+        (nint[] File1, nint[] File2) offsetTuple,
         [CallerMemberName] string methodName = "")
     {
-        if (offsetsFile1.IsEmpty)
-        {
-            Logger.LogError("[{MethodName}] offsetsFile1 cannot be empty.", methodName);
-            return default;
-        }
-
-        if (offsetsFile2.IsEmpty)
-        {
-            Logger.LogError("[{MethodName}] offsetsFile2 cannot be empty.", methodName);
-            return default;
-        }
-
         ReadOnlySpan<nint> offsets = CurrentFile switch
         {
-            GameFile.FileOne => offsetsFile1,
-            GameFile.FileTwo => offsetsFile2,
-            _ => default
+            GameFile.FileOne => offsetTuple.File1,
+            GameFile.FileTwo => offsetTuple.File2,
+            _ => null!
         };
 
-        if (CurrentFile == GameFile.Unknown)
+        if (CurrentFile is GameFile.Unknown)
         {
-            Logger.LogWarning("[{MethodName}] GetOffsets called with CurrentFile set to Unknown. Returning empty offsets array.",
+            Logger.LogWarning("[{MethodName}] GetFileSpecificOffsets called with CurrentFile set to Unknown. Returning empty offsets array.",
                 methodName);
         }
         else
@@ -221,6 +208,26 @@ public abstract class ReaderBase : IDisposable
         }
 
         return offsets;
+    }
+
+    protected nint GetFileSpecificSingleNintOffset((nint File1, nint File2) offsetTuple)
+    {
+        return CurrentFile switch
+        {
+            GameFile.FileOne => offsetTuple.File1,
+            GameFile.FileTwo => offsetTuple.File2,
+            _ => nint.Zero
+        };
+    }
+
+    protected int GetFileSpecificSingleIntOffset((int File1, int File2) offsetTuple)
+    {
+        return CurrentFile switch
+        {
+            GameFile.FileOne => offsetTuple.File1,
+            GameFile.FileTwo => offsetTuple.File2,
+            _ => 0
+        };
     }
 
     private nint GetLobbyBasePointer(
@@ -278,15 +285,6 @@ public abstract class ReaderBase : IDisposable
         return basePointer;
     }
 
-    private bool ValidateOffsetArrays(ReadOnlySpan<nint> offsetsFile1, ReadOnlySpan<nint> offsetsFile2, string methodName)
-    {
-        if (!offsetsFile1.IsEmpty && !offsetsFile2.IsEmpty)
-            return true;
-
-        Logger.LogError("[{MethodName}] Offsets arrays cannot be empty.", methodName);
-        return false;
-    }
-
     private bool TryComputeLobbyAddress(
         int slotIndex, ReadOnlySpan<nint> offsetsFile1,
         ReadOnlySpan<nint> offsetsFile2,
@@ -295,10 +293,8 @@ public abstract class ReaderBase : IDisposable
     {
         address = nint.Zero;
 
-        if (!ValidateOffsetArrays(offsetsFile1, offsetsFile2, methodName))
-            return false;
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets((offsetsFile1.ToArray(), offsetsFile2.ToArray()), methodName);
 
-        ReadOnlySpan<nint> offsets = GetOffsets(offsetsFile1, offsetsFile2, methodName);
         nint basePtr = GetLobbyBasePointer(slotIndex, methodName);
 
         if (basePtr == nint.Zero)
@@ -324,13 +320,12 @@ public abstract class ReaderBase : IDisposable
         address = nint.Zero;
         errorMessage = null;
 
-        if (!ValidateOffsetArrays(offsetsFile1, offsetsFile2, methodName))
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets((offsetsFile1.ToArray(), offsetsFile2.ToArray()), methodName);
+        if (offsets.IsEmpty)
         {
-            errorMessage = $"[{methodName}] Offsets arrays cannot be empty.";
+            errorMessage = $"[{methodName}] Selected offsets for current game file {CurrentFile} are empty.";
             return false;
         }
-
-        ReadOnlySpan<nint> offsets = GetOffsets(offsetsFile1, offsetsFile2, methodName);
 
         address = ComputeAddress(offsets, methodName);
 
@@ -351,9 +346,6 @@ public abstract class ReaderBase : IDisposable
         Func<nint, TResult> readOperation,
         [CallerMemberName] string methodName = "")
     {
-        if (!ValidateOffsetArrays(offsetsFile1, offsetsFile2, methodName))
-            return errorValue;
-
         if (!TryComputeAddress(offsetsFile1, offsetsFile2, out nint address, out string? errorMessage, methodName))
         {
             Logger.LogError("Failed to read {Type} for method '{MethodName}' due to address computation error: {ErrorMessage}",
@@ -363,9 +355,14 @@ public abstract class ReaderBase : IDisposable
 
         TResult result = readOperation(address);
 
-        if (EqualityComparer<TResult>.Default.Equals(result, errorValue))
+        if (EqualityComparer<TResult>.Default.Equals(result, errorValue) && address != nint.Zero) // Check if errorValue is default AND address was valid
         {
             Logger.LogDebug("[{MethodName}] Read operation for {Type} at address 0x{Address:X} returned error value.",
+                methodName, typeof(TResult).Name, address);
+        }
+        else if (address == nint.Zero)
+        {
+            Logger.LogWarning("[{MethodName}] Read operation for {Type} failed because address was null (0x{Address:X}).",
                 methodName, typeof(TResult).Name, address);
         }
         else
@@ -399,18 +396,20 @@ public abstract class ReaderBase : IDisposable
         Func<nint, TResult> readOperation,
         [CallerMemberName] string methodName = "")
     {
-        if (!ValidateOffsetArrays(offsetsFile1, offsetsFile2, methodName))
-            return errorValue;
-
         if (!TryComputeLobbyAddress(slotIndex, offsetsFile1, offsetsFile2, out nint address, methodName))
             return errorValue;
 
         TResult result = readOperation(address);
 
-        if (EqualityComparer<TResult>.Default.Equals(result, errorValue))
+        if (EqualityComparer<TResult>.Default.Equals(result, errorValue) && address != nint.Zero)
         {
             Logger.LogDebug("[{MethodName}] Read operation for {Type} at address 0x{Address:X} for slot {SlotIndex} returned error value.",
                 methodName, typeof(TResult).Name, address, slotIndex);
+        }
+        else if (address == nint.Zero)
+        {
+            Logger.LogWarning("[{MethodName}] Read operation for {Type} failed for slot {SlotIndex} because address was null (0x{Address:X}).",
+                methodName, typeof(TResult).Name, slotIndex, address);
         }
         else
         {
@@ -467,18 +466,18 @@ public abstract class ReaderBase : IDisposable
         {
             GameFile.FileOne => EnumUtility.GetEnumString(scenarioId, defaultFileOne),
             GameFile.FileTwo => EnumUtility.GetEnumString(scenarioId, defaultFileTwo),
-            _ => null!
+            _ => "Unknown Scenario"
         };
 
-        if (string.IsNullOrEmpty(scenarioName))
+        if (string.IsNullOrEmpty(scenarioName) || scenarioName.Equals("Unknown Scenario", StringComparison.Ordinal))
         {
-            Logger.LogError("[{MethodName}] Unrecognized game file '{CurrentFile}'. Cannot determine scenario string for ID {ScenarioId}.", nameof(GetScenarioString),
-                CurrentFile, scenarioId);
+            Logger.LogError("[{MethodName}] Unrecognized game file '{CurrentFile}' or invalid scenario ID {ScenarioId}. Cannot determine scenario string.",
+                nameof(GetScenarioString), CurrentFile, scenarioId);
             return "Unknown Scenario";
         }
 
-        Logger.LogDebug("[{MethodName}] Retrieved scenario string '{ScenarioName}' for ID {ScenarioId} with game file {GameFile}", nameof(GetScenarioString),
-            scenarioName, scenarioId, CurrentFile);
+        Logger.LogDebug("[{MethodName}] Retrieved scenario string '{ScenarioName}' for ID {ScenarioId} with game file {GameFile}",
+            nameof(GetScenarioString), scenarioName, scenarioId, CurrentFile);
         return scenarioName;
     }
 
