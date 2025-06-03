@@ -3,6 +3,7 @@ using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Enemy;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Offsets;
 using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2.Client;
@@ -11,7 +12,7 @@ using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
-public class EnemiesReader : ReaderBase
+public sealed class EnemiesReader : ReaderBase
 {
     public DecodedEnemy[] DecodedEnemies2 { get; private set; }
 
@@ -29,70 +30,71 @@ public class EnemiesReader : ReaderBase
             DecodedEnemies2[i] = new DecodedEnemy();
     }
 
-    public byte GetNameId(int enemyId) => CurrentFile switch
+    private nint GetEnemyBaseAddressForCurrentFile(int enemyId)
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetEnemyAddress(enemyId), [FileOnePtrs.EnemyNameIdOffset]),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetEnemyAddress(enemyId), [FileTwoPtrs.EnemyNameIdOffset]),
-        _ => 0xFF
-    };
+        return CurrentFile switch
+        {
+            GameFile.FileOne => FileOnePtrs.GetEnemyAddress(enemyId),
+            GameFile.FileTwo => FileTwoPtrs.GetEnemyAddress(enemyId),
+            _ => nint.Zero
+        };
+    }
 
-    public byte GetType(int enemyId) => CurrentFile switch
+    private byte GetNameId(nint baseAddress)
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetEnemyAddress(enemyId), [FileOnePtrs.EnemyTypeOffset]),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetEnemyAddress(enemyId), [FileTwoPtrs.EnemyTypeOffset]),
-        _ => 0xFF
-    };
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(EnemyOffsets.NameId);
+        return ReadValue<byte>(baseAddress, offsets);
+    }
 
-    public byte GetEnabled(int enemyId) => CurrentFile switch
+    private byte GetType(nint baseAddress)
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetEnemyAddress(enemyId), [FileOnePtrs.EnemyEnabled]),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetEnemyAddress(enemyId), [FileTwoPtrs.EnemyEnabled]),
-        _ => 0xFF
-    };
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(EnemyOffsets.Type);
+        return ReadValue<byte>(baseAddress, offsets);
+    }
 
-    public byte GetInGame(int enemyId) => CurrentFile switch
+    private byte GetEnabled(nint baseAddress)
     {
-        GameFile.FileOne => ReadValue<byte>(FileOnePtrs.GetEnemyAddress(enemyId), [FileOnePtrs.EnemyInGame]),
-        GameFile.FileTwo => ReadValue<byte>(FileTwoPtrs.GetEnemyAddress(enemyId), [FileTwoPtrs.EnemyInGame]),
-        _ => 0xFF
-    };
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(EnemyOffsets.Enabled);
+        return ReadValue<byte>(baseAddress, offsets);
+    }
 
-    public ushort GetCurHealth(int enemyId) => CurrentFile switch
+    private byte GetInGame(nint baseAddress)
     {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetEnemyAddress(enemyId), [FileOnePtrs.EnemyHpOffset]),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetEnemyAddress(enemyId), [FileTwoPtrs.EnemyHpOffset]),
-        _ => ushort.MaxValue
-    };
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(EnemyOffsets.InGame);
+        return ReadValue<byte>(baseAddress, offsets);
+    }
 
-    public ushort GetMaxHealth(int enemyId) => CurrentFile switch
+    private ushort GetCurHealth(nint baseAddress)
     {
-        GameFile.FileOne => ReadValue<ushort>(FileOnePtrs.GetEnemyAddress(enemyId), [FileOnePtrs.EnemyMaxHpOffset]),
-        GameFile.FileTwo => ReadValue<ushort>(FileTwoPtrs.GetEnemyAddress(enemyId), [FileTwoPtrs.EnemyMaxHpOffset]),
-        _ => ushort.MaxValue
-    };
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(EnemyOffsets.CurHealth);
+        return ReadValue<ushort>(baseAddress, offsets);
+    }
 
-    public static string GetEnemyName(byte nameId)
+    private ushort GetMaxHealth(nint baseAddress)
+    {
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(EnemyOffsets.MaxHealth);
+        return ReadValue<ushort>(baseAddress, offsets);
+    }
+
+    private static string GetEnemyName(byte nameId)
         => EnumUtility.GetEnumString(nameId, EnemyType.Unknown);
 
-    public static string GetZombieName(byte typeId)
+    private static string GetZombieName(byte typeId)
         => EnumUtility.GetEnumString(typeId, ZombieType.Unknown0);
 
-    public static string GetDogName(byte typeId)
+    private static string GetDogName(byte typeId)
         => EnumUtility.GetEnumString(typeId, DogType.Unknown0);
 
-    public static string GetScissorTailName(byte typeId)
+    private static string GetScissorTailName(byte typeId)
         => EnumUtility.GetEnumString(typeId, ScissorTailType.ScissorTail);
 
-    public static string GetLionName(byte typeId)
+    private static string GetLionName(byte typeId)
         => EnumUtility.GetEnumString(typeId, LionType.Stalker);
 
-    public static string GetGiantName(byte typeId)
-        => EnumUtility.GetEnumString(typeId, TyrantType.Tyrant);
-
-    public static string GetThanatosName(byte typeId)
+    private static string GetThanatosName(byte typeId)
         => EnumUtility.GetEnumString(typeId, ThanatosType.Thanatos);
 
-    public static string GetTyrantName(byte typeId)
+    private static string GetTyrantName(byte typeId)
         => EnumUtility.GetEnumString(typeId, TyrantType.Tyrant);
 
     public void UpdateEnemies()
@@ -101,14 +103,16 @@ public class EnemiesReader : ReaderBase
 
         for (int i = 0; i < GameConstants.MaxEnemies1; i++)
         {
+            nint enemyBaseAddress = GetEnemyBaseAddressForCurrentFile(i);
+
             newDecodedEnemies1[i] = new DecodedEnemy
             {
-                Enabled = GetEnabled(i),
-                InGame = GetInGame(i),
-                CurHp = GetCurHealth(i),
-                MaxHp = GetMaxHealth(i),
-                TypeId = GetType(i),
-                NameId = GetNameId(i)
+                Enabled = GetEnabled(enemyBaseAddress),
+                InGame = GetInGame(enemyBaseAddress),
+                CurHp = GetCurHealth(enemyBaseAddress),
+                MaxHp = GetMaxHealth(enemyBaseAddress),
+                TypeId = GetType(enemyBaseAddress),
+                NameId = GetNameId(enemyBaseAddress)
             };
         }
 
@@ -125,12 +129,14 @@ public class EnemiesReader : ReaderBase
 
         DecodedEnemy[] newDecodedEnemies2 = new DecodedEnemy[GameConstants.MaxEnemies2];
 
+        int entrySize = GetFileSpecificSingleIntOffset(EnemyOffsets.EnemyListEntrySize);
+
         for (int i = 0; i < GameConstants.MaxEnemies2; i++)
         {
             newDecodedEnemies2[i] = new DecodedEnemy();
             newDecodedEnemies2[i].Id = GetPersistentUlidForEnemies2Slot(i);
 
-            int curMobOffset = 0x60 * i;
+            int curMobOffset = entrySize * i;
 
             switch (CurrentFile)
             {
