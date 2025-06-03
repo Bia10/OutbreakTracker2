@@ -24,23 +24,30 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
             DecodedLobbyRoomPlayers[i] = new DecodedLobbyRoomPlayer();
     }
 
-    private bool GetPlayerCharEnabled(int characterId)
+    private nint GetLobbyRoomPlayerBaseAddress(int characterId)
     {
-        nint basePlayerAddress = GetLobbyRoomPlayerBasePointer(characterId);
+        return CurrentFile switch
+        {
+            GameFile.FileOne => FileOnePtrs.GetLobbyRoomPlayerAddress(characterId),
+            GameFile.FileTwo => FileTwoPtrs.GetLobbyRoomPlayerAddress(characterId),
+            _ => nint.Zero
+        };
+    }
+
+    private bool GetPlayerCharEnabled(nint basePlayerAddress)
+    {
         ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(LobbyRoomPlayerOffsets.PlayerEnabled);
         return ReadValue<bool>(basePlayerAddress, offsets);
     }
 
-    private byte GetPlayerCharNpcType(int characterId)
+    private byte GetPlayerCharNpcType(nint basePlayerAddress)
     {
-        nint basePlayerAddress = GetLobbyRoomPlayerBasePointer(characterId);
         ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(LobbyRoomPlayerOffsets.PlayerNpcType);
         return ReadValue<byte>(basePlayerAddress, offsets);
     }
 
-    private byte GetPlayerCharNameId(int characterId)
+    private byte GetPlayerCharNameId(nint basePlayerAddress)
     {
-        nint basePlayerAddress = GetLobbyRoomPlayerBasePointer(characterId);
         ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(LobbyRoomPlayerOffsets.PlayerNameId);
         return ReadValue<byte>(basePlayerAddress, offsets);
     }
@@ -79,11 +86,16 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
         for (int i = 0; i < GameConstants.MaxPlayers; i++)
         {
             newDecodedLobbyRoomPlayers[i] = new DecodedLobbyRoomPlayer();
-            newDecodedLobbyRoomPlayers[i].IsEnabled = GetPlayerCharEnabled(i);
-            if (!newDecodedLobbyRoomPlayers[i].IsEnabled) continue;
 
-            newDecodedLobbyRoomPlayers[i].NameId = GetPlayerCharNameId(i);
-            newDecodedLobbyRoomPlayers[i].NpcType = GetCharacterNpcTypeName(GetPlayerCharNpcType(i));
+            nint basePlayerAddress = GetLobbyRoomPlayerBaseAddress(i);
+            if (basePlayerAddress == nint.Zero || GetPlayerCharEnabled(basePlayerAddress) == false)
+                continue;
+
+            newDecodedLobbyRoomPlayers[i].IsEnabled = true;
+            newDecodedLobbyRoomPlayers[i].NameId = GetPlayerCharNameId(basePlayerAddress);
+
+            byte playerCharNpcTypeId = GetPlayerCharNpcType(basePlayerAddress);
+            newDecodedLobbyRoomPlayers[i].NpcType = GetCharacterNpcTypeName(playerCharNpcTypeId);
 
             switch (newDecodedLobbyRoomPlayers[i].NpcType)
             {
