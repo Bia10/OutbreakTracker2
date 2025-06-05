@@ -24,20 +24,27 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - name: Build solution
-        run: dotnet build src/OutbreakTracker2.sln --configuration Release --no-restore --output ./build_output
+        run: dotnet build src/OutbreakTracker2.sln --configuration Release --no-restore
         working-directory: ${{ github.workspace }}
 
-      - name: Archive build output
+      - name: Publish main project
+        id: publish_project
+        run: |
+          dotnet publish src/app/OutbreakTracker2.App/OutbreakTracker2.App.csproj --configuration Release --no-build --output ${{ github.workspace }}/publish_output
+          echo "Main project published to ${{ github.workspace }}/publish_output"
+        working-directory: ${{ github.workspace }}
+
+      - name: Archive published output
         shell: pwsh
         run: |
-          Compress-Archive -Path ${{ github.workspace }}/build_output/* -DestinationPath ${{ github.workspace }}/OutbreakTracker2-alpha-build.zip
-          Write-Host "Build output archived to OutbreakTracker2-alpha-build.zip"
+          Compress-Archive -Path ${{ github.workspace }}/publish_output/* -DestinationPath ${{ github.workspace }}/OutbreakTracker2-alpha-published.zip -Force
+          Write-Host "Published output archived to OutbreakTracker2-alpha-published.zip"
 
       - name: Archive source code (excluding specified folders)
         shell: bash
         run: |
-          cd ${{ github.workspace }}/src
-          zip -r ${{ github.workspace }}/OutbreakTracker2-alpha-source.zip . -x "insights/*" -x ".idea/*"
+          cd "${{ github.workspace }}/src"
+          zip -r "${{ github.workspace }}/OutbreakTracker2-alpha-source.zip" . -x "insights/*" -x ".idea/*"
           echo "Source code archived to OutbreakTracker2-alpha-source.zip, excluding specified folders."
 
       - name: Create Release Tag
@@ -63,19 +70,19 @@ jobs:
             **Commit:** `${{ github.sha }}`
 
             This release includes:
-            - Build artifacts (executables, DLLs, etc.)
+            - Published application (executables, DLLs, etc.)
             - Source code (excluding 'insights' and '.idea' folders from 'src')
-          draft: true
+          draft: false
           prerelease: true
 
-      - name: Upload Build Artifact to Release
+      - name: Upload Published Artifact to Release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/OutbreakTracker2-alpha-build.zip
-          asset_name: OutbreakTracker2-alpha-build-${{ steps.create_tag.outputs.TAG_NAME }}.zip
+          asset_path: ${{ github.workspace }}/OutbreakTracker2-alpha-published.zip
+          asset_name: OutbreakTracker2-alpha-published-${{ steps.create_tag.outputs.TAG_NAME }}.zip
           asset_content_type: application/zip
 
       - name: Upload Source Code to Release
