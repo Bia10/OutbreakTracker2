@@ -44,7 +44,7 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         FontWeight="SemiBold"
-                        Text="{Binding CriticalBonus, StringFormat='Critical Bonus: {0:P0}'}" />
+                        Text="{Binding CriticalBonus, StringFormat='Critical Bonus: {0} %'}" />
                 </StackPanel>
             </suki:GlassCard>
 
