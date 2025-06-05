@@ -35,17 +35,19 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - name: Archive published output
-        shell: pwsh
-        run: |
-          Compress-Archive -Path ${{ github.workspace }}/publish_output/* -DestinationPath ${{ github.workspace }}/OutbreakTracker2-alpha-published.zip -Force
-          Write-Host "Published output archived to OutbreakTracker2-alpha-published.zip"
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: 'zip'
+          filename: 'OutbreakTracker2-alpha-published.zip'
+          path: '${{ github.workspace }}/publish_output'
 
       - name: Archive source code (excluding specified folders)
-        shell: bash
-        run: |
-          cd "${{ github.workspace }}/src"
-          zip -r "${{ github.workspace }}/OutbreakTracker2-alpha-source.zip" . -x "insights/*" -x ".idea/*"
-          echo "Source code archived to OutbreakTracker2-alpha-source.zip, excluding specified folders."
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: 'zip'
+          filename: 'OutbreakTracker2-alpha-source.zip'
+          path: '${{ github.workspace }}/src'
+          exclusions: '*.git* .github/* insights/* .idea/*'
 
       - name: Create Release Tag
         id: create_tag
