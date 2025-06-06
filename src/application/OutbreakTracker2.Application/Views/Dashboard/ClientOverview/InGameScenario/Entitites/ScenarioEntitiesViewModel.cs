@@ -30,7 +30,7 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
 
         foreach (DecodedItem newItem in newItemsList)
         {
-            DecodedItem? existingItem = Enumerable.FirstOrDefault<DecodedItem>(Items, existingItem => existingItem.SlotIndex == newItem.SlotIndex && existingItem.Id == newItem.Id);
+            DecodedItem? existingItem = Enumerable.FirstOrDefault(Items, existingItem => existingItem.SlotIndex == newItem.SlotIndex && existingItem.Id == newItem.Id);
             if (existingItem == null)
                 Items.Add(newItem);
             else
@@ -66,7 +66,7 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
 
         foreach (DecodedEnemy newEnemy in newEnemiesList)
         {
-            DecodedEnemy? existingEnemy = Enumerable.FirstOrDefault<DecodedEnemy>(Enemies, e => e.SlotId == newEnemy.SlotId && e.Id == newEnemy.Id);
+            DecodedEnemy? existingEnemy = Enumerable.FirstOrDefault(Enemies, e => e.SlotId == newEnemy.SlotId && e.Id == newEnemy.Id);
 
             if (existingEnemy is null)
                 Enemies.Add(newEnemy);
@@ -107,7 +107,7 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
 
         foreach (DecodedDoor newDoor in newDoorsList)
         {
-            DecodedDoor? existingDoor = Enumerable.FirstOrDefault<DecodedDoor>(Doors, d => d.Id == newDoor.Id);
+            DecodedDoor? existingDoor = Enumerable.FirstOrDefault(Doors, d => d.Id == newDoor.Id);
 
             if (existingDoor is null)
                 Doors.Add(newDoor);

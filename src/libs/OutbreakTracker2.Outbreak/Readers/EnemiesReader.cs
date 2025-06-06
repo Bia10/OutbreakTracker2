@@ -161,7 +161,7 @@ public sealed class EnemiesReader : ReaderBase
                     break;
 
                 case GameFile.Unknown: break;
-                default: throw new ArgumentOutOfRangeException();
+                default: throw new ArgumentOutOfRangeException(nameof(CurrentFile), CurrentFile, "Unexpected GameFile value.");
             }
 
             string enemyName = GetEnemyName(newDecodedEnemies2[i].NameId);

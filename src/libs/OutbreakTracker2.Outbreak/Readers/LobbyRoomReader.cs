@@ -8,6 +8,7 @@ using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2.Client;
 using OutbreakTracker2.PCSX2.EEmem;
+using System.Globalization;
 using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
@@ -64,8 +65,9 @@ public sealed class LobbyRoomReader : ReaderBase
             TimeSpan timeSpan = TimeSpan.FromSeconds(GetTime());
             return $"{timeSpan.Hours:D2}h:{timeSpan.Minutes:D2}m:{timeSpan.Seconds:D2}s";
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Error getting time");
             return "Invalid time format";
         }
     }
@@ -78,10 +80,13 @@ public sealed class LobbyRoomReader : ReaderBase
 
         if (debug) Logger.LogDebug("Decoding lobby room");
 
+        short maxPlayers = GetMaxPlayers();
+        string maxPlayersString = GetMaxPlayersString(maxPlayers);
+
         DecodedLobbyRoom = new DecodedLobbyRoom
         {
             CurPlayer = GetCurPlayers(),
-            MaxPlayer = short.Parse(GetMaxPlayersString(GetMaxPlayers())),
+            MaxPlayer = short.Parse(maxPlayersString, CultureInfo.InvariantCulture),
             Difficulty = GetDifficultyName(GetDifficulty()),
             Status = GetStatusName(GetStatus()),
             ScenarioName = GetScenarioName(GetScenarioId()),

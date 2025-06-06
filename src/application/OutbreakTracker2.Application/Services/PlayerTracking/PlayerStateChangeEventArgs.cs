@@ -15,11 +15,3 @@ public sealed class PlayerStateChangeEventArgs : EventArgs
         Type = type;
     }
 }
-
-public enum ToastType
-{
-    Info,
-    Warning,
-    Error,
-    Success
-}

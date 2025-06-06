@@ -53,29 +53,29 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
     [RelayCommand]
     public async Task LaunchFile1Async()
     {
-        string? isoPath = await _pcsx2Locator.FindOutbreakFile1Async();
+        string? isoPath = await _pcsx2Locator.FindOutbreakFile1Async().ConfigureAwait(false);
         if (isoPath is null)
         {
             await _toastService.InvokeErrorToastAsync(
-                "Outbreak File 1 ISO not found! Please check your game installations.");
+                "Outbreak File 1 ISO not found! Please check your game installations.").ConfigureAwait(false);
             return;
         }
 
-        await LaunchGameAsync(isoPath);
+        await LaunchGameAsync(isoPath).ConfigureAwait(false);
     }
 
     [RelayCommand]
     public async Task LaunchFile2Async()
     {
-        string? isoPath = await _pcsx2Locator.FindOutbreakFile2Async();
+        string? isoPath = await _pcsx2Locator.FindOutbreakFile2Async().ConfigureAwait(false);
         if (isoPath is null)
         {
             await _toastService.InvokeErrorToastAsync(
-                "Outbreak File 2 ISO not found! Please check your game installations.");
+                "Outbreak File 2 ISO not found! Please check your game installations.").ConfigureAwait(false);
             return;
         }
 
-        await LaunchGameAsync(isoPath);
+        await LaunchGameAsync(isoPath).ConfigureAwait(false);
     }
 
     [RelayCommand]
@@ -106,12 +106,12 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
 
         try
         {
-            string? pcsx2ExePath = await _pcsx2Locator.FindExeAsync(ct: cts.Token);
+            string? pcsx2ExePath = await _pcsx2Locator.FindExeAsync(ct: cts.Token).ConfigureAwait(false);
             if (pcsx2ExePath is null)
             {
                 _logger.LogError("Failed to find PCSX2 executable!");
-                await _toastService.InvokeErrorToastAsync("PCSX2 executable not found!");
-                await _toastService.DismissToastAsync(launchToast);
+                await _toastService.InvokeErrorToastAsync("PCSX2 executable not found!").ConfigureAwait(false);
+                await _toastService.DismissToastAsync(launchToast).ConfigureAwait(false);
                 return;
             }
 
@@ -124,7 +124,7 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
             Observable<Unit> launchAndInitializePipeline = Observable.FromAsync(async _ =>
                 {
                     _logger.LogInformation("Initiating PCSX2 process launch via ProcessLauncher.LaunchAsync");
-                    await _processLauncher.LaunchAsync(pcsx2ExePath, arguments, cts.Token);
+                    await _processLauncher.LaunchAsync(pcsx2ExePath, arguments, cts.Token).ConfigureAwait(false);
                     _logger.LogInformation("PCSX2 process launched successfully");
 
                     Process? pcsx2Process = _processLauncher.ClientMonitoredProcess;
@@ -134,10 +134,10 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
                         throw new InvalidOperationException("PCSX2 process not available.");
                     }
 
-                    gameClient = await _gameClientFactory.CreateAndAttachGameClientAsync(pcsx2Process, cts.Token);
+                    gameClient = await _gameClientFactory.CreateAndAttachGameClientAsync(pcsx2Process, cts.Token).ConfigureAwait(false);
                     _logger.LogInformation("GameClient created and attached successfully.");
 
-                    await _dataManager.InitializeAsync(gameClient, cts.Token);
+                    await _dataManager.InitializeAsync(gameClient, cts.Token).ConfigureAwait(false);
                     _logger.LogInformation("DataManager initialized successfully");
 
                     return Unit.Default;
@@ -147,7 +147,7 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
             launchAndInitializePipeline.Timeout(TimeSpan.FromSeconds(LaunchTimeout))
                 .SubscribeAwait(onNextAsync: async (_, _) =>
                     {
-                        await _toastService.DismissToastAsync(launchToast);
+                        await _toastService.DismissToastAsync(launchToast).ConfigureAwait(false);
                         _logger.LogInformation("Client launched and data manager initialized successfully");
                         IsClientLaunching = false;
                     }, onErrorResume: async void (innerEx) =>
@@ -155,21 +155,21 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
                         try
                         {
                             _logger.LogError(innerEx, "Error in client launch/data manager stream");
-                            await _toastService.DismissToastAsync(launchToast);
+                            await _toastService.DismissToastAsync(launchToast).ConfigureAwait(false);
 
                             switch (innerEx)
                             {
                                 case TimeoutException:
-                                    await _toastService.InvokeErrorToastAsync("PCSX2 client launch and initialization timed out!");
+                                    await _toastService.InvokeErrorToastAsync("PCSX2 client launch and initialization timed out!").ConfigureAwait(false);
                                     break;
                                 case OperationCanceledException:
-                                    await _toastService.InvokeWarningToastAsync("PCSX2 client launch cancelled!");
+                                    await _toastService.InvokeWarningToastAsync("PCSX2 client launch cancelled!").ConfigureAwait(false);
                                     break;
                                 case InvalidOperationException or ArgumentNullException:
-                                    await _toastService.InvokeErrorToastAsync($"Setup error: {innerEx.Message}");
+                                    await _toastService.InvokeErrorToastAsync($"Setup error: {innerEx.Message}").ConfigureAwait(false);
                                     break;
                                 default:
-                                    await _toastService.InvokeErrorToastAsync($"An unexpected error occurred: {innerEx.Message}");
+                                    await _toastService.InvokeErrorToastAsync($"An unexpected error occurred: {innerEx.Message}").ConfigureAwait(false);
                                     break;
                             }
 
@@ -184,7 +184,7 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
                         try
                         {
                             _logger.LogInformation("Client launch/data manager stream completed with {Status}", result.IsSuccess ? "success" : "failure");
-                            await _toastService.DismissToastAsync(launchToast);
+                            await _toastService.DismissToastAsync(launchToast).ConfigureAwait(false);
                         }
                         catch (Exception ex)
                         {
@@ -197,17 +197,17 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
         catch (OperationCanceledException)
         {
             _logger.LogInformation("Client launch cancelled during initial setup");
-            await _toastService.InvokeWarningToastAsync("PCSX2 client launch cancelled!");
+            await _toastService.InvokeWarningToastAsync("PCSX2 client launch cancelled!").ConfigureAwait(false);
         }
         catch (TimeoutException)
         {
             _logger.LogError("PCSX2 client launch timed out during initial setup");
-            await _toastService.InvokeErrorToastAsync("PCSX2 client launch timed out!");
+            await _toastService.InvokeErrorToastAsync("PCSX2 client launch timed out!").ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An unexpected error occurred during PCSX2 launch setup");
-            await _toastService.InvokeErrorToastAsync($"An unexpected error occurred: {ex.Message}");
+            await _toastService.InvokeErrorToastAsync($"An unexpected error occurred: {ex.Message}").ConfigureAwait(false);
         }
         finally
         {

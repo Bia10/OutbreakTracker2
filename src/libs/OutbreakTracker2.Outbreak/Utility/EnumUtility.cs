@@ -1,6 +1,7 @@
 ﻿using FastEnumUtility;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Rooms;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace OutbreakTracker2.Outbreak.Utility;
@@ -175,7 +176,7 @@ public static class EnumUtility
                 return true;
         }
 
-        return TryParseByValueOrMember(value.ToString(), out result);
+        return TryParseByValueOrMember(value.ToString(CultureInfo.InvariantCulture), out result);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -191,7 +192,7 @@ public static class EnumUtility
                 return true;
         }
 
-        return TryParseByValueOrMember(value.ToString(), out result);
+        return TryParseByValueOrMember(value.ToString(CultureInfo.InvariantCulture), out result);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

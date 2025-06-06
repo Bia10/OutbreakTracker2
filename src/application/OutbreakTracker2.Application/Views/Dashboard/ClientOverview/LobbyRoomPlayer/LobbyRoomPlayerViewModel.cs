@@ -79,5 +79,5 @@ public partial class LobbyRoomPlayerViewModel : ObservableObject
            Id == viewModel.Id;
 
     public override int GetHashCode()
-        => HashCode.Combine<Ulid>(Id);
+        => HashCode.Combine(Id);
 }

@@ -93,7 +93,7 @@ public class ProcessLocator : IProcessLocator
             });
     }
 
-    public List<int> GetProcessIds(string processName)
+    public IReadOnlyList<int> GetProcessIds(string processName)
     {
         try
         {

@@ -94,5 +94,5 @@ public partial class LobbySlotViewModel : ObservableObject
            Id == viewModel.Id;
 
     public override int GetHashCode()
-        => HashCode.Combine<Ulid>(Id);
+        => HashCode.Combine(Id);
 }

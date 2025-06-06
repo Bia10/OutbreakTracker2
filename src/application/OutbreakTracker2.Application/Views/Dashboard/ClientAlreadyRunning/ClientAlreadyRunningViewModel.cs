@@ -35,7 +35,7 @@ public partial class ClientAlreadyRunningViewModel : ObservableObject
         _dataManager = dataManager;
     }
 
-    public void UpdateProcesses(List<int> processIds)
+    public void UpdateProcesses(IReadOnlyList<int> processIds)
     {
         RunningProcesses.Clear();
 
@@ -62,20 +62,20 @@ public partial class ClientAlreadyRunningViewModel : ObservableObject
     {
         try
         {
-            await _processLauncher.AttachAsync(processId);
-            await _toastService.InvokeSuccessToastAsync("Successfully attached to process!");
+            await _processLauncher.AttachAsync(processId).ConfigureAwait(false);
+            await _toastService.InvokeSuccessToastAsync("Successfully attached to process!").ConfigureAwait(false);
 
             GameClient? activeGameClient = _processLauncher.GetActiveGameClient();
             if (activeGameClient is not null)
             {
-                await _dataManager.InitializeAsync(activeGameClient, CancellationToken.None);
+                await _dataManager.InitializeAsync(activeGameClient, CancellationToken.None).ConfigureAwait(false);
                 _logger.LogInformation("DataManager initialized successfully");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to attach to process {ProcessId}", processId);
-            await _toastService.InvokeErrorToastAsync($"Attachment failed: {ex.Message}");
+            await _toastService.InvokeErrorToastAsync($"Attachment failed: {ex.Message}").ConfigureAwait(false);
             UpdateProcesses([processId]);
         }
     }

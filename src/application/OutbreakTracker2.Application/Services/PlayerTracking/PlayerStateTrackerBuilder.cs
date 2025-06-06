@@ -1,4 +1,5 @@
-﻿using OutbreakTracker2.Outbreak.Models;
+﻿using OutbreakTracker2.Application.Services.PlayerTracking.Rules;
+using OutbreakTracker2.Outbreak.Models;
 using System;
 using System.Collections.Generic;
 

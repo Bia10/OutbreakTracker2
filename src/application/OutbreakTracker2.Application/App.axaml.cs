@@ -229,7 +229,7 @@ public class App : Avalonia.Application
         services.AddTransient<LobbyRoomViewModel>();
         services.AddTransient<ItemImageViewModel>();
         services.AddSingleton<MapCanvasViewModel>();
-        
+
         services.AddTransient<ICharacterBustViewModelFactory, CharacterBustViewModelFactory>();
         services.AddTransient<ILobbyRoomPlayerViewModelFactory, LobbyRoomPlayerViewModelFactory>();
         services.AddTransient<IImageViewModelFactory, ImageViewModelFactory>();

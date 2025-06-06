@@ -31,7 +31,7 @@ public class LogDataStorageService : ILogDataStorageService, IAsyncDisposable
     {
         try
         {
-            await foreach (LogModel logModel in _logChannel.Reader.ReadAllAsync(cancellationToken))
+            await foreach (LogModel logModel in _logChannel.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 Entries.AddLast(logModel);

@@ -105,7 +105,7 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
             _selectedLogItem = value;
             OnPropertyChanged();
             if (CopyOnSelect)
-                CopySelectedLog();
+                _ = CopySelectedLog();
         }
     }
 
@@ -163,7 +163,7 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
 
             ct.ThrowIfCancellationRequested();
 
-            HashSet<LogLevel> selectedLevels = Enumerable.ToHashSet<LogLevel>(SelectedLogLevels);
+            HashSet<LogLevel> selectedLevels = Enumerable.ToHashSet(SelectedLogLevels);
             IEnumerable<LogModel> filteredQuery = currentEntriesSnapshot;
 
             if (selectedLevels.Count > 0)
@@ -184,7 +184,7 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
                     LogEntryToScrollTo = _filteredEntries.Last();
                 else
                     LogEntryToScrollTo = null;
-            }, ct);
+            }, ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -224,7 +224,7 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
         });
     }
 
-    private void CopySelectedLog()
+    private async Task CopySelectedLog()
     {
         if (SelectedLogItem is null)
             return;
@@ -233,7 +233,7 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
         if (!string.IsNullOrEmpty(SelectedLogItem.DisplayException))
             text += Environment.NewLine + SelectedLogItem.DisplayException;
 
-        _clipboardService.CopyToClipboard(text);
+        await _clipboardService.CopyToClipboard(text).ConfigureAwait(false);
     }
 
     [RelayCommand]

@@ -9,6 +9,7 @@ using OutbreakTracker2.Application.Views.Dashboard.ClientNotRunning;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview;
 using R3;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OutbreakTracker2.Application.Views.Dashboard;
 
@@ -55,7 +56,7 @@ public partial class DashboardViewModel : PageBase
                 if (isRunning)
                 {
                     int? clientProcessId = processLauncher.ClientMonitoredProcess?.Id;
-                    List<int> processIds = processLocator.GetProcessIds("pcsx2-qt");
+                    IReadOnlyList<int> processIds = processLocator.GetProcessIds("pcsx2-qt");
 
                     if (clientProcessId.HasValue && processIds.Contains(clientProcessId.Value))
                         HandleMonitoredProcess();
@@ -78,7 +79,7 @@ public partial class DashboardViewModel : PageBase
         CurrentView = ClientOverviewViewModel;
     }
 
-    private void HandleUnmonitoredProcess(List<int> processIds)
+    private void HandleUnmonitoredProcess(IReadOnlyList<int> processIds)
     {
         _logger.LogInformation("Unmonitored process is running");
         IsClientRunning = true;
