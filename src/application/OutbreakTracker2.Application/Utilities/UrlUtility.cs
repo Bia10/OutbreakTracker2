@@ -7,11 +7,11 @@ public static class UrlUtility
 {
     public static void OpenUrl(string url)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (System.OperatingSystem.IsWindows())
             Process.Start(new ProcessStartInfo(url.Replace("&", "^&")) { UseShellExecute = true });
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        else if (System.OperatingSystem.IsLinux())
             Process.Start("xdg-open", url);
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        else if (System.OperatingSystem.IsMacOS())
             Process.Start("open", url);
     }
 }

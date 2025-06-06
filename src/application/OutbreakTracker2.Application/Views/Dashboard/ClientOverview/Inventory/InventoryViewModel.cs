@@ -3,6 +3,7 @@ using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
 using OutbreakTracker2.Outbreak.Models;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using ZLinq;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
@@ -105,7 +106,7 @@ public partial class InventoryViewModel : ObservableObject
             .FirstOrDefault(item => item.Id.Equals(itemId));
 
         return item is not null
-            ? (item.TypeName, item.Quantity.ToString(), $"0x{itemId:X2} | {itemId}")
+            ? (item.TypeName, item.Quantity.ToString(CultureInfo.InvariantCulture), $"0x{itemId:X2} | {itemId}")
             : ("Unknown", "0", $"0x{itemId:X2} | {itemId}");
     }
 

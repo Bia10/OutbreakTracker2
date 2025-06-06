@@ -13,7 +13,7 @@ public sealed class ConditionToIconConverter : IValueConverter
         if (value is not string rawCondition)
             return BindingOperations.DoNothing;
 
-        return rawCondition.ToLower() switch
+        return rawCondition.ToLower(CultureInfo.InvariantCulture) switch
         {
             "fine" => MaterialIconKind.Success,
             "caution2" => MaterialIconKind.Warning,

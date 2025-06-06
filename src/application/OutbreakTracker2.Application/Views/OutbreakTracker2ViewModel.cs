@@ -70,7 +70,7 @@ internal partial class OutbreakTracker2ViewModel : ObservableObject
     {
         ToastManager = toastManager;
         DialogManager = dialogManager;
-        Pages = new AvaloniaList<PageBase>(demoPages.OrderBy<PageBase, int>(x => x.Index).ThenBy<PageBase, string>(x => x.DisplayName));
+        Pages = new AvaloniaList<PageBase>(demoPages.OrderBy<PageBase, int>(x => x.Index).ThenBy<PageBase, string>(x => x.DisplayName, StringComparer.Ordinal));
         BackgroundStyles = new AvaloniaList<SukiBackgroundStyle>(Enum.GetValues<SukiBackgroundStyle>());
         _theme = SukiTheme.GetInstance();
 

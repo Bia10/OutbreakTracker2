@@ -96,7 +96,7 @@ public class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
                                 _logger.LogWarning("Player data not found in map for VM {UniqueId} during UI update. This should not happen", vm.UniqueNameId);
                             }
 
-                        HashSet<string> desiredUniqueIdsLookup = new(desiredViewModels.Select<InGamePlayerViewModel, string>(vm => vm.UniqueNameId));
+                        HashSet<string> desiredUniqueIdsLookup = new(desiredViewModels.Select<InGamePlayerViewModel, string>(vm => vm.UniqueNameId), StringComparer.Ordinal);
                         for (int i = _players.Count - 1; i >= 0; i--)
                         {
                             InGamePlayerViewModel currentVmInList = _players[i];

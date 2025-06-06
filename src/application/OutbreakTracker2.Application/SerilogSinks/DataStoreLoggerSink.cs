@@ -132,7 +132,7 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
 
         LogEventProperty? idProperty = value.Properties.FirstOrDefault(x => x.Name.Equals("Id"));
         if (idProperty is not null)
-            id = int.Parse(idProperty.Value.ToString());
+            id = int.Parse(idProperty.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture);
 
         LogEventProperty? nameProperty = value.Properties.FirstOrDefault(x => x.Name.Equals("Name"));
         if (nameProperty is not null)

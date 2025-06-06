@@ -22,7 +22,7 @@ public class ProcessLocator : IProcessLocator
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Polling error: {ex.Message}");
+                    Debug.WriteLine($"Polling error: {ex}");
                     return false;
                 }
             })
@@ -101,7 +101,7 @@ public class ProcessLocator : IProcessLocator
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"GetProcessIds error: {ex.Message}");
+            Debug.WriteLine($"GetProcessIds error: {ex}");
             return [];
         }
     }

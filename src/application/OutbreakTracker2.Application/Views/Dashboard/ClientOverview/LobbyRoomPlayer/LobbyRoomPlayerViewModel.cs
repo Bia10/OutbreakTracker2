@@ -42,8 +42,8 @@ public partial class LobbyRoomPlayerViewModel : ObservableObject
     [ObservableProperty]
     private string _npcPower = string.Empty;
 
-    public bool IsMainCharacter => NpcType == "Main Characters";
-    public bool IsOtherNpc => NpcType == "Other NPCs";
+    public bool IsMainCharacter => string.Equals(NpcType, "Main Characters", StringComparison.Ordinal);
+    public bool IsOtherNpc => string.Equals(NpcType, "Other NPCs", StringComparison.Ordinal);
     public byte DataPlayerId => NameId;
     public Ulid ViewModelId => Id;
 
@@ -68,7 +68,7 @@ public partial class LobbyRoomPlayerViewModel : ObservableObject
         NpcHp = model.Npchp;
         NpcPower = model.NpcPower;
 
-        DisplayName = NpcType == "Main Characters" ? CharacterName : NpcName;
+        DisplayName = string.Equals(NpcType, "Main Characters", StringComparison.Ordinal) ? CharacterName : NpcName;
 
         if (EnumUtility.TryParseByValueOrMember(DisplayName, out CharacterBaseType charType))
             _ = PlayerBustViewModel.UpdateBustAsync(charType);

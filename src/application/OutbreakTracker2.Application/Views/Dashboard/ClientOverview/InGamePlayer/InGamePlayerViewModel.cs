@@ -109,11 +109,11 @@ public partial class InGamePlayerViewModel : ObservableObject
     public override bool Equals(object? obj)
     {
         if (obj is InGamePlayerViewModel other)
-            return UniqueNameId == other.UniqueNameId;
+            return string.Equals(UniqueNameId, other.UniqueNameId, System.StringComparison.Ordinal);
 
         return false;
     }
 
     public override int GetHashCode()
-        => UniqueNameId.GetHashCode();
+        => System.StringComparer.Ordinal.GetHashCode(UniqueNameId);
 }

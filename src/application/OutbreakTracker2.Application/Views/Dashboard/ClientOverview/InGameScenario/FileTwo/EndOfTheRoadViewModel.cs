@@ -18,7 +18,7 @@ public partial class EndOfTheRoadViewModel : ObservableObject
     }
 
     private static string GetEndOfRoadDisplay(short pass4)
-        => pass4.ToString();
+        => pass4.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
     private static bool IsValidScenario(string scenarioName)
         => !string.IsNullOrEmpty(scenarioName)

@@ -16,7 +16,7 @@ public sealed class ConditionTrackingRule : PlayerStateTrackingRule
 
     public ConditionTrackingRule(string conditionValue, Func<string, string, (string message, ToastType type)> toastDetailsFactory)
     {
-        _conditionValue = conditionValue.ToLower();
+        _conditionValue = conditionValue.ToLower(System.Globalization.CultureInfo.InvariantCulture);
         _toastDetailsFactory = toastDetailsFactory;
     }
 
@@ -46,8 +46,8 @@ public sealed class StatusTrackingRule : PlayerStateTrackingRule
 
     public override bool ShouldTrigger(DecodedInGamePlayer currentPlayer, DecodedInGamePlayer lastKnownPlayerState)
     {
-        return currentPlayer.Status == _statusValue &&
-               lastKnownPlayerState.Status != _statusValue;
+        return string.Equals(currentPlayer.Status, _statusValue, StringComparison.Ordinal) &&
+               !string.Equals(lastKnownPlayerState.Status, _statusValue, StringComparison.Ordinal);
     }
 
     public override PlayerStateChangeEventArgs CreateNotification(DecodedInGamePlayer currentPlayer)

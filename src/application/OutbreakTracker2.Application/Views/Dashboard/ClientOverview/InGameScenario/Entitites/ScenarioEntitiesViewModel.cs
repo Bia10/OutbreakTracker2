@@ -40,7 +40,7 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
                     continue;
 
                 if (existingItem.En != newItem.En ||
-                    existingItem.TypeName != newItem.TypeName ||
+                    !string.Equals(existingItem.TypeName, newItem.TypeName, System.StringComparison.Ordinal) ||
                     existingItem.Quantity != newItem.Quantity ||
                     existingItem.PickedUp != newItem.PickedUp ||
                     existingItem.Present != newItem.Present ||
@@ -81,12 +81,12 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
                     existingEnemy.RoomId != newEnemy.RoomId ||
                     existingEnemy.TypeId != newEnemy.TypeId ||
                     existingEnemy.NameId != newEnemy.NameId ||
-                    existingEnemy.Name != newEnemy.Name ||
+                    !string.Equals(existingEnemy.Name, newEnemy.Name, System.StringComparison.Ordinal) ||
                     existingEnemy.CurHp != newEnemy.CurHp ||
                     existingEnemy.MaxHp != newEnemy.MaxHp ||
                     existingEnemy.BossType != newEnemy.BossType ||
                     existingEnemy.Status != newEnemy.Status ||
-                    existingEnemy.RoomName != newEnemy.RoomName)
+                    !string.Equals(existingEnemy.RoomName, newEnemy.RoomName, System.StringComparison.Ordinal))
                 {
                     Enemies[index] = newEnemy;
                 }
@@ -119,7 +119,7 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
 
                 if (existingDoor.Hp != newDoor.Hp ||
                     existingDoor.Flag != newDoor.Flag ||
-                    existingDoor.Status != newDoor.Status)
+!string.Equals(existingDoor.Status, newDoor.Status, System.StringComparison.Ordinal))
                 {
                     Doors[index] = newDoor;
                 }

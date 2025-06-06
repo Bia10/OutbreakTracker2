@@ -80,14 +80,15 @@ public partial class ClientAlreadyRunningViewModel : ObservableObject
         }
     }
 
-    private static DateTime GetSafeStartTime(Process process)
+    private DateTime GetSafeStartTime(Process process)
     {
         try
         {
             return process.StartTime;
         }
-        catch
+        catch (InvalidOperationException ex)
         {
+            _logger.LogWarning(ex, "Process {ProcessId} has no start time", process.Id);
             return DateTime.MinValue;
         }
     }

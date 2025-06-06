@@ -13,7 +13,7 @@ public sealed class LobbyVersionToIconConverter : IValueConverter
         if (value is not string versionString || string.IsNullOrWhiteSpace(versionString))
             return BindingOperations.DoNothing;
 
-        return versionString.ToLower() switch
+        return versionString.ToLower(CultureInfo.InvariantCulture) switch
         {
             "dvd-rom" => MaterialIconKind.Album,
             "hdd" => MaterialIconKind.Harddisk,
