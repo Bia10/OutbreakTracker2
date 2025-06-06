@@ -39,7 +39,7 @@ jobs:
       - name: Publish main project
         id: publish_project
         run: |
-          dotnet publish src/app/OutbreakTracker2.App/OutbreakTracker2.App.csproj --configuration Release --no-build --output ${{ github.workspace }}/publish_output
+          dotnet publish src/application/OutbreakTracker2.Application/OutbreakTracker2.Application.csproj --configuration Release --no-build --output ${{ github.workspace }}/publish_output
           echo "Main project published to ${{ github.workspace }}/publish_output"
         working-directory: ${{ github.workspace }}
 
