@@ -5,11 +5,11 @@ This is an attempt to rewrite the old C99 Resident Evil Outbreak tracker in C#.
 This version will only support PCSX2 version 2.0.0 or later.
 
 > [!Important]
-> This project is currently being prototyped. As such it is not yet ready for public use.
-There wont be a release for some time, you will have to build it and debug yourself.
+> This project is currently in early alpha version, nothing is set in stone yet, things may change.
 
-# Support Platform
-- .NET 9.0+
+# Supported Platforms
+- Theoretically anywhere PCSX2 2.0.0+ and .NET9 can run at the same time.
+- Practically windows + .NET9 for now.
 
 # Credits
 
