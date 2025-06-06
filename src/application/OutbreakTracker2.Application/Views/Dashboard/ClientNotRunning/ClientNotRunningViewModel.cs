@@ -145,7 +145,7 @@ public partial class ClientNotRunningViewModel : ObservableObject, IDisposable
                 .Take(1);
 
             launchAndInitializePipeline.Timeout(TimeSpan.FromSeconds(LaunchTimeout))
-                .SubscribeAwait(onNextAsync: async (_, _) =>
+                .SubscribeAwait(onNextAsync: async ValueTask (_, _) =>
                     {
                         await _toastService.DismissToastAsync(launchToast).ConfigureAwait(false);
                         _logger.LogInformation("Client launched and data manager initialized successfully");

@@ -139,7 +139,7 @@ public class InGameDoorsViewModel : ObservableObject, IDisposable
                                     _logger.LogWarning("_doors count ({DCount}) differs from desiredViewModels count ({DesCount}) after sync. Adjusting", Doors.Count, desiredViewModels.Count);
 
                                 _logger.LogInformation("UI update complete. Doors ObservableList count: {Count}", Doors.Count);
-                            }, ct);
+                            }, ct).ConfigureAwait(false);
 
                             _logger.LogInformation("Finished processing door snapshot cycle");
                         }

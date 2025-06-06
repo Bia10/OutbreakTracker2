@@ -108,7 +108,7 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
         try
         {
             Task[] processingTasks = CreateProcessingTasks(stdOut, stdError, cts.Token);
-            await Task.WhenAny(Task.WhenAll(processingTasks), process.WaitForExitAsync(cts.Token))
+            _ = await Task.WhenAny(Task.WhenAll(processingTasks), process.WaitForExitAsync(cts.Token))
                 .ConfigureAwait(false);
         }
         catch (ProcessErrorException ex)
@@ -131,7 +131,7 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
     }
 
     private Task[] CreateProcessingTasks(
-        ProcessAsyncEnumerable stdOut,
+        ProcessAsyncEnumerable _,
         ProcessAsyncEnumerable stdError,
         CancellationToken ct)
         =>
