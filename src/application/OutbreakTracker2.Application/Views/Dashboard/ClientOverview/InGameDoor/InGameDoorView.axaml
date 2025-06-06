@@ -1,0 +1,99 @@
+<UserControl
+    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor.InGameDoorView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    xmlns:inGameDoor1="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor"
+    d:DesignHeight="160"
+    d:DesignWidth="280"
+    x:DataType="inGameDoor1:InGameDoorViewModel"
+    mc:Ignorable="d">
+
+    <suki:GlassCard
+        Margin="5"
+        BorderBrush="{Binding BorderBrush}"
+        BorderThickness="6"
+        CornerRadius="8">
+        <Grid ColumnDefinitions="Auto, Auto, *" RowDefinitions="Auto, Auto, Auto, Auto">
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                Grid.ColumnSpan="3"
+                Margin="0,0,0,10"
+                HorizontalAlignment="Center"
+                FontSize="16"
+                FontWeight="SemiBold"
+                Text="Door Status" />
+
+            <avalonia:MaterialIcon
+                Grid.Row="1"
+                Grid.Column="0"
+                Width="16"
+                Height="16"
+                Margin="0,0,5,0"
+                VerticalAlignment="Center"
+                Kind="Heart"
+                ToolTip.Tip="Current Health Points" />
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="1"
+                Margin="0,0,5,0"
+                VerticalAlignment="Center"
+                FontWeight="SemiBold"
+                Text="HP:" />
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                Text="{Binding Hp}" />
+
+            <avalonia:MaterialIcon
+                Grid.Row="2"
+                Grid.Column="0"
+                Width="16"
+                Height="16"
+                Margin="0,0,5,0"
+                VerticalAlignment="Center"
+                Kind="FlagVariant"
+                ToolTip.Tip="Door Flag Status" />
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="1"
+                Margin="0,0,5,0"
+                VerticalAlignment="Center"
+                FontWeight="SemiBold"
+                Text="Flag:" />
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                Text="{Binding Flag}" />
+
+            <avalonia:MaterialIcon
+                Grid.Row="3"
+                Grid.Column="0"
+                Width="16"
+                Height="16"
+                Margin="0,0,5,0"
+                VerticalAlignment="Center"
+                Kind="Information"
+                ToolTip.Tip="Door Operational Status" />
+            <TextBlock
+                Grid.Row="3"
+                Grid.Column="1"
+                Margin="0,0,5,0"
+                VerticalAlignment="Center"
+                FontWeight="SemiBold"
+                Text="Status:" />
+            <TextBlock
+                Grid.Row="3"
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                Text="{Binding Status}"
+                TextTrimming="CharacterEllipsis" />
+        </Grid>
+    </suki:GlassCard>
+</UserControl>

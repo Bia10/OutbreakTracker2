@@ -1,0 +1,48 @@
+<UserControl
+    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne.TheHiveView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:icons="using:Material.Icons.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    xmlns:fileOne="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="fileOne:TheHiveViewModel"
+    mc:Ignorable="d">
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <suki:GroupBox HorizontalAlignment="Stretch" Header="The Hive Details">
+            <Grid
+                Margin="15"
+                ColumnDefinitions="Auto,*"
+                RowDefinitions="Auto">
+
+                <StackPanel
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="5">
+                    <icons:MaterialIcon
+                        Width="16"
+                        Height="16"
+                        Kind="KeyOutline"
+                        ToolTip.Tip="Hive Password" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="Password:" />
+                </StackPanel>
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Text="{Binding PassHiveDisplay}"
+                    TextTrimming="CharacterEllipsis" />
+
+            </Grid>
+        </suki:GroupBox>
+    </ScrollViewer>
+</UserControl>

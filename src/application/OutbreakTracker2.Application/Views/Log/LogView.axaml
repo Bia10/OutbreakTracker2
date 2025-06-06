@@ -1,0 +1,21 @@
+<UserControl
+    x:Class="OutbreakTracker2.Application.Views.Log.LogView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="https://github.com/kikipoulet/SukiUI"
+    xmlns:log="clr-namespace:OutbreakTracker2.Application.Views.Log"
+    xmlns:logging="clr-namespace:OutbreakTracker2.Application.Views.Logging"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="log:LogViewModel"
+    mc:Ignorable="d">
+
+    <Grid Margin="15">
+        <suki:GlassCard Margin="0,0,0,25">
+            <logging:LogViewer DataContext="{Binding LogViewer}" />
+        </suki:GlassCard>
+    </Grid>
+
+</UserControl>

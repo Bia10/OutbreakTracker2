@@ -9,7 +9,7 @@ public sealed class GameClientFactory : IGameClientFactory
         GameClient gameClient = new();
         try
         {
-            await Task.Run(() => gameClient.Attach(process), cancellationToken);
+            await Task.Run(() => gameClient.Attach(process), cancellationToken).ConfigureAwait(false);
             return gameClient;
         }
         catch (Exception ex)

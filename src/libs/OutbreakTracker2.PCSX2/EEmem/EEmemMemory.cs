@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using OutbreakTracker2.Memory.MemoryReader;
-using OutbreakTracker2.Memory.StringReader;
+using OutbreakTracker2.Memory.SafeMemory;
+using OutbreakTracker2.Memory.String;
 using OutbreakTracker2.PCSX2.Client;
 using OutbreakTracker2.WinInterop.Structs;
 

@@ -1,0 +1,360 @@
+<UserControl
+    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.InGameScenarioView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:icons="using:Material.Icons.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    xmlns:inGameScenario="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario"
+    xmlns:fileTwo="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo"
+    d:DesignHeight="800"
+    d:DesignWidth="400"
+    x:DataType="inGameScenario:InGameScenarioViewModel"
+    mc:Ignorable="d">
+
+    <UserControl.DataTemplates>
+        <DataTemplate DataType="{x:Type fileTwo:DesperateTimesViewModel}">
+            <fileTwo:DesperateTimesView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type fileTwo:EndOfTheRoadViewModel}">
+            <fileTwo:EndOfTheRoadView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type fileTwo:UnderbellyViewModel}">
+            <fileTwo:UnderbellyView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type fileTwo:WildThingsViewModel}">
+            <fileTwo:WildThingsView />
+        </DataTemplate>
+    </UserControl.DataTemplates>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="10">
+            <suki:GlassCard
+                Margin="0,20,0,0"
+                HorizontalAlignment="Center"
+                IsVisible="{Binding IsScenarioNotActive}">
+                <TextBlock
+                    Margin="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="No active scenario, you're not in in-game!" />
+            </suki:GlassCard>
+
+            <suki:GroupBox
+                HorizontalAlignment="Stretch"
+                Header="{Binding ScenarioName}"
+                IsVisible="{Binding IsScenarioActive}">
+                <Grid
+                    Margin="15"
+                    ColumnDefinitions="Auto,*,Auto,*"
+                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+
+                    <StackPanel
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <icons:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            Kind="StarOutline"
+                            ToolTip.Tip="Game Difficulty" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Difficulty:" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="5,0,15,0"
+                        VerticalAlignment="Center"
+                        Text="{Binding Difficulty}"
+                        TextTrimming="CharacterEllipsis" />
+
+                    <StackPanel
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <icons:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            Kind="CheckCircleOutline"
+                            ToolTip.Tip="Scenario Cleared Status" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Cleared:" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="3"
+                        VerticalAlignment="Center"
+                        Text="{Binding IsCleared}"
+                        TextTrimming="CharacterEllipsis" />
+
+                    <StackPanel
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <icons:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            Kind="InformationOutline"
+                            ToolTip.Tip="Current Game Status" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Status:" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Margin="5,0,15,0"
+                        VerticalAlignment="Center"
+                        Text="{Binding Status}"
+                        TextTrimming="CharacterEllipsis" />
+
+                    <StackPanel
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <icons:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            Kind="FileOutline"
+                            ToolTip.Tip="Current File Index" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Current File:" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="3"
+                        VerticalAlignment="Center"
+                        Text="{Binding CurrentFile}"
+                        TextTrimming="CharacterEllipsis" />
+
+                    <StackPanel
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <icons:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            Kind="ClockOutline"
+                            ToolTip.Tip="In-Game Timer" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Game Time:" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Margin="5,0,15,0"
+                        VerticalAlignment="Center"
+                        Text="{Binding GameTimeDisplay}"
+                        TextTrimming="CharacterEllipsis" />
+
+                    <StackPanel
+                        Grid.Row="2"
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <icons:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            Kind="Counter"
+                            ToolTip.Tip="Frames since start of scenario" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Frame:" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="3"
+                        VerticalAlignment="Center"
+                        Text="{Binding FrameCounter}"
+                        TextTrimming="CharacterEllipsis" />
+
+                    <StackPanel
+                        Grid.Row="3"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <icons:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            Kind="AccountGroupOutline"
+                            ToolTip.Tip="Number of Players" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Players:" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        Margin="5,0,15,0"
+                        VerticalAlignment="Center"
+                        Text="{Binding PlayerCount}"
+                        TextTrimming="CharacterEllipsis" />
+
+                    <StackPanel
+                        Grid.Row="3"
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <icons:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            Kind="DiceMultipleOutline"
+                            ToolTip.Tip="Item Random Seed (Underbelly)" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Item Random 1:" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="3"
+                        Grid.Column="3"
+                        VerticalAlignment="Center"
+                        Text="{Binding ItemRandom}"
+                        TextTrimming="CharacterEllipsis" />
+
+                    <StackPanel
+                        Grid.Row="4"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <icons:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            Kind="DiceMultipleOutline"
+                            ToolTip.Tip="Item Random Seed 2" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Item Random 2:" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="4"
+                        Grid.Column="1"
+                        Margin="5,0,15,0"
+                        VerticalAlignment="Center"
+                        Text="{Binding ItemRandom2}"
+                        TextTrimming="CharacterEllipsis" />
+
+                    <StackPanel
+                        Grid.Row="4"
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <icons:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            Kind="PuzzleOutline"
+                            ToolTip.Tip="Puzzle Random Seed" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Puzzle Random:" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="4"
+                        Grid.Column="3"
+                        VerticalAlignment="Center"
+                        Text="{Binding PuzzleRandom}"
+                        TextTrimming="CharacterEllipsis" />
+
+                    <StackPanel
+                        Grid.Row="5"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <icons:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            Kind="GasCylinder"
+                            ToolTip.Tip="Gas Random Seed (Also used for other passwords/elements)" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Gas Random:" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="5"
+                        Grid.Column="1"
+                        Margin="5,0,15,0"
+                        VerticalAlignment="Center"
+                        Text="{Binding GasRandom}"
+                        TextTrimming="CharacterEllipsis" />
+
+                    <StackPanel
+                        Grid.Row="5"
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <icons:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            Kind="OrderAlphabeticalAscending"
+                            ToolTip.Tip="Order derived from Gas Random Seed" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Gas Order:" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="5"
+                        Grid.Column="3"
+                        VerticalAlignment="Center"
+                        Text="{Binding GasRandomOrderDisplay}"
+                        TextTrimming="CharacterEllipsis" />
+                </Grid>
+            </suki:GroupBox>
+
+            <ContentControl Content="{Binding CurrentScenarioSpecificViewModel}" />
+
+            <suki:GroupBox
+                Header="Scenario Entities"
+                IsVisible="{Binding IsScenarioActive}">
+                <WrapPanel ItemSpacing="4">
+                    <Button
+                        Content="View Scenario Items"
+                        Command="{Binding ShowItemsDialogCommand}"
+                        HorizontalAlignment="Left" />
+                    <Button
+                        Content="View Scenario Enemies"
+                        Command="{Binding ShowEnemiesDialogCommand}"
+                        HorizontalAlignment="Left" />
+                    <Button
+                        Content="View Scenario Doors"
+                        Command="{Binding ShowDoorsDialogCommand}"
+                        HorizontalAlignment="Left" />
+                </WrapPanel>
+            </suki:GroupBox>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

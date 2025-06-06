@@ -1,0 +1,17 @@
+<UserControl
+    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites.ScenarioItemsView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:entitites="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites"
+    x:DataType="entitites:ScenarioEntitiesViewModel"
+    mc:Ignorable="d">
+    <DataGrid
+        AutoGenerateColumns="True"
+        CanUserReorderColumns="True"
+        CanUserResizeColumns="True"
+        CanUserSortColumns="True"
+        IsReadOnly="True"
+        ItemsSource="{Binding Items}" />
+</UserControl>

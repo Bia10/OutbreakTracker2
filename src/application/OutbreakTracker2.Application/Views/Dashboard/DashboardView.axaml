@@ -1,0 +1,28 @@
+<UserControl
+    x:Class="OutbreakTracker2.Application.Views.Dashboard.DashboardView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dashboard1="clr-namespace:OutbreakTracker2.Application.Views.Dashboard"
+    xmlns:clientNotRunning1="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientNotRunning"
+    xmlns:clientOverview1="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview"
+    xmlns:clientAlreadyRunning1="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientAlreadyRunning"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="dashboard1:DashboardViewModel"
+    mc:Ignorable="d">
+    <ContentControl Content="{Binding CurrentView}">
+        <ContentControl.DataTemplates>
+            <DataTemplate DataType="{x:Type clientNotRunning1:ClientNotRunningViewModel}">
+                <clientNotRunning1:ClientNotRunningView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type clientOverview1:ClientOverviewViewModel}">
+                <clientOverview1:ClientOverviewView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type clientAlreadyRunning1:ClientAlreadyRunningViewModel}">
+                <clientAlreadyRunning1:ClientAlreadyRunningView />
+            </DataTemplate>
+        </ContentControl.DataTemplates>
+    </ContentControl>
+</UserControl>

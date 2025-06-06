@@ -1,0 +1,21 @@
+﻿<UserControl
+    x:Class="OutbreakTracker2.Application.Views.Map.MapView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="https://github.com/kikipoulet/SukiUI"
+    xmlns:map="clr-namespace:OutbreakTracker2.Application.Views.Map"
+    xmlns:canvas="clr-namespace:OutbreakTracker2.Application.Views.Map.Canvas"
+    d:DesignHeight="600"
+    d:DesignWidth="800"
+    x:DataType="map:MapViewModel"
+    mc:Ignorable="d">
+
+    <Grid Margin="15">
+        <suki:GlassCard Margin="0,0,0,25">
+            <canvas:MapCanvasView DataContext="{Binding MapCanvasView}" />
+        </suki:GlassCard>
+    </Grid>
+
+</UserControl>

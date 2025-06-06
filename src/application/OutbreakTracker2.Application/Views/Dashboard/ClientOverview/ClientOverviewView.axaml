@@ -1,0 +1,40 @@
+<UserControl
+    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.ClientOverviewView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:clientOverview="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview"
+    xmlns:lobbySlots="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlots"
+    xmlns:lobbyRoom="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoom"
+    xmlns:inGameScenario="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario"
+    xmlns:inGamePlayers="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers"
+    xmlns:inGameEnemies="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies"
+    xmlns:inGameDoors="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoors"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="clientOverview:ClientOverviewViewModel"
+    mc:Ignorable="d">
+    <Grid>
+        <TabControl>
+            <TabItem Header="Lobby Slots">
+                <lobbySlots:LobbySlotsView DataContext="{Binding LobbySlotsViewModel}" />
+            </TabItem>
+            <TabItem Header="Lobby Room">
+                <lobbyRoom:LobbyRoomView DataContext="{Binding LobbyRoomViewModel}" />
+            </TabItem>
+            <TabItem Header="In-Game Scenario">
+                <inGameScenario:InGameScenarioView DataContext="{Binding InGameScenarioViewModel}" />
+            </TabItem>
+            <TabItem Header="In-Game Players">
+                <inGamePlayers:InGamePlayersView DataContext="{Binding InGamePlayersViewModel}" />
+            </TabItem>
+            <TabItem Header="In-Game Enemies">
+                <inGameEnemies:InGameEnemiesView DataContext="{Binding InGameEnemiesViewModel}" />
+            </TabItem>
+            <TabItem Header="In-Game Doors">
+                <inGameDoors:InGameDoorsView DataContext="{Binding InGameDoorsViewModel}" />
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

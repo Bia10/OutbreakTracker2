@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Extensions;
-using OutbreakTracker2.Memory.MemoryReader;
-using OutbreakTracker2.Memory.StringReader;
+using OutbreakTracker2.Memory.SafeMemory;
+using OutbreakTracker2.Memory.String;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Extensions;

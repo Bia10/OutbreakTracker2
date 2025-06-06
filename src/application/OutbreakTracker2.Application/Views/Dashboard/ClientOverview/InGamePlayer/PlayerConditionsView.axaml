@@ -1,0 +1,89 @@
+﻿<UserControl
+    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer.PlayerConditionsView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    xmlns:inGamePlayer="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer"
+    xmlns:converters="clr-namespace:OutbreakTracker2.Application.Converters"
+    d:DesignHeight="50"
+    d:DesignWidth="400"
+    x:DataType="inGamePlayer:PlayerConditionsViewModel"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <converters:ConditionToIconConverter x:Key="ConditionToIconConverter" />
+        <converters:StatusToIconConverter x:Key="StatusToIconConverter" />
+    </UserControl.Resources>
+
+    <suki:GroupBox Header="Condition and Status">
+        <WrapPanel Margin="0" HorizontalAlignment="Left">
+            <StackPanel
+                Margin="3"
+                Orientation="Horizontal"
+                Spacing="3">
+                <suki:GlassCard
+                    Padding="8"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    CornerRadius="5"
+                    IsInteractive="False">
+                    <StackPanel
+                        HorizontalAlignment="Left"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <avalonia:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Kind="{Binding ConditionMessage, Converter={StaticResource ConditionToIconConverter}}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            FontWeight="Bold"
+                            Text="{Binding ConditionTitle}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource SukiLowText}"
+                            Text="{Binding ConditionMessage}" />
+                    </StackPanel>
+                </suki:GlassCard>
+            </StackPanel>
+            <StackPanel
+                Margin="3"
+                Orientation="Horizontal"
+                Spacing="3">
+                <suki:GlassCard
+                    Padding="8"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    CornerRadius="5"
+                    IsInteractive="False">
+                    <StackPanel
+                        HorizontalAlignment="Left"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <avalonia:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Kind="{Binding StatusMessage, Converter={StaticResource StatusToIconConverter}}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            FontWeight="Bold"
+                            Text="{Binding StatusTitle}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource SukiLowText}"
+                            Text="{Binding StatusMessage}" />
+                    </StackPanel>
+                </suki:GlassCard>
+            </StackPanel>
+        </WrapPanel>
+    </suki:GroupBox>
+</UserControl>
