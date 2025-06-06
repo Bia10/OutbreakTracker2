@@ -2,6 +2,15 @@ name: Pre-release Alpha
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Base semantic version (e.g., 1.0.0, 2.1.0). The pre-release tag and timestamp will be appended automatically.'
+        required: true
+        default: '1.0.0'
+      prerelease_identifier:
+        description: 'Pre-release identifier (e.g., alpha, beta, rc)'
+        required: true
+        default: 'alpha'
 
 jobs:
   build-and-release-alpha:
@@ -34,41 +43,50 @@ jobs:
           echo "Main project published to ${{ github.workspace }}/publish_output"
         working-directory: ${{ github.workspace }}
 
+      - name: Generate Version and Tag Name
+        id: generate_version_tag
+        shell: pwsh
+        run: |
+          $baseVersion = "${{ github.event.inputs.version }}"
+          $prereleaseId = "${{ github.event.inputs.prerelease_identifier }}"
+          $timestamp = Get-Date -Format 'yyyyMMddHHmmss'
+          $fullVersion = "$baseVersion-$prereleaseId-$timestamp"
+          $tagName = "$prereleaseId-$timestamp" # Tag name for Git, simpler
+          
+          echo "FULL_VERSION=$fullVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          echo "TAG_NAME=$tagName" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Host "Generated full version: $fullVersion"
+          Write-Host "Generated tag name: $tagName"
+
       - name: Archive published output
         uses: thedoctor0/zip-release@0.7.5
         with:
           type: 'zip'
-          filename: 'OutbreakTracker2-alpha-published.zip'
+          filename: 'OutbreakTracker2-${{ steps.generate_version_tag.outputs.FULL_VERSION }}-published.zip'
           path: '${{ github.workspace }}/publish_output'
 
       - name: Archive source code (excluding specified folders)
         uses: thedoctor0/zip-release@0.7.5
         with:
           type: 'zip'
-          filename: 'OutbreakTracker2-alpha-source.zip'
+          filename: 'OutbreakTracker2-${{ steps.generate_version_tag.outputs.FULL_VERSION }}-source.zip'
           path: '${{ github.workspace }}/src'
           exclusions: '*.git* .github/* insights/* .idea/*'
 
-      - name: Create Release Tag
-        id: create_tag
-        shell: pwsh
-        run: |
-          $tagName = "alpha-$(Get-Date -Format 'yyyyMMddHHmmss')"
-          echo "TAG_NAME=$tagName" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Host "Generated tag: $tagName"
-
       - name: Create GitHub Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: actions/create-release@v1.1.4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.create_tag.outputs.TAG_NAME }}
-          release_name: Alpha Release ${{ steps.create_tag.outputs.TAG_NAME }}
+          tag_name: ${{ steps.generate_version_tag.outputs.TAG_NAME }}
+          release_name: Pre-release (${{ github.event.inputs.prerelease_identifier }}) - ${{ steps.generate_version_tag.outputs.FULL_VERSION }}
           body: |
-            Automated Alpha Pre-release for OutbreakTracker2.
+            Automated Pre-release for OutbreakTracker2.
 
-            **Version:** ${{ steps.create_tag.outputs.TAG_NAME }}
+            **Version:** `${{ steps.generate_version_tag.outputs.FULL_VERSION }}`
+            **Base Version:** `${{ github.event.inputs.version }}`
+            **Pre-release Identifier:** `${{ github.event.inputs.prerelease_identifier }}`
             **Commit:** `${{ github.sha }}`
 
             This release includes:
@@ -78,21 +96,21 @@ jobs:
           prerelease: true
 
       - name: Upload Published Artifact to Release
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/OutbreakTracker2-alpha-published.zip
-          asset_name: OutbreakTracker2-alpha-published-${{ steps.create_tag.outputs.TAG_NAME }}.zip
+          asset_path: ${{ github.workspace }}/OutbreakTracker2-${{ steps.generate_version_tag.outputs.FULL_VERSION }}-published.zip
+          asset_name: OutbreakTracker2-${{ steps.generate_version_tag.outputs.FULL_VERSION }}-published.zip
           asset_content_type: application/zip
 
       - name: Upload Source Code to Release
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/OutbreakTracker2-alpha-source.zip
-          asset_name: OutbreakTracker2-alpha-source-${{ steps.create_tag.outputs.TAG_NAME }}.zip
+          asset_path: ${{ github.workspace }}/OutbreakTracker2-${{ steps.generate_version_tag.outputs.FULL_VERSION }}-source.zip
+          asset_name: OutbreakTracker2-${{ steps.generate_version_tag.outputs.FULL_VERSION }}-source.zip
           asset_content_type: application/zip
