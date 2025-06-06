@@ -40,6 +40,8 @@ using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlot.Factory;
 using OutbreakTracker2.App.Views.Dashboard.ClientOverview.LobbySlots;
 using OutbreakTracker2.App.Views.Log;
 using OutbreakTracker2.App.Views.Logging;
+using OutbreakTracker2.App.Views.Map;
+using OutbreakTracker2.App.Views.Map.Canvas;
 using OutbreakTracker2.Memory.MemoryReader;
 using OutbreakTracker2.Memory.StringReader;
 using OutbreakTracker2.PCSX2.Client;
@@ -153,7 +155,8 @@ public class App : Application
             .AddView<LobbyRoomView, LobbyRoomViewModel>(services)
             .AddView<InGameDoorsView, InGameDoorsViewModel>(services)
             .AddView<ItemSlotView, ItemSlotViewModel>(services)
-            .AddView<LogView, LogViewModel>(services);
+            .AddView<LogView, LogViewModel>(services)
+            .AddView<MapView, MapViewModel>(services);
 
     private static IServiceProvider ConfigureServicesAndLogging(
         IServiceCollection services,
@@ -226,7 +229,8 @@ public class App : Application
         services.AddTransient<ScenarioImageViewModel>();
         services.AddTransient<LobbyRoomViewModel>();
         services.AddTransient<ItemImageViewModel>();
-
+        services.AddSingleton<MapCanvasViewModel>();
+        
         services.AddTransient<ICharacterBustViewModelFactory, CharacterBustViewModelFactory>();
         services.AddTransient<ILobbyRoomPlayerViewModelFactory, LobbyRoomPlayerViewModelFactory>();
         services.AddTransient<IImageViewModelFactory, ImageViewModelFactory>();
