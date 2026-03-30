@@ -1,19 +1,25 @@
-﻿using R3;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Management;
 using System.Runtime.Versioning;
+using R3;
+#if WINDOWS
+using System.Management;
+#endif
 
 namespace OutbreakTracker2.Application.Services.Locator;
 
 public class ProcessLocator : IProcessLocator
 {
     // Polling-based implementation
-    public Observable<bool> IsProcessRunningPolling(string processName, TimeSpan? checkInterval = null)
+    public Observable<bool> IsProcessRunningPolling(
+        string processName,
+        TimeSpan? checkInterval = null
+    )
     {
-        return Observable.Timer(TimeSpan.Zero, checkInterval ?? TimeSpan.FromSeconds(1))
+        return Observable
+            .Timer(TimeSpan.Zero, checkInterval ?? TimeSpan.FromSeconds(1))
             .Select(_ =>
             {
                 try
@@ -31,13 +37,20 @@ public class ProcessLocator : IProcessLocator
 
     // WMI event-driven implementation (Windows only)
     [SupportedOSPlatform("windows")]
-    public Observable<bool> IsProcessRunningEventDriven(string processName, TimeSpan? checkInterval = null)
+    public Observable<bool> IsProcessRunningEventDriven(
+        string processName,
+        TimeSpan? checkInterval = null
+    )
     {
-        return Observable.Create<bool>(observer =>
+#if WINDOWS
+        return Observable
+            .Create<bool>(observer =>
             {
                 if (Environment.OSVersion.Platform is not PlatformID.Win32NT)
                 {
-                    observer.OnCompleted(new NotSupportedException("WMI is only supported on Windows"));
+                    observer.OnCompleted(
+                        new NotSupportedException("WMI is only supported on Windows")
+                    );
                     return Disposable.Empty;
                 }
 
@@ -47,7 +60,8 @@ public class ProcessLocator : IProcessLocator
                     {
                         EventClassName = "__InstanceCreationEvent",
                         WithinInterval = checkInterval ?? TimeSpan.FromSeconds(1),
-                        Condition = $"TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{processName}.exe'"
+                        Condition =
+                            $"TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{processName}.exe'",
                     };
 
                     ManagementEventWatcher watcher = new(query);
@@ -70,7 +84,8 @@ public class ProcessLocator : IProcessLocator
                     {
                         try
                         {
-                            bool isRunning = Process.GetProcessesByName(processName).Length is not 0;
+                            bool isRunning =
+                                Process.GetProcessesByName(processName).Length is not 0;
                             observer.OnNext(isRunning);
                         }
                         catch (Exception ex)
@@ -89,8 +104,12 @@ public class ProcessLocator : IProcessLocator
             .Catch<bool, Exception>(ex =>
             {
                 Debug.WriteLine($"WMI error: {ex.Message}");
-                return Observable.Return(false);
+                return Observable.Return(value: false);
             });
+#else
+        // On non-Windows platforms (no WMI), fall back to polling.
+        return IsProcessRunningPolling(processName, checkInterval);
+#endif
     }
 
     public IReadOnlyList<int> GetProcessIds(string processName)
@@ -106,6 +125,6 @@ public class ProcessLocator : IProcessLocator
         }
     }
 
-    public IEnumerable<Process> GetProcessesByName(string processName)
-        => Process.GetProcessesByName(processName);
+    public IEnumerable<Process> GetProcessesByName(string processName) =>
+        Process.GetProcessesByName(processName);
 }

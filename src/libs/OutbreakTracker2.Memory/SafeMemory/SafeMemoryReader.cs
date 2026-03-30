@@ -1,32 +1,40 @@
-﻿using Microsoft.Extensions.Logging;
-using OutbreakTracker2.WinInterop;
-using System.Buffers;
+﻿using System.Buffers;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using Microsoft.Extensions.Logging;
+using OutbreakTracker2.WinInterop;
 
 namespace OutbreakTracker2.Memory.SafeMemory;
 
-public sealed class SafeMemoryReader : ISafeMemoryReader
+[SupportedOSPlatform("windows")]
+public sealed class SafeMemoryReader(ILogger<SafeMemoryReader> logger) : ISafeMemoryReader
 {
-    private readonly ILogger<SafeMemoryReader> _logger;
+    private readonly ILogger<SafeMemoryReader> _logger = logger;
 
-    public SafeMemoryReader(ILogger<SafeMemoryReader> logger)
-    {
-        _logger = logger;
-    }
-
-    public T Read<T>(nint hProcess, nint address) where T : unmanaged
+    public T Read<T>(nint hProcess, nint address)
+        where T : unmanaged
     {
         int size = Marshal.SizeOf<T>();
         if (size < 0)
         {
-            _logger.LogError("Marshal.SizeOf<{TypeName}>() returned a negative size: {Size}. This indicates a potential issue with the type definition.", typeof(T).FullName, size);
-            throw new InvalidOperationException($"Marshal.SizeOf<{typeof(T).FullName}>() returned a negative size: {size}.");
+            _logger.LogError(
+                "Marshal.SizeOf<{TypeName}>() returned a negative size: {Size}. This indicates a potential issue with the type definition.",
+                typeof(T).FullName,
+                size
+            );
+            throw new InvalidOperationException(
+                $"Marshal.SizeOf<{typeof(T).FullName}>() returned a negative size: {size}."
+            );
         }
 
         if (size == 0)
         {
-            _logger.LogWarning("Attempted to read a type with zero size ({TypeName}) at address 0x{Address:X}. Returning default value.", typeof(T).FullName, address);
+            _logger.LogWarning(
+                "Attempted to read a type with zero size ({TypeName}) at address 0x{Address:X}. Returning default value.",
+                typeof(T).FullName,
+                address
+            );
             return default;
         }
 
@@ -34,21 +42,45 @@ public sealed class SafeMemoryReader : ISafeMemoryReader
 
         try
         {
-            if (!SafeNativeMethods.ReadProcessMemory(hProcess, address, buffer, size, out int bytesRead))
+            if (
+                !SafeNativeMethods.ReadProcessMemory(
+                    hProcess,
+                    address,
+                    buffer,
+                    size,
+                    out int bytesRead
+                )
+            )
             {
-                int lastError = Marshal.GetLastWin32Error();
-                _logger.LogError("Failed to read process memory for type {TypeName} at address 0x{Address:X} for process handle {ProcessHandle}. Win32 Error: 0x{Win32Error:X} ({ErrorMessage})",
-                    typeof(T).FullName, address, hProcess, lastError, new Win32Exception(lastError).Message);
-                throw new Win32Exception(lastError, $"Failed to read process memory at address 0x{address:X} for process handle {hProcess}.");
+                int lastError = Marshal.GetLastPInvokeError();
+                _logger.LogError(
+                    "Failed to read process memory for type {TypeName} at address 0x{Address:X} for process handle {ProcessHandle}. Win32 Error: 0x{Win32Error:X} ({ErrorMessage})",
+                    typeof(T).FullName,
+                    address,
+                    hProcess,
+                    lastError,
+                    new Win32Exception(lastError).Message
+                );
+                throw new Win32Exception(
+                    lastError,
+                    $"Failed to read process memory at address 0x{address:X} for process handle {hProcess}."
+                );
             }
 
             if (bytesRead != size)
             {
-                _logger.LogError("Mismatched bytes read for type {TypeName} at address 0x{Address:X} in process handle {ProcessHandle}. Read: {BytesRead}, Expected: {ExpectedSize}",
-                    typeof(T).FullName, address, hProcess, bytesRead, size);
+                _logger.LogError(
+                    "Mismatched bytes read for type {TypeName} at address 0x{Address:X} in process handle {ProcessHandle}. Read: {BytesRead}, Expected: {ExpectedSize}",
+                    typeof(T).FullName,
+                    address,
+                    hProcess,
+                    bytesRead,
+                    size
+                );
                 throw new InvalidOperationException(
-                    $"Failed to read the expected number of bytes for type {typeof(T).FullName} at address 0x{address:X} in process handle {hProcess}. " +
-                    $"Read: {bytesRead}, Expected: {size}");
+                    $"Failed to read the expected number of bytes for type {typeof(T).FullName} at address 0x{address:X} in process handle {hProcess}. "
+                        + $"Read: {bytesRead}, Expected: {size}"
+                );
             }
 
             Span<byte> bufferSpan = buffer.AsSpan(0, size);
@@ -62,18 +94,29 @@ public sealed class SafeMemoryReader : ISafeMemoryReader
         }
     }
 
-    public T ReadStruct<T>(nint hProcess, nint address) where T : struct
+    public T ReadStruct<T>(nint hProcess, nint address)
+        where T : struct
     {
         int size = Marshal.SizeOf<T>();
         if (size < 0)
         {
-            _logger.LogError("Marshal.SizeOf<{TypeName}>() returned a negative size: {Size}. This indicates a potential issue with the type definition.", typeof(T).FullName, size);
-            throw new InvalidOperationException($"Marshal.SizeOf<{typeof(T).FullName}>() returned a negative size: {size}.");
+            _logger.LogError(
+                "Marshal.SizeOf<{TypeName}>() returned a negative size: {Size}. This indicates a potential issue with the type definition.",
+                typeof(T).FullName,
+                size
+            );
+            throw new InvalidOperationException(
+                $"Marshal.SizeOf<{typeof(T).FullName}>() returned a negative size: {size}."
+            );
         }
 
         if (size == 0)
         {
-            _logger.LogWarning("Attempted to read a struct with zero size ({TypeName}) at address 0x{Address:X}. Returning default value.", typeof(T).FullName, address);
+            _logger.LogWarning(
+                "Attempted to read a struct with zero size ({TypeName}) at address 0x{Address:X}. Returning default value.",
+                typeof(T).FullName,
+                address
+            );
             return default;
         }
 
@@ -81,21 +124,45 @@ public sealed class SafeMemoryReader : ISafeMemoryReader
 
         try
         {
-            if (!SafeNativeMethods.ReadProcessMemory(hProcess, address, buffer, size, out int bytesRead))
+            if (
+                !SafeNativeMethods.ReadProcessMemory(
+                    hProcess,
+                    address,
+                    buffer,
+                    size,
+                    out int bytesRead
+                )
+            )
             {
-                int lastError = Marshal.GetLastWin32Error();
-                _logger.LogError("Failed to read process memory for struct {TypeName} at address 0x{Address:X} for process handle {ProcessHandle}. Win32 Error: 0x{Win32Error:X} ({ErrorMessage})",
-                    typeof(T).FullName, address, hProcess, lastError, new Win32Exception(lastError).Message);
-                throw new Win32Exception(lastError, $"Failed to read process memory at address 0x{address:X} for process handle {hProcess}. Requested size: {size}.");
+                int lastError = Marshal.GetLastPInvokeError();
+                _logger.LogError(
+                    "Failed to read process memory for struct {TypeName} at address 0x{Address:X} for process handle {ProcessHandle}. Win32 Error: 0x{Win32Error:X} ({ErrorMessage})",
+                    typeof(T).FullName,
+                    address,
+                    hProcess,
+                    lastError,
+                    new Win32Exception(lastError).Message
+                );
+                throw new Win32Exception(
+                    lastError,
+                    $"Failed to read process memory at address 0x{address:X} for process handle {hProcess}. Requested size: {size}."
+                );
             }
 
             if (bytesRead != size)
             {
-                _logger.LogError("Mismatched bytes read for struct {TypeName} at address 0x{Address:X} in process handle {ProcessHandle}. Read: {BytesRead}, Expected: {ExpectedSize}",
-                    typeof(T).FullName, address, hProcess, bytesRead, size);
+                _logger.LogError(
+                    "Mismatched bytes read for struct {TypeName} at address 0x{Address:X} in process handle {ProcessHandle}. Read: {BytesRead}, Expected: {ExpectedSize}",
+                    typeof(T).FullName,
+                    address,
+                    hProcess,
+                    bytesRead,
+                    size
+                );
                 throw new InvalidOperationException(
-                    $"Failed to read the expected number of bytes for type {typeof(T).FullName} at address 0x{address:X} in process handle {hProcess}. " +
-                    $"Read: {bytesRead}, Expected: {size}.");
+                    $"Failed to read the expected number of bytes for type {typeof(T).FullName} at address 0x{address:X} in process handle {hProcess}. "
+                        + $"Read: {bytesRead}, Expected: {size}."
+                );
             }
 
             GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);

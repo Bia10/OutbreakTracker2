@@ -1,10 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
-using OutbreakTracker2.WinInterop;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
+using Microsoft.Extensions.Logging;
+using OutbreakTracker2.WinInterop;
 
 namespace OutbreakTracker2.Memory.String;
 
+[SupportedOSPlatform("windows")]
 public sealed class StringReader : IStringReader
 {
     private readonly ILogger<StringReader> _logger;
@@ -39,10 +41,26 @@ public sealed class StringReader : IStringReader
         {
             while (bytes.Count < maxSafeLength)
             {
-                bool success = SafeNativeMethods.ReadProcessMemory(hProcess, address + bytes.Count, buffer, 1, out int bytesRead);
+                bool success = SafeNativeMethods.ReadProcessMemory(
+                    hProcess,
+                    address + bytes.Count,
+                    buffer,
+                    1,
+                    out int bytesRead
+                );
 
-                if (!HandleReadResult(ref consecutiveFails, success, bytes.Count, bytesRead, address, out bool shouldBreak))
-                    if (shouldBreak) break;
+                if (
+                    !HandleReadResult(
+                        ref consecutiveFails,
+                        success,
+                        bytes.Count,
+                        bytesRead,
+                        address,
+                        out bool shouldBreak
+                    )
+                )
+                    if (shouldBreak)
+                        break;
 
                 if (buffer[0] is 0)
                 {
@@ -73,19 +91,29 @@ public sealed class StringReader : IStringReader
             {
                 byte[] pair = [bytes[offset - 1], @byte];
                 string decoded = encoding.GetString(pair);
-                multiByteInfo.Append($" | Shift-JIS Pair: {decoded} (0x{bytes[offset - 1]:X2}{@byte:X2})");
+                multiByteInfo.Append(
+                    $" | Shift-JIS Pair: {decoded} (0x{bytes[offset - 1]:X2}{@byte:X2})"
+                );
             }
             catch (DecoderFallbackException ex)
             {
-                multiByteInfo.Append($" | Shift-JIS Pair: 0x{bytes[offset - 1]:X2}{@byte:X2} (Decoding Error)");
+                multiByteInfo.Append(
+                    $" | Shift-JIS Pair: 0x{bytes[offset - 1]:X2}{@byte:X2} (Decoding Error)"
+                );
                 _logger.LogTrace(ex, "Shift-JIS Pair Decoding Error: {ExMessage}", ex.Message);
             }
 
-        _logger.LogTrace("Byte 0x{B:X2} @ {Offset} - {S}{MultiByteInfo}", @byte, offset, GetByteInterpretations(@byte), multiByteInfo);
+        _logger.LogTrace(
+            "Byte 0x{B:X2} @ {Offset} - {S}{MultiByteInfo}",
+            @byte,
+            offset,
+            GetByteInterpretations(@byte),
+            multiByteInfo
+        );
     }
 
-    private static bool IsShiftJisLeadByte(byte @byte)
-        => @byte is >= 0x81 and <= 0x9F or >= 0xE0 and <= 0xEF;
+    private static bool IsShiftJisLeadByte(byte @byte) =>
+        @byte is >= 0x81 and <= 0x9F or >= 0xE0 and <= 0xEF;
 
     private string ProcessFinalBytes(List<byte> bytes, Encoding encoding)
     {
@@ -95,9 +123,9 @@ public sealed class StringReader : IStringReader
             return string.Empty;
         }
 
-        string result = encoding.GetString(bytes.ToArray());
+        string result = encoding.GetString([.. bytes]);
 
-        if (result.Contains('\ufffd'))
+        if (result.Contains('\ufffd', StringComparison.Ordinal))
         {
             _logger.LogWarning("Encoding issues detected. Trying fallback encodings...");
             TryFallbackEncodings(bytes);
@@ -114,28 +142,48 @@ public sealed class StringReader : IStringReader
             Encoding.UTF8,
             Encoding.GetEncoding(932), // Shift-JIS
             Encoding.GetEncoding(1252), // Western European
-            Encoding.GetEncoding(54936) // GB18030 (Chinese fallback)
+            Encoding.GetEncoding(54936), // GB18030 (Chinese fallback)
         ];
 
         foreach (Encoding encoding in encodings)
             try
             {
                 string decoded = encoding.GetString([.. bytes]);
-                _logger.LogTrace($"Fallback {encoding.EncodingName}: {decoded} | Bytes: {BitConverter.ToString([.. bytes])}");
+                _logger.LogTrace(
+                    $"Fallback {encoding.EncodingName}: {decoded} | Bytes: {BitConverter.ToString([.. bytes])}"
+                );
             }
             catch (Exception ex)
             {
-                _logger.LogTrace(ex, "Fallback {EncodingEncodingName} failed: {ExMessage}", encoding.EncodingName, ex.Message);
+                _logger.LogTrace(
+                    ex,
+                    "Fallback {EncodingEncodingName} failed: {ExMessage}",
+                    encoding.EncodingName,
+                    ex.Message
+                );
             }
     }
 
-    private bool HandleReadResult(ref int consecutiveFails, bool success, int offset, int bytesRead, nint address, out bool shouldBreak)
+    private bool HandleReadResult(
+        ref int consecutiveFails,
+        bool success,
+        int offset,
+        int bytesRead,
+        nint address,
+        out bool shouldBreak
+    )
     {
         shouldBreak = false;
         if (!success)
         {
-            int lastError = Marshal.GetLastWin32Error();
-            _logger.LogWarning("ReadProcessMemory failed at offset {Offset} (Address: 0x{Address:X8}) Error: 0x{LastError:X8} ({Message})", offset, address + offset, lastError, new System.ComponentModel.Win32Exception(lastError).Message);
+            int lastError = Marshal.GetLastPInvokeError();
+            _logger.LogWarning(
+                "ReadProcessMemory failed at offset {Offset} (Address: 0x{Address:X8}) Error: 0x{LastError:X8} ({Message})",
+                offset,
+                address + offset,
+                lastError,
+                new System.ComponentModel.Win32Exception(lastError).Message
+            );
             consecutiveFails++;
 
             if (consecutiveFails >= 3)
@@ -151,7 +199,11 @@ public sealed class StringReader : IStringReader
 
         if (bytesRead != 1)
         {
-            _logger.LogWarning("Partial read at offset {Offset} Requested: 1, Got: {BytesRead}", offset, bytesRead);
+            _logger.LogWarning(
+                "Partial read at offset {Offset} Requested: 1, Got: {BytesRead}",
+                offset,
+                bytesRead
+            );
             return false;
         }
 
@@ -191,7 +243,7 @@ public sealed class StringReader : IStringReader
                 '\r' => "\\r",
                 '\ufffd' => "�",
                 _ when char.IsControl(@char) => $"\\u{(int)@char:X4}",
-                _ => @char.ToString()
+                _ => @char.ToString(),
             };
         }
         catch (Exception ex)

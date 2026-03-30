@@ -1,20 +1,20 @@
-﻿using Cysharp.Diagnostics;
-using Microsoft.Extensions.Logging;
-using OutbreakTracker2.PCSX2.Client;
-using R3;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Cysharp.Diagnostics;
+using Microsoft.Extensions.Logging;
+using OutbreakTracker2.PCSX2.Client;
+using R3;
 
 namespace OutbreakTracker2.Application.Services.Launcher;
 
-public class ProcessLauncher : IProcessLauncher, IDisposable
+public class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessLauncher, IDisposable
 {
-    private readonly ILogger<ProcessLauncher> _logger;
+    private readonly ILogger<ProcessLauncher> _logger = logger;
     private readonly Subject<string> _processErrors = new();
     private readonly Subject<ProcessModel> _processUpdate = new();
     private readonly Subject<bool> _isCancelling = new();
@@ -26,13 +26,8 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
     public Process? ClientMonitoredProcess { get; private set; }
     public GameClient? AttachedGameClient { get; private set; }
 
-    public ProcessLauncher(ILogger<ProcessLauncher> logger)
-    {
-        _logger = logger;
-    }
-
-    private static ProcessStartInfo CreateProcessStartInfo(string fileName, string? arguments)
-        => new()
+    private static ProcessStartInfo CreateProcessStartInfo(string fileName, string? arguments) =>
+        new()
         {
             FileName = fileName,
             Arguments = arguments,
@@ -40,7 +35,7 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
         };
 
     private void RegisterProcess(Process process)
@@ -54,19 +49,22 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
 
         ClientMonitoredProcess = process;
 
-        _processUpdate.OnNext(new ProcessModel
-        {
-            IsRunning = true,
-            Id = ClientMonitoredProcess.Id,
-            Name = ClientMonitoredProcess.ProcessName,
-            StartTime = GetSafeStartTime(ClientMonitoredProcess)
-        });
+        _processUpdate.OnNext(
+            new ProcessModel
+            {
+                IsRunning = true,
+                Id = ClientMonitoredProcess.Id,
+                Name = ClientMonitoredProcess.ProcessName,
+                StartTime = GetSafeStartTime(ClientMonitoredProcess),
+            }
+        );
     }
 
     public Task<GameClient> LaunchAsync(
         string fileName,
         string? arguments,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ProcessStartInfo processStartInfo = CreateProcessStartInfo(fileName, arguments);
 
@@ -78,27 +76,28 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
         AttachedGameClient = new GameClient();
         AttachedGameClient.Attach(process);
 
-        _logger.LogInformation("PCSX2 process launched (ID: {ProcessId}). DataManager initialization deferred", process.Id);
+        _logger.LogInformation(
+            "PCSX2 process launched (ID: {ProcessId}). DataManager initialization deferred",
+            process.Id
+        );
 
-        CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken
+        );
 
-        _ = HandleProcessOutputAsync(
-            process,
-            stdOut,
-            stdError,
-            cts.Token);
+        _ = HandleProcessOutputAsync(process, stdOut, stdError, cts.Token);
 
         return Task.FromResult(AttachedGameClient);
     }
 
-    public GameClient? GetActiveGameClient()
-        => AttachedGameClient;
+    public GameClient? GetActiveGameClient() => AttachedGameClient;
 
     private async Task HandleProcessOutputAsync(
         Process process,
         ProcessAsyncEnumerable stdOut,
         ProcessAsyncEnumerable stdError,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         using CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         WeakReference<CancellationTokenSource> weakCts = new(cts);
@@ -108,7 +107,10 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
         try
         {
             Task[] processingTasks = CreateProcessingTasks(stdOut, stdError, cts.Token);
-            _ = await Task.WhenAny(Task.WhenAll(processingTasks), process.WaitForExitAsync(cts.Token))
+            _ = await Task.WhenAny(
+                    Task.WhenAll(processingTasks),
+                    process.WaitForExitAsync(cts.Token)
+                )
                 .ConfigureAwait(false);
         }
         catch (ProcessErrorException ex)
@@ -124,8 +126,10 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
 
         void ExitHandler(object? sender, EventArgs e)
         {
-            if (weakCts.TryGetTarget(out CancellationTokenSource? strongCts)
-                && !strongCts.IsCancellationRequested)
+            if (
+                weakCts.TryGetTarget(out CancellationTokenSource? strongCts)
+                && !strongCts.IsCancellationRequested
+            )
                 strongCts.Cancel();
         }
     }
@@ -133,13 +137,14 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
     private Task[] CreateProcessingTasks(
         ProcessAsyncEnumerable _,
         ProcessAsyncEnumerable stdError,
-        CancellationToken ct)
-        =>
-        [
-            ProcessOutputAsync(stdError, HandleErrorLog, ct),
-        ];
+        CancellationToken ct
+    ) => [ProcessOutputAsync(stdError, HandleErrorLog, ct)];
 
-    private static async Task ProcessOutputAsync(ProcessAsyncEnumerable output, Action<string> handler, CancellationToken ct)
+    private static async Task ProcessOutputAsync(
+        ProcessAsyncEnumerable output,
+        Action<string> handler,
+        CancellationToken ct
+    )
     {
         await foreach (string item in output.WithCancellation(ct).ConfigureAwait(false))
             handler(item);
@@ -147,7 +152,12 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
 
     private void HandleProcessError(ProcessErrorException ex, int processId)
     {
-        _logger.LogError("{ProcessType} process error (ID: {ProcessId}). ExitCode: {ExitCode}", "Client", processId, ex.ExitCode);
+        _logger.LogError(
+            "{ProcessType} process error (ID: {ProcessId}). ExitCode: {ExitCode}",
+            "Client",
+            processId,
+            ex.ExitCode
+        );
     }
 
     private void HandleErrorLog(string log)
@@ -158,17 +168,20 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
 
     private void HandleProcessExit(object? sender)
     {
-        if (sender is not Process process) return;
+        if (sender is not Process process)
+            return;
 
         _processes.TryRemove(process.Id, out _);
         _clientProcessIds.TryRemove(process.Id, out _);
 
-        _processUpdate.OnNext(new ProcessModel
-        {
-            IsRunning = false,
-            Id = process.Id,
-            ExitCode = process.ExitCode
-        });
+        _processUpdate.OnNext(
+            new ProcessModel
+            {
+                IsRunning = false,
+                Id = process.Id,
+                ExitCode = process.ExitCode,
+            }
+        );
     }
 
     public async Task TerminateAsync(int? processId = null)
@@ -193,7 +206,8 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
         {
             return process.StartTime;
         }
-        catch (Exception ex) when (ex is InvalidOperationException or Win32Exception or NotSupportedException)
+        catch (Exception ex)
+            when (ex is InvalidOperationException or Win32Exception or NotSupportedException)
         {
             return DateTime.MinValue;
         }
@@ -224,18 +238,20 @@ public class ProcessLauncher : IProcessLauncher, IDisposable
         AttachedGameClient = new GameClient();
         AttachedGameClient.Attach(process);
 
-        _logger.LogInformation("Attached to existing process ID: {ProcessId}. DataManager initialization deferred", processId);
+        _logger.LogInformation(
+            "Attached to existing process ID: {ProcessId}. DataManager initialization deferred",
+            processId
+        );
         return Task.FromResult(AttachedGameClient);
     }
 
-    public Observable<string> GetErrorObservable()
-        => _processErrors.AsObservable();
+    public Observable<string> GetErrorObservable() => _processErrors.AsObservable();
 
-    public bool HasExited(int processId)
-        => !_processes.ContainsKey(processId) || _processes[processId].HasExited;
+    public bool HasExited(int processId) =>
+        !_processes.ContainsKey(processId) || _processes[processId].HasExited;
 
-    public int GetExitCode(int processId)
-        => _processes.TryGetValue(processId, out Process? process) ? process.ExitCode : -1;
+    public int GetExitCode(int processId) =>
+        _processes.TryGetValue(processId, out Process? process) ? process.ExitCode : -1;
 
     public void Dispose()
     {

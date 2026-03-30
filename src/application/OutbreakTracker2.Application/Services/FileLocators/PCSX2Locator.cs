@@ -1,43 +1,63 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using ZLinq;
 
 namespace OutbreakTracker2.Application.Services.FileLocators;
 
-public class Pcsx2Locator : IPcsx2Locator
+public class Pcsx2Locator(ILogger<Pcsx2Locator> logger) : IPcsx2Locator
 {
-    private readonly ILogger<Pcsx2Locator> _logger;
+    private readonly ILogger<Pcsx2Locator> _logger = logger;
     private const string Pcsx2FolderName = "PCSX2";
-    private const string Pcsx2ExeName = "pcsx2-qt.exe";
     private const string IsosSubdir = "ISOs";
     private const string File1Name = "Biohazard - Outbreak.iso";
     private const string File2Name = "Biohazard - Outbreak - File 2.iso";
 
-    public Pcsx2Locator(ILogger<Pcsx2Locator> logger)
-    {
-        _logger = logger;
-    }
+    // Executable name differs per platform
+    private static readonly string Pcsx2ExeName = OperatingSystem.IsWindows()
+        ? "pcsx2-qt.exe"
+        : "pcsx2-qt";
 
-    private static readonly Environment.SpecialFolder[] SpecialFolders =
+    // Windows: well-known install locations under SpecialFolders
+    private static readonly Environment.SpecialFolder[] WindowsSpecialFolders =
     [
         Environment.SpecialFolder.ProgramFiles,
         Environment.SpecialFolder.ProgramFilesX86,
         Environment.SpecialFolder.CommonProgramFiles,
         Environment.SpecialFolder.ApplicationData,
-        Environment.SpecialFolder.LocalApplicationData
+        Environment.SpecialFolder.LocalApplicationData,
     ];
 
-    public ValueTask<string?> FindOutbreakFile1Async(CancellationToken ct = default)
-        => LocateIsoFile(File1Name, ct);
+    // Linux: standard locations where PCSX2 may be installed
+    private static readonly string[] LinuxSearchPaths =
+    [
+        "/usr/bin",
+        "/usr/local/bin",
+        Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".local/bin"
+        ),
+        // Flatpak (system installation)
+        "/var/lib/flatpak/app/net.pcsx2.PCSX2/current/active/files/bin",
+        // Flatpak (user installation)
+        Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".local/share/flatpak/app/net.pcsx2.PCSX2/current/active/files/bin"
+        ),
+        // Snap
+        "/snap/pcsx2/current/usr/bin",
+    ];
 
-    public ValueTask<string?> FindOutbreakFile2Async(CancellationToken ct = default)
-        => LocateIsoFile(File2Name, ct);
+    public ValueTask<string?> FindOutbreakFile1Async(CancellationToken ct = default) =>
+        LocateIsoFile(File1Name, ct);
+
+    public ValueTask<string?> FindOutbreakFile2Async(CancellationToken ct = default) =>
+        LocateIsoFile(File2Name, ct);
 
     private async ValueTask<string?> LocateIsoFile(string fileName, CancellationToken ct)
     {
@@ -47,11 +67,7 @@ public class Pcsx2Locator : IPcsx2Locator
             if (exePath is null)
                 return await SystemWideIsoSearch(fileName, ct).ConfigureAwait(false);
 
-            string isoPath = Path.Combine(
-                Path.GetDirectoryName(exePath)!,
-                IsosSubdir,
-                fileName
-            );
+            string isoPath = Path.Combine(Path.GetDirectoryName(exePath)!, IsosSubdir, fileName);
 
             if (File.Exists(isoPath))
             {
@@ -76,10 +92,11 @@ public class Pcsx2Locator : IPcsx2Locator
             IgnoreInaccessible = true,
             MatchCasing = MatchCasing.CaseInsensitive,
             BufferSize = 1024 * 64,
-            AttributesToSkip = FileAttributes.System | FileAttributes.Hidden
+            AttributesToSkip = FileAttributes.System | FileAttributes.Hidden,
         };
 
-        IEnumerable<string> drives = DriveInfo.GetDrives()
+        IEnumerable<string> drives = DriveInfo
+            .GetDrives()
             .Where(d => d is { DriveType: DriveType.Fixed, IsReady: true })
             .Select(d => d.RootDirectory.FullName);
 
@@ -89,14 +106,23 @@ public class Pcsx2Locator : IPcsx2Locator
 
             try
             {
-                string? result = await Task.Run(() =>
-                    Directory.EnumerateFiles(drive, fileName, options)
-                        .FirstOrDefault(File.Exists), ct).ConfigureAwait(false);
+                string? result = await Task.Run(
+                        () =>
+                            Directory
+                                .EnumerateFiles(drive, fileName, options)
+                                .FirstOrDefault(File.Exists),
+                        ct
+                    )
+                    .ConfigureAwait(false);
 
                 if (result is null)
                     continue;
 
-                _logger.LogInformation("Found ISO {FileName} at {Path} via system search", fileName, result);
+                _logger.LogInformation(
+                    "Found ISO {FileName} at {Path} via system search",
+                    fileName,
+                    result
+                );
                 return result;
             }
             catch (OperationCanceledException)
@@ -105,7 +131,12 @@ public class Pcsx2Locator : IPcsx2Locator
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to search drive {Drive} for ISO {FileName}", drive, fileName);
+                _logger.LogWarning(
+                    ex,
+                    "Failed to search drive {Drive} for ISO {FileName}",
+                    drive,
+                    fileName
+                );
             }
         }
 
@@ -115,48 +146,67 @@ public class Pcsx2Locator : IPcsx2Locator
 
     public async ValueTask<string?> FindExeAsync(
         TimeSpan timeout = default,
-        CancellationToken ct = default)
+        CancellationToken ct = default
+    )
     {
         if (timeout == TimeSpan.Zero)
             timeout = TimeSpan.FromSeconds(10);
 
         using CancellationTokenSource timeoutCts = new(timeout);
-        using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
+        using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+            ct,
+            timeoutCts.Token
+        );
 
         Channel<string> resultChannel = Channel.CreateBounded<string>(1);
 
         try
         {
-            string? specialPath = CheckSpecialFolders();
-            if (specialPath is not null) return specialPath;
+            string? specialPath = CheckKnownPaths();
+            if (specialPath is not null)
+                return specialPath;
 
-            string[] drives = DriveInfo.GetDrives()
+            string[] drives = DriveInfo
+                .GetDrives()
                 .AsValueEnumerable()
                 .Where(driveInfo => driveInfo is { DriveType: DriveType.Fixed, IsReady: true })
                 .Select(driveInfo => driveInfo.RootDirectory.FullName)
                 .ToArray();
 
-            List<Task> scanTasks = drives.Select(drive => ScanDriveAsync(drive, resultChannel.Writer, linkedCts.Token))
-                .ToList();
+            List<Task> scanTasks =
+            [
+                .. drives.Select(drive =>
+                    ScanDriveAsync(drive, resultChannel.Writer, linkedCts.Token)
+                ),
+            ];
 
-            Task writingCompletion = Task.WhenAll(scanTasks).ContinueWith(_ =>
-            {
-                resultChannel.Writer.Complete();
-            }, linkedCts.Token, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+            Task writingCompletion = Task.WhenAll(scanTasks)
+                .ContinueWith(
+                    _ =>
+                    {
+                        resultChannel.Writer.Complete();
+                    },
+                    linkedCts.Token,
+                    TaskContinuationOptions.ExecuteSynchronously,
+                    TaskScheduler.Default
+                );
 
             Task<string> channelReadTask = resultChannel.Reader.ReadAsync(linkedCts.Token).AsTask();
 
-            Task completedTask = await Task.WhenAny(channelReadTask, writingCompletion, Task.Delay(Timeout.InfiniteTimeSpan, linkedCts.Token)).ConfigureAwait(false);
+            Task completedTask = await Task.WhenAny(
+                    channelReadTask,
+                    writingCompletion,
+                    Task.Delay(Timeout.InfiniteTimeSpan, linkedCts.Token)
+                )
+                .ConfigureAwait(false);
 
             if (completedTask == channelReadTask)
                 return await channelReadTask.ConfigureAwait(false);
-            else if (completedTask == writingCompletion)
+            if (completedTask == writingCompletion)
                 return null;
-            else
-            {
-                linkedCts.Token.ThrowIfCancellationRequested();
-                return null;
-            }
+
+            linkedCts.Token.ThrowIfCancellationRequested();
+            return null;
         }
         catch (OperationCanceledException ex) when (timeoutCts.IsCancellationRequested)
         {
@@ -175,17 +225,55 @@ public class Pcsx2Locator : IPcsx2Locator
         }
     }
 
-    private static string? CheckSpecialFolders()
-        => (from folder in SpecialFolders.AsValueEnumerable()
-                select Environment.GetFolderPath(folder) into basePath
-                where !string.IsNullOrEmpty(basePath)
-                select Path.Combine(basePath, Pcsx2FolderName, Pcsx2ExeName))
-            .FirstOrDefault(File.Exists);
+    private static string? CheckKnownPaths()
+    {
+        if (OperatingSystem.IsWindows())
+            return CheckWindowsSpecialFolders();
+
+        if (OperatingSystem.IsLinux())
+            return CheckLinuxKnownPaths();
+
+        return null;
+    }
+
+    private static string? CheckWindowsSpecialFolders() =>
+        (
+            from folder in WindowsSpecialFolders.AsValueEnumerable()
+            select Environment.GetFolderPath(folder) into basePath
+            where !string.IsNullOrEmpty(basePath)
+            select Path.Combine(basePath, Pcsx2FolderName, Pcsx2ExeName)
+        ).FirstOrDefault(File.Exists);
+
+    private static string? CheckLinuxKnownPaths()
+    {
+        // Check each known Linux path directly
+        foreach (string dir in LinuxSearchPaths)
+        {
+            string candidate = Path.Combine(dir, Pcsx2ExeName);
+            if (File.Exists(candidate))
+                return candidate;
+        }
+
+        // Also try resolving via $PATH (covers distro packages and custom installs)
+        string? pathEnv = Environment.GetEnvironmentVariable("PATH");
+        if (!string.IsNullOrEmpty(pathEnv))
+        {
+            foreach (string dir in pathEnv.Split(':'))
+            {
+                string candidate = Path.Combine(dir, Pcsx2ExeName);
+                if (File.Exists(candidate))
+                    return candidate;
+            }
+        }
+
+        return null;
+    }
 
     private async Task ScanDriveAsync(
         string drivePath,
         ChannelWriter<string> resultWriter,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         try
         {
@@ -195,23 +283,38 @@ public class Pcsx2Locator : IPcsx2Locator
                 IgnoreInaccessible = true,
                 MatchCasing = MatchCasing.CaseInsensitive,
                 BufferSize = 1024 * 64,
-                AttributesToSkip = FileAttributes.System | FileAttributes.Hidden
+                AttributesToSkip = FileAttributes.System | FileAttributes.Hidden,
             };
 
-            await Task.Run(() =>
-            {
-                foreach (string path in Directory.EnumerateFiles(drivePath, Pcsx2ExeName, options)
-                             .AsValueEnumerable())
-                {
-                    ct.ThrowIfCancellationRequested();
+            await Task.Run(
+                    () =>
+                    {
+                        foreach (
+                            string path in Directory
+                                .EnumerateFiles(drivePath, Pcsx2ExeName, options)
+                                .AsValueEnumerable()
+                        )
+                        {
+                            ct.ThrowIfCancellationRequested();
 
-                    if (!path.Contains(Pcsx2FolderName, StringComparison.OrdinalIgnoreCase))
-                        continue;
+                            // On Windows, PCSX2 lives in a "PCSX2" subfolder; on Linux there is no
+                            // such convention so we accept any match from the filesystem scan.
+                            if (
+                                OperatingSystem.IsWindows()
+                                && !path.Contains(
+                                    Pcsx2FolderName,
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                            )
+                                continue;
 
-                    resultWriter.TryWrite(path);
-                    return;
-                }
-            }, ct).ConfigureAwait(false);
+                            resultWriter.TryWrite(path);
+                            return;
+                        }
+                    },
+                    ct
+                )
+                .ConfigureAwait(false);
         }
         catch (OperationCanceledException ex)
         {

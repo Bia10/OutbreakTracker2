@@ -2,5 +2,6 @@
 
 public interface IUnsafeMemoryReader
 {
-    public T Read<T>(nint hProcess, nint address) where T : unmanaged;
+    public T Read<T>(nint hProcess, nint address)
+        where T : unmanaged;
 }

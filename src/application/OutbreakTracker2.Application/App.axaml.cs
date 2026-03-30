@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -11,6 +14,7 @@ using OutbreakTracker2.Application.Services.Atlas;
 using OutbreakTracker2.Application.Services.Atlas.Models;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
+using OutbreakTracker2.Application.Services.Embedding;
 using OutbreakTracker2.Application.Services.FileLocators;
 using OutbreakTracker2.Application.Services.Launcher;
 using OutbreakTracker2.Application.Services.Locator;
@@ -26,6 +30,7 @@ using OutbreakTracker2.Application.Views.Dashboard;
 using OutbreakTracker2.Application.Views.Dashboard.ClientAlreadyRunning;
 using OutbreakTracker2.Application.Views.Dashboard.ClientNotRunning;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGame;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoors;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer.Factory;
@@ -49,10 +54,10 @@ using R3;
 using Serilog;
 using SukiUI.Dialogs;
 using SukiUI.Toasts;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using StringReader = OutbreakTracker2.Memory.String.StringReader;
+#if LINUX
+using OutbreakTracker2.LinuxInterop;
+#endif
 
 namespace OutbreakTracker2.Application;
 
@@ -81,7 +86,8 @@ public class App : Avalonia.Application
 
                 _serviceProvider = ConfigureServicesAndLogging(services, configuration);
                 _serviceProvider.GetRequiredService<NotificationService>();
-                ITextureAtlasService textureAtlasService = _serviceProvider.GetRequiredService<ITextureAtlasService>();
+                ITextureAtlasService textureAtlasService =
+                    _serviceProvider.GetRequiredService<ITextureAtlasService>();
                 try
                 {
                     textureAtlasService.LoadAtlases();
@@ -95,7 +101,8 @@ public class App : Avalonia.Application
 
                 ConfigureExceptionHandling();
                 DataTemplates.Add(new ViewLocator(views));
-                desktop.MainWindow = views.CreateView<Views.OutbreakTracker2ViewModel>(_serviceProvider) as Window;
+                desktop.MainWindow =
+                    views.CreateView<Views.OutbreakTracker2ViewModel>(_serviceProvider) as Window;
 
                 Log.Information("Application initialized successfully!");
             }
@@ -127,9 +134,17 @@ public class App : Avalonia.Application
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
         {
             if (e.ExceptionObject is Exception ex)
-                Log.Fatal(ex, "Unhandled exception in application domain (IsTerminating: {IsTerminating})", e.IsTerminating);
+                Log.Fatal(
+                    ex,
+                    "Unhandled exception in application domain (IsTerminating: {IsTerminating})",
+                    e.IsTerminating
+                );
             else
-                Log.Fatal("Unhandled exception in application domain with unknown exception object: {ExceptionObject} (IsTerminating: {IsTerminating})", e.ExceptionObject, e.IsTerminating);
+                Log.Fatal(
+                    "Unhandled exception in application domain with unknown exception object: {ExceptionObject} (IsTerminating: {IsTerminating})",
+                    e.ExceptionObject,
+                    e.IsTerminating
+                );
         };
 
         ObservableSystem.RegisterUnhandledExceptionHandler(ex =>
@@ -138,8 +153,8 @@ public class App : Avalonia.Application
         });
     }
 
-    private static OutbreakTracker2Views ConfigureViews(ServiceCollection services)
-        => new OutbreakTracker2Views()
+    private static OutbreakTracker2Views ConfigureViews(ServiceCollection services) =>
+        new OutbreakTracker2Views()
             // Add main view
             .AddView<Views.OutbreakTracker2View, Views.OutbreakTracker2ViewModel>(services)
             // Add pages
@@ -159,7 +174,8 @@ public class App : Avalonia.Application
 
     private static IServiceProvider ConfigureServicesAndLogging(
         IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration
+    )
     {
         IServiceProvider serviceProvider = ConfigureServices(services, configuration);
 
@@ -168,9 +184,13 @@ public class App : Avalonia.Application
         return serviceProvider;
     }
 
-    private static void ConfigureSerilog(IServiceProvider serviceProvider, IConfiguration configuration)
+    private static void ConfigureSerilog(
+        IServiceProvider serviceProvider,
+        IConfiguration configuration
+    )
     {
-        ILogDataStorageService logDataStore = serviceProvider.GetRequiredService<ILogDataStorageService>();
+        ILogDataStorageService logDataStore =
+            serviceProvider.GetRequiredService<ILogDataStorageService>();
 
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(configuration)
@@ -183,7 +203,8 @@ public class App : Avalonia.Application
 
     private static ServiceProvider ConfigureServices(
         IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration
+    )
     {
         services.AddSingleton(configuration);
 
@@ -208,8 +229,46 @@ public class App : Avalonia.Application
         services.AddSingleton<IPcsx2Locator, Pcsx2Locator>();
         services.AddSingleton<IProcessLocator, ProcessLocator>();
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
-        services.AddSingleton<ISafeMemoryReader, SafeMemoryReader>();
-        services.AddSingleton<IStringReader, StringReader>();
+
+        // Memory reader implementations: platform-specific
+        if (OperatingSystem.IsWindows())
+        {
+            services.AddSingleton<ISafeMemoryReader, SafeMemoryReader>();
+            services.AddSingleton<IStringReader, StringReader>();
+        }
+        else
+        {
+            if (OperatingSystem.IsLinux())
+            {
+#if LINUX
+                services.AddSingleton<ISafeMemoryReader, LinuxSafeMemoryReader>();
+                services.AddSingleton<IStringReader, LinuxStringReader>();
+#else
+                throw new PlatformNotSupportedException(
+                    "Linux reader implementations are only available in Linux builds."
+                );
+#endif
+            }
+
+            throw new PlatformNotSupportedException(
+                "Only Windows and Linux are currently supported."
+            );
+        }
+
+        // Window embedding: platform-specific implementation
+        if (OperatingSystem.IsWindows())
+            services.AddSingleton<IWindowEmbedder, WindowsWindowEmbedder>();
+        else if (OperatingSystem.IsLinux())
+#if LINUX
+            services.AddSingleton<IWindowEmbedder, LinuxWindowEmbedder>();
+#else
+            services.AddSingleton<IWindowEmbedder, NullWindowEmbedder>();
+#endif
+        else
+            services.AddSingleton<IWindowEmbedder, NullWindowEmbedder>();
+
+        services.AddSingleton<EmbeddedGameViewModel>();
+
         services.AddSingleton<IGameClientFactory, GameClientFactory>();
         services.AddSingleton<IEEmemMemory, EEmemMemory>();
         services.AddSingleton<IDataManager, DataManager>();
@@ -218,7 +277,9 @@ public class App : Avalonia.Application
         {
             return (imageStream, spriteSheet) =>
             {
-                ILogger<TextureAtlas> logger = serviceProvider.GetRequiredService<ILogger<TextureAtlas>>();
+                ILogger<TextureAtlas> logger = serviceProvider.GetRequiredService<
+                    ILogger<TextureAtlas>
+                >();
                 return new TextureAtlas(imageStream, spriteSheet, logger);
             };
         });
@@ -244,7 +305,7 @@ public class App : Avalonia.Application
         ServiceProviderOptions providerOptions = new()
         {
             ValidateOnBuild = true,
-            ValidateScopes = true
+            ValidateScopes = true,
         };
 
         return services.BuildServiceProvider(providerOptions);
@@ -254,7 +315,9 @@ public class App : Avalonia.Application
     {
         (_serviceProvider as IDisposable)?.Dispose();
 
-        if (_serviceProvider?.GetService<ITextureAtlasService>() is TextureAtlasService atlasService)
+        if (
+            _serviceProvider?.GetService<ITextureAtlasService>() is TextureAtlasService atlasService
+        )
         {
             foreach (ITextureAtlas atlas in atlasService.GetAllAtlases().Values)
                 (atlas as IDisposable)?.Dispose();

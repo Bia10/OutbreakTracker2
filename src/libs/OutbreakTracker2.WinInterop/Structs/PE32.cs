@@ -7,31 +7,31 @@ public static class Pe32
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct ImageDosHeader
     {
-        public ushort Magic;       // Magic number (0x5A4D)
-        public ushort Cblp;        // Bytes on last page of file
-        public ushort Cp;          // Pages in file
-        public ushort CrLc;        // Relocations
-        public ushort CparHdr;     // Size of header in paragraphs
-        public ushort MinAlloc;    // Minimum extra paragraphs needed
-        public ushort MaxAlloc;    // Maximum extra paragraphs needed
-        public ushort Ss;          // Initial (relative) SS value
-        public ushort Sp;          // Initial SP value
-        public ushort Csum;        // Checksum
-        public ushort Ip;          // Initial IP value
-        public ushort Cs;          // Initial (relative) CS value
-        public ushort LfaRlc;      // File address of relocation table
-        public ushort Ovno;        // Overlay number
+        public ushort Magic; // Magic number (0x5A4D)
+        public ushort Cblp; // Bytes on last page of file
+        public ushort Cp; // Pages in file
+        public ushort CrLc; // Relocations
+        public ushort CparHdr; // Size of header in paragraphs
+        public ushort MinAlloc; // Minimum extra paragraphs needed
+        public ushort MaxAlloc; // Maximum extra paragraphs needed
+        public ushort Ss; // Initial (relative) SS value
+        public ushort Sp; // Initial SP value
+        public ushort Csum; // Checksum
+        public ushort Ip; // Initial IP value
+        public ushort Cs; // Initial (relative) CS value
+        public ushort LfaRlc; // File address of relocation table
+        public ushort Ovno; // Overlay number
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public ushort[] Res;       // Reserved words
+        public ushort[] Res; // Reserved words
 
-        public ushort OemId;       // OEM identifier
-        public ushort OemInfo;     // OEM information
+        public ushort OemId; // OEM identifier
+        public ushort OemInfo; // OEM information
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
-        public ushort[] Res2;      // Reserved words
+        public ushort[] Res2; // Reserved words
 
-        public int LfaNew;         // File address of new exe header
+        public int LfaNew; // File address of new exe header
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
