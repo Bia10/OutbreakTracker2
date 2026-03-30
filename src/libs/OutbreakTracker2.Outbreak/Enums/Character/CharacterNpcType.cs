@@ -11,5 +11,5 @@ internal enum CharacterNpcType : byte
     OtherNpCs = 1,
 
     [EnumMember(Value = "Unknown")]
-    Unknown = 255
+    Unknown = 255,
 }

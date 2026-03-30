@@ -1,7 +1,7 @@
-﻿using ObservableCollections;
-using OutbreakTracker2.Application.Views.Logging;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using ObservableCollections;
+using OutbreakTracker2.Application.Views.Logging;
 
 namespace OutbreakTracker2.Application.Services.LogStorage;
 

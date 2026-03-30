@@ -1,9 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.Globalization;
+using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
 using OutbreakTracker2.Outbreak.Models;
-using System.Collections.ObjectModel;
-using System.Globalization;
 using ZLinq;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
@@ -47,7 +47,8 @@ public partial class InventoryViewModel : ObservableObject
     public InventoryViewModel(
         DecodedInGamePlayer player,
         IDataManager dataManager,
-        IItemSlotViewModelFactory itemSlotViewModelFactory)
+        IItemSlotViewModelFactory itemSlotViewModelFactory
+    )
     {
         _playerStatus = player.Status;
         _playerName = player.Name;
@@ -73,7 +74,8 @@ public partial class InventoryViewModel : ObservableObject
         byte specialItem,
         byte[] specialInventory,
         byte[] deadInventory,
-        byte[] specialDeadInventory)
+        byte[] specialDeadInventory
+    )
     {
         UpdateSlot(EquippedItems[0], equippedItem);
         UpdateSlots(MainSlots, mainInventory);
@@ -100,13 +102,17 @@ public partial class InventoryViewModel : ObservableObject
         if (itemId is 0x0)
             return ("Empty", "0", "0x00 | 0");
 
-        DecodedItem? item = _dataManager.InGameScenario.Items
-            .AsValueEnumerable()
+        DecodedItem? item = _dataManager
+            .InGameScenario.Items.AsValueEnumerable()
             .Where(IsValidItem)
             .FirstOrDefault(item => item.Id.Equals(itemId));
 
         return item is not null
-            ? (item.TypeName, item.Quantity.ToString(CultureInfo.InvariantCulture), $"0x{itemId:X2} | {itemId}")
+            ? (
+                item.TypeName,
+                item.Quantity.ToString(CultureInfo.InvariantCulture),
+                $"0x{itemId:X2} | {itemId}"
+            )
             : ("Unknown", "0", $"0x{itemId:X2} | {itemId}");
     }
 
@@ -119,6 +125,5 @@ public partial class InventoryViewModel : ObservableObject
         }
     }
 
-    private static bool IsValidItem(DecodedItem item)
-        => item is not { SlotIndex: 0, PickedUp: 0 };
+    private static bool IsValidItem(DecodedItem item) => item is not { SlotIndex: 0, PickedUp: 0 };
 }

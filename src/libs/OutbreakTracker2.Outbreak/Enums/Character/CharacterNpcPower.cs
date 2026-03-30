@@ -207,8 +207,10 @@ internal enum CharacterNpcPower : byte
 
     [EnumMember(Value = "Unknown(67)")]
     Gap67 = 67,
+
     [EnumMember(Value = "Unknown(68)")]
     Gap68 = 68,
+
     [EnumMember(Value = "Unknown(69)")]
     Gap69 = 69,
 
@@ -217,6 +219,7 @@ internal enum CharacterNpcPower : byte
 
     [EnumMember(Value = "Unknown(71)")]
     Gap71 = 71,
+
     [EnumMember(Value = "Unknown(72)")]
     Gap72 = 72,
 
@@ -228,14 +231,19 @@ internal enum CharacterNpcPower : byte
 
     [EnumMember(Value = "Unknown(75)")]
     Gap75 = 75,
+
     [EnumMember(Value = "Unknown(76)")]
     Gap76 = 76,
+
     [EnumMember(Value = "Unknown(77)")]
     Gap77 = 77,
+
     [EnumMember(Value = "Unknown(78)")]
     Gap78 = 78,
+
     [EnumMember(Value = "Unknown(79)")]
     Gap79 = 79,
+
     [EnumMember(Value = "Unknown(80)")]
     Gap80 = 80,
 
@@ -253,6 +261,7 @@ internal enum CharacterNpcPower : byte
 
     [EnumMember(Value = "Unknown(85)")]
     Gap85 = 85,
+
     [EnumMember(Value = "Unknown(86)")]
     Gap86 = 86,
 
@@ -261,8 +270,10 @@ internal enum CharacterNpcPower : byte
 
     [EnumMember(Value = "Unknown(88)")]
     Gap88 = 88,
+
     [EnumMember(Value = "Unknown(89)")]
     Gap89 = 89,
+
     [EnumMember(Value = "Unknown(90)")]
     Gap90 = 90,
 
@@ -271,18 +282,25 @@ internal enum CharacterNpcPower : byte
 
     [EnumMember(Value = "Unknown(92)")]
     Gap92 = 92,
+
     [EnumMember(Value = "Unknown(93)")]
     Gap93 = 93,
+
     [EnumMember(Value = "Unknown(94)")]
     Gap94 = 94,
+
     [EnumMember(Value = "Unknown(95)")]
     Gap95 = 95,
+
     [EnumMember(Value = "Unknown(96)")]
     Gap96 = 96,
+
     [EnumMember(Value = "Unknown(97)")]
     Gap97 = 97,
+
     [EnumMember(Value = "Unknown(98)")]
     Gap98 = 98,
+
     [EnumMember(Value = "Unknown(99)")]
     Gap99 = 99,
 
@@ -417,18 +435,25 @@ internal enum CharacterNpcPower : byte
 
     [EnumMember(Value = "Unknown(143)")]
     Gap143 = 143,
+
     [EnumMember(Value = "Unknown(144)")]
     Gap144 = 144,
+
     [EnumMember(Value = "Unknown(145)")]
     Gap145 = 145,
+
     [EnumMember(Value = "Unknown(146)")]
     Gap146 = 146,
+
     [EnumMember(Value = "Unknown(147)")]
     Gap147 = 147,
+
     [EnumMember(Value = "Unknown(148)")]
     Gap148 = 148,
+
     [EnumMember(Value = "Unknown(149)")]
     Gap149 = 149,
+
     [EnumMember(Value = "Unknown(150)")]
     Gap150 = 150,
 
@@ -437,98 +462,145 @@ internal enum CharacterNpcPower : byte
 
     [EnumMember(Value = "Unknown(152)")]
     Gap152 = 152,
+
     [EnumMember(Value = "Unknown(153)")]
     Gap153 = 153,
+
     [EnumMember(Value = "Unknown(154)")]
     Gap154 = 154,
+
     [EnumMember(Value = "Unknown(155)")]
     Gap155 = 155,
+
     [EnumMember(Value = "Unknown(156)")]
     Gap156 = 156,
+
     [EnumMember(Value = "Unknown(157)")]
     Gap157 = 157,
+
     [EnumMember(Value = "Unknown(158)")]
     Gap158 = 158,
+
     [EnumMember(Value = "Unknown(159)")]
     Gap159 = 159,
+
     [EnumMember(Value = "Unknown(160)")]
     Gap160 = 160,
+
     [EnumMember(Value = "Unknown(161)")]
     Gap161 = 161,
+
     [EnumMember(Value = "Unknown(162)")]
     Gap162 = 162,
+
     [EnumMember(Value = "Unknown(163)")]
     Gap163 = 163,
+
     [EnumMember(Value = "Unknown(164)")]
     Gap164 = 164,
+
     [EnumMember(Value = "Unknown(165)")]
     Gap165 = 165,
+
     [EnumMember(Value = "Unknown(166)")]
     Gap166 = 166,
+
     [EnumMember(Value = "Unknown(167)")]
     Gap167 = 167,
+
     [EnumMember(Value = "Unknown(168)")]
     Gap168 = 168,
+
     [EnumMember(Value = "Unknown(169)")]
     Gap169 = 169,
+
     [EnumMember(Value = "Unknown(170)")]
     Gap170 = 170,
+
     [EnumMember(Value = "Unknown(171)")]
     Gap171 = 171,
+
     [EnumMember(Value = "Unknown(172)")]
     Gap172 = 172,
+
     [EnumMember(Value = "Unknown(173)")]
     Gap173 = 173,
+
     [EnumMember(Value = "Unknown(174)")]
     Gap174 = 174,
+
     [EnumMember(Value = "Unknown(175)")]
     Gap175 = 175,
+
     [EnumMember(Value = "Unknown(176)")]
     Gap176 = 176,
+
     [EnumMember(Value = "Unknown(177)")]
     Gap177 = 177,
+
     [EnumMember(Value = "Unknown(178)")]
     Gap178 = 178,
+
     [EnumMember(Value = "Unknown(179)")]
     Gap179 = 179,
+
     [EnumMember(Value = "Unknown(180)")]
     Gap180 = 180,
+
     [EnumMember(Value = "Unknown(181)")]
     Gap181 = 181,
+
     [EnumMember(Value = "Unknown(182)")]
     Gap182 = 182,
+
     [EnumMember(Value = "Unknown(183)")]
     Gap183 = 183,
+
     [EnumMember(Value = "Unknown(184)")]
     Gap184 = 184,
+
     [EnumMember(Value = "Unknown(185)")]
     Gap185 = 185,
+
     [EnumMember(Value = "Unknown(186)")]
     Gap186 = 186,
+
     [EnumMember(Value = "Unknown(187)")]
     Gap187 = 187,
+
     [EnumMember(Value = "Unknown(188)")]
     Gap188 = 188,
+
     [EnumMember(Value = "Unknown(189)")]
     Gap189 = 189,
+
     [EnumMember(Value = "Unknown(190)")]
     Gap190 = 190,
+
     [EnumMember(Value = "Unknown(191)")]
     Gap191 = 191,
+
     [EnumMember(Value = "Unknown(192)")]
     Gap192 = 192,
+
     [EnumMember(Value = "Unknown(193)")]
     Gap193 = 193,
+
     [EnumMember(Value = "Unknown(194)")]
     Gap194 = 194,
+
     [EnumMember(Value = "Unknown(195)")]
     Gap195 = 195,
+
     [EnumMember(Value = "Unknown(196)")]
     Gap196 = 196,
+
     [EnumMember(Value = "Unknown(197)")]
     Gap197 = 197,
+
     [EnumMember(Value = "Unknown(198)")]
     Gap198 = 198,
+
     [EnumMember(Value = "Unknown(199)")]
     Gap199 = 199,
 
@@ -560,6 +632,5 @@ internal enum CharacterNpcPower : byte
     CindyC = 208,
 
     [EnumMember(Value = "0")]
-    Unknown = 255
+    Unknown = 255,
 }
-

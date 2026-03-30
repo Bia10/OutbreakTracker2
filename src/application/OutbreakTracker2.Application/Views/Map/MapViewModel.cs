@@ -4,13 +4,8 @@ using OutbreakTracker2.Application.Views.Map.Canvas;
 
 namespace OutbreakTracker2.Application.Views.Map;
 
-public class MapViewModel : PageBase
+public class MapViewModel(MapCanvasViewModel mapCanvasView)
+    : PageBase("Map", MaterialIconKind.Map, 600)
 {
-    public MapViewModel(MapCanvasViewModel mapCanvasView)
-        : base("Map", MaterialIconKind.Map, 600)
-    {
-        MapCanvasView = mapCanvasView;
-    }
-
-    public MapCanvasViewModel MapCanvasView { get; }
+    public MapCanvasViewModel MapCanvasView { get; } = mapCanvasView;
 }

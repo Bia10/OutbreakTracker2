@@ -23,7 +23,7 @@ public enum RoomStatus : byte
     HostingRoom = 4,
 
     [EnumMember(Value = "Launching room")]
-    LaunchingRoom = 5
+    LaunchingRoom = 5,
 
     // 12 unknown
     // Scenario Ended, before scenario meeting room appears

@@ -1,9 +1,9 @@
-﻿using ObservableCollections;
-using OutbreakTracker2.Application.Views.Logging;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using ObservableCollections;
+using OutbreakTracker2.Application.Views.Logging;
 
 namespace OutbreakTracker2.Application.Services.LogStorage;
 
@@ -21,17 +21,21 @@ public class LogDataStorageService : ILogDataStorageService, IAsyncDisposable
     public LogDataStorageService()
     {
         Entries = new ObservableFixedSizeRingBuffer<LogModel>(MaxCapacity);
-        _processingTask = Task.Run(() => ProcessLogChannelAsync(_cts.Token));
+        _processingTask = Task.Run(() => ProcessLogChannelAsync(_cts.Token), _cts.Token);
     }
 
-    public ValueTask AddEntryAsync(LogModel logModel, CancellationToken cancellationToken)
-        => _logChannel.Writer.WriteAsync(logModel, cancellationToken);
+    public ValueTask AddEntryAsync(LogModel logModel, CancellationToken cancellationToken) =>
+        _logChannel.Writer.WriteAsync(logModel, cancellationToken);
 
     private async Task ProcessLogChannelAsync(CancellationToken cancellationToken)
     {
         try
         {
-            await foreach (LogModel logModel in _logChannel.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (
+                LogModel logModel in _logChannel
+                    .Reader.ReadAllAsync(cancellationToken)
+                    .ConfigureAwait(false)
+            )
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 Entries.AddLast(logModel);
@@ -49,7 +53,8 @@ public class LogDataStorageService : ILogDataStorageService, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_isDisposed) return;
+        if (_isDisposed)
+            return;
 
         await _cts.CancelAsync().ConfigureAwait(false);
 
@@ -65,7 +70,9 @@ public class LogDataStorageService : ILogDataStorageService, IAsyncDisposable
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error awaiting log processing task completion during DisposeAsync: {ex}");
+            Console.WriteLine(
+                $"Error awaiting log processing task completion during DisposeAsync: {ex}"
+            );
         }
         finally
         {

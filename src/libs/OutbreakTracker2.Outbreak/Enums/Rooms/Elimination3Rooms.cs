@@ -68,5 +68,5 @@ public enum Elimination3Rooms : short
     Room306 = 20,
 
     [EnumMember(Value = "Pier")]
-    Pier = 21
+    Pier = 21,
 }

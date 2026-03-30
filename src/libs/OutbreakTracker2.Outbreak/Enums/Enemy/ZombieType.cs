@@ -38,5 +38,5 @@ public enum ZombieType : byte
     Bob = 80,
 
     [EnumMember(Value = "Will")]
-    Will = 85
+    Will = 85,
 }

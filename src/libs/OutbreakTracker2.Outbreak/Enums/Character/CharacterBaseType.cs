@@ -29,5 +29,5 @@ public enum CharacterBaseType : byte
     Cindy = 7,
 
     [EnumMember(Value = "Unknown")]
-    Unknown = 255
+    Unknown = 255,
 }

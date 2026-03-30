@@ -56,8 +56,10 @@ public static class FileOnePtrs
     private const nint Door4Hp = 0x473232; //473232/473260
     private const nint Door5Hp = 0x473504; //473504/4735F0
     private const nint Door6Hp = 0x473652; //room 102
+
     // + 0xC0 192 bytes
     private const nint Door7Hp = 0x473712; //room 201
+
     // + 0xC0 192 bytes
     private const nint Door8Hp = 0x4737D2; //room 202
     private const nint Door9Hp = 0x4739B6; //4739B6/473A70 dd t-shaped
@@ -77,7 +79,7 @@ public static class FileOnePtrs
             7 => Door8Hp,
             8 => Door9Hp,
             9 => Door10Hp,
-            _ => -1
+            _ => -1,
         };
     }
 
@@ -87,9 +89,11 @@ public static class FileOnePtrs
     private const nint Door4Flag = 0x48B058; //48B058
     private const nint Door5Flag = 0x48B10C; //48B10C/48B148
     private const nint Door6Flag = 0x48B160; //room 102
-                               // +0x30 (48 bytes)
+
+    // +0x30 (48 bytes)
     private const nint Door7Flag = 0x48B190; //room 201
-                               // +0x30 (48 bytes)
+
+    // +0x30 (48 bytes)
     private const nint Door8Flag = 0x48B1C0; //room 202
     private const nint Door9Flag = 0x48B238; //48B238/48B268 dd t-shaped
     private const nint Door10Flag = 0x48B25C; //48B25C/48B268 store room
@@ -108,7 +112,7 @@ public static class FileOnePtrs
             7 => Door8Flag,
             8 => Door9Flag,
             9 => Door10Flag,
-            _ => -1
+            _ => -1,
         };
     }
 
@@ -124,26 +128,26 @@ public static class FileOnePtrs
     }
 
     public const nint CharacterEnabledOffset = 0x0; // 0 +1 byte(s) to next offset
-    public const nint CharacterInGameOffset = 0x1;  // 1 +55 byte(s) to next offset
-    public const nint PositionXOffset = 0x38;       // 56 +8 byte(s) to next offset
-    public const nint PositionYOffset = 0x40;       // 64 +116 byte(s) to next offset
-    public const nint SizeOffset = 0xB4;            // 180 +302 byte(s) to next offset
-    public const nint RoomIdOffset = 0x1E2;         // 482 +866 byte(s) to next offset
-    public const nint CurHpOffset = 0x544;          // 1348 +2 byte(s) to next offset
-    public const nint MaxHpOffset = 0x546;          // 1350 +1618 byte(s) to next offset
-    public const nint CharacterTypeOffset = 0xB98;  // 2968 +8 byte(s) to next offset
-    public const nint CharacterStatusOffset = 0xBA0;// 2976 +12 byte(s) to next offset
-    public const nint VirusOffset = 0xBAC;          // 2988 +4 byte(s) to next offset
-    public const nint CritBonusOffset = 0xBB0;      // 2992 +4 byte(s) to next offset
-    public const nint NameTypeOffset = 0xBB4;       // 2996 +2 byte(s) to next offset
-    public const nint AntiVirusTimeOffset = 0xBB6;  // 2998 +2 byte(s) to next offset
+    public const nint CharacterInGameOffset = 0x1; // 1 +55 byte(s) to next offset
+    public const nint PositionXOffset = 0x38; // 56 +8 byte(s) to next offset
+    public const nint PositionYOffset = 0x40; // 64 +116 byte(s) to next offset
+    public const nint SizeOffset = 0xB4; // 180 +302 byte(s) to next offset
+    public const nint RoomIdOffset = 0x1E2; // 482 +866 byte(s) to next offset
+    public const nint CurHpOffset = 0x544; // 1348 +2 byte(s) to next offset
+    public const nint MaxHpOffset = 0x546; // 1350 +1618 byte(s) to next offset
+    public const nint CharacterTypeOffset = 0xB98; // 2968 +8 byte(s) to next offset
+    public const nint CharacterStatusOffset = 0xBA0; // 2976 +12 byte(s) to next offset
+    public const nint VirusOffset = 0xBAC; // 2988 +4 byte(s) to next offset
+    public const nint CritBonusOffset = 0xBB0; // 2992 +4 byte(s) to next offset
+    public const nint NameTypeOffset = 0xBB4; // 2996 +2 byte(s) to next offset
+    public const nint AntiVirusTimeOffset = 0xBB6; // 2998 +2 byte(s) to next offset
     public const nint AntiVirusGTimeOffset = 0xBB8; // 3000 +2 byte(s) to next offset
-    public const nint HerbTimeOffset = 0xBBA;       // 3002 +6 byte(s) to next offset
-    public const nint SpeedOffset = 0xBC0;          // 3008 +4 byte(s) to next offset
-    public const nint PowerOffset = 0xBC4;          // 3012 +150 byte(s) to next offset
-    public const nint BleedTimeOffset = 0xC5A;      // 3162 +34 byte(s) to next offset
-    public const nint EquippedItemOffset = 0xC7C;   // 3196 +8 byte(s) to next offset
-    public const nint InventoryOffset = 0xC84;      // 3204
+    public const nint HerbTimeOffset = 0xBBA; // 3002 +6 byte(s) to next offset
+    public const nint SpeedOffset = 0xBC0; // 3008 +4 byte(s) to next offset
+    public const nint PowerOffset = 0xBC4; // 3012 +150 byte(s) to next offset
+    public const nint BleedTimeOffset = 0xC5A; // 3162 +34 byte(s) to next offset
+    public const nint EquippedItemOffset = 0xC7C; // 3196 +8 byte(s) to next offset
+    public const nint InventoryOffset = 0xC84; // 3204
 
     public const nint DeadInventoryStart = 0x48BDE2;
     public const nint VirusMaxStart = 0x6E6C70;
@@ -212,7 +216,7 @@ public static class FileOnePtrs
             9 => Enemy3Start,
             10 => Enemy2Start,
             11 => Enemy1Start,
-            _ => -1
+            _ => -1,
         };
     }
 }

@@ -1,42 +1,55 @@
-﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Running;
-using System.Buffers;
+﻿using System.Buffers;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Running;
 
 namespace OutbreakTracker2.Benchmarks;
 
 internal static class SafeMemoryReader
 {
-    internal static T Read<T>(nint hProcess, nint address) where T : unmanaged
+    internal static T Read<T>(nint hProcess, nint address)
+        where T : unmanaged
     {
         int size = Marshal.SizeOf<T>();
         switch (size)
         {
-            case < 0: throw new InvalidOperationException($"Size of T cannot be negative. Size: {size}");
-            case 0: return default;
+            case < 0:
+                throw new InvalidOperationException($"Size of T cannot be negative. Size: {size}");
+            case 0:
+                return default;
             default:
+            {
+                byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
+
+                try
                 {
-                    byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
+                    if (
+                        !Kernel32.ReadProcessMemory_Safe(
+                            hProcess,
+                            address,
+                            buffer,
+                            size,
+                            out int bytesRead
+                        )
+                    )
+                        throw new Win32Exception(Marshal.GetLastWin32Error());
+                    if (bytesRead != size)
+                        throw new InvalidOperationException(
+                            $"Failed to read the expected number of bytes. Read: {bytesRead}, Expected: {size}"
+                        );
 
-                    try
-                    {
-                        if (!Kernel32.ReadProcessMemory_Safe(hProcess, address, buffer, size, out int bytesRead))
-                            throw new Win32Exception(Marshal.GetLastWin32Error());
-                        if (bytesRead != size)
-                            throw new InvalidOperationException($"Failed to read the expected number of bytes. Read: {bytesRead}, Expected: {size}");
+                    Span<byte> bufferSpan = buffer.AsSpan(0, size);
+                    ref T result = ref MemoryMarshal.Cast<byte, T>(bufferSpan)[0];
 
-                        Span<byte> bufferSpan = buffer.AsSpan(0, size);
-                        ref T result = ref MemoryMarshal.Cast<byte, T>(bufferSpan)[0];
-
-                        return result;
-                    }
-                    finally
-                    {
-                        ArrayPool<byte>.Shared.Return(buffer);
-                    }
+                    return result;
                 }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
+            }
         }
     }
 }
@@ -45,76 +58,131 @@ internal static class UnsafeMemoryReader
 {
     private const int StackAllocThreshold = 8192;
 
-    internal static unsafe T Read<T>(nint hProcess, nint address) where T : unmanaged
+    internal static unsafe T Read<T>(nint hProcess, nint address)
+        where T : unmanaged
     {
         int size = Unsafe.SizeOf<T>();
         switch (size)
         {
-            case < 0: throw new InvalidOperationException($"Size of T cannot be negative. Size: {size}");
-            case 0: return default;
+            case < 0:
+                throw new InvalidOperationException($"Size of T cannot be negative. Size: {size}");
+            case 0:
+                return default;
             default:
+            {
+                byte[]? arrayPoolBuffer = null;
+
+                try
                 {
-                    byte[]? arrayPoolBuffer = null;
-
-                    try
+                    byte* bufferPtr;
+                    if (size <= StackAllocThreshold)
                     {
-                        byte* bufferPtr;
-                        if (size <= StackAllocThreshold)
-                        {
-                            byte* stackAllocatedBuffer = stackalloc byte[size];
-                            bufferPtr = stackAllocatedBuffer;
+                        byte* stackAllocatedBuffer = stackalloc byte[size];
+                        bufferPtr = stackAllocatedBuffer;
 
-                            if (!Kernel32.ReadProcessMemory_Unsafe(hProcess, address, bufferPtr, size, out int bytesRead))
+                        if (
+                            !Kernel32.ReadProcessMemory_Unsafe(
+                                hProcess,
+                                address,
+                                bufferPtr,
+                                size,
+                                out int bytesRead
+                            )
+                        )
+                            throw new Win32Exception(Marshal.GetLastWin32Error());
+                        if (bytesRead != size)
+                            throw new InvalidOperationException(
+                                $"Failed to read the expected number of bytes. Read: {bytesRead}, Expected: {size}"
+                            );
+
+                        return *(T*)bufferPtr;
+                    }
+                    else
+                    {
+                        arrayPoolBuffer = ArrayPool<byte>.Shared.Rent(size);
+
+                        fixed (byte* pinnedPtr = arrayPoolBuffer)
+                        {
+                            bufferPtr = pinnedPtr;
+
+                            if (
+                                !Kernel32.ReadProcessMemory_Unsafe(
+                                    hProcess,
+                                    address,
+                                    bufferPtr,
+                                    size,
+                                    out int bytesRead
+                                )
+                            )
                                 throw new Win32Exception(Marshal.GetLastWin32Error());
                             if (bytesRead != size)
-                                throw new InvalidOperationException($"Failed to read the expected number of bytes. Read: {bytesRead}, Expected: {size}");
+                                throw new InvalidOperationException(
+                                    $"Failed to read the expected number of bytes. Read: {bytesRead}, Expected: {size}"
+                                );
 
                             return *(T*)bufferPtr;
                         }
-                        else
-                        {
-                            arrayPoolBuffer = ArrayPool<byte>.Shared.Rent(size);
-
-                            fixed (byte* pinnedPtr = arrayPoolBuffer)
-                            {
-                                bufferPtr = pinnedPtr;
-
-                                if (!Kernel32.ReadProcessMemory_Unsafe(hProcess, address, bufferPtr, size, out int bytesRead))
-                                    throw new Win32Exception(Marshal.GetLastWin32Error());
-                                if (bytesRead != size)
-                                    throw new InvalidOperationException($"Failed to read the expected number of bytes. Read: {bytesRead}, Expected: {size}");
-
-                                return *(T*)bufferPtr;
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        if (arrayPoolBuffer is not null)
-                            ArrayPool<byte>.Shared.Return(arrayPoolBuffer);
                     }
                 }
+                finally
+                {
+                    if (arrayPoolBuffer is not null)
+                        ArrayPool<byte>.Shared.Return(arrayPoolBuffer);
+                }
+            }
         }
     }
 }
 
-public struct Struct2Bytes { public byte B1; public byte B2; }
+public struct Struct2Bytes
+{
+    public byte B1;
+    public byte B2;
+}
 
-public struct Struct2Ints { public int I1; public int I2; }
+public struct Struct2Ints
+{
+    public int I1;
+    public int I2;
+}
 
-public struct Struct3IntsFloat { public int I1; public int I2; public int I3; public float F1; }
+public struct Struct3IntsFloat
+{
+    public int I1;
+    public int I2;
+    public int I3;
+    public float F1;
+}
 
-public unsafe struct UnmanagedStructBytes8 { public fixed byte Data[8]; }
+public unsafe struct UnmanagedStructBytes8
+{
+    public fixed byte Data[8];
+}
 
-public unsafe struct UnmanagedStructBytes16 { public fixed byte Data[16]; }
+public unsafe struct UnmanagedStructBytes16
+{
+    public fixed byte Data[16];
+}
 
-public unsafe struct UnmanagedStructBytes32 { public fixed byte Data[32]; }
+public unsafe struct UnmanagedStructBytes32
+{
+    public fixed byte Data[32];
+}
 
-public unsafe struct UnmanagedStructBytes100 { public fixed byte Data[100]; }
+public unsafe struct UnmanagedStructBytes100
+{
+    public fixed byte Data[100];
+}
 
-public unsafe struct UnmanagedStructBytes1500 { public fixed byte Data[1500]; }
+public unsafe struct UnmanagedStructBytes1500
+{
+    public fixed byte Data[1500];
+}
 
-public unsafe struct UnmanagedStructBytes5000 { public fixed byte Data[5000]; }
+public unsafe struct UnmanagedStructBytes5000
+{
+    public fixed byte Data[5000];
+}
 
 [MemoryDiagnoser]
 [SimpleJob(launchCount: 2, warmupCount: 5, iterationCount: 10)]
@@ -133,7 +201,8 @@ public unsafe struct UnmanagedStructBytes5000 { public fixed byte Data[5000]; }
 [GenericTypeArguments(typeof(UnmanagedStructBytes100))]
 [GenericTypeArguments(typeof(UnmanagedStructBytes1500))]
 [GenericTypeArguments(typeof(UnmanagedStructBytes5000))]
-public class MemoryReadBenchmark<T> where T : unmanaged
+public class MemoryReadBenchmark<T>
+    where T : unmanaged
 {
     private nint _hProcess;
     private GCHandle _gcHandle;
@@ -144,7 +213,11 @@ public class MemoryReadBenchmark<T> where T : unmanaged
     [GlobalSetup]
     public void Setup()
     {
-        _hProcess = Kernel32.OpenProcess(ProcessAccessFlags.VirtualMemoryRead, false, Environment.ProcessId);
+        _hProcess = Kernel32.OpenProcess(
+            ProcessAccessFlags.VirtualMemoryRead,
+            false,
+            Environment.ProcessId
+        );
         if (_hProcess == nint.Zero)
             throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to open process handle.");
 
@@ -173,16 +246,14 @@ public class MemoryReadBenchmark<T> where T : unmanaged
     }
 
     [Benchmark(Baseline = true)]
-    public T ReadSafe()
-        => SafeMemoryReader.Read<T>(_hProcess, _address);
+    public T ReadSafe() => SafeMemoryReader.Read<T>(_hProcess, _address);
 
     [Benchmark]
-    public T ReadUnsafe()
-        => UnsafeMemoryReader.Read<T>(_hProcess, _address);
+    public T ReadUnsafe() => UnsafeMemoryReader.Read<T>(_hProcess, _address);
 }
 
 public class Program
 {
-    public static void Main(string[] args)
-        => BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
+    public static void Main(string[] args) =>
+        BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 }

@@ -59,5 +59,5 @@ public enum Elimination1Rooms : short
     SecurityOffice = 17,
 
     [EnumMember(Value = "Cabin")]
-    Cabin = 18
+    Cabin = 18,
 }

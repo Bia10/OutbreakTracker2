@@ -1,12 +1,12 @@
-﻿using Avalonia;
+﻿using System;
+using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Atlas;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Utilities;
-using System;
-using System.Threading.Tasks;
 
 namespace OutbreakTracker2.Application.Views.Common;
 
@@ -23,7 +23,8 @@ public partial class ImageViewModel : ObservableObject
     public ImageViewModel(
         ILogger<ImageViewModel> logger,
         ITextureAtlasService textureAtlasService,
-        IDispatcherService dispatcherService)
+        IDispatcherService dispatcherService
+    )
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
@@ -32,14 +33,18 @@ public partial class ImageViewModel : ObservableObject
         if (_uiAtlas is null)
         {
             _logger.LogError("UI Texture Atlas could not be retrieved by ImageViewModel");
-            throw new InvalidOperationException("UI Texture Atlas could not be retrieved by ImageViewModel");
+            throw new InvalidOperationException(
+                "UI Texture Atlas could not be retrieved by ImageViewModel"
+            );
         }
 
         _itemsAtlas = textureAtlasService.GetAtlas("Items");
         if (_itemsAtlas is null)
         {
             _logger.LogError("Items Texture Atlas could not be retrieved by ImageViewModel");
-            throw new InvalidOperationException("Items Texture Atlas could not be retrieved by ImageViewModel");
+            throw new InvalidOperationException(
+                "Items Texture Atlas could not be retrieved by ImageViewModel"
+            );
         }
     }
 
@@ -51,7 +56,10 @@ public partial class ImageViewModel : ObservableObject
 
         if (selectedAtlas is null)
         {
-            _logger.LogError("Cannot update image: UI Texture Atlas is null. Context: {DebugContext}", debugContext);
+            _logger.LogError(
+                "Cannot update image: UI Texture Atlas is null. Context: {DebugContext}",
+                debugContext
+            );
             return;
         }
 
@@ -62,7 +70,9 @@ public partial class ImageViewModel : ObservableObject
         {
             _logger.LogWarning(
                 "Sprite '{SpriteName}' not found in atlas or rectangle is invalid for context '{DebugContext}'. Using fallback image",
-                spriteName, debugContext);
+                spriteName,
+                debugContext
+            );
         }
         else
         {
@@ -70,7 +80,9 @@ public partial class ImageViewModel : ObservableObject
             {
                 _logger.LogWarning(
                     "Texture atlas texture is null. Cannot create CroppedBitmap for sprite '{SpriteName}'. Context: {DebugContext}",
-                    spriteName, debugContext);
+                    spriteName,
+                    debugContext
+                );
                 return;
             }
 
@@ -78,20 +90,28 @@ public partial class ImageViewModel : ObservableObject
             {
                 // Note: tbh not rly sure why CroppedBitmap is not thread safe, but it seems to be the case
                 // i.e. why does a CroppedBitmap needs to be created on the UI thread?
-                newImage = await _dispatcherService.InvokeOnUIAsync(() => ImageUtility.GetCroppedBitmap(selectedAtlas.Texture, sourceRect))
+                newImage = await _dispatcherService
+                    .InvokeOnUIAsync(() =>
+                        ImageUtility.GetCroppedBitmap(selectedAtlas.Texture, sourceRect)
+                    )
                     .ConfigureAwait(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(
-                    ex, "Failed to create CroppedBitmap for sprite '{SpriteName}' on background thread. Context: {DebugContext}",
-                    spriteName, debugContext);
+                    ex,
+                    "Failed to create CroppedBitmap for sprite '{SpriteName}' on background thread. Context: {DebugContext}",
+                    spriteName,
+                    debugContext
+                );
             }
         }
 
-        await _dispatcherService.InvokeOnUIAsync(() =>
-        {
-            SourceImage = newImage;
-        }).ConfigureAwait(true);
+        await _dispatcherService
+            .InvokeOnUIAsync(() =>
+            {
+                SourceImage = newImage;
+            })
+            .ConfigureAwait(true);
     }
 }

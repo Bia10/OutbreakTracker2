@@ -1,7 +1,7 @@
-﻿using Avalonia.Controls;
+﻿using System.Collections.Generic;
+using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using CommunityToolkit.Mvvm.ComponentModel;
-using System.Collections.Generic;
 
 namespace OutbreakTracker2.Application.Common;
 
@@ -14,10 +14,8 @@ public class ViewLocator(OutbreakTracker2Views views) : IDataTemplate
         if (param is null)
             return CreateText("Data is null.");
 
-
         if (_controlCache.TryGetValue(param, out Control? control))
             return control;
-
 
         if (views.TryCreateView(param, out Control? view))
         {
@@ -31,6 +29,5 @@ public class ViewLocator(OutbreakTracker2Views views) : IDataTemplate
 
     public bool Match(object? data) => data is ObservableObject;
 
-    private static TextBlock CreateText(string text) => new()
-        { Text = text };
+    private static TextBlock CreateText(string text) => new() { Text = text };
 }

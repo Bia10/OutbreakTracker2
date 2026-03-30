@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Enemy;
@@ -8,7 +9,6 @@ using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2.Client;
 using OutbreakTracker2.PCSX2.EEmem;
-using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
@@ -36,7 +36,7 @@ public sealed class EnemiesReader : ReaderBase
         {
             GameFile.FileOne => FileOnePtrs.GetEnemyAddress(enemyId),
             GameFile.FileTwo => FileTwoPtrs.GetEnemyAddress(enemyId),
-            _ => nint.Zero
+            _ => nint.Zero,
         };
     }
 
@@ -76,26 +76,26 @@ public sealed class EnemiesReader : ReaderBase
         return ReadValue<ushort>(baseAddress, offsets);
     }
 
-    private static string GetEnemyName(byte nameId)
-        => EnumUtility.GetEnumString(nameId, EnemyType.Unknown);
+    private static string GetEnemyName(byte nameId) =>
+        EnumUtility.GetEnumString(nameId, EnemyType.Unknown);
 
-    private static string GetZombieName(byte typeId)
-        => EnumUtility.GetEnumString(typeId, ZombieType.Unknown0);
+    private static string GetZombieName(byte typeId) =>
+        EnumUtility.GetEnumString(typeId, ZombieType.Unknown0);
 
-    private static string GetDogName(byte typeId)
-        => EnumUtility.GetEnumString(typeId, DogType.Unknown0);
+    private static string GetDogName(byte typeId) =>
+        EnumUtility.GetEnumString(typeId, DogType.Unknown0);
 
-    private static string GetScissorTailName(byte typeId)
-        => EnumUtility.GetEnumString(typeId, ScissorTailType.ScissorTail);
+    private static string GetScissorTailName(byte typeId) =>
+        EnumUtility.GetEnumString(typeId, ScissorTailType.ScissorTail);
 
-    private static string GetLionName(byte typeId)
-        => EnumUtility.GetEnumString(typeId, LionType.Stalker);
+    private static string GetLionName(byte typeId) =>
+        EnumUtility.GetEnumString(typeId, LionType.Stalker);
 
-    private static string GetThanatosName(byte typeId)
-        => EnumUtility.GetEnumString(typeId, ThanatosType.Thanatos);
+    private static string GetThanatosName(byte typeId) =>
+        EnumUtility.GetEnumString(typeId, ThanatosType.Thanatos);
 
-    private static string GetTyrantName(byte typeId)
-        => EnumUtility.GetEnumString(typeId, TyrantType.Tyrant);
+    private static string GetTyrantName(byte typeId) =>
+        EnumUtility.GetEnumString(typeId, TyrantType.Tyrant);
 
     public void UpdateEnemies()
     {
@@ -112,7 +112,7 @@ public sealed class EnemiesReader : ReaderBase
                 CurHp = GetCurHealth(enemyBaseAddress),
                 MaxHp = GetMaxHealth(enemyBaseAddress),
                 TypeId = GetType(enemyBaseAddress),
-                NameId = GetNameId(enemyBaseAddress)
+                NameId = GetNameId(enemyBaseAddress),
             };
         }
 
@@ -121,11 +121,13 @@ public sealed class EnemiesReader : ReaderBase
 
     public void UpdateEnemies2(bool debug = false)
     {
-        if (CurrentFile is GameFile.Unknown) return;
+        if (CurrentFile is GameFile.Unknown)
+            return;
 
         long start = Environment.TickCount64;
 
-        if (debug) Logger.LogDebug("Decoding enemies2");
+        if (debug)
+            Logger.LogDebug("Decoding enemies2");
 
         DecodedEnemy[] newDecodedEnemies2 = new DecodedEnemy[GameConstants.MaxEnemies2];
 
@@ -133,35 +135,82 @@ public sealed class EnemiesReader : ReaderBase
 
         for (int i = 0; i < GameConstants.MaxEnemies2; i++)
         {
-            newDecodedEnemies2[i] = new DecodedEnemy();
-            newDecodedEnemies2[i].Id = GetPersistentUlidForEnemies2Slot(i);
+            newDecodedEnemies2[i] = new DecodedEnemy { Id = GetPersistentUlidForEnemies2Slot(i) };
 
             int curMobOffset = entrySize * i;
 
             switch (CurrentFile)
             {
                 case GameFile.FileOne:
-                    newDecodedEnemies2[i].SlotId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x1]);
-                    newDecodedEnemies2[i].NameId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x2]);
-                    newDecodedEnemies2[i].TypeId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x3]);
-                    newDecodedEnemies2[i].CurHp = ReadValue<ushort>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x1C]);
-                    newDecodedEnemies2[i].MaxHp = ReadValue<ushort>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x1E]);
-                    newDecodedEnemies2[i].RoomId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x22]);
-                    newDecodedEnemies2[i].Status = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x45]);
+                    newDecodedEnemies2[i].SlotId = ReadValue<byte>(
+                        FileOnePtrs.EnemyListOffset,
+                        [curMobOffset + 0x1]
+                    );
+                    newDecodedEnemies2[i].NameId = ReadValue<byte>(
+                        FileOnePtrs.EnemyListOffset,
+                        [curMobOffset + 0x2]
+                    );
+                    newDecodedEnemies2[i].TypeId = ReadValue<byte>(
+                        FileOnePtrs.EnemyListOffset,
+                        [curMobOffset + 0x3]
+                    );
+                    newDecodedEnemies2[i].CurHp = ReadValue<ushort>(
+                        FileOnePtrs.EnemyListOffset,
+                        [curMobOffset + 0x1C]
+                    );
+                    newDecodedEnemies2[i].MaxHp = ReadValue<ushort>(
+                        FileOnePtrs.EnemyListOffset,
+                        [curMobOffset + 0x1E]
+                    );
+                    newDecodedEnemies2[i].RoomId = ReadValue<byte>(
+                        FileOnePtrs.EnemyListOffset,
+                        [curMobOffset + 0x22]
+                    );
+                    newDecodedEnemies2[i].Status = ReadValue<byte>(
+                        FileOnePtrs.EnemyListOffset,
+                        [curMobOffset + 0x45]
+                    );
                     break;
 
                 case GameFile.FileTwo:
-                    newDecodedEnemies2[i].SlotId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x1]);
-                    newDecodedEnemies2[i].NameId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x2]);
-                    newDecodedEnemies2[i].TypeId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x3]);
-                    newDecodedEnemies2[i].CurHp = ReadValue<ushort>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x1C]);
-                    newDecodedEnemies2[i].MaxHp = ReadValue<ushort>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x1E]);
-                    newDecodedEnemies2[i].RoomId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x22]);
-                    newDecodedEnemies2[i].Status = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x45]);
+                    newDecodedEnemies2[i].SlotId = ReadValue<byte>(
+                        FileTwoPtrs.EnemyListOffset,
+                        [curMobOffset + 0x1]
+                    );
+                    newDecodedEnemies2[i].NameId = ReadValue<byte>(
+                        FileTwoPtrs.EnemyListOffset,
+                        [curMobOffset + 0x2]
+                    );
+                    newDecodedEnemies2[i].TypeId = ReadValue<byte>(
+                        FileTwoPtrs.EnemyListOffset,
+                        [curMobOffset + 0x3]
+                    );
+                    newDecodedEnemies2[i].CurHp = ReadValue<ushort>(
+                        FileTwoPtrs.EnemyListOffset,
+                        [curMobOffset + 0x1C]
+                    );
+                    newDecodedEnemies2[i].MaxHp = ReadValue<ushort>(
+                        FileTwoPtrs.EnemyListOffset,
+                        [curMobOffset + 0x1E]
+                    );
+                    newDecodedEnemies2[i].RoomId = ReadValue<byte>(
+                        FileTwoPtrs.EnemyListOffset,
+                        [curMobOffset + 0x22]
+                    );
+                    newDecodedEnemies2[i].Status = ReadValue<byte>(
+                        FileTwoPtrs.EnemyListOffset,
+                        [curMobOffset + 0x45]
+                    );
                     break;
 
-                case GameFile.Unknown: break;
-                default: throw new ArgumentOutOfRangeException(nameof(CurrentFile), CurrentFile, "Unexpected GameFile value.");
+                case GameFile.Unknown:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(CurrentFile),
+                        CurrentFile,
+                        "Unexpected GameFile value."
+                    );
             }
 
             string enemyName = GetEnemyName(newDecodedEnemies2[i].NameId);
@@ -185,7 +234,7 @@ public sealed class EnemiesReader : ReaderBase
                     "Lion" when !string.IsNullOrEmpty(lionName) => lionName,
                     "Tyrant" when !string.IsNullOrEmpty(tyrantName) => tyrantName,
                     "Thanatos" when !string.IsNullOrEmpty(thanatosName) => thanatosName,
-                    _ => enemyName
+                    _ => enemyName,
                 };
             }
 
@@ -196,15 +245,19 @@ public sealed class EnemiesReader : ReaderBase
 
         long duration = Environment.TickCount64 - start;
 
-        if (!debug) return;
+        if (!debug)
+            return;
 
         Logger.LogDebug("Decoded enemies2 in {Duration}ms", duration);
-        foreach (string jsonObject in DecodedEnemies2.Select(enemy
-                     => JsonSerializer.Serialize(enemy, DecodedEnemyJsonContext.Default.DecodedEnemy)))
+        foreach (
+            string jsonObject in DecodedEnemies2.Select(enemy =>
+                JsonSerializer.Serialize(enemy, DecodedEnemyJsonContext.Default.DecodedEnemy)
+            )
+        )
             Logger.LogDebug("Decoded enemy: {JsonObject}", jsonObject);
     }
 
-    private readonly Dictionary<int, Ulid> _enemies2SlotUlids = new();
+    private readonly Dictionary<int, Ulid> _enemies2SlotUlids = [];
 
     private Ulid GetPersistentUlidForEnemies2Slot(int enemies2SlotIndex)
     {

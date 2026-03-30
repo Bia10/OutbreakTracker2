@@ -89,5 +89,5 @@ public enum FlashbackRooms : short
     BigSuspensionBridge = 29,
 
     [EnumMember(Value = "River bank")]
-    RiverBank = 30
+    RiverBank = 30,
 }

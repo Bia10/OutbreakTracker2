@@ -26,10 +26,12 @@ public static class TimeUtility
     private const int StoppingVirusTimeUnitsPerSecond = 60;
 
     // 30 * 60 = 1800
-    private const int WildThingsTimeUnitsPerMinute = WildThingsTimeUnitsPerSecond * SecondsPerMinute;
+    private const int WildThingsTimeUnitsPerMinute =
+        WildThingsTimeUnitsPerSecond * SecondsPerMinute;
 
     // 60 * 60 = 3600
-    private const int StoppingVirusTimeUnitsPerMinute = StoppingVirusTimeUnitsPerSecond * SecondsPerMinute;
+    private const int StoppingVirusTimeUnitsPerMinute =
+        StoppingVirusTimeUnitsPerSecond * SecondsPerMinute;
 
     /// <summary>
     /// Converts a frame count into a formatted time string (HH:MM:SS.D)
@@ -39,7 +41,10 @@ public static class TimeUtility
     /// <param name="secondsPerFrame">The duration of each frame in seconds.
     /// Defaults to 0.0333, which is approximately 1/30th of a second (30 FPS).</param>
     /// <returns>A string representing the time in HH:MM:SS.D format.</returns>
-    public static string GetTimeFromFrames(double frameCount, double secondsPerFrame = SecondsPerFrameAt30Fps)
+    public static string GetTimeFromFrames(
+        double frameCount,
+        double secondsPerFrame = SecondsPerFrameAt30Fps
+    )
     {
         double totalSecondsElapsed = frameCount * secondsPerFrame;
         double totalMilliseconds = totalSecondsElapsed * MillisecondsPerSecond;
@@ -53,7 +58,8 @@ public static class TimeUtility
         double totalSecondsFromMilliseconds = totalMilliseconds / MillisecondsPerSecond;
         int seconds = (int)Math.Floor(totalSecondsFromMilliseconds % SecondsPerMinute);
 
-        int tenthsOfSecond = (int)Math.Floor(totalMilliseconds % MillisecondsPerSecond / MillisecondsPerTenthOfSecond);
+        int tenthsOfSecond = (int)
+            Math.Floor(totalMilliseconds % MillisecondsPerSecond / MillisecondsPerTenthOfSecond);
 
         return $"{hours:D2}:{minutes:D2}:{seconds:D2}.{tenthsOfSecond:D1}";
     }
@@ -74,8 +80,12 @@ public static class TimeUtility
     /// <returns>A string representing the time in MM:SS format.</returns>
     public static string GetTimeToString3(int wildThingsTimeUnits) // Time2string3
     {
-        int minutes = (int)Math.Floor((double)wildThingsTimeUnits / WildThingsTimeUnitsPerMinute % MinutesPerHour);
-        int seconds = (int)Math.Floor((double)wildThingsTimeUnits / WildThingsTimeUnitsPerSecond % SecondsPerMinute);
+        int minutes = (int)
+            Math.Floor((double)wildThingsTimeUnits / WildThingsTimeUnitsPerMinute % MinutesPerHour);
+        int seconds = (int)
+            Math.Floor(
+                (double)wildThingsTimeUnits / WildThingsTimeUnitsPerSecond % SecondsPerMinute
+            );
 
         return $"{minutes:D2}:{seconds:D2}";
     }
@@ -88,8 +98,12 @@ public static class TimeUtility
     /// <returns>A string representing the time in M:SS format.</returns>
     public static string GetBleedingTimeToString(int wildThingsTimeUnits) // Time2string4 (bleeding time)
     {
-        int minutes = (int)Math.Floor((double)wildThingsTimeUnits / WildThingsTimeUnitsPerMinute % MinutesPerHour);
-        int seconds = (int)Math.Floor((double)wildThingsTimeUnits / WildThingsTimeUnitsPerSecond % SecondsPerMinute);
+        int minutes = (int)
+            Math.Floor((double)wildThingsTimeUnits / WildThingsTimeUnitsPerMinute % MinutesPerHour);
+        int seconds = (int)
+            Math.Floor(
+                (double)wildThingsTimeUnits / WildThingsTimeUnitsPerSecond % SecondsPerMinute
+            );
 
         return $"{minutes}:{seconds:D2}";
     }
@@ -102,8 +116,14 @@ public static class TimeUtility
     /// <returns>A string representing the time in M:SS format.</returns>
     public static string GetStoppingVirusTimeToString(int stoppingVirusTimeUnits) // Time2string5 (stopping virus time)
     {
-        int minutes = (int)Math.Floor((double)stoppingVirusTimeUnits / StoppingVirusTimeUnitsPerMinute % MinutesPerHour);
-        int seconds = (int)Math.Floor((double)stoppingVirusTimeUnits / StoppingVirusTimeUnitsPerSecond % SecondsPerMinute);
+        int minutes = (int)
+            Math.Floor(
+                (double)stoppingVirusTimeUnits / StoppingVirusTimeUnitsPerMinute % MinutesPerHour
+            );
+        int seconds = (int)
+            Math.Floor(
+                (double)stoppingVirusTimeUnits / StoppingVirusTimeUnitsPerSecond % SecondsPerMinute
+            );
 
         return $"{minutes}:{seconds:D2}";
     }

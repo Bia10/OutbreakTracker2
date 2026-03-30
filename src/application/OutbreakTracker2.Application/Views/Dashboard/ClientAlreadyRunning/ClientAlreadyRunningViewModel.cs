@@ -1,39 +1,33 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Launcher;
 using OutbreakTracker2.Application.Services.Toasts;
 using OutbreakTracker2.PCSX2.Client;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientAlreadyRunning;
 
-public partial class ClientAlreadyRunningViewModel : ObservableObject
+public partial class ClientAlreadyRunningViewModel(
+    IProcessLauncher processLauncher,
+    IToastService toastService,
+    ILogger<ClientAlreadyRunningViewModel> logger,
+    IDataManager dataManager
+) : ObservableObject
 {
-    private readonly ILogger<ClientAlreadyRunningViewModel> _logger;
-    private readonly IProcessLauncher _processLauncher;
-    private readonly IToastService _toastService;
-    private readonly IDataManager _dataManager;
+    private readonly ILogger<ClientAlreadyRunningViewModel> _logger = logger;
+    private readonly IProcessLauncher _processLauncher = processLauncher;
+    private readonly IToastService _toastService = toastService;
+    private readonly IDataManager _dataManager = dataManager;
 
     [ObservableProperty]
     private ObservableCollection<ProcessModel> _runningProcesses = [];
-
-    public ClientAlreadyRunningViewModel(
-        IProcessLauncher processLauncher,
-        IToastService toastService,
-        ILogger<ClientAlreadyRunningViewModel> logger, IDataManager dataManager)
-    {
-        _processLauncher = processLauncher;
-        _toastService = toastService;
-        _logger = logger;
-        _dataManager = dataManager;
-    }
 
     public void UpdateProcesses(IReadOnlyList<int> processIds)
     {
@@ -43,13 +37,15 @@ public partial class ClientAlreadyRunningViewModel : ObservableObject
             try
             {
                 Process process = Process.GetProcessById(id);
-                RunningProcesses.Add(new ProcessModel
-                {
-                    Id = process.Id,
-                    Name = process.ProcessName,
-                    StartTime = GetSafeStartTime(process),
-                    IsRunning = !process.HasExited
-                });
+                RunningProcesses.Add(
+                    new ProcessModel
+                    {
+                        Id = process.Id,
+                        Name = process.ProcessName,
+                        StartTime = GetSafeStartTime(process),
+                        IsRunning = !process.HasExited,
+                    }
+                );
             }
             catch (ArgumentException ex)
             {
@@ -63,19 +59,25 @@ public partial class ClientAlreadyRunningViewModel : ObservableObject
         try
         {
             await _processLauncher.AttachAsync(processId).ConfigureAwait(false);
-            await _toastService.InvokeSuccessToastAsync("Successfully attached to process!").ConfigureAwait(false);
+            await _toastService
+                .InvokeSuccessToastAsync("Successfully attached to process!")
+                .ConfigureAwait(false);
 
             GameClient? activeGameClient = _processLauncher.GetActiveGameClient();
             if (activeGameClient is not null)
             {
-                await _dataManager.InitializeAsync(activeGameClient, CancellationToken.None).ConfigureAwait(false);
+                await _dataManager
+                    .InitializeAsync(activeGameClient, CancellationToken.None)
+                    .ConfigureAwait(false);
                 _logger.LogInformation("DataManager initialized successfully");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to attach to process {ProcessId}", processId);
-            await _toastService.InvokeErrorToastAsync($"Attachment failed: {ex.Message}").ConfigureAwait(false);
+            await _toastService
+                .InvokeErrorToastAsync($"Attachment failed: {ex.Message}")
+                .ConfigureAwait(false);
             UpdateProcesses([processId]);
         }
     }

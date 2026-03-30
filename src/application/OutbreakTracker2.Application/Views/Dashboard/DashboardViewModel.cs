@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.Generic;
+using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Material.Icons;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Pages;
@@ -8,8 +10,6 @@ using OutbreakTracker2.Application.Views.Dashboard.ClientAlreadyRunning;
 using OutbreakTracker2.Application.Views.Dashboard.ClientNotRunning;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview;
 using R3;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace OutbreakTracker2.Application.Views.Dashboard;
 
@@ -35,7 +35,8 @@ public partial class DashboardViewModel : PageBase
         ClientNotRunningViewModel clientNotRunningViewModel,
         ClientOverviewViewModel clientOverviewViewModel,
         ClientAlreadyRunningViewModel clientAlreadyRunningViewModel,
-        ILogger<DashboardViewModel> logger)
+        ILogger<DashboardViewModel> logger
+    )
         : base("Dashboard", MaterialIconKind.MonitorDashboard, int.MinValue)
     {
         ClientNotRunningViewModel = clientNotRunningViewModel;
@@ -50,26 +51,29 @@ public partial class DashboardViewModel : PageBase
                 CurrentView = ClientOverviewViewModel;
         });
 
-        processLocator.IsProcessRunningPolling("pcsx2-qt").Subscribe(
-            onNext: isRunning =>
-            {
-                if (isRunning)
+        processLocator
+            .IsProcessRunningPolling("pcsx2-qt")
+            .Subscribe(
+                onNext: isRunning =>
                 {
-                    int? clientProcessId = processLauncher.ClientMonitoredProcess?.Id;
-                    IReadOnlyList<int> processIds = processLocator.GetProcessIds("pcsx2-qt");
+                    if (isRunning)
+                    {
+                        int? clientProcessId = processLauncher.ClientMonitoredProcess?.Id;
+                        IReadOnlyList<int> processIds = processLocator.GetProcessIds("pcsx2-qt");
 
-                    if (clientProcessId.HasValue && processIds.Contains(clientProcessId.Value))
-                        HandleMonitoredProcess();
+                        if (clientProcessId.HasValue && processIds.Contains(clientProcessId.Value))
+                            HandleMonitoredProcess();
+                        else
+                            HandleUnmonitoredProcess(processIds);
+                    }
                     else
-                        HandleUnmonitoredProcess(processIds);
-                }
-                else
-                {
-                    HandleNoRunningProcess();
-                }
-            },
-            onErrorResume: ex => _logger.LogError(ex, "Error in process polling"),
-            onCompleted: _ => _logger.LogInformation("Process polling completed"));
+                    {
+                        HandleNoRunningProcess();
+                    }
+                },
+                onErrorResume: ex => _logger.LogError(ex, "Error in process polling"),
+                onCompleted: _ => _logger.LogInformation("Process polling completed")
+            );
     }
 
     private void HandleMonitoredProcess()

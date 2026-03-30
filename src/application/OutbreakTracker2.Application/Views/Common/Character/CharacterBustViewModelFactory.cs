@@ -1,21 +1,16 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
 
 namespace OutbreakTracker2.Application.Views.Common.Character;
 
-public sealed class CharacterBustViewModelFactory : ICharacterBustViewModelFactory
+public sealed class CharacterBustViewModelFactory(
+    ILogger<CharacterBustViewModelFactory> logger,
+    IServiceProvider serviceProvider
+) : ICharacterBustViewModelFactory
 {
-    private readonly ILogger<CharacterBustViewModelFactory> _logger;
-    private readonly IServiceProvider _serviceProvider;
-
-    public CharacterBustViewModelFactory(
-        ILogger<CharacterBustViewModelFactory> logger,
-        IServiceProvider serviceProvider)
-    {
-        _logger = logger;
-        _serviceProvider = serviceProvider;
-    }
+    private readonly ILogger<CharacterBustViewModelFactory> _logger = logger;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     public CharacterBustViewModel Create()
     {

@@ -1,22 +1,18 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Views.Common.Character;
 using OutbreakTracker2.Outbreak.Models;
-using System;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoomPlayer.Factory;
 
-public class LobbyRoomPlayerViewModelFactory : ILobbyRoomPlayerViewModelFactory
+public class LobbyRoomPlayerViewModelFactory(
+    ILogger<LobbyRoomPlayerViewModelFactory> logger,
+    ICharacterBustViewModelFactory characterBustViewModelFactory
+) : ILobbyRoomPlayerViewModelFactory
 {
-    private readonly ILogger<LobbyRoomPlayerViewModelFactory> _logger;
-    private readonly ICharacterBustViewModelFactory _characterBustViewModelFactory;
-
-    public LobbyRoomPlayerViewModelFactory(
-        ILogger<LobbyRoomPlayerViewModelFactory> logger,
-        ICharacterBustViewModelFactory characterBustViewModelFactory)
-    {
-        _logger = logger;
-        _characterBustViewModelFactory = characterBustViewModelFactory;
-    }
+    private readonly ILogger<LobbyRoomPlayerViewModelFactory> _logger = logger;
+    private readonly ICharacterBustViewModelFactory _characterBustViewModelFactory =
+        characterBustViewModelFactory;
 
     public LobbyRoomPlayerViewModel Create(DecodedLobbyRoomPlayer playerData)
     {

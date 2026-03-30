@@ -203,5 +203,5 @@ public enum EnemyType : byte
     Hyena = 65,
 
     [EnumMember(Value = "Unknown")]
-    Unknown = 255
+    Unknown = 255,
 }

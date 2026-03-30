@@ -1,4 +1,7 @@
-﻿using Avalonia.Collections;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,14 +14,11 @@ using SukiUI.Enums;
 using SukiUI.Models;
 using SukiUI.Theme.Shadcn;
 using SukiUI.Toasts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using ZLinq;
 
 namespace OutbreakTracker2.Application.Views;
 
-internal partial class OutbreakTracker2ViewModel : ObservableObject
+internal sealed partial class OutbreakTracker2ViewModel : ObservableObject
 {
     public IAvaloniaReadOnlyList<PageBase> Pages { get; }
     public IAvaloniaReadOnlyList<SukiColorTheme> Themes { get; }
@@ -66,19 +66,27 @@ internal partial class OutbreakTracker2ViewModel : ObservableObject
         IEnumerable<PageBase> demoPages,
         PageNavigationService pageNavigationService,
         ISukiToastManager toastManager,
-        ISukiDialogManager dialogManager)
+        ISukiDialogManager dialogManager
+    )
     {
         ToastManager = toastManager;
         DialogManager = dialogManager;
-        Pages = new AvaloniaList<PageBase>(demoPages.OrderBy(x => x.Index).ThenBy<PageBase, string>(x => x.DisplayName, StringComparer.Ordinal));
-        BackgroundStyles = new AvaloniaList<SukiBackgroundStyle>(Enum.GetValues<SukiBackgroundStyle>());
+        Pages = new AvaloniaList<PageBase>(
+            demoPages
+                .OrderBy(x => x.Index)
+                .ThenBy<PageBase, string>(x => x.DisplayName, StringComparer.Ordinal)
+        );
+        BackgroundStyles = new AvaloniaList<SukiBackgroundStyle>(
+            Enum.GetValues<SukiBackgroundStyle>()
+        );
         _theme = SukiTheme.GetInstance();
 
         // Subscribe to the navigation service (when a page navigation is requested)
         pageNavigationService.NavigationRequested += pageType =>
         {
-            PageBase? page = Pages.AsValueEnumerable()
-            .FirstOrDefault(pageBase => pageBase.GetType() == pageType);
+            PageBase? page = Pages
+                .AsValueEnumerable()
+                .FirstOrDefault(pageBase => pageBase.GetType() == pageType);
 
             if (page is null || ActivePage?.GetType() == pageType)
                 return;
@@ -93,26 +101,34 @@ internal partial class OutbreakTracker2ViewModel : ObservableObject
         _theme.OnBaseThemeChanged += variant =>
         {
             BaseTheme = variant;
-            ToastManager.CreateSimpleInfoToast()
+            ToastManager
+                .CreateSimpleInfoToast()
                 .WithTitle("Theme Changed")
                 .WithContent($"Theme has changed to {variant}.")
                 .Queue();
         };
 
         // Subscribe to the color theme changed events
-        _theme.OnColorThemeChanged += theme => ToastManager.CreateSimpleInfoToast()
-            .WithTitle("Color Changed")
-            .WithContent($"Color has changed to {theme.DisplayName}.")
-            .Queue();
+        _theme.OnColorThemeChanged += theme =>
+            ToastManager
+                .CreateSimpleInfoToast()
+                .WithTitle("Color Changed")
+                .WithContent($"Color has changed to {theme.DisplayName}.")
+                .Queue();
     }
 
     [RelayCommand]
     private void ToggleAnimations()
     {
         AnimationsEnabled = !AnimationsEnabled;
-        ToastManager.CreateSimpleInfoToast()
+        ToastManager
+            .CreateSimpleInfoToast()
             .WithTitle(AnimationsEnabled ? "Animation Enabled" : "Animation Disabled")
-            .WithContent(AnimationsEnabled ? "Background animations are now enabled." : "Background animations are now disabled.")
+            .WithContent(
+                AnimationsEnabled
+                    ? "Background animations are now enabled."
+                    : "Background animations are now disabled."
+            )
             .Queue();
     }
 
@@ -120,28 +136,37 @@ internal partial class OutbreakTracker2ViewModel : ObservableObject
     private void ToggleTransitions()
     {
         TransitionsEnabled = !TransitionsEnabled;
-        ToastManager.CreateSimpleInfoToast()
+        ToastManager
+            .CreateSimpleInfoToast()
             .WithTitle(TransitionsEnabled ? "Transitions Enabled" : "Transitions Disabled")
-            .WithContent(TransitionsEnabled ? "Background transitions are now enabled." : "Background transitions are now disabled.")
+            .WithContent(
+                TransitionsEnabled
+                    ? "Background transitions are now enabled."
+                    : "Background transitions are now disabled."
+            )
             .Queue();
     }
 
     [RelayCommand]
-    private void ToggleBaseTheme()
-        => _theme.SwitchBaseTheme();
+    private void ToggleBaseTheme() => _theme.SwitchBaseTheme();
 
-    public void ChangeTheme(SukiColorTheme theme)
-        => _theme.ChangeColorTheme(theme);
+    public void ChangeTheme(SukiColorTheme theme) => _theme.ChangeColorTheme(theme);
 
     [RelayCommand]
     private void ShadCnMode()
     {
         if (Avalonia.Application.Current is not null)
-            Shadcn.Configure(Avalonia.Application.Current, Avalonia.Application.Current.ActualThemeVariant);
+            Shadcn.Configure(
+                Avalonia.Application.Current,
+                Avalonia.Application.Current.ActualThemeVariant
+            );
         else
-            ToastManager.CreateToast()
+            ToastManager
+                .CreateToast()
                 .WithTitle("Configuration Error")
-                .WithContent("Application or ThemeVariant is null. Unable to configure Shadcn mode.")
+                .WithContent(
+                    "Application or ThemeVariant is null. Unable to configure Shadcn mode."
+                )
                 .Queue();
     }
 
@@ -149,7 +174,8 @@ internal partial class OutbreakTracker2ViewModel : ObservableObject
     private void ToggleWindowLock()
     {
         WindowLocked = !WindowLocked;
-        ToastManager.CreateSimpleInfoToast()
+        ToastManager
+            .CreateSimpleInfoToast()
             .WithTitle($"Window {(WindowLocked ? "Locked" : "Unlocked")}")
             .WithContent($"Window has been {(WindowLocked ? "locked" : "unlocked")}.")
             .Queue();
@@ -166,17 +192,16 @@ internal partial class OutbreakTracker2ViewModel : ObservableObject
     private void ToggleTitleBar()
     {
         TitleBarVisible = !TitleBarVisible;
-        ToastManager.CreateSimpleInfoToast()
+        ToastManager
+            .CreateSimpleInfoToast()
             .WithTitle($"Title Bar {(TitleBarVisible ? "Visible" : "Hidden")}")
             .WithContent($"Window title bar has been {(TitleBarVisible ? "shown" : "hidden")}.")
             .Queue();
     }
 
     [RelayCommand]
-    private void ToggleRightToLeft()
-        => _theme.IsRightToLeft = !_theme.IsRightToLeft;
+    private void ToggleRightToLeft() => _theme.IsRightToLeft = !_theme.IsRightToLeft;
 
     [RelayCommand]
-    private static void OpenUrl(string url)
-        => UrlUtility.OpenUrl(url);
+    private static void OpenUrl(string url) => UrlUtility.OpenUrl(url);
 }

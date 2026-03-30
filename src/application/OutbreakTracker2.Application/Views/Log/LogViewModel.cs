@@ -4,13 +4,7 @@ using OutbreakTracker2.Application.Views.Logging;
 
 namespace OutbreakTracker2.Application.Views.Log;
 
-public class LogViewModel : PageBase
+public class LogViewModel(LogViewerViewModel logViewer) : PageBase("App Log", MaterialIconKind.ScriptText, 500)
 {
-    public LogViewModel(LogViewerViewModel logViewer)
-        : base("App Log", MaterialIconKind.ScriptText, 500)
-    {
-        LogViewer = logViewer;
-    }
-
-    public LogViewerViewModel LogViewer { get; }
+    public LogViewerViewModel LogViewer { get; } = logViewer;
 }

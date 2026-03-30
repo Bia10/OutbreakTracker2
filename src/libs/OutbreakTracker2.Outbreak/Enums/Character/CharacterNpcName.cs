@@ -408,5 +408,5 @@ internal enum CharacterNpcName : byte
     CindyC = 208,
 
     [EnumMember(Value = "Unknown")]
-    Unknown = 255
+    Unknown = 255,
 }

@@ -17,5 +17,5 @@ public enum SlotStatus : byte
     JoinIn = 3,
 
     [EnumMember(Value = "Full")]
-    Full = 4
+    Full = 4,
 }

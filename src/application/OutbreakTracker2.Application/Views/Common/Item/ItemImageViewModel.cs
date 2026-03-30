@@ -1,9 +1,9 @@
-﻿using Avalonia.Media.Imaging;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.Logging;
 
 namespace OutbreakTracker2.Application.Views.Common.Item;
 
@@ -17,7 +17,8 @@ public class ItemImageViewModel : ObservableObject
 
     public ItemImageViewModel(
         ILogger<ItemImageViewModel> logger,
-        IImageViewModelFactory imageViewModelFactory)
+        IImageViewModelFactory imageViewModelFactory
+    )
     {
         _logger = logger;
         ImageViewModel = imageViewModelFactory.Create();
@@ -34,23 +35,37 @@ public class ItemImageViewModel : ObservableObject
         return ImageViewModel.UpdateImageAsync(itemName, $"Item Image for {itemName}");
     }
 
-    private void OnImageViewModelSourceImageChanged(object? sender, PropertyChangedEventArgs eventArgs)
+    private void OnImageViewModelSourceImageChanged(
+        object? sender,
+        PropertyChangedEventArgs eventArgs
+    )
     {
         if (sender is not ImageViewModel _)
         {
-            _logger.LogWarning("[{MethodName}] Unexpected sender: {Sender}",
-                nameof(OnImageViewModelSourceImageChanged), sender?.GetType());
+            _logger.LogWarning(
+                "[{MethodName}] Unexpected sender: {Sender}",
+                nameof(OnImageViewModelSourceImageChanged),
+                sender?.GetType()
+            );
             return;
         }
 
         if (string.IsNullOrEmpty(eventArgs.PropertyName))
         {
-            _logger.LogWarning("[{MethodName}] PropertyChangedEventArgs.PropertyName is null or empty: {PropertyName}",
-                nameof(OnImageViewModelSourceImageChanged), eventArgs.PropertyName);
+            _logger.LogWarning(
+                "[{MethodName}] PropertyChangedEventArgs.PropertyName is null or empty: {PropertyName}",
+                nameof(OnImageViewModelSourceImageChanged),
+                eventArgs.PropertyName
+            );
             return;
         }
 
-        if (eventArgs.PropertyName.Equals(nameof(OutbreakTracker2.Application.Views.Common.ImageViewModel.SourceImage), StringComparison.Ordinal))
+        if (
+            eventArgs.PropertyName.Equals(
+                nameof(OutbreakTracker2.Application.Views.Common.ImageViewModel.SourceImage),
+                StringComparison.Ordinal
+            )
+        )
             OnPropertyChanged(nameof(ItemImage));
     }
 }

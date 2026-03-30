@@ -77,5 +77,5 @@ public enum HellfireRooms : short
     Room30Star = 50,
 
     [EnumMember(Value = "Room 306")]
-    Room306 = 51
+    Room306 = 51,
 }

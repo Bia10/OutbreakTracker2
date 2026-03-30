@@ -1,7 +1,7 @@
-﻿using OutbreakTracker2.Application.Services.LogStorage;
+﻿using System;
+using OutbreakTracker2.Application.Services.LogStorage;
 using Serilog;
 using Serilog.Configuration;
-using System;
 
 namespace OutbreakTracker2.Application.SerilogSinks;
 
@@ -12,7 +12,8 @@ public static class DataStoreLoggerSinkExtensions
         ILogDataStorageService dataStore,
         Action<DataStoreLoggerConfiguration>? configuration = null,
         IFormatProvider? formatProvider = null,
-        ILogger? logger = null)
+        ILogger? logger = null
+    )
     {
         DataStoreLoggerConfiguration config = new();
 

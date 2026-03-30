@@ -1,17 +1,20 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Views.Common.Item;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Utility;
-using System;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
 
-public partial class ItemSlotViewModel : ObservableObject
+public partial class ItemSlotViewModel(
+    ILogger<ItemSlotViewModel> logger,
+    IItemImageViewModelFactory itemImageViewModelFactory
+) : ObservableObject
 {
-    private readonly ILogger<ItemSlotViewModel> _logger;
+    private readonly ILogger<ItemSlotViewModel> _logger = logger;
 
-    public ItemImageViewModel ItemImageViewModel { get; }
+    public ItemImageViewModel ItemImageViewModel { get; } = itemImageViewModelFactory.Create();
 
     [ObservableProperty]
     private int _slotNumber;
@@ -25,21 +28,13 @@ public partial class ItemSlotViewModel : ObservableObject
     [ObservableProperty]
     private string _debugInfo = string.Empty;
 
-    public ItemSlotViewModel(
-        ILogger<ItemSlotViewModel> logger,
-        IItemImageViewModelFactory itemImageViewModelFactory)
-    {
-        _logger = logger;
-        ItemImageViewModel = itemImageViewModelFactory.Create();
-    }
-
     public void UpdateDisplay(string name, string count, string debug)
     {
         ItemName = name;
         ItemCount = count;
         DebugInfo = debug;
 
-if (!name.Equals("Empty", StringComparison.Ordinal))
+        if (!name.Equals("Empty", StringComparison.Ordinal))
         {
             string currentFile = EnumUtility.GetEnumString(GameFile.FileTwo, GameFile.Unknown);
             string itemSpriteLookupName = currentFile + "/" + name;

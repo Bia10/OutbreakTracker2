@@ -50,5 +50,5 @@ public enum Elimination2Rooms : short
     RpDsFrontGate = 14,
 
     [EnumMember(Value = "Owner's Room")]
-    OwnersRoom = 15
+    OwnersRoom = 15,
 }

@@ -1,4 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Data;
@@ -11,9 +14,6 @@ using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
 using R3;
 using SukiUI.Dialogs;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario;
 
@@ -124,7 +124,8 @@ public partial class InGameScenarioViewModel : ObservableObject
         ILogger<InGameScenarioViewModel> logger,
         IDataManager dataManager,
         ISukiDialogManager dialogManager,
-        IDispatcherService dispatcherService)
+        IDispatcherService dispatcherService
+    )
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
@@ -142,74 +143,158 @@ public partial class InGameScenarioViewModel : ObservableObject
         _scenarioEntitiesVm = new ScenarioEntitiesViewModel();
         _scenarioUpdateActions = new Dictionary<Scenario, Action<DecodedInGameScenario>>
         {
-            { Scenario.DesperateTimes, scenario => { desperateTimesVm.Update(scenario); CurrentScenarioSpecificViewModel = desperateTimesVm; } },
-            { Scenario.EndOfTheRoad, scenario => { endOfTheRoadVm.Update(scenario); CurrentScenarioSpecificViewModel = endOfTheRoadVm; } },
-            { Scenario.Underbelly, scenario => { underbellyVm.Update(scenario); CurrentScenarioSpecificViewModel = underbellyVm; } },
-            { Scenario.WildThings, scenario => { wildThingsVm.Update(scenario); CurrentScenarioSpecificViewModel = wildThingsVm; } },
-            { Scenario.Hellfire, scenario => { hellfireVm.Update(scenario); CurrentScenarioSpecificViewModel = hellfireVm; } },
-            { Scenario.TheHive, scenario => { theHiveVm.Update(scenario); CurrentScenarioSpecificViewModel = theHiveVm; } },
-            { Scenario.DecisionsDecisions, scenario => { decisionsDecisionsVm.Update(scenario); CurrentScenarioSpecificViewModel = decisionsDecisionsVm; } },
-            { Scenario.BelowFreezingPoint, scenario => { belowFreezingPointVm.Update(scenario); CurrentScenarioSpecificViewModel = belowFreezingPointVm; } }
+            {
+                Scenario.DesperateTimes,
+                scenario =>
+                {
+                    desperateTimesVm.Update(scenario);
+                    CurrentScenarioSpecificViewModel = desperateTimesVm;
+                }
+            },
+            {
+                Scenario.EndOfTheRoad,
+                scenario =>
+                {
+                    endOfTheRoadVm.Update(scenario);
+                    CurrentScenarioSpecificViewModel = endOfTheRoadVm;
+                }
+            },
+            {
+                Scenario.Underbelly,
+                scenario =>
+                {
+                    underbellyVm.Update(scenario);
+                    CurrentScenarioSpecificViewModel = underbellyVm;
+                }
+            },
+            {
+                Scenario.WildThings,
+                scenario =>
+                {
+                    wildThingsVm.Update(scenario);
+                    CurrentScenarioSpecificViewModel = wildThingsVm;
+                }
+            },
+            {
+                Scenario.Hellfire,
+                scenario =>
+                {
+                    hellfireVm.Update(scenario);
+                    CurrentScenarioSpecificViewModel = hellfireVm;
+                }
+            },
+            {
+                Scenario.TheHive,
+                scenario =>
+                {
+                    theHiveVm.Update(scenario);
+                    CurrentScenarioSpecificViewModel = theHiveVm;
+                }
+            },
+            {
+                Scenario.DecisionsDecisions,
+                scenario =>
+                {
+                    decisionsDecisionsVm.Update(scenario);
+                    CurrentScenarioSpecificViewModel = decisionsDecisionsVm;
+                }
+            },
+            {
+                Scenario.BelowFreezingPoint,
+                scenario =>
+                {
+                    belowFreezingPointVm.Update(scenario);
+                    CurrentScenarioSpecificViewModel = belowFreezingPointVm;
+                }
+            },
         };
 
-        dataManager.InGameScenarioObservable
-            .ObserveOnThreadPool()
-            .SubscribeAwait(async (inGameScenario, cancellationToken) =>
-            {
-                _logger.LogTrace("Processing inGame scenario data on thread pool");
-                try
+        dataManager
+            .InGameScenarioObservable.ObserveOnThreadPool()
+            .SubscribeAwait(
+                async (inGameScenario, cancellationToken) =>
                 {
-                    await dispatcherService.InvokeOnUIAsync(() =>
+                    _logger.LogTrace("Processing inGame scenario data on thread pool");
+                    try
                     {
-                        _logger.LogTrace("Updating InGameScenarioViewModel properties on UI thread");
-                        Update(inGameScenario);
-                    }, cancellationToken).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    _logger.LogInformation("InGame scenario data processing cancelled");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error during inGame scenario data processing cycle");
-                }
-            }, AwaitOperation.Drop);
+                        await dispatcherService
+                            .InvokeOnUIAsync(
+                                () =>
+                                {
+                                    _logger.LogTrace(
+                                        "Updating InGameScenarioViewModel properties on UI thread"
+                                    );
+                                    Update(inGameScenario);
+                                },
+                                cancellationToken
+                            )
+                            .ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _logger.LogInformation("InGame scenario data processing cancelled");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error during inGame scenario data processing cycle");
+                    }
+                },
+                AwaitOperation.Drop
+            );
 
-        dataManager.EnemiesObservable.ObserveOnThreadPool()
-            .SubscribeAwait(async (enemies, cancellationToken) =>
-            {
-                _logger.LogTrace("Processing enemies data on thread pool");
-                try
+        dataManager
+            .EnemiesObservable.ObserveOnThreadPool()
+            .SubscribeAwait(
+                async (enemies, cancellationToken) =>
                 {
-                    await dispatcherService.InvokeOnUIAsync(() =>
+                    _logger.LogTrace("Processing enemies data on thread pool");
+                    try
                     {
-                        ScenarioEntitiesVm.UpdateEnemies(enemies);
-                    }, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
-            }, AwaitOperation.Drop);
+                        await dispatcherService
+                            .InvokeOnUIAsync(
+                                () =>
+                                {
+                                    ScenarioEntitiesVm.UpdateEnemies(enemies);
+                                },
+                                cancellationToken
+                            )
+                            .ConfigureAwait(false);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw;
+                    }
+                },
+                AwaitOperation.Drop
+            );
 
-        dataManager.DoorsObservable.ObserveOnThreadPool()
-            .SubscribeAwait(async (doors, cancellationToken) =>
-            {
-                _logger.LogTrace("Processing doors data on thread pool");
-                try
+        dataManager
+            .DoorsObservable.ObserveOnThreadPool()
+            .SubscribeAwait(
+                async (doors, cancellationToken) =>
                 {
-                    await dispatcherService.InvokeOnUIAsync(() =>
+                    _logger.LogTrace("Processing doors data on thread pool");
+                    try
                     {
-                        ScenarioEntitiesVm.UpdateDoors(doors);
-                    }, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
-            }, AwaitOperation.Drop);
+                        await dispatcherService
+                            .InvokeOnUIAsync(
+                                () =>
+                                {
+                                    ScenarioEntitiesVm.UpdateDoors(doors);
+                                },
+                                cancellationToken
+                            )
+                            .ConfigureAwait(false);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw;
+                    }
+                },
+                AwaitOperation.Drop
+            );
     }
 
     [RelayCommand]
@@ -217,10 +302,11 @@ public partial class InGameScenarioViewModel : ObservableObject
     {
         return _dispatcherService.InvokeOnUIAsync(() =>
         {
-            DialogManager.CreateDialog()
+            DialogManager
+                .CreateDialog()
                 .WithTitle("Scenario Items")
                 .WithContent(new ScenarioItemsView { DataContext = ScenarioEntitiesVm })
-                .WithActionButton("Close ", _ => { }, true)
+                .WithActionButton("Close ", _ => { }, dismissOnClick: true)
                 .TryShow();
         });
     }
@@ -230,10 +316,11 @@ public partial class InGameScenarioViewModel : ObservableObject
     {
         return _dispatcherService.InvokeOnUIAsync(() =>
         {
-            DialogManager.CreateDialog()
+            DialogManager
+                .CreateDialog()
                 .WithTitle("Scenario Enemies")
                 .WithContent(new ScenarioEnemiesView { DataContext = ScenarioEntitiesVm })
-                .WithActionButton("Close ", _ => { }, true)
+                .WithActionButton("Close ", _ => { }, dismissOnClick: true)
                 .TryShow();
         });
     }
@@ -243,10 +330,11 @@ public partial class InGameScenarioViewModel : ObservableObject
     {
         return _dispatcherService.InvokeOnUIAsync(() =>
         {
-            DialogManager.CreateDialog()
+            DialogManager
+                .CreateDialog()
                 .WithTitle("Scenario Doors")
                 .WithContent(new ScenarioDoorsView { DataContext = ScenarioEntitiesVm })
-                .WithActionButton("Close ", _ => { }, true)
+                .WithActionButton("Close ", _ => { }, dismissOnClick: true)
                 .TryShow();
         });
     }
@@ -288,33 +376,53 @@ public partial class InGameScenarioViewModel : ObservableObject
 
     private void UpdateScenarioSpecificViewModel(DecodedInGameScenario scenario)
     {
-        if (string.IsNullOrEmpty(scenario.ScenarioName) || scenario.ScenarioName.Equals("Unknown(0)", StringComparison.Ordinal))
+        if (
+            string.IsNullOrEmpty(scenario.ScenarioName)
+            || scenario.ScenarioName.Equals("Unknown(0)", StringComparison.Ordinal)
+        )
             return;
 
         CurrentScenarioSpecificViewModel = null;
 
-        bool parsedScenario = EnumUtility.TryParseByValueOrMember(scenario.ScenarioName, out Scenario scenarioType);
+        bool parsedScenario = EnumUtility.TryParseByValueOrMember(
+            scenario.ScenarioName,
+            out Scenario scenarioType
+        );
         if (!parsedScenario)
         {
-            _logger.LogWarning("Failed to parse scenario name: {ScenarioName}", scenario.ScenarioName);
+            _logger.LogWarning(
+                "Failed to parse scenario name: {ScenarioName}",
+                scenario.ScenarioName
+            );
             return;
         }
 
-        if (_scenarioUpdateActions.TryGetValue(scenarioType, out Action<DecodedInGameScenario>? updateAction))
+        if (
+            _scenarioUpdateActions.TryGetValue(
+                scenarioType,
+                out Action<DecodedInGameScenario>? updateAction
+            )
+        )
             updateAction(scenario);
         else
-            _logger.LogInformation("No specific view configured for scenario: {ScenarioName}", scenario.ScenarioName);
+            _logger.LogInformation(
+                "No specific view configured for scenario: {ScenarioName}",
+                scenario.ScenarioName
+            );
     }
 
     private string GetClearedDisplay() => Status is 12 or 13 or 15 ? "Yes" : "No";
+
     private string GetGameTime() => TimeUtility.GetTimeFromFrames(FrameCounter);
 
     private int CalculateGasRandomOrderDisplay()
     {
         switch (GasRandom)
         {
-            case > 0 and < 240: return (GasRandom / 10) + 1;
-            case >= 240 and < 255: return 25;
+            case > 0 and < 240:
+                return (GasRandom / 10) + 1;
+            case >= 240 and < 255:
+                return 25;
             default:
                 _logger.LogDebug("Unrecognized GasRandom value: {GasRandom}", GasRandom);
                 return -1;

@@ -13,13 +13,17 @@ public sealed class SpriteSheet
     public int SheetContentHeight { get; set; }
 
     [JsonIgnore]
-    public IReadOnlyDictionary<string, Frame> FrameLookup { get; private set; }
-        = new Dictionary<string, Frame>(System.StringComparer.Ordinal);
+    public IReadOnlyDictionary<string, Frame> FrameLookup { get; private set; } =
+        new Dictionary<string, Frame>(System.StringComparer.Ordinal);
 
     /// <summary>
     /// Builds a lookup dictionary for frames by their name.
     /// This should be called after deserialization.
     /// </summary>
-    public void BuildFrameLookup()
-        => FrameLookup = Frames.ToDictionary(frame => frame.Name, frame => frame, System.StringComparer.Ordinal);
+    public void BuildFrameLookup() =>
+        FrameLookup = Frames.ToDictionary(
+            frame => frame.Name,
+            frame => frame,
+            System.StringComparer.Ordinal
+        );
 }

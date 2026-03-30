@@ -1,8 +1,8 @@
-﻿using Avalonia.Data;
+﻿using System;
+using System.Globalization;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Material.Icons;
-using System;
-using System.Globalization;
 
 namespace OutbreakTracker2.Application.Converters;
 
@@ -22,10 +22,14 @@ public sealed class StatusToIconConverter : IValueConverter
             "Gas" => MaterialIconKind.Warning,
             "Bleed" => MaterialIconKind.Warning,
             "" => MaterialIconKind.Information,
-            _ => MaterialIconKind.Error
+            _ => MaterialIconKind.Error,
         };
     }
 
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-        => new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
+    public object ConvertBack(
+        object? value,
+        Type targetType,
+        object? parameter,
+        CultureInfo culture
+    ) => new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
 }

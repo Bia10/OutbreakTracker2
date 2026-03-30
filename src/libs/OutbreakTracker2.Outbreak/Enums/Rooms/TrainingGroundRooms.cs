@@ -23,5 +23,5 @@ public enum TrainingGroundRooms : short
     Stairs3FRooftop = 13,
 
     [EnumMember(Value = "Rooftop")]
-    Rooftop = 14
+    Rooftop = 14,
 }

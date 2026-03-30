@@ -164,5 +164,5 @@ public enum DecisionsRooms : short
     MachineStorageRoom = 97,
 
     [EnumMember(Value = "Second Hall")]
-    SecondHall = 98
+    SecondHall = 98,
 }

@@ -12,5 +12,8 @@ public interface IDispatcherService
 
     public Task InvokeOnUIAsync(Action action, CancellationToken cancellationToken = default);
 
-    public Task<TResult?> InvokeOnUIAsync<TResult>(Func<TResult> action, CancellationToken cancellationToken = default);
+    public Task<TResult?> InvokeOnUIAsync<TResult>(
+        Func<TResult> action,
+        CancellationToken cancellationToken = default
+    );
 }

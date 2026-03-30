@@ -8,5 +8,5 @@ public enum LionType : byte
     Stalker = 0,
 
     [EnumMember(Value = "Feral")]
-    Feral = 1
+    Feral = 1,
 }

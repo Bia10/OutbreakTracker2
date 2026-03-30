@@ -3,18 +3,14 @@ using OutbreakTracker2.Application.Views.Common.Item;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
 
-public class ItemSlotViewModelFactory : IItemSlotViewModelFactory
+public class ItemSlotViewModelFactory(
+    ILogger<ItemSlotViewModel> logger,
+    IItemImageViewModelFactory itemImageViewModelFactory
+) : IItemSlotViewModelFactory
 {
-    private readonly ILogger<ItemSlotViewModel> _logger;
-    private readonly IItemImageViewModelFactory _itemImageViewModelFactory;
-
-    public ItemSlotViewModelFactory(
-        ILogger<ItemSlotViewModel> logger,
-        IItemImageViewModelFactory itemImageViewModelFactory)
-    {
-        _logger = logger;
-        _itemImageViewModelFactory = itemImageViewModelFactory;
-    }
+    private readonly ILogger<ItemSlotViewModel> _logger = logger;
+    private readonly IItemImageViewModelFactory _itemImageViewModelFactory =
+        itemImageViewModelFactory;
 
     public ItemSlotViewModel Create(int slotNumber)
     {
@@ -22,7 +18,7 @@ public class ItemSlotViewModelFactory : IItemSlotViewModelFactory
         {
             SlotNumber = slotNumber,
             ItemName = "Empty",
-            DebugInfo = "0x00 | 0"
+            DebugInfo = "0x00 | 0",
         };
 
         return itemSlotViewModel;

@@ -2,16 +2,10 @@
 
 namespace OutbreakTracker2.Application.Services.PlayerTracking;
 
-public sealed class PlayerStateChangeEventArgs : EventArgs
+public sealed class PlayerStateChangeEventArgs(string message, string title, ToastType type)
+    : EventArgs
 {
-    public string Message { get; }
-    public string Title { get; }
-    public ToastType Type { get; }
-
-    public PlayerStateChangeEventArgs(string message, string title, ToastType type)
-    {
-        Message = message;
-        Title = title;
-        Type = type;
-    }
+    public string Message { get; } = message;
+    public string Title { get; } = title;
+    public ToastType Type { get; } = type;
 }

@@ -1,18 +1,20 @@
-﻿using Avalonia.Controls.Notifications;
+﻿using System;
+using System.Threading.Tasks;
+using Avalonia.Controls.Notifications;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using SukiUI.Toasts;
-using System;
-using System.Threading.Tasks;
 
 namespace OutbreakTracker2.Application.Services.Toasts;
 
-public class ToastService(ISukiToastManager toastManager, IDispatcherService dispatcher) : IToastService
+public class ToastService(ISukiToastManager toastManager, IDispatcherService dispatcher)
+    : IToastService
 {
     public Task InvokeInfoToastAsync(string content, string? title = "")
     {
         return dispatcher.InvokeOnUIAsync(() =>
         {
-            toastManager.CreateSimpleInfoToast()
+            toastManager
+                .CreateSimpleInfoToast()
                 .OfType(NotificationType.Information)
                 .WithTitle(string.IsNullOrEmpty(title) ? "Info" : title)
                 .WithContent(content)
@@ -24,7 +26,8 @@ public class ToastService(ISukiToastManager toastManager, IDispatcherService dis
     {
         return dispatcher.InvokeOnUIAsync(() =>
         {
-            toastManager.CreateSimpleInfoToast()
+            toastManager
+                .CreateSimpleInfoToast()
                 .OfType(NotificationType.Success)
                 .WithTitle(string.IsNullOrEmpty(title) ? "Success" : title)
                 .WithContent(content)
@@ -36,7 +39,8 @@ public class ToastService(ISukiToastManager toastManager, IDispatcherService dis
     {
         return dispatcher.InvokeOnUIAsync(() =>
         {
-            toastManager.CreateSimpleInfoToast()
+            toastManager
+                .CreateSimpleInfoToast()
                 .OfType(NotificationType.Warning)
                 .WithTitle(string.IsNullOrEmpty(title) ? "Warning" : title)
                 .WithContent(content)
@@ -48,7 +52,8 @@ public class ToastService(ISukiToastManager toastManager, IDispatcherService dis
     {
         return dispatcher.InvokeOnUIAsync(() =>
         {
-            toastManager.CreateSimpleInfoToast()
+            toastManager
+                .CreateSimpleInfoToast()
                 .OfType(NotificationType.Error)
                 .WithTitle(string.IsNullOrEmpty(title) ? "Error" : title)
                 .WithContent(content)
@@ -58,10 +63,7 @@ public class ToastService(ISukiToastManager toastManager, IDispatcherService dis
 
     public ISukiToast CreateToast(string title, object content)
     {
-        ISukiToast toast = toastManager.CreateToast()
-            .WithTitle(title)
-            .WithContent(content)
-            .Queue();
+        ISukiToast toast = toastManager.CreateToast().WithTitle(title).WithContent(content).Queue();
 
         return toast;
     }
@@ -70,13 +72,15 @@ public class ToastService(ISukiToastManager toastManager, IDispatcherService dis
         string content,
         object cancelButtonContent,
         Action<ISukiToast> onCanceledAction,
-        string? title = "")
+        string? title = ""
+    )
     {
-        ISukiToast toast = toastManager.CreateToast()
+        ISukiToast toast = toastManager
+            .CreateToast()
             .OfType(NotificationType.Information)
             .WithTitle(string.IsNullOrEmpty(title) ? "Info" : title)
             .WithContent(content)
-            .WithActionButton(cancelButtonContent, onCanceledAction, true)
+            .WithActionButton(cancelButtonContent, onCanceledAction, dismissOnClick: true)
             .Queue();
 
         return toast;

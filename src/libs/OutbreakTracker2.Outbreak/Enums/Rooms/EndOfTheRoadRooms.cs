@@ -140,5 +140,5 @@ public enum EndOfTheRoadRooms : short
     InsideTheHelicopter = 65,
 
     [EnumMember(Value = "Apple Inn Front Lobby")]
-    AppleInnFrontLobby = 66
+    AppleInnFrontLobby = 66,
 }

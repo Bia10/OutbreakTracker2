@@ -80,5 +80,5 @@ public enum OutbreakRooms : short
     MainStreet = 25,
 
     [EnumMember(Value = "Unknown outbreak room")]
-    Unknown = 255
+    Unknown = 255,
 }

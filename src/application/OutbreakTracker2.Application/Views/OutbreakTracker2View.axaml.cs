@@ -1,9 +1,9 @@
+using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using SukiUI.Controls;
 using SukiUI.Enums;
 using SukiUI.Models;
-using System.Runtime.CompilerServices;
 
 namespace OutbreakTracker2.Application.Views;
 
@@ -19,18 +19,24 @@ public partial class OutbreakTracker2View : SukiWindow
 
     private void ThemeMenuItem_OnClick(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is not OutbreakTracker2ViewModel vm) return;
-        if (e.Source is not MenuItem mItem) return;
-        if (mItem.DataContext is not SukiColorTheme cTheme) return;
+        if (DataContext is not OutbreakTracker2ViewModel vm)
+            return;
+        if (e.Source is not MenuItem mItem)
+            return;
+        if (mItem.DataContext is not SukiColorTheme cTheme)
+            return;
 
         vm.ChangeTheme(cTheme);
     }
 
     private void BackgroundMenuItem_OnClick(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is not OutbreakTracker2ViewModel vm) return;
-        if (e.Source is not MenuItem mItem) return;
-        if (mItem.DataContext is not SukiBackgroundStyle cStyle) return;
+        if (DataContext is not OutbreakTracker2ViewModel vm)
+            return;
+        if (e.Source is not MenuItem mItem)
+            return;
+        if (mItem.DataContext is not SukiBackgroundStyle cStyle)
+            return;
 
         vm.BackgroundStyle = cStyle;
     }

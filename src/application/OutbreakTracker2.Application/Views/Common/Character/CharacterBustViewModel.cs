@@ -1,11 +1,11 @@
-﻿using Avalonia.Media.Imaging;
+﻿using System;
+using System.ComponentModel;
+using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Atlas;
 using OutbreakTracker2.Outbreak.Enums.Character;
-using System;
-using System.ComponentModel;
-using System.Threading.Tasks;
 
 namespace OutbreakTracker2.Application.Views.Common.Character;
 
@@ -21,7 +21,8 @@ public class CharacterBustViewModel : ObservableObject
     public CharacterBustViewModel(
         ILogger<CharacterBustViewModel> logger,
         ITextureAtlasService textureAtlasService,
-        IImageViewModelFactory imageViewModelFactory)
+        IImageViewModelFactory imageViewModelFactory
+    )
     {
         _logger = logger;
         _textureAtlasService = textureAtlasService;
@@ -45,19 +46,30 @@ public class CharacterBustViewModel : ObservableObject
     {
         if (sender is not ImageViewModel _)
         {
-            _logger.LogWarning("[{MethodName}] Unexpected sender: {Sender}",
-                nameof(OnImageViewModelSourceImageChanged), sender?.GetType());
+            _logger.LogWarning(
+                "[{MethodName}] Unexpected sender: {Sender}",
+                nameof(OnImageViewModelSourceImageChanged),
+                sender?.GetType()
+            );
             return;
         }
 
         if (string.IsNullOrEmpty(e.PropertyName))
         {
-            _logger.LogWarning("[{MethodName}] PropertyChangedEventArgs is null or empty: {PropertyName}",
-                nameof(OnImageViewModelSourceImageChanged), e.PropertyName);
+            _logger.LogWarning(
+                "[{MethodName}] PropertyChangedEventArgs is null or empty: {PropertyName}",
+                nameof(OnImageViewModelSourceImageChanged),
+                e.PropertyName
+            );
             return;
         }
 
-        if (e.PropertyName.Equals(nameof(OutbreakTracker2.Application.Views.Common.ImageViewModel.SourceImage), StringComparison.Ordinal))
+        if (
+            e.PropertyName.Equals(
+                nameof(OutbreakTracker2.Application.Views.Common.ImageViewModel.SourceImage),
+                StringComparison.Ordinal
+            )
+        )
             OnPropertyChanged(nameof(PlayerBustImage));
     }
 }

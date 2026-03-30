@@ -29,5 +29,5 @@ internal enum CharacterHealth : byte
     Cindy = 7,
 
     [EnumMember(Value = "0")]
-    Unknown = 255
+    Unknown = 255,
 }

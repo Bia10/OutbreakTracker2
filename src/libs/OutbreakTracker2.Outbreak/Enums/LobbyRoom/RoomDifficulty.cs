@@ -17,5 +17,5 @@ public enum RoomDifficulty : byte
     Hard = 2,
 
     [EnumMember(Value = "Very hard")]
-    VeryHard = 3
+    VeryHard = 3,
 }

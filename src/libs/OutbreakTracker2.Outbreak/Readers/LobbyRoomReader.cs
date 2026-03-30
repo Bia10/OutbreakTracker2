@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Globalization;
+using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.LobbyRoom;
 using OutbreakTracker2.Outbreak.Enums.LobbySlot;
@@ -8,55 +10,48 @@ using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2.Client;
 using OutbreakTracker2.PCSX2.EEmem;
-using System.Globalization;
-using System.Text.Json;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
-public sealed class LobbyRoomReader : ReaderBase
+public sealed class LobbyRoomReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
+    : ReaderBase(gameClient, eememMemory, logger)
 {
-    public DecodedLobbyRoom DecodedLobbyRoom { get; private set; }
+    public DecodedLobbyRoom DecodedLobbyRoom { get; private set; } = new DecodedLobbyRoom();
 
-    public LobbyRoomReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
-        : base(gameClient, eememMemory, logger)
-    {
-        DecodedLobbyRoom = new DecodedLobbyRoom();
-    }
+    private short GetCurPlayers() =>
+        ReadValue(LobbyRoomOffsets.CurPlayers.File1, LobbyRoomOffsets.CurPlayers.File2, (short)-1);
 
-    private short GetCurPlayers()
-        => ReadValue(LobbyRoomOffsets.CurPlayers.File1, LobbyRoomOffsets.CurPlayers.File2, (short)-1);
+    private short GetMaxPlayers() =>
+        ReadValue(LobbyRoomOffsets.MaxPlayers.File1, LobbyRoomOffsets.MaxPlayers.File2, (short)-1);
 
-    private short GetMaxPlayers()
-        => ReadValue(LobbyRoomOffsets.MaxPlayers.File1, LobbyRoomOffsets.MaxPlayers.File2, (short)-1);
+    private short GetDifficulty() =>
+        ReadValue(LobbyRoomOffsets.Difficulty.File1, LobbyRoomOffsets.Difficulty.File2, (short)-1);
 
-    private short GetDifficulty()
-        => ReadValue(LobbyRoomOffsets.Difficulty.File1, LobbyRoomOffsets.Difficulty.File2, (short)-1);
+    private byte GetStatus() =>
+        ReadValue(LobbyRoomOffsets.Status.File1, LobbyRoomOffsets.Status.File2, (byte)0xFF);
 
-    private byte GetStatus()
-        => ReadValue(LobbyRoomOffsets.Status.File1, LobbyRoomOffsets.Status.File2, (byte)0xFF);
+    private short GetScenarioId() =>
+        ReadValue(LobbyRoomOffsets.ScenarioId.File1, LobbyRoomOffsets.ScenarioId.File2, (short)-1);
 
-    private short GetScenarioId()
-        => ReadValue(LobbyRoomOffsets.ScenarioId.File1, LobbyRoomOffsets.ScenarioId.File2, (short)-1);
+    private short GetTime() =>
+        ReadValue(LobbyRoomOffsets.Time.File1, LobbyRoomOffsets.Time.File2, (short)-1);
 
-    private short GetTime()
-        => ReadValue(LobbyRoomOffsets.Time.File1, LobbyRoomOffsets.Time.File2, (short)-1);
+    private static string GetMaxPlayersString(short maxPlayers) =>
+        EnumUtility.GetEnumString(maxPlayers, RoomMaxPlayers.Two);
 
-    private static string GetMaxPlayersString(short maxPlayers)
-        => EnumUtility.GetEnumString(maxPlayers, RoomMaxPlayers.Two);
-
-    private static string GetDifficultyName(short difficulty)
-        => EnumUtility.GetEnumString(difficulty, RoomDifficulty.Unknown);
+    private static string GetDifficultyName(short difficulty) =>
+        EnumUtility.GetEnumString(difficulty, RoomDifficulty.Unknown);
 
     private static string GetStatusName(byte status)
     {
         string result = EnumUtility.GetEnumString(status, RoomStatus.Unknown);
-        return result.Equals("Unknown", StringComparison.OrdinalIgnoreCase) ? $"{result}({status})" : result;
+        return result.Equals("Unknown", StringComparison.OrdinalIgnoreCase)
+            ? $"{result}({status})"
+            : result;
     }
 
-    private string GetScenarioName(short scenarioId)
-        => GetScenarioString(scenarioId,
-            FileOneLobbyScenario.Unknown,
-            FileTwoLobbyScenario.Unknown);
+    private string GetScenarioName(short scenarioId) =>
+        GetScenarioString(scenarioId, FileOneLobbyScenario.Unknown, FileTwoLobbyScenario.Unknown);
 
     private string GetFormattedTimeString()
     {
@@ -74,11 +69,13 @@ public sealed class LobbyRoomReader : ReaderBase
 
     public void UpdateLobbyRoom(bool debug = false)
     {
-        if (CurrentFile is GameFile.Unknown) return;
+        if (CurrentFile is GameFile.Unknown)
+            return;
 
         long start = Environment.TickCount64;
 
-        if (debug) Logger.LogDebug("Decoding lobby room");
+        if (debug)
+            Logger.LogDebug("Decoding lobby room");
 
         short maxPlayers = GetMaxPlayers();
         string maxPlayersString = GetMaxPlayersString(maxPlayers);
@@ -90,15 +87,19 @@ public sealed class LobbyRoomReader : ReaderBase
             Difficulty = GetDifficultyName(GetDifficulty()),
             Status = GetStatusName(GetStatus()),
             ScenarioName = GetScenarioName(GetScenarioId()),
-            TimeLeft = GetFormattedTimeString()
+            TimeLeft = GetFormattedTimeString(),
         };
 
         long duration = Environment.TickCount64 - start;
 
-        if (!debug) return;
+        if (!debug)
+            return;
 
         Logger.LogDebug("Decoded lobby room in {Duration}ms", duration);
-        string jsonObject = JsonSerializer.Serialize(DecodedLobbyRoom, DecodedLobbyRoomJsonContext.Default.DecodedLobbyRoom);
+        string jsonObject = JsonSerializer.Serialize(
+            DecodedLobbyRoom,
+            DecodedLobbyRoomJsonContext.Default.DecodedLobbyRoom
+        );
         Logger.LogDebug("Decoded lobby room: {JsonObject}", jsonObject);
     }
 }

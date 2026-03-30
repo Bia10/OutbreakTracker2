@@ -1,8 +1,8 @@
-﻿using OutbreakTracker2.Application.Services.Atlas.Models;
-using OutbreakTracker2.Application.Services.Atlas.Serialization;
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using OutbreakTracker2.Application.Services.Atlas.Models;
+using OutbreakTracker2.Application.Services.Atlas.Serialization;
 
 namespace OutbreakTracker2.Application.Services.Atlas;
 
@@ -23,18 +23,20 @@ public static class TextureAtlasLoader
         FileStream stream = File.OpenRead(filePath);
         await using (stream.ConfigureAwait(false))
         {
-            SpriteSheet? spriteSheet = await JsonSerializer
-            .DeserializeAsync(stream, SpriteSheetJsonContext.Default.SpriteSheet)
-            .ConfigureAwait(false);
+            SpriteSheet? spriteSheet =
+                await JsonSerializer
+                    .DeserializeAsync(stream, SpriteSheetJsonContext.Default.SpriteSheet)
+                    .ConfigureAwait(false)
+                ?? throw new JsonException(
+                    "Failed to deserialize sprite sheet data. Deserialized object was null."
+                );
+            if (spriteSheet.Frames is null || spriteSheet.Frames.Count is 0)
+                throw new JsonException(
+                    "Failed to deserialize sprite sheet data. Deserialized object did not contain any frames."
+                );
 
-        if (spriteSheet is null)
-            throw new JsonException("Failed to deserialize sprite sheet data. Deserialized object was null.");
-
-        if (spriteSheet.Frames is null || spriteSheet.Frames.Count is 0)
-            throw new JsonException("Failed to deserialize sprite sheet data. Deserialized object did not contain any frames.");
-
-        spriteSheet.BuildFrameLookup();
-        return spriteSheet;
+            spriteSheet.BuildFrameLookup();
+            return spriteSheet;
         }
     }
 }

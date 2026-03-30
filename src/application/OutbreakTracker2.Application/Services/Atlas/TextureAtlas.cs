@@ -1,9 +1,9 @@
-﻿using Avalonia;
+﻿using System;
+using System.IO;
+using Avalonia;
 using Avalonia.Media.Imaging;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Atlas.Models;
-using System;
-using System.IO;
 
 namespace OutbreakTracker2.Application.Services.Atlas;
 
@@ -18,7 +18,9 @@ public class TextureAtlas : ITextureAtlas, IDisposable
             throw new ArgumentNullException(nameof(imageStream), "Image stream cannot be null.");
 
         Texture = new Bitmap(imageStream);
-        _spriteSheet = spriteSheet ?? throw new ArgumentNullException(nameof(spriteSheet), "SpriteSheet cannot be null.");
+        _spriteSheet =
+            spriteSheet
+            ?? throw new ArgumentNullException(nameof(spriteSheet), "SpriteSheet cannot be null.");
         _logger = logger;
     }
 
@@ -28,13 +30,19 @@ public class TextureAtlas : ITextureAtlas, IDisposable
     {
         if (_spriteSheet is null)
         {
-            _logger.LogWarning("SpriteSheet is null. Cannot get source rectangle for '{Name}'", name);
+            _logger.LogWarning(
+                "SpriteSheet is null. Cannot get source rectangle for '{Name}'",
+                name
+            );
             return new Rect();
         }
 
         if (_spriteSheet.FrameLookup.Count == 0)
         {
-            _logger.LogWarning("FrameLookup is empty. Cannot get source rectangle for '{Name}'", name);
+            _logger.LogWarning(
+                "FrameLookup is empty. Cannot get source rectangle for '{Name}'",
+                name
+            );
             return new Rect();
         }
 

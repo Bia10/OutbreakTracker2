@@ -1,10 +1,10 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using OutbreakTracker2.Application.Pages;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace OutbreakTracker2.Application.Common;
 
@@ -14,7 +14,8 @@ public class OutbreakTracker2Views
 
     public OutbreakTracker2Views AddView<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView,
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(ServiceCollection services)
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel
+    >(ServiceCollection services)
         where TView : ContentControl
         where TViewModel : ObservableObject
     {
@@ -31,7 +32,11 @@ public class OutbreakTracker2Views
         return this;
     }
 
-    public bool TryCreateView(IServiceProvider? provider, Type viewModelType, [NotNullWhen(true)] out Control? view)
+    public bool TryCreateView(
+        IServiceProvider? provider,
+        Type viewModelType,
+        [NotNullWhen(true)] out Control? view
+    )
     {
         view = null;
 
@@ -62,7 +67,8 @@ public class OutbreakTracker2Views
         return view is not null;
     }
 
-    public Control CreateView<TViewModel>(IServiceProvider? provider) where TViewModel : ObservableObject
+    public Control CreateView<TViewModel>(IServiceProvider? provider)
+        where TViewModel : ObservableObject
     {
         Type viewModelType = typeof(TViewModel);
 

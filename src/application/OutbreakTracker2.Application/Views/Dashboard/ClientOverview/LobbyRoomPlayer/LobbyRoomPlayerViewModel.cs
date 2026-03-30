@@ -1,9 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Application.Views.Common.Character;
 using OutbreakTracker2.Outbreak.Enums.Character;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
-using System;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoomPlayer;
 
@@ -42,14 +42,18 @@ public partial class LobbyRoomPlayerViewModel : ObservableObject
     [ObservableProperty]
     private string _npcPower = string.Empty;
 
-    public bool IsMainCharacter => string.Equals(NpcType, "Main Characters", StringComparison.Ordinal);
+    public bool IsMainCharacter =>
+        string.Equals(NpcType, "Main Characters", StringComparison.Ordinal);
     public bool IsOtherNpc => string.Equals(NpcType, "Other NPCs", StringComparison.Ordinal);
     public byte DataPlayerId => NameId;
     public Ulid ViewModelId => Id;
 
     public CharacterBustViewModel PlayerBustViewModel { get; }
 
-    public LobbyRoomPlayerViewModel(DecodedLobbyRoomPlayer model, CharacterBustViewModel characterBustViewModel)
+    public LobbyRoomPlayerViewModel(
+        DecodedLobbyRoomPlayer model,
+        CharacterBustViewModel characterBustViewModel
+    )
     {
         PlayerBustViewModel = characterBustViewModel;
 
@@ -68,16 +72,16 @@ public partial class LobbyRoomPlayerViewModel : ObservableObject
         NpcHp = model.Npchp;
         NpcPower = model.NpcPower;
 
-        DisplayName = string.Equals(NpcType, "Main Characters", StringComparison.Ordinal) ? CharacterName : NpcName;
+        DisplayName = string.Equals(NpcType, "Main Characters", StringComparison.Ordinal)
+            ? CharacterName
+            : NpcName;
 
         if (EnumUtility.TryParseByValueOrMember(DisplayName, out CharacterBaseType charType))
             _ = PlayerBustViewModel.UpdateBustAsync(charType);
     }
 
-    public override bool Equals(object? obj)
-        => obj is LobbyRoomPlayerViewModel viewModel &&
-           Id == viewModel.Id;
+    public override bool Equals(object? obj) =>
+        obj is LobbyRoomPlayerViewModel viewModel && Id == viewModel.Id;
 
-    public override int GetHashCode()
-        => HashCode.Combine(Id);
+    public override int GetHashCode() => HashCode.Combine(Id);
 }

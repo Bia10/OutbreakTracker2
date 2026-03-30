@@ -1,7 +1,7 @@
-﻿using Avalonia.Media;
+﻿using System;
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
-using System;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor;
 
@@ -44,7 +44,14 @@ public partial class InGameDoorViewModel : ObservableObject
 
     private Color GetBorderColor()
     {
-        bool isBlueBorder = Hp is 500 || Hp is 0 || Flag is 0x00 || Flag is 0x0A || Flag is 0x0C || Flag is 0x2C || Flag is 0x82;
+        bool isBlueBorder =
+            Hp is 500
+            || Hp is 0
+            || Flag is 0x00
+            || Flag is 0x0A
+            || Flag is 0x0C
+            || Flag is 0x2C
+            || Flag is 0x82;
 
         return isBlueBorder ? Color.FromArgb(255, 0, 100, 255) : Color.FromArgb(0, 0, 0, 0);
     }

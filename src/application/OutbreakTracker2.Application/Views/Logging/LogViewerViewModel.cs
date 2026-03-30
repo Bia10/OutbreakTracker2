@@ -1,4 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using ObservableCollections;
@@ -7,11 +12,6 @@ using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Services.LogStorage;
 using OutbreakTracker2.Extensions;
 using R3;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace OutbreakTracker2.Application.Views.Logging;
 
@@ -115,7 +115,8 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
         ILogDataStorageService dataStoreService,
         ClipboardService clipboardService,
         IDispatcherService dispatcherService,
-        ILogger<LogViewerViewModel> logger)
+        ILogger<LogViewerViewModel> logger
+    )
     {
         _dataStorageService = dataStoreService;
         _clipboardService = clipboardService;
@@ -124,8 +125,9 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
 
         _logger.LogInformation("LogViewerViewModel initialized");
 
-        FilteredEntriesView = _filteredEntries
-            .ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
+        FilteredEntriesView = _filteredEntries.ToNotifyCollectionChanged(
+            SynchronizationContextCollectionEventDispatcher.Current
+        );
 
         _filterSubscription = _filterUpdateSubject
             .Debounce(TimeSpan.FromMilliseconds(100))
@@ -169,22 +171,27 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
             if (selectedLevels.Count > 0)
                 filteredQuery = filteredQuery.Where(log => selectedLevels.Contains(log.LogLevel));
 
-            List<LogModel> formattedAndFiltered = filteredQuery
-                .Select(LogModel.ToDisplayForm)
-                .TakeLast(MaxLogEntries)
-                .ToList();
+            List<LogModel> formattedAndFiltered =
+            [
+                .. filteredQuery.Select(LogModel.ToDisplayForm).TakeLast(MaxLogEntries),
+            ];
 
             ct.ThrowIfCancellationRequested();
 
-            await _dispatcherService.InvokeOnUIAsync(() =>
-            {
-                _filteredEntries.ReplaceAll(formattedAndFiltered);
+            await _dispatcherService
+                .InvokeOnUIAsync(
+                    () =>
+                    {
+                        _filteredEntries.ReplaceAll(formattedAndFiltered);
 
-                if (AutoScroll && _filteredEntries.Count > 0)
-                    LogEntryToScrollTo = _filteredEntries.Last();
-                else
-                    LogEntryToScrollTo = null;
-            }, ct).ConfigureAwait(false);
+                        if (AutoScroll && _filteredEntries.Count > 0)
+                            LogEntryToScrollTo = _filteredEntries[^1];
+                        else
+                            LogEntryToScrollTo = null;
+                    },
+                    ct
+                )
+                .ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -198,19 +205,39 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
 
     private void UpdateLogCounts(List<LogModel> allEntries)
     {
-        int errors = 0, warnings = 0, info = 0, critical = 0, trace = 0, debug = 0;
+        int errors = 0,
+            warnings = 0,
+            info = 0,
+            critical = 0,
+            trace = 0,
+            debug = 0;
 
         foreach (LogModel log in allEntries)
             switch (log.LogLevel)
             {
-                case LogLevel.Trace: trace++; break;
-                case LogLevel.Debug: debug++; break;
-                case LogLevel.Information: info++; break;
-                case LogLevel.Warning: warnings++; break;
-                case LogLevel.Error: errors++; break;
-                case LogLevel.Critical: critical++; break;
-                case LogLevel.None: break;
-                default: _logger.LogWarning("Unknown LogLevel encountered: {LogLogLevel}", log.LogLevel); break;
+                case LogLevel.Trace:
+                    trace++;
+                    break;
+                case LogLevel.Debug:
+                    debug++;
+                    break;
+                case LogLevel.Information:
+                    info++;
+                    break;
+                case LogLevel.Warning:
+                    warnings++;
+                    break;
+                case LogLevel.Error:
+                    errors++;
+                    break;
+                case LogLevel.Critical:
+                    critical++;
+                    break;
+                case LogLevel.None:
+                    break;
+                default:
+                    _logger.LogWarning("Unknown LogLevel encountered: {LogLogLevel}", log.LogLevel);
+                    break;
             }
 
         _dispatcherService.PostOnUI(() =>

@@ -1,8 +1,8 @@
-﻿using Avalonia.Data;
-using Avalonia.Data.Converters;
-using System;
+﻿using System;
 using System.Collections;
 using System.Globalization;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
 
 namespace OutbreakTracker2.Application.Converters;
 
@@ -19,6 +19,10 @@ public sealed class CollectionIsNullOrEmptyConverter : IValueConverter
         return collection.Count is 0;
     }
 
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-        => new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
+    public object ConvertBack(
+        object? value,
+        Type targetType,
+        object? parameter,
+        CultureInfo culture
+    ) => new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
 }

@@ -1,8 +1,8 @@
-﻿using Avalonia.Data;
+﻿using System;
+using System.Globalization;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Material.Icons;
-using System;
-using System.Globalization;
 
 namespace OutbreakTracker2.Application.Converters;
 
@@ -17,10 +17,14 @@ public sealed class LobbyVersionToIconConverter : IValueConverter
         {
             "dvd-rom" => MaterialIconKind.Album,
             "hdd" => MaterialIconKind.Harddisk,
-            _ => MaterialIconKind.HelpCircleOutline
+            _ => MaterialIconKind.HelpCircleOutline,
         };
     }
 
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-        => new BindingNotification(new NotSupportedException(), BindingErrorType.Error);
+    public object ConvertBack(
+        object? value,
+        Type targetType,
+        object? parameter,
+        CultureInfo culture
+    ) => new BindingNotification(new NotSupportedException(), BindingErrorType.Error);
 }

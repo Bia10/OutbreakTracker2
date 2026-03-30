@@ -1,14 +1,13 @@
-﻿using Avalonia.Threading;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 
 namespace OutbreakTracker2.Application.Services.Dispatcher;
 
 public sealed class DispatcherService : IDispatcherService
 {
-    public bool IsOnUIThread()
-        => Avalonia.Threading.Dispatcher.UIThread.CheckAccess();
+    public bool IsOnUIThread() => Avalonia.Threading.Dispatcher.UIThread.CheckAccess();
 
     public void PostOnUI(Action action)
     {
@@ -21,13 +20,24 @@ public sealed class DispatcherService : IDispatcherService
     {
         ArgumentNullException.ThrowIfNull(action);
 
-        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(action, DispatcherPriority.Normal, cancellationToken);
+        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(
+            action,
+            DispatcherPriority.Normal,
+            cancellationToken
+        );
     }
 
-    public async Task<TResult?> InvokeOnUIAsync<TResult>(Func<TResult> function, CancellationToken cancellationToken = default)
+    public async Task<TResult?> InvokeOnUIAsync<TResult>(
+        Func<TResult> function,
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(function);
 
-        return await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(function, DispatcherPriority.Normal, cancellationToken);
+        return await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(
+            function,
+            DispatcherPriority.Normal,
+            cancellationToken
+        );
     }
 }

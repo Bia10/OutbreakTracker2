@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
+using Microsoft.Extensions.Logging;
 
 namespace OutbreakTracker2.Application.Views.Logging;
 
@@ -20,7 +20,8 @@ public sealed record LogModel
         object? state,
         string? exception,
         string displayMessage,
-        string displayException)
+        string displayException
+    )
     {
         Timestamp = timestamp;
         LogLevel = logLevel;
@@ -49,15 +50,15 @@ public sealed record LogModel
         );
     }
 
-    private static string FormatExceptionForDisplay(string exception)
-        => exception;
+    private static string FormatExceptionForDisplay(string exception) => exception;
 
     public LogModel(
         DateTime timestamp,
         LogLevel logLevel,
         EventId eventId,
         object? state,
-        string? exception)
+        string? exception
+    )
     {
         Timestamp = timestamp;
         LogLevel = logLevel;
@@ -68,11 +69,7 @@ public sealed record LogModel
         DisplayException = string.Empty;
     }
 
-    public LogModel(
-        LogLevel logLevel,
-        EventId eventId,
-        object? state,
-        string? exception)
+    public LogModel(LogLevel logLevel, EventId eventId, object? state, string? exception)
     {
         Timestamp = DateTime.UtcNow;
         LogLevel = logLevel;

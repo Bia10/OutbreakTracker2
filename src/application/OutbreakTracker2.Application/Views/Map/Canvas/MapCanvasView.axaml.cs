@@ -1,10 +1,10 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using System.Threading;
+using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
-using System;
-using System.Threading;
 
 namespace OutbreakTracker2.Application.Views.Map.Canvas;
 
@@ -26,8 +26,8 @@ public partial class MapCanvasView : UserControl
 
             if (DataContext is MapCanvasViewModel viewModel)
             {
-                _playersSubscription = viewModel.PlayersObservable
-                    .ObserveOn(SynchronizationContext.Current)
+                _playersSubscription = viewModel
+                    .PlayersObservable.ObserveOn(SynchronizationContext.Current)
                     .Subscribe(DrawPlayers);
             }
         };
@@ -48,8 +48,10 @@ public partial class MapCanvasView : UserControl
 
         foreach (DecodedInGamePlayer? player in players)
         {
-            if (player is null) continue;
-            if (!player.IsEnabled || !player.IsInGame) continue;
+            if (player is null)
+                continue;
+            if (!player.IsEnabled || !player.IsInGame)
+                continue;
 
             double canvasX = player.PositionX * scaleX;
             double canvasY = player.PositionY * scaleY;
@@ -60,7 +62,7 @@ public partial class MapCanvasView : UserControl
                 Height = PlayerCircleRadius * 2,
                 Fill = Brushes.Blue,
                 Stroke = Brushes.DarkBlue,
-                StrokeThickness = 1
+                StrokeThickness = 1,
             };
 
             Avalonia.Controls.Canvas.SetLeft(playerCircle, canvasX - PlayerCircleRadius);
@@ -71,7 +73,7 @@ public partial class MapCanvasView : UserControl
                 Text = $"{player.Name} ({player.PositionX:F0}, {player.PositionY:F0})",
                 Foreground = Brushes.White,
                 FontSize = 10,
-                TextAlignment = TextAlignment.Center
+                TextAlignment = TextAlignment.Center,
             };
 
             Avalonia.Controls.Canvas.SetLeft(playerInfoText, canvasX - (PlayerCircleRadius * 2));

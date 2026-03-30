@@ -83,5 +83,5 @@ public enum HiveRooms : short
     UnderpassEntrance = 33,
 
     [EnumMember(Value = "Rooftop")]
-    Rooftop = 34
+    Rooftop = 34,
 }

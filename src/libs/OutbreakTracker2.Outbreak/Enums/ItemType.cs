@@ -770,5 +770,5 @@ public enum ItemType : short
     PBaseDepleted = 14110,
 
     [EnumMember(Value = "Key with a Red Tag (?? DD)")]
-    KeyWithRedTagDd = 14111
+    KeyWithRedTagDd = 14111,
 }

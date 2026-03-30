@@ -16,11 +16,7 @@ public partial class PlayerAttributesViewModel : ObservableObject
     [ObservableProperty]
     private float _speed;
 
-    public void Update(
-        float criticalBonus,
-        float size,
-        float power,
-        float speed)
+    public void Update(float criticalBonus, float size, float power, float speed)
     {
         CriticalBonus = criticalBonus;
         Size = size;

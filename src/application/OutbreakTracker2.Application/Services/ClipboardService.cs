@@ -1,5 +1,5 @@
-﻿using Avalonia.Controls.ApplicationLifetimes;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Avalonia.Controls.ApplicationLifetimes;
 
 namespace OutbreakTracker2.Application.Services;
 

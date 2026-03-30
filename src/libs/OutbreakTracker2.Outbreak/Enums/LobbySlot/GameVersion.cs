@@ -11,5 +11,5 @@ public enum GameVersion : short
     DvdRom = 17,
 
     [EnumMember(Value = "HDD")]
-    Hdd = 18
+    Hdd = 18,
 }

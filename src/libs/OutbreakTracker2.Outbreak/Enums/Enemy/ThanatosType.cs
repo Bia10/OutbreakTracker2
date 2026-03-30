@@ -8,5 +8,5 @@ public enum ThanatosType : byte
     Thanatos = 0,
 
     [EnumMember(Value = "Thanatos R")]
-    ThanatosR = 1
+    ThanatosR = 1,
 }

@@ -11,6 +11,7 @@
     xmlns:inGamePlayers="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers"
     xmlns:inGameEnemies="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies"
     xmlns:inGameDoors="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoors"
+    xmlns:embeddedGame="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGame"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="clientOverview:ClientOverviewViewModel"
@@ -34,6 +35,25 @@
             </TabItem>
             <TabItem Header="In-Game Doors">
                 <inGameDoors:InGameDoorsView DataContext="{Binding InGameDoorsViewModel}" />
+            </TabItem>
+            <TabItem Header="Game">
+                <!--
+                    EmbeddedGameView is a NativeControlHost subclass.
+                    When IsSupported=false (Wayland / macOS / no DISPLAY set) the host is hidden
+                    and a plain message is shown instead.  The host creates a native container
+                    window and reparents the PCSX2 window into it once it appears.
+                -->
+                <Grid DataContext="{Binding EmbeddedGameViewModel}">
+                    <TextBlock
+                        IsVisible="{Binding IsNotSupported}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        TextAlignment="Center"
+                        Text="Window embedding is not available on this platform.&#xA;X11 display required (Linux / WSLg with DISPLAY set)." />
+                    <embeddedGame:EmbeddedGameView
+                        IsVisible="{Binding IsSupported}"
+                        DataContext="{Binding}" />
+                </Grid>
             </TabItem>
         </TabControl>
     </Grid>

@@ -69,5 +69,5 @@ public enum WildThingsRooms : short
     FrontGatePlaza = 26,
 
     [EnumMember(Value = "Front gate")]
-    FrontGate = 27
+    FrontGate = 27,
 }

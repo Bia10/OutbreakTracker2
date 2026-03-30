@@ -11,5 +11,5 @@ public enum GameFile : byte
     FileOne = 1,
 
     [EnumMember(Value = "File Two")]
-    FileTwo = 2
+    FileTwo = 2,
 }

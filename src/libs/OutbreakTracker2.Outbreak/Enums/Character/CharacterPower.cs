@@ -29,5 +29,5 @@ internal enum CharacterPower : byte
     Cindy = 7,
 
     [EnumMember(Value = "0%")]
-    Unknown = 255
+    Unknown = 255,
 }

@@ -1,7 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
-using System;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 
@@ -40,7 +40,8 @@ public partial class UnderbellyViewModel : ObservableObject
 
     public void Update(DecodedInGameScenario scenario)
     {
-        if (!IsValidScenario(scenario.ScenarioName)) return;
+        if (!IsValidScenario(scenario.ScenarioName))
+            return;
 
         PassUnderbelly1 = scenario.PassUnderbelly1;
         PassUnderbelly2 = scenario.PassUnderbelly2;
@@ -75,7 +76,7 @@ public partial class UnderbellyViewModel : ObservableObject
             13 => "TAPE",
             14 => "GOLF",
             15 => "PLAN",
-            _ => $"Unrecognized PassUnderbelly1({PassUnderbelly1})"
+            _ => $"Unrecognized PassUnderbelly1({PassUnderbelly1})",
         };
     }
 
@@ -99,18 +100,15 @@ public partial class UnderbellyViewModel : ObservableObject
             13 => "1127",
             14 => "7840",
             15 => "6910",
-            _ => $"Unrecognized PassUnderbelly2({PassUnderbelly2})"
+            _ => $"Unrecognized PassUnderbelly2({PassUnderbelly2})",
         };
     }
 
-    private bool DetermineIsUnderbellyPasswordVisible()
-        => EscapeTime is 0 or -1;
+    private bool DetermineIsUnderbellyPasswordVisible() => EscapeTime is 0 or -1;
 
-    private bool DeterminePassUnderbelly1IsGreen()
-        => PassUnderbelly3 % 64 >= 32;
+    private bool DeterminePassUnderbelly1IsGreen() => PassUnderbelly3 % 64 >= 32;
 
-    private bool DeterminePassUnderbelly2IsGreen()
-        => PassUnderbelly3 % 32 >= 16;
+    private bool DeterminePassUnderbelly2IsGreen() => PassUnderbelly3 % 32 >= 16;
 
     private string GetUnderbellyPassDisplay()
     {
@@ -119,7 +117,7 @@ public partial class UnderbellyViewModel : ObservableObject
             : TimeUtility.GetTimeToString3(EscapeTime);
     }
 
-    private static bool IsValidScenario(string scenarioName)
-        => !string.IsNullOrEmpty(scenarioName)
-           && scenarioName.Equals("Underbelly", StringComparison.Ordinal);
+    private static bool IsValidScenario(string scenarioName) =>
+        !string.IsNullOrEmpty(scenarioName)
+        && scenarioName.Equals("Underbelly", StringComparison.Ordinal);
 }

@@ -68,5 +68,5 @@ public enum DesperateTimesRooms : short
     ParkingGarageRamp = 23,
 
     [EnumMember(Value = "Waiting room")]
-    WaitingRoom = 27
+    WaitingRoom = 27,
 }

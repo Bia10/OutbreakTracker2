@@ -89,5 +89,5 @@ public enum UnderbellyRooms : short
     EastTunnel = 32,
 
     [EnumMember(Value = "Ventilation tower")]
-    VentilationTower = 33
+    VentilationTower = 33,
 }

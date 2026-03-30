@@ -1,6 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
-using System;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
 
@@ -37,7 +37,7 @@ public partial class HellfireViewModel : ObservableObject
             >= 0x2 and <= 0x3 => "2287-JIA",
             >= 0x4 and <= 0x7 => "6354-BAE",
             >= 0x8 and <= 0xF => "5128-GGF",
-            _ => $"Unrecognized Hellfire Pass3({pass3})"
+            _ => $"Unrecognized Hellfire Pass3({pass3})",
         };
     }
 
@@ -60,17 +60,17 @@ public partial class HellfireViewModel : ObservableObject
             0x4180 => "12",
             0x41A0 => "2",
             0x41C0 => "1",
-            _ => $"Unrecognized Hellfire Pass4({pass4})"
+            _ => $"Unrecognized Hellfire Pass4({pass4})",
         };
     }
 
-    private static string CalculateHellfirePowerDisplay(byte puzzleRandom)
-        => puzzleRandom % 2 == 0 ? "1" : "2";
+    private static string CalculateHellfirePowerDisplay(byte puzzleRandom) =>
+        puzzleRandom % 2 == 0 ? "1" : "2";
 
-    private string GetHellfireDisplay()
-        => $"{HellfirePassDisplay}-{HellfireMapDisplay}-{HellfirePowerDisplay}";
+    private string GetHellfireDisplay() =>
+        $"{HellfirePassDisplay}-{HellfireMapDisplay}-{HellfirePowerDisplay}";
 
-    private static bool IsValidScenario(string scenarioName)
-        => !string.IsNullOrEmpty(scenarioName)
-           && scenarioName.Equals("hellfire", StringComparison.Ordinal);
+    private static bool IsValidScenario(string scenarioName) =>
+        !string.IsNullOrEmpty(scenarioName)
+        && scenarioName.Equals("hellfire", StringComparison.Ordinal);
 }

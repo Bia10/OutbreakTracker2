@@ -11,5 +11,5 @@ public enum TyrantType : byte
     TyrantR = 1,
 
     [EnumMember(Value = "Tyrant C")]
-    TyrantC = 3
+    TyrantC = 3,
 }

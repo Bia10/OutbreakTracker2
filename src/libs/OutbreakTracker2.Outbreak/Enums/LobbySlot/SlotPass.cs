@@ -8,5 +8,5 @@ public enum SlotPass : byte
     NoPass = 0,
 
     [EnumMember(Value = "True")]
-    Pass = 1
+    Pass = 1,
 }

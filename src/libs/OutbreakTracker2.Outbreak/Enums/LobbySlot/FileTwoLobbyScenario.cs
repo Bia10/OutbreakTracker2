@@ -41,5 +41,5 @@ public enum FileTwoLobbyScenario : short
     Showdown2 = 10,
 
     [EnumMember(Value = "Showdown 3")]
-    Showdown3 = 11
+    Showdown3 = 11,
 }

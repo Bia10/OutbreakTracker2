@@ -1,10 +1,10 @@
-﻿using Avalonia.Data;
+﻿using System;
+using System.Globalization;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
 using FastEnumUtility;
 using Material.Icons;
 using OutbreakTracker2.Outbreak.Enums.LobbySlot;
-using System;
-using System.Globalization;
 
 namespace OutbreakTracker2.Application.Converters;
 
@@ -22,16 +22,20 @@ public sealed class LobbySlotStatusToIconConverter : IValueConverter
             case SlotStatus directStatus:
                 status = directStatus;
                 break;
-            case string statusString when FastEnum.TryParse(statusString, true, out SlotStatus parsedStatus):
+            case string statusString
+                when FastEnum.TryParse(statusString, ignoreCase: true, out SlotStatus parsedStatus):
                 status = parsedStatus;
                 break;
-            case string statusString when statusString.Equals("Join in", StringComparison.OrdinalIgnoreCase):
+            case string statusString
+                when statusString.Equals("Join in", StringComparison.OrdinalIgnoreCase):
                 status = SlotStatus.JoinIn;
                 break;
-            case string: status = SlotStatus.Unknown;
+            case string:
+                status = SlotStatus.Unknown;
                 break;
 
-            default: return BindingOperations.DoNothing;
+            default:
+                return BindingOperations.DoNothing;
         }
 
         return status switch
@@ -41,10 +45,14 @@ public sealed class LobbySlotStatusToIconConverter : IValueConverter
             SlotStatus.Busy => MaterialIconKind.ProgressClock,
             SlotStatus.JoinIn => MaterialIconKind.DoorOpen,
             SlotStatus.Full => MaterialIconKind.AccountMultipleRemoveOutline,
-            _ => MaterialIconKind.HelpCircleOutline
+            _ => MaterialIconKind.HelpCircleOutline,
         };
     }
 
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-        => new BindingNotification(new NotSupportedException(), BindingErrorType.Error);
+    public object ConvertBack(
+        object? value,
+        Type targetType,
+        object? parameter,
+        CultureInfo culture
+    ) => new BindingNotification(new NotSupportedException(), BindingErrorType.Error);
 }

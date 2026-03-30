@@ -7,7 +7,12 @@ public static class UrlUtility
     public static void OpenUrl(string url)
     {
         if (System.OperatingSystem.IsWindows())
-            Process.Start(new ProcessStartInfo(url.Replace("&", "^&")) { UseShellExecute = true });
+            Process.Start(
+                new ProcessStartInfo(url.Replace("&", "^&", System.StringComparison.Ordinal))
+                {
+                    UseShellExecute = true,
+                }
+            );
         else if (System.OperatingSystem.IsLinux())
             Process.Start("xdg-open", url);
         else if (System.OperatingSystem.IsMacOS())

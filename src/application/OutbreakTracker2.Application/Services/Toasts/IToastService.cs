@@ -1,6 +1,6 @@
-﻿using SukiUI.Toasts;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using SukiUI.Toasts;
 
 namespace OutbreakTracker2.Application.Services.Toasts;
 
@@ -16,8 +16,12 @@ public interface IToastService
 
     public ISukiToast CreateToast(string title, object content);
 
-    public ISukiToast CreateInfoToastWithCancelButton(string content, object cancelButtonContent,
-        Action<ISukiToast> onCanceledAction, string? title = "");
+    public ISukiToast CreateInfoToastWithCancelButton(
+        string content,
+        object cancelButtonContent,
+        Action<ISukiToast> onCanceledAction,
+        string? title = ""
+    );
 
     public Task DismissToastAsync(ISukiToast toast);
 }

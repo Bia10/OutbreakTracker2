@@ -1,21 +1,16 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
 
 namespace OutbreakTracker2.Application.Views.Common.ScenarioImg;
 
-public class ScenarioImageViewModelFactory : IScenarioImageViewModelFactory
+public class ScenarioImageViewModelFactory(
+    ILogger<ScenarioImageViewModelFactory> logger,
+    IServiceProvider serviceProvider
+) : IScenarioImageViewModelFactory
 {
-    private readonly ILogger<ScenarioImageViewModelFactory> _logger;
-    private readonly IServiceProvider _serviceProvider;
-
-    public ScenarioImageViewModelFactory(
-        ILogger<ScenarioImageViewModelFactory> logger,
-        IServiceProvider serviceProvider)
-    {
-        _logger = logger;
-        _serviceProvider = serviceProvider;
-    }
+    private readonly ILogger<ScenarioImageViewModelFactory> _logger = logger;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     public ScenarioImageViewModel Create()
     {

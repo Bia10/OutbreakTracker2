@@ -11,5 +11,5 @@ public enum DogType : byte
     Cerberus = 1,
 
     [EnumMember(Value = "Shepherd")]
-    Shepherd = 4
+    Shepherd = 4,
 }

@@ -28,7 +28,8 @@ public partial class PlayerGaugesViewModel : ObservableObject
         double healthPercentage,
         int curVirus,
         int maxVirus,
-        double virusPercentage)
+        double virusPercentage
+    )
     {
         CurrentHealth = currentHealth;
         MaximumHealth = maximumHealth;

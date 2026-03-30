@@ -48,43 +48,41 @@ public class SpriteSheet
 
 [JsonSerializable(typeof(SpriteSheet))]
 [JsonSerializable(typeof(List<Frame>))]
-public partial class SpriteSheetJsonContext : JsonSerializerContext
-{
-}
+public partial class SpriteSheetJsonContext : JsonSerializerContext { }
 
 public class Program
 {
     public static async Task Main(string[] args)
     {
         const string jsonContent = """
-                                   {
-                                               "frames": [
-                                                   {
-                                                       "name": "below freezing point",
-                                                       "x": 830,
-                                                       "y": 784,
-                                                       "width": 256,
-                                                       "height": 192
-                                                   },
-                                                   {
-                                                       "name": "bustAlyssa",
-                                                       "x": 0,
-                                                       "y": 0,
-                                                       "width": 256,
-                                                       "height": 256
-                                                   },
-                                                   {
-                                                       "name": "bustCindy",
-                                                       "x": 0,
-                                                       "y": 256,
-                                                       "width": 256,
-                                                       "height": 256
-                                                   }
-                                               ],
-                                               "sheetContentWidth": 1280,
-                                               "sheetContentHeight": 1280
-                                           }
-                                   """;
+            {
+                        "frames": [
+                            {
+                                "name": "below freezing point",
+                                "x": 830,
+                                "y": 784,
+                                "width": 256,
+                                "height": 192
+                            },
+                            {
+                                "name": "bustAlyssa",
+                                "x": 0,
+                                "y": 0,
+                                "width": 256,
+                                "height": 256
+                            },
+                            {
+                                "name": "bustCindy",
+                                "x": 0,
+                                "y": 256,
+                                "width": 256,
+                                "height": 256
+                            }
+                        ],
+                        "sheetContentWidth": 1280,
+                        "sheetContentHeight": 1280
+                    }
+            """;
 
         const string filePath = "spriteSheet.json";
         await File.WriteAllTextAsync(filePath, jsonContent);
@@ -145,15 +143,17 @@ public static class TextureAtlasLoader
 
         await using FileStream stream = File.OpenRead(filePath);
 
-        SpriteSheet? spriteSheet = await JsonSerializer
-            .DeserializeAsync(stream, SpriteSheetJsonContext.Default.SpriteSheet)
-            .ConfigureAwait(false);
-
-        if (spriteSheet is null)
-            throw new JsonException("Failed to deserialize sprite sheet data. Deserialized object was null.");
-
+        SpriteSheet? spriteSheet =
+            await JsonSerializer
+                .DeserializeAsync(stream, SpriteSheetJsonContext.Default.SpriteSheet)
+                .ConfigureAwait(false)
+            ?? throw new JsonException(
+                "Failed to deserialize sprite sheet data. Deserialized object was null."
+            );
         if (spriteSheet.Frames is null || spriteSheet.Frames.Count is 0)
-            throw new JsonException("Failed to deserialize sprite sheet data. Deserialized object did not contain any frames.");
+            throw new JsonException(
+                "Failed to deserialize sprite sheet data. Deserialized object did not contain any frames."
+            );
 
         spriteSheet.BuildFrameLookup();
         Console.WriteLine($"Successfully deserialized {spriteSheet.Frames.Count} frames.");

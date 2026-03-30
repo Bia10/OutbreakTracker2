@@ -8,5 +8,5 @@ public enum ScissorTailType : byte
     ScissorTail = 0,
 
     [EnumMember(Value = "Scissor Tail Purple")]
-    ScissorTailPurple = 1
+    ScissorTailPurple = 1,
 }

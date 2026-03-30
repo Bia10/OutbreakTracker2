@@ -20,5 +20,5 @@ public enum FileOneLobbyScenario : short
     Hellfire = 3,
 
     [EnumMember(Value = "Decisions, decisions")]
-    DecisionsDecisions = 4
+    DecisionsDecisions = 4,
 }

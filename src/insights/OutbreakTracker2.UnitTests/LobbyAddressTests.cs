@@ -50,7 +50,7 @@ public class LobbyAddressTests
             17 => F2Slot18,
             18 => F2Slot19,
             19 => F2Slot20,
-            _ => -1
+            _ => -1,
         };
     }
 

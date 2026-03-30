@@ -1,7 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
-using System;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 
@@ -59,16 +59,15 @@ public partial class WildThingsViewModel : ObservableObject
             13 => "LYNX",
             14 => "9AAA",
             15 => "YTY7",
-            _ => $"Unrecognized PassWildThings({PassWildThings}) "
+            _ => $"Unrecognized PassWildThings({PassWildThings}) ",
         };
     }
 
     private static bool IsValidScenario(string scenarioName)
     {
         return !string.IsNullOrEmpty(scenarioName)
-               && scenarioName.Equals("Wild things", StringComparison.Ordinal);
+            && scenarioName.Equals("Wild things", StringComparison.Ordinal);
     }
 
-    private string GetWildThingsTimeDisplay()
-        => TimeUtility.GetTimeToString3(WildThingsTime);
+    private string GetWildThingsTimeDisplay() => TimeUtility.GetTimeToString3(WildThingsTime);
 }

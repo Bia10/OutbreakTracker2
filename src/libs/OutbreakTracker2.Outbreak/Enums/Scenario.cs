@@ -56,5 +56,5 @@ public enum Scenario : short
     WildThings = 40,
 
     [EnumMember(Value = "Decisions, decisions")]
-    DecisionsDecisions = 41
+    DecisionsDecisions = 41,
 }

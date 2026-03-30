@@ -1,8 +1,8 @@
-﻿using FastEnumUtility;
+﻿using System.Globalization;
+using System.Runtime.CompilerServices;
+using FastEnumUtility;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Rooms;
-using System.Globalization;
-using System.Runtime.CompilerServices;
 
 namespace OutbreakTracker2.Outbreak.Utility;
 
@@ -109,17 +109,24 @@ public static class EnumUtility
 
         switch (value)
         {
-            case null: return false;
+            case null:
+                return false;
             // If the object is already the correct enum type (no boxing needed)
-            case TEnum enumInstance: result = enumInstance; return true;
+            case TEnum enumInstance:
+                result = enumInstance;
+                return true;
             // If the object is a string, use the string overload directly
-            case string str: return TryParseByValueOrMember(str, out result);
+            case string str:
+                return TryParseByValueOrMember(str, out result);
             // Unbox byte and call the byte overload
-            case byte b: return TryParseByValueOrMember(b, out result);
+            case byte b:
+                return TryParseByValueOrMember(b, out result);
             // Unbox short and call the short overload
-            case short s: return TryParseByValueOrMember(s, out result);
+            case short s:
+                return TryParseByValueOrMember(s, out result);
             // Unbox int and call the int overload
-            case int i: return TryParseByValueOrMember(i, out result);
+            case int i:
+                return TryParseByValueOrMember(i, out result);
         }
 
         // For unhandled value types (like char, float, custom structs) or reference types,
@@ -137,7 +144,10 @@ public static class EnumUtility
         foreach (TEnum enumValue in FastEnum.GetValues<TEnum>())
         {
             string? memberValue = enumValue.GetEnumMemberValue();
-            if (string.IsNullOrEmpty(memberValue) || !string.Equals(valueString, memberValue, StringComparison.OrdinalIgnoreCase))
+            if (
+                string.IsNullOrEmpty(memberValue)
+                || !string.Equals(valueString, memberValue, StringComparison.OrdinalIgnoreCase)
+            )
                 continue;
 
             result = enumValue;
@@ -156,7 +166,10 @@ public static class EnumUtility
         Span<char> charBuffer = stackalloc char[3];
         if (value.TryFormat(charBuffer, out int charsWritten))
         {
-            if (FastEnum.TryParse(charBuffer[..charsWritten], out result) && FastEnum.IsDefined(result))
+            if (
+                FastEnum.TryParse(charBuffer[..charsWritten], out result)
+                && FastEnum.IsDefined(result)
+            )
                 return true;
         }
 
@@ -172,7 +185,10 @@ public static class EnumUtility
         Span<char> charBuffer = stackalloc char[6];
         if (value.TryFormat(charBuffer, out int charsWritten))
         {
-            if (FastEnum.TryParse(charBuffer[..charsWritten], out result) && FastEnum.IsDefined(result))
+            if (
+                FastEnum.TryParse(charBuffer[..charsWritten], out result)
+                && FastEnum.IsDefined(result)
+            )
                 return true;
         }
 
@@ -188,7 +204,10 @@ public static class EnumUtility
         Span<char> charBuffer = stackalloc char[11];
         if (value.TryFormat(charBuffer, out int charsWritten))
         {
-            if (FastEnum.TryParse(charBuffer[..charsWritten], out result) && FastEnum.IsDefined(result))
+            if (
+                FastEnum.TryParse(charBuffer[..charsWritten], out result)
+                && FastEnum.IsDefined(result)
+            )
                 return true;
         }
 
@@ -203,8 +222,8 @@ public static class EnumUtility
         return FastEnum.IsDefined(value);
     }
 
-    public static string GetRoomName(this Scenario scenarioName, int roomId)
-        => scenarioName switch
+    public static string GetRoomName(this Scenario scenarioName, int roomId) =>
+        scenarioName switch
         {
             Scenario.Unknown => $"Unknown roomName for id: {roomId}",
             Scenario.TrainingGround => GetEnumString(roomId, TrainingGroundRooms.Spawning),
@@ -224,6 +243,10 @@ public static class EnumUtility
             Scenario.TheHive => GetEnumString(roomId, HiveRooms.Spawning),
             Scenario.BelowFreezingPoint => GetEnumString(roomId, BelowFreezingRooms.Spawning),
             Scenario.DecisionsDecisions => GetEnumString(roomId, DecisionsRooms.Spawning),
-            _ => throw new ArgumentOutOfRangeException(nameof(scenarioName), scenarioName, null)
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(scenarioName),
+                scenarioName,
+                message: null
+            ),
         };
 }

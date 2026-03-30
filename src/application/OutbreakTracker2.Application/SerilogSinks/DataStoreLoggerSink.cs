@@ -1,13 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
-using OutbreakTracker2.Application.Services.LogStorage;
-using OutbreakTracker2.Application.Views.Logging;
-using Serilog.Core;
-using Serilog.Events;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using OutbreakTracker2.Application.Services.LogStorage;
+using OutbreakTracker2.Application.Views.Logging;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace OutbreakTracker2.Application.SerilogSinks;
 
@@ -25,20 +25,23 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
         ILogDataStorageService dataStore,
         DataStoreLoggerConfiguration? config = null,
         IFormatProvider? formatProvider = null,
-        ILogger<DataStoreLoggerSink>? logger = null)
+        ILogger<DataStoreLoggerSink>? logger = null
+    )
     {
         _dataStore = dataStore ?? throw new ArgumentNullException(nameof(dataStore));
         _config = config ?? new DataStoreLoggerConfiguration();
         _formatProvider = formatProvider;
         _logger = logger;
 
-        _logEventChannel = Channel.CreateUnbounded<LogEvent>(new UnboundedChannelOptions
-        {
-            SingleWriter = true, // Only the sink will write to the channel
-            SingleReader = false // Allow multiple readers (though we'll only use one)
-        });
+        _logEventChannel = Channel.CreateUnbounded<LogEvent>(
+            new UnboundedChannelOptions
+            {
+                SingleWriter = true, // Only the sink will write to the channel
+                SingleReader = false, // Allow multiple readers (though we'll only use one)
+            }
+        );
 
-        _backgroundTask = Task.Run(() => ProcessLogEventsAsync(_cts.Token));
+        _backgroundTask = Task.Run(() => ProcessLogEventsAsync(_cts.Token), _cts.Token);
     }
 
     public void Emit(LogEvent logEvent)
@@ -51,7 +54,11 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
     {
         try
         {
-            while (await _logEventChannel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
+            while (
+                await _logEventChannel
+                    .Reader.WaitToReadAsync(cancellationToken)
+                    .ConfigureAwait(false)
+            )
             while (_logEventChannel.Reader.TryRead(out LogEvent? logEvent))
                 try
                 {
@@ -87,7 +94,7 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
             LogEventLevel.Warning => LogLevel.Warning,
             LogEventLevel.Error => LogLevel.Error,
             LogEventLevel.Fatal => LogLevel.Critical,
-            _ => LogLevel.Information
+            _ => LogLevel.Information,
         };
     }
 
@@ -103,12 +110,20 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
     private (string Message, string Exception) GetMessageAndException(LogEvent logEvent)
     {
         string message = logEvent.RenderMessage(_formatProvider);
-        string exception = logEvent.Exception?.Message ?? (logEvent.Level >= LogEventLevel.Error ? message : string.Empty);
+        string exception =
+            logEvent.Exception?.Message
+            ?? (logEvent.Level >= LogEventLevel.Error ? message : string.Empty);
 
         return (message, exception);
     }
 
-    private async Task AddLogEntryAsync(LogLevel logLevel, EventId eventId, string message, string exception, CancellationToken cancellationToken)
+    private async Task AddLogEntryAsync(
+        LogLevel logLevel,
+        EventId eventId,
+        string message,
+        string exception,
+        CancellationToken cancellationToken
+    )
     {
         try
         {
@@ -124,17 +139,27 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
 
     private static EventId EventIdFactory(LogEvent logEvent)
     {
-        if (!logEvent.Properties.TryGetValue("EventId", out LogEventPropertyValue? src) || src is not StructureValue value)
+        if (
+            !logEvent.Properties.TryGetValue("EventId", out LogEventPropertyValue? src)
+            || src is not StructureValue value
+        )
             return new EventId();
 
         int? id = null;
         string? eventName = null;
 
-        LogEventProperty? idProperty = value.Properties.FirstOrDefault(x => x.Name.Equals("Id"));
+        LogEventProperty? idProperty = value.Properties.FirstOrDefault(x =>
+            x.Name.Equals("Id", StringComparison.Ordinal)
+        );
         if (idProperty is not null)
-            id = int.Parse(idProperty.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture);
+            id = int.Parse(
+                idProperty.Value.ToString(),
+                System.Globalization.CultureInfo.InvariantCulture
+            );
 
-        LogEventProperty? nameProperty = value.Properties.FirstOrDefault(x => x.Name.Equals("Name"));
+        LogEventProperty? nameProperty = value.Properties.FirstOrDefault(x =>
+            x.Name.Equals("Name", StringComparison.Ordinal)
+        );
         if (nameProperty is not null)
             eventName = nameProperty.Value.ToString().Trim('"');
 
@@ -155,7 +180,10 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
             }
             catch (AggregateException ex)
             {
-                _logger?.LogError(ex.InnerException ?? ex, "An error occurred while awaiting end of background task");
+                _logger?.LogError(
+                    ex.InnerException ?? ex,
+                    "An error occurred while awaiting end of background task"
+                );
             }
             finally
             {
@@ -164,7 +192,10 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex.InnerException ?? ex, "An error occurred while disposing the sink");
+            _logger?.LogError(
+                ex.InnerException ?? ex,
+                "An error occurred while disposing the sink"
+            );
         }
     }
 }
