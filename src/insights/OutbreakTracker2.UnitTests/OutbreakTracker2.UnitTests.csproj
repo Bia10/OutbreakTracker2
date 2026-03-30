@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -29,5 +28,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\libs\OutbreakTracker2.Outbreak\OutbreakTracker2.Outbreak.csproj" />
   </ItemGroup>
-
 </Project>

@@ -8,8 +8,9 @@ This version will only support PCSX2 version 2.0.0 or later.
 > This project is currently in early alpha version, nothing is set in stone yet, things may change.
 
 # Supported Platforms
-- Theoretically anywhere PCSX2 2.0.0+ and .NET9 can run at the same time.
-- Practically windows + .NET9 for now.
+- Windows (.NET 10) — fully supported
+- Linux (.NET 10) — supported (PCSX2 must be launched via OutbreakTracker2)
+- macOS — **not supported**
 
 # Credits
 

@@ -1,14 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 
+  <!-- Windows-only manifest for DPI awareness and compatibility declarations -->
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Linux'))">
+    <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.0" />
@@ -17,7 +25,11 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.0" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.0" />
+    <PackageReference
+      Condition="'$(Configuration)' == 'Debug'"
+      Include="Avalonia.Diagnostics"
+      Version="11.3.0"
+    />
     <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.3.0.6" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2">
@@ -33,31 +45,35 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.5" />
     <PackageReference Include="ProcessX" Version="1.5.6" />
     <PackageReference Include="R3Extensions.Avalonia" Version="1.3.0" />
-	<PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
-    <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.2" />
-    <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />	  
+    <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
     <PackageReference Include="ObservableCollections" Version="3.3.3" />
     <PackageReference Include="R3" Version="1.3.0" />
     <PackageReference Include="SukiUI" Version="6.0.2" />
-    <PackageReference Include="System.Management" Version="9.0.5" />
+    <!-- WMI process events: Windows only -->
+    <PackageReference
+      Condition="$([MSBuild]::IsOsPlatform('Windows'))"
+      Include="System.Management"
+      Version="10.0.5"
+    />
     <PackageReference Include="Ulid" Version="1.3.4" />
     <PackageReference Include="ZLinq" Version="1.4.10" />
   </ItemGroup>
-
 
   <ItemGroup>
     <None Update="appsettings.json">
@@ -77,8 +93,12 @@
     </None>
   </ItemGroup>
 
-
   <ItemGroup>
     <ProjectReference Include="..\..\libs\OutbreakTracker2.Outbreak\OutbreakTracker2.Outbreak.csproj" />
+    <!-- Linux reader implementations -->
+    <ProjectReference
+      Condition="$([MSBuild]::IsOsPlatform('Linux'))"
+      Include="..\..\libs\OutbreakTracker2.LinuxInterop\OutbreakTracker2.LinuxInterop.csproj"
+    />
   </ItemGroup>
 </Project>
