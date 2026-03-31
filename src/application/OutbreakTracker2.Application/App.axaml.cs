@@ -222,20 +222,17 @@ public class App : Avalonia.Application
             services.AddSingleton<ISafeMemoryReader, SafeMemoryReader>();
             services.AddSingleton<IStringReader, StringReader>();
         }
+        else if (OperatingSystem.IsLinux())
+        {
+#if LINUX
+            services.AddSingleton<ISafeMemoryReader, LinuxSafeMemoryReader>();
+            services.AddSingleton<IStringReader, LinuxStringReader>();
+#else
+            throw new PlatformNotSupportedException("Linux reader implementations are only available in Linux builds.");
+#endif
+        }
         else
         {
-            if (OperatingSystem.IsLinux())
-            {
-#if LINUX
-                services.AddSingleton<ISafeMemoryReader, LinuxSafeMemoryReader>();
-                services.AddSingleton<IStringReader, LinuxStringReader>();
-#else
-                throw new PlatformNotSupportedException(
-                    "Linux reader implementations are only available in Linux builds."
-                );
-#endif
-            }
-
             throw new PlatformNotSupportedException("Only Windows and Linux are currently supported.");
         }
 
