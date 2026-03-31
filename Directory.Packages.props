@@ -15,8 +15,8 @@
        UI / AVALONIA
        ═══════════════════════════════════════════════════════ -->
   <ItemGroup Label="Avalonia">
-    <PackageVersion Include="Avalonia" Version="11.3.0" />
-    <PackageVersion Include="Avalonia.Desktop" Version="11.3.0" />
+    <PackageVersion Include="Avalonia" Version="11.3.13" />
+    <PackageVersion Include="Avalonia.Desktop" Version="11.3.13" />
     <PackageVersion Include="Avalonia.Diagnostics" Version="11.3.0" />
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.0" />
     <PackageVersion Include="Avalonia.ReactiveUI" Version="11.3.0" />
