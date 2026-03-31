@@ -118,7 +118,7 @@ jobs:
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
 
       - name: Archive source code (excluding specified folders)
-        uses: thedoctor0/zip-release@7fddfdd07cadb5b8c6c0dbcdcec17f8cd7784b80 # 0.7.5
+        uses: thedoctor0/zip-release@b57d897cb5d60cb78b51a507f63fa184cfe35554 # 0.7.6
         with:
           type: 'zip'
           filename: 'OutbreakTracker2-${{ steps.generate_version_tag.outputs.FULL_VERSION }}-source.zip'
@@ -183,7 +183,7 @@ jobs:
         run: dotnet publish src/application/OutbreakTracker2.Application/OutbreakTracker2.Application.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --no-restore --output ${{ github.workspace }}/publish_output
 
       - name: Archive published output
-        uses: thedoctor0/zip-release@7fddfdd07cadb5b8c6c0dbcdcec17f8cd7784b80 # 0.7.5
+        uses: thedoctor0/zip-release@b57d897cb5d60cb78b51a507f63fa184cfe35554 # 0.7.6
         with:
           type: 'zip'
           filename: 'OutbreakTracker2-${{ needs.prepare.outputs.full_version }}-${{ matrix.artifact_suffix }}-published.zip'
