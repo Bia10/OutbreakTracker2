@@ -177,13 +177,13 @@ jobs:
           global-json-file: global.json
 
       - name: Restore dependencies
-        run: dotnet restore src/OutbreakTracker2.slnx --runtime ${{ matrix.rid }}
+        run: dotnet restore src/OutbreakTracker2.slnx
 
       - name: Build solution
-        run: dotnet build src/OutbreakTracker2.slnx --configuration Release --no-restore --runtime ${{ matrix.rid }}
+        run: dotnet build src/OutbreakTracker2.slnx --configuration Release --no-restore
 
       - name: Publish application
-        run: dotnet publish src/application/OutbreakTracker2.Application/OutbreakTracker2.Application.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --no-build --output ${{ github.workspace }}/publish_output
+        run: dotnet publish src/application/OutbreakTracker2.Application/OutbreakTracker2.Application.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --output ${{ github.workspace }}/publish_output
 
       - name: Archive published output
         uses: thedoctor0/zip-release@7fddfdd07cadb5b8c6c0dbcdcec17f8cd7784b80 # 0.7.5
