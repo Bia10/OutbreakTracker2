@@ -143,13 +143,16 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
             x.Name.Equals("Id", StringComparison.Ordinal)
         );
         if (idProperty is not null)
-            id = int.Parse(idProperty.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture);
+            id = int.Parse(
+                idProperty.Value.ToString(null, System.Globalization.CultureInfo.InvariantCulture),
+                System.Globalization.CultureInfo.InvariantCulture
+            );
 
         LogEventProperty? nameProperty = value.Properties.FirstOrDefault(x =>
             x.Name.Equals("Name", StringComparison.Ordinal)
         );
         if (nameProperty is not null)
-            eventName = nameProperty.Value.ToString().Trim('"');
+            eventName = nameProperty.Value.ToString(null, System.Globalization.CultureInfo.InvariantCulture).Trim('"');
 
         return new EventId(id ?? 0, eventName ?? string.Empty);
     }
