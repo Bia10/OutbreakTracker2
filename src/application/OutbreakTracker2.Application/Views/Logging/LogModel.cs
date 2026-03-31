@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace OutbreakTracker2.Application.Views.Logging;
 
@@ -52,13 +51,7 @@ public sealed record LogModel
 
     private static string FormatExceptionForDisplay(string exception) => exception;
 
-    public LogModel(
-        DateTime timestamp,
-        LogLevel logLevel,
-        EventId eventId,
-        object? state,
-        string? exception
-    )
+    public LogModel(DateTime timestamp, LogLevel logLevel, EventId eventId, object? state, string? exception)
     {
         Timestamp = timestamp;
         LogLevel = logLevel;

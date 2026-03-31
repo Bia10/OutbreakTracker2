@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Channels;
-using System.Threading.Tasks;
+﻿using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using ZLinq;
 
@@ -19,9 +13,7 @@ public class Pcsx2Locator(ILogger<Pcsx2Locator> logger) : IPcsx2Locator
     private const string File2Name = "Biohazard - Outbreak - File 2.iso";
 
     // Executable name differs per platform
-    private static readonly string Pcsx2ExeName = OperatingSystem.IsWindows()
-        ? "pcsx2-qt.exe"
-        : "pcsx2-qt";
+    private static readonly string Pcsx2ExeName = OperatingSystem.IsWindows() ? "pcsx2-qt.exe" : "pcsx2-qt";
 
     // Windows: well-known install locations under SpecialFolders
     private static readonly Environment.SpecialFolder[] WindowsSpecialFolders =
@@ -38,10 +30,7 @@ public class Pcsx2Locator(ILogger<Pcsx2Locator> logger) : IPcsx2Locator
     [
         "/usr/bin",
         "/usr/local/bin",
-        Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".local/bin"
-        ),
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local/bin"),
         // Flatpak (system installation)
         "/var/lib/flatpak/app/net.pcsx2.PCSX2/current/active/files/bin",
         // Flatpak (user installation)
@@ -53,11 +42,9 @@ public class Pcsx2Locator(ILogger<Pcsx2Locator> logger) : IPcsx2Locator
         "/snap/pcsx2/current/usr/bin",
     ];
 
-    public ValueTask<string?> FindOutbreakFile1Async(CancellationToken ct = default) =>
-        LocateIsoFile(File1Name, ct);
+    public ValueTask<string?> FindOutbreakFile1Async(CancellationToken ct = default) => LocateIsoFile(File1Name, ct);
 
-    public ValueTask<string?> FindOutbreakFile2Async(CancellationToken ct = default) =>
-        LocateIsoFile(File2Name, ct);
+    public ValueTask<string?> FindOutbreakFile2Async(CancellationToken ct = default) => LocateIsoFile(File2Name, ct);
 
     private async ValueTask<string?> LocateIsoFile(string fileName, CancellationToken ct)
     {
@@ -107,10 +94,7 @@ public class Pcsx2Locator(ILogger<Pcsx2Locator> logger) : IPcsx2Locator
             try
             {
                 string? result = await Task.Run(
-                        () =>
-                            Directory
-                                .EnumerateFiles(drive, fileName, options)
-                                .FirstOrDefault(File.Exists),
+                        () => Directory.EnumerateFiles(drive, fileName, options).FirstOrDefault(File.Exists),
                         ct
                     )
                     .ConfigureAwait(false);
@@ -118,11 +102,7 @@ public class Pcsx2Locator(ILogger<Pcsx2Locator> logger) : IPcsx2Locator
                 if (result is null)
                     continue;
 
-                _logger.LogInformation(
-                    "Found ISO {FileName} at {Path} via system search",
-                    fileName,
-                    result
-                );
+                _logger.LogInformation("Found ISO {FileName} at {Path} via system search", fileName, result);
                 return result;
             }
             catch (OperationCanceledException)
@@ -131,12 +111,7 @@ public class Pcsx2Locator(ILogger<Pcsx2Locator> logger) : IPcsx2Locator
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(
-                    ex,
-                    "Failed to search drive {Drive} for ISO {FileName}",
-                    drive,
-                    fileName
-                );
+                _logger.LogWarning(ex, "Failed to search drive {Drive} for ISO {FileName}", drive, fileName);
             }
         }
 
@@ -144,19 +119,13 @@ public class Pcsx2Locator(ILogger<Pcsx2Locator> logger) : IPcsx2Locator
         return null;
     }
 
-    public async ValueTask<string?> FindExeAsync(
-        TimeSpan timeout = default,
-        CancellationToken ct = default
-    )
+    public async ValueTask<string?> FindExeAsync(TimeSpan timeout = default, CancellationToken ct = default)
     {
         if (timeout == TimeSpan.Zero)
             timeout = TimeSpan.FromSeconds(10);
 
         using CancellationTokenSource timeoutCts = new(timeout);
-        using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-            ct,
-            timeoutCts.Token
-        );
+        using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
 
         Channel<string> resultChannel = Channel.CreateBounded<string>(1);
 
@@ -175,9 +144,7 @@ public class Pcsx2Locator(ILogger<Pcsx2Locator> logger) : IPcsx2Locator
 
             List<Task> scanTasks =
             [
-                .. drives.Select(drive =>
-                    ScanDriveAsync(drive, resultChannel.Writer, linkedCts.Token)
-                ),
+                .. drives.Select(drive => ScanDriveAsync(drive, resultChannel.Writer, linkedCts.Token)),
             ];
 
             Task writingCompletion = Task.WhenAll(scanTasks)
@@ -269,11 +236,7 @@ public class Pcsx2Locator(ILogger<Pcsx2Locator> logger) : IPcsx2Locator
         return null;
     }
 
-    private async Task ScanDriveAsync(
-        string drivePath,
-        ChannelWriter<string> resultWriter,
-        CancellationToken ct
-    )
+    private async Task ScanDriveAsync(string drivePath, ChannelWriter<string> resultWriter, CancellationToken ct)
     {
         try
         {
@@ -301,10 +264,7 @@ public class Pcsx2Locator(ILogger<Pcsx2Locator> logger) : IPcsx2Locator
                             // such convention so we accept any match from the filesystem scan.
                             if (
                                 OperatingSystem.IsWindows()
-                                && !path.Contains(
-                                    Pcsx2FolderName,
-                                    StringComparison.OrdinalIgnoreCase
-                                )
+                                && !path.Contains(Pcsx2FolderName, StringComparison.OrdinalIgnoreCase)
                             )
                                 continue;
 

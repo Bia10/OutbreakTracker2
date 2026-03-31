@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Avalonia.Collections;
+﻿using Avalonia.Collections;
 using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -72,21 +69,15 @@ internal sealed partial class OutbreakTracker2ViewModel : ObservableObject
         ToastManager = toastManager;
         DialogManager = dialogManager;
         Pages = new AvaloniaList<PageBase>(
-            demoPages
-                .OrderBy(x => x.Index)
-                .ThenBy<PageBase, string>(x => x.DisplayName, StringComparer.Ordinal)
+            demoPages.OrderBy(x => x.Index).ThenBy<PageBase, string>(x => x.DisplayName, StringComparer.Ordinal)
         );
-        BackgroundStyles = new AvaloniaList<SukiBackgroundStyle>(
-            Enum.GetValues<SukiBackgroundStyle>()
-        );
+        BackgroundStyles = new AvaloniaList<SukiBackgroundStyle>(Enum.GetValues<SukiBackgroundStyle>());
         _theme = SukiTheme.GetInstance();
 
         // Subscribe to the navigation service (when a page navigation is requested)
         pageNavigationService.NavigationRequested += pageType =>
         {
-            PageBase? page = Pages
-                .AsValueEnumerable()
-                .FirstOrDefault(pageBase => pageBase.GetType() == pageType);
+            PageBase? page = Pages.AsValueEnumerable().FirstOrDefault(pageBase => pageBase.GetType() == pageType);
 
             if (page is null || ActivePage?.GetType() == pageType)
                 return;
@@ -125,9 +116,7 @@ internal sealed partial class OutbreakTracker2ViewModel : ObservableObject
             .CreateSimpleInfoToast()
             .WithTitle(AnimationsEnabled ? "Animation Enabled" : "Animation Disabled")
             .WithContent(
-                AnimationsEnabled
-                    ? "Background animations are now enabled."
-                    : "Background animations are now disabled."
+                AnimationsEnabled ? "Background animations are now enabled." : "Background animations are now disabled."
             )
             .Queue();
     }
@@ -156,17 +145,12 @@ internal sealed partial class OutbreakTracker2ViewModel : ObservableObject
     private void ShadCnMode()
     {
         if (Avalonia.Application.Current is not null)
-            Shadcn.Configure(
-                Avalonia.Application.Current,
-                Avalonia.Application.Current.ActualThemeVariant
-            );
+            Shadcn.Configure(Avalonia.Application.Current, Avalonia.Application.Current.ActualThemeVariant);
         else
             ToastManager
                 .CreateToast()
                 .WithTitle("Configuration Error")
-                .WithContent(
-                    "Application or ThemeVariant is null. Unable to configure Shadcn mode."
-                )
+                .WithContent("Application or ThemeVariant is null. Unable to configure Shadcn mode.")
                 .Queue();
     }
 

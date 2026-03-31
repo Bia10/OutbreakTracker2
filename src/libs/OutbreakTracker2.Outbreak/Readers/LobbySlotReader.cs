@@ -25,28 +25,13 @@ public sealed class LobbySlotReader : ReaderBase
     }
 
     private short GetIndex(int slotIndex) =>
-        ReadSlotValue(
-            slotIndex,
-            LobbySlotOffsets.Index.File1,
-            LobbySlotOffsets.Index.File2,
-            (short)-1
-        );
+        ReadSlotValue(slotIndex, LobbySlotOffsets.Index.File1, LobbySlotOffsets.Index.File2, (short)-1);
 
     private short GetCurPlayers(int slotIndex) =>
-        ReadSlotValue(
-            slotIndex,
-            LobbySlotOffsets.CurPlayers.File1,
-            LobbySlotOffsets.CurPlayers.File2,
-            (short)-1
-        );
+        ReadSlotValue(slotIndex, LobbySlotOffsets.CurPlayers.File1, LobbySlotOffsets.CurPlayers.File2, (short)-1);
 
     private short GetMaxPlayers(int slotIndex) =>
-        ReadSlotValue(
-            slotIndex,
-            LobbySlotOffsets.MaxPlayers.File1,
-            LobbySlotOffsets.MaxPlayers.File2,
-            (short)-1
-        );
+        ReadSlotValue(slotIndex, LobbySlotOffsets.MaxPlayers.File1, LobbySlotOffsets.MaxPlayers.File2, (short)-1);
 
     private byte GetStatus(int slotIndex) =>
         ReadSlotValue(
@@ -57,12 +42,7 @@ public sealed class LobbySlotReader : ReaderBase
         );
 
     private byte GetPass(int slotIndex) =>
-        ReadSlotValue(
-            slotIndex,
-            LobbySlotOffsets.Pass.File1,
-            LobbySlotOffsets.Pass.File2,
-            (byte)255
-        );
+        ReadSlotValue(slotIndex, LobbySlotOffsets.Pass.File1, LobbySlotOffsets.Pass.File2, (byte)255);
 
     private short GetScenarioId(int slotIndex) =>
         ReadSlotValue(
@@ -73,29 +53,16 @@ public sealed class LobbySlotReader : ReaderBase
         );
 
     private short GetVersion(int slotIndex) =>
-        ReadSlotValue(
-            slotIndex,
-            LobbySlotOffsets.Version.File1,
-            LobbySlotOffsets.Version.File2,
-            (short)-1
-        );
+        ReadSlotValue(slotIndex, LobbySlotOffsets.Version.File1, LobbySlotOffsets.Version.File2, (short)-1);
 
     private string GetTitle(int slotIndex) =>
-        ReadSlotString(
-            slotIndex,
-            LobbySlotOffsets.Title.File1,
-            LobbySlotOffsets.Title.File2,
-            string.Empty
-        );
+        ReadSlotString(slotIndex, LobbySlotOffsets.Title.File1, LobbySlotOffsets.Title.File2, string.Empty);
 
-    private static string GetStatusName(byte status) =>
-        EnumUtility.GetEnumString(status, SlotStatus.Unknown);
+    private static string GetStatusName(byte status) => EnumUtility.GetEnumString(status, SlotStatus.Unknown);
 
-    private static string GetPassName(byte pass) =>
-        EnumUtility.GetEnumString(pass, SlotPass.NoPass);
+    private static string GetPassName(byte pass) => EnumUtility.GetEnumString(pass, SlotPass.NoPass);
 
-    private static string GetVersionName(short version) =>
-        EnumUtility.GetEnumString(version, GameVersion.Unknown);
+    private static string GetVersionName(short version) => EnumUtility.GetEnumString(version, GameVersion.Unknown);
 
     private string GetScenarioName(short scenarioId) =>
         GetScenarioString(scenarioId, FileOneLobbyScenario.Unknown, FileTwoLobbyScenario.Unknown);
@@ -159,10 +126,7 @@ public sealed class LobbySlotReader : ReaderBase
         Logger.LogDebug("Decoded lobby slots in {Duration}ms", duration);
         foreach (
             string jsonObject in DecodedLobbySlots.Select(lobbySlot =>
-                JsonSerializer.Serialize(
-                    lobbySlot,
-                    DecodedLobbySlotJsonContext.Default.DecodedLobbySlot
-                )
+                JsonSerializer.Serialize(lobbySlot, DecodedLobbySlotJsonContext.Default.DecodedLobbySlot)
             )
         )
             Logger.LogDebug("Decoded lobby slot: {JsonObject}", jsonObject);

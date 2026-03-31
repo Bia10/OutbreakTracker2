@@ -26,8 +26,7 @@ public static class PercentageUtility
         if (decimalPlaces.HasValue)
             percentage = Math.Round(percentage, decimalPlaces.Value);
 
-        T convertedResult = (T)
-            Convert.ChangeType(percentage, typeof(T), CultureInfo.InvariantCulture);
+        T convertedResult = (T)Convert.ChangeType(percentage, typeof(T), CultureInfo.InvariantCulture);
 
         return convertedResult;
     }

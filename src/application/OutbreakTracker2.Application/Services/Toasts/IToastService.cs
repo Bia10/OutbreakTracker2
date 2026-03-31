@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using SukiUI.Toasts;
+﻿using SukiUI.Toasts;
 
 namespace OutbreakTracker2.Application.Services.Toasts;
 

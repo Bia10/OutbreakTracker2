@@ -1,4 +1,4 @@
-using System.Buffers;
+﻿using System.Buffers;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -22,9 +22,7 @@ public unsafe class LinuxUnsafeMemoryReader : IUnsafeMemoryReader
         int size = Unsafe.SizeOf<T>();
         return size switch
         {
-            < 0 => throw new InvalidOperationException(
-                $"Size of T cannot be negative. Size: {size}"
-            ),
+            < 0 => throw new InvalidOperationException($"Size of T cannot be negative. Size: {size}"),
             0 => default,
             _ => ReadCore<T>((int)hProcess, address, size),
         };
@@ -62,14 +60,7 @@ public unsafe class LinuxUnsafeMemoryReader : IUnsafeMemoryReader
         Iovec localIov = new() { iov_base = (nint)localBuffer, iov_len = (nuint)size };
         Iovec remoteIov = new() { iov_base = address, iov_len = (nuint)size };
 
-        long bytesRead = LinuxNativeMethods.ProcessVmReadv(
-            pid,
-            ref localIov,
-            1,
-            ref remoteIov,
-            1,
-            0
-        );
+        long bytesRead = LinuxNativeMethods.ProcessVmReadv(pid, ref localIov, 1, ref remoteIov, 1, 0);
 
         if (bytesRead < 0)
             throw new Win32Exception(Marshal.GetLastPInvokeError());

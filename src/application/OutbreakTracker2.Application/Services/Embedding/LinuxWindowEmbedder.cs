@@ -1,4 +1,4 @@
-#if LINUX
+﻿#if LINUX
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -113,16 +113,8 @@ internal sealed class LinuxWindowEmbedder : IWindowEmbedder
 
         try
         {
-            nint pidAtom = X11NativeMethods.XInternAtom(
-                _display,
-                "_NET_WM_PID",
-                onlyIfExists: false
-            );
-            nint wmClassAtom = X11NativeMethods.XInternAtom(
-                _display,
-                "WM_CLASS",
-                onlyIfExists: false
-            );
+            nint pidAtom = X11NativeMethods.XInternAtom(_display, "_NET_WM_PID", onlyIfExists: false);
+            nint wmClassAtom = X11NativeMethods.XInternAtom(_display, "WM_CLASS", onlyIfExists: false);
 
             for (uint i = 0; i < nChildren; i++)
             {
@@ -231,12 +223,7 @@ internal sealed class LinuxWindowEmbedder : IWindowEmbedder
         }
     }
 
-    private static bool MatchesWmClass(
-        nint display,
-        nint window,
-        nint wmClassAtom,
-        string instanceName
-    )
+    private static bool MatchesWmClass(nint display, nint window, nint wmClassAtom, string instanceName)
     {
         // WM_CLASS is two consecutive null-terminated strings: "instanceName\0className\0"
         int result = X11NativeMethods.XGetWindowProperty(

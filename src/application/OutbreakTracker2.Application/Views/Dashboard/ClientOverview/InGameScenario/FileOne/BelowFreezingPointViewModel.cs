@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
@@ -47,10 +46,8 @@ public partial class BelowFreezingPointViewModel : ObservableObject
         };
     }
 
-    private string GetBelowFreezingPointPasswordDisplay() =>
-        $"{Pass1BelowFreezingPoint}-{Pass2BelowFreezingPoint}";
+    private string GetBelowFreezingPointPasswordDisplay() => $"{Pass1BelowFreezingPoint}-{Pass2BelowFreezingPoint}";
 
     private static bool IsValidScenario(string scenarioName) =>
-        !string.IsNullOrEmpty(scenarioName)
-        && scenarioName.Equals("below freezing point", StringComparison.Ordinal);
+        !string.IsNullOrEmpty(scenarioName) && scenarioName.Equals("below freezing point", StringComparison.Ordinal);
 }

@@ -33,8 +33,7 @@ public partial class PlayerStatusEffectsViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(AreEffectsVisible))]
     private bool _isHerbActive;
 
-    public bool AreEffectsVisible =>
-        IsBleedActive || IsAntiVirusActive || IsAntiVirusGActive || IsHerbActive;
+    public bool AreEffectsVisible => IsBleedActive || IsAntiVirusActive || IsAntiVirusGActive || IsHerbActive;
 
     public void Update(
         ushort bleedTimeValue,

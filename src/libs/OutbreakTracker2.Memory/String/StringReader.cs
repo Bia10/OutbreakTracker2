@@ -91,15 +91,11 @@ public sealed class StringReader : IStringReader
             {
                 byte[] pair = [bytes[offset - 1], @byte];
                 string decoded = encoding.GetString(pair);
-                multiByteInfo.Append(
-                    $" | Shift-JIS Pair: {decoded} (0x{bytes[offset - 1]:X2}{@byte:X2})"
-                );
+                multiByteInfo.Append($" | Shift-JIS Pair: {decoded} (0x{bytes[offset - 1]:X2}{@byte:X2})");
             }
             catch (DecoderFallbackException ex)
             {
-                multiByteInfo.Append(
-                    $" | Shift-JIS Pair: 0x{bytes[offset - 1]:X2}{@byte:X2} (Decoding Error)"
-                );
+                multiByteInfo.Append($" | Shift-JIS Pair: 0x{bytes[offset - 1]:X2}{@byte:X2} (Decoding Error)");
                 _logger.LogTrace(ex, "Shift-JIS Pair Decoding Error: {ExMessage}", ex.Message);
             }
 
@@ -112,8 +108,7 @@ public sealed class StringReader : IStringReader
         );
     }
 
-    private static bool IsShiftJisLeadByte(byte @byte) =>
-        @byte is >= 0x81 and <= 0x9F or >= 0xE0 and <= 0xEF;
+    private static bool IsShiftJisLeadByte(byte @byte) => @byte is >= 0x81 and <= 0x9F or >= 0xE0 and <= 0xEF;
 
     private string ProcessFinalBytes(List<byte> bytes, Encoding encoding)
     {
@@ -199,11 +194,7 @@ public sealed class StringReader : IStringReader
 
         if (bytesRead != 1)
         {
-            _logger.LogWarning(
-                "Partial read at offset {Offset} Requested: 1, Got: {BytesRead}",
-                offset,
-                bytesRead
-            );
+            _logger.LogWarning("Partial read at offset {Offset} Requested: 1, Got: {BytesRead}", offset, bytesRead);
             return false;
         }
 

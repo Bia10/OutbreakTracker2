@@ -27,14 +27,12 @@ public sealed class LobbyRoomReader(GameClient gameClient, IEEmemMemory eememMem
     private short GetDifficulty() =>
         ReadValue(LobbyRoomOffsets.Difficulty.File1, LobbyRoomOffsets.Difficulty.File2, (short)-1);
 
-    private byte GetStatus() =>
-        ReadValue(LobbyRoomOffsets.Status.File1, LobbyRoomOffsets.Status.File2, (byte)0xFF);
+    private byte GetStatus() => ReadValue(LobbyRoomOffsets.Status.File1, LobbyRoomOffsets.Status.File2, (byte)0xFF);
 
     private short GetScenarioId() =>
         ReadValue(LobbyRoomOffsets.ScenarioId.File1, LobbyRoomOffsets.ScenarioId.File2, (short)-1);
 
-    private short GetTime() =>
-        ReadValue(LobbyRoomOffsets.Time.File1, LobbyRoomOffsets.Time.File2, (short)-1);
+    private short GetTime() => ReadValue(LobbyRoomOffsets.Time.File1, LobbyRoomOffsets.Time.File2, (short)-1);
 
     private static string GetMaxPlayersString(short maxPlayers) =>
         EnumUtility.GetEnumString(maxPlayers, RoomMaxPlayers.Two);
@@ -45,9 +43,7 @@ public sealed class LobbyRoomReader(GameClient gameClient, IEEmemMemory eememMem
     private static string GetStatusName(byte status)
     {
         string result = EnumUtility.GetEnumString(status, RoomStatus.Unknown);
-        return result.Equals("Unknown", StringComparison.OrdinalIgnoreCase)
-            ? $"{result}({status})"
-            : result;
+        return result.Equals("Unknown", StringComparison.OrdinalIgnoreCase) ? $"{result}({status})" : result;
     }
 
     private string GetScenarioName(short scenarioId) =>

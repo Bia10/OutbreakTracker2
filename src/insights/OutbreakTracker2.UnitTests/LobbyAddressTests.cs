@@ -2,7 +2,6 @@
 
 namespace OutbreakTracker2.UnitTests;
 
-[TestFixture]
 public class LobbyAddressTests
 {
     private const nint F2Slot1 = 0x628DA0;
@@ -55,21 +54,22 @@ public class LobbyAddressTests
     }
 
     [Test]
-    public void GetLobbyAddress_ValidIndices_MatchesHardcodedValues()
+    public async Task GetLobbyAddress_ValidIndices_MatchesHardcodedValues()
     {
         for (int i = 0; i < 20; i++)
         {
             nint expected = F2_GetLobbyAddress(i);
             nint actual = FileTwoPtrs.GetLobbyAddress(i);
-            Assert.That(actual, Is.EqualTo(expected), $"Slot index {i} mismatch.");
+            await Assert.That(actual).IsEqualTo(expected);
         }
     }
 
-    [TestCase(-1)]
-    [TestCase(20)]
-    [TestCase(100)]
-    public void GetLobbyAddress_InvalidIndices_ThrowsInvalidOperationException(int invalidIndex)
+    [Test]
+    [Arguments(-1)]
+    [Arguments(20)]
+    [Arguments(100)]
+    public async Task GetLobbyAddress_InvalidIndices_ThrowsInvalidOperationException(int invalidIndex)
     {
-        Assert.Throws<InvalidOperationException>(() => FileTwoPtrs.GetLobbyAddress(invalidIndex));
+        await Assert.That(() => FileTwoPtrs.GetLobbyAddress(invalidIndex)).Throws<InvalidOperationException>();
     }
 }

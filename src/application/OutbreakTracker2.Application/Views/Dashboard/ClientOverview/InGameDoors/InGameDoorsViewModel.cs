@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.Application.Services.Data;
@@ -34,9 +31,7 @@ public class InGameDoorsViewModel : ObservableObject, IDisposable
         _dispatcherService = dispatcherService;
         _logger.LogInformation("Initializing InGameDoorsViewModel");
 
-        DoorsView = Doors.ToNotifyCollectionChanged(
-            SynchronizationContextCollectionEventDispatcher.Current
-        );
+        DoorsView = Doors.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
         _subscription = dataManager
             .DoorsObservable.ObserveOnThreadPool()
@@ -74,18 +69,13 @@ public class InGameDoorsViewModel : ObservableObject, IDisposable
                                     filteredIncomingDoors.Count
                                 );
 
-                                Dictionary<Ulid, DecodedDoor> incomingDoorDataMap =
-                                    filteredIncomingDoors
-                                        .AsValueEnumerable()
-                                        .ToDictionary(door => door.Id);
+                                Dictionary<Ulid, DecodedDoor> incomingDoorDataMap = filteredIncomingDoors
+                                    .AsValueEnumerable()
+                                    .ToDictionary(door => door.Id);
 
-                                List<InGameDoorViewModel> desiredViewModels = new(
-                                    filteredIncomingDoors.Count
-                                );
+                                List<InGameDoorViewModel> desiredViewModels = new(filteredIncomingDoors.Count);
 
-                                foreach (
-                                    DecodedDoor incomingDoor in filteredIncomingDoors.AsValueEnumerable()
-                                )
+                                foreach (DecodedDoor incomingDoor in filteredIncomingDoors.AsValueEnumerable())
                                 {
                                     ct.ThrowIfCancellationRequested();
 
@@ -122,9 +112,7 @@ public class InGameDoorsViewModel : ObservableObject, IDisposable
                                     .InvokeOnUIAsync(
                                         () =>
                                         {
-                                            _logger.LogInformation(
-                                                "Applying door updates on UI thread"
-                                            );
+                                            _logger.LogInformation("Applying door updates on UI thread");
 
                                             foreach (InGameDoorViewModel vm in desiredViewModels)
                                             {
@@ -158,11 +146,7 @@ public class InGameDoorsViewModel : ObservableObject, IDisposable
                                             for (int i = Doors.Count - 1; i >= 0; i--)
                                             {
                                                 InGameDoorViewModel currentVmInList = Doors[i];
-                                                if (
-                                                    desiredUniqueIdsLookup.Contains(
-                                                        currentVmInList.UniqueId
-                                                    )
-                                                )
+                                                if (desiredUniqueIdsLookup.Contains(currentVmInList.UniqueId))
                                                     continue;
 
                                                 _logger.LogDebug(
@@ -175,15 +159,10 @@ public class InGameDoorsViewModel : ObservableObject, IDisposable
 
                                             for (int i = 0; i < desiredViewModels.Count; i++)
                                             {
-                                                InGameDoorViewModel desiredVm = desiredViewModels[
-                                                    i
-                                                ];
+                                                InGameDoorViewModel desiredVm = desiredViewModels[i];
 
                                                 int currentIndexInDoors;
-                                                if (
-                                                    i < Doors.Count
-                                                    && Doors[i].UniqueId.Equals(desiredVm.UniqueId)
-                                                )
+                                                if (i < Doors.Count && Doors[i].UniqueId.Equals(desiredVm.UniqueId))
                                                 {
                                                     currentIndexInDoors = i;
                                                     _logger.LogTrace(
@@ -260,9 +239,7 @@ public class InGameDoorsViewModel : ObservableObject, IDisposable
         {
             Doors.Clear();
             _viewModelCache.Clear();
-            _logger.LogDebug(
-                "InGameDoorsViewModel collections cleared on UI thread during dispose"
-            );
+            _logger.LogDebug("InGameDoorsViewModel collections cleared on UI thread during dispose");
         });
 
         _logger.LogDebug("InGameDoorsViewModel disposal complete");

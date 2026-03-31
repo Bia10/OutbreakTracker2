@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
 
@@ -36,8 +34,7 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
         {
             DecodedItem? existingItem = Enumerable.FirstOrDefault(
                 Items,
-                existingItem =>
-                    existingItem.SlotIndex == newItem.SlotIndex && existingItem.Id == newItem.Id
+                existingItem => existingItem.SlotIndex == newItem.SlotIndex && existingItem.Id == newItem.Id
             );
             if (existingItem == null)
                 Items.Add(newItem);
@@ -49,11 +46,7 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
 
                 if (
                     existingItem.En != newItem.En
-                    || !string.Equals(
-                        existingItem.TypeName,
-                        newItem.TypeName,
-                        System.StringComparison.Ordinal
-                    )
+                    || !string.Equals(existingItem.TypeName, newItem.TypeName, System.StringComparison.Ordinal)
                     || existingItem.Quantity != newItem.Quantity
                     || existingItem.PickedUp != newItem.PickedUp
                     || existingItem.Present != newItem.Present
@@ -103,20 +96,12 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
                     || existingEnemy.RoomId != newEnemy.RoomId
                     || existingEnemy.TypeId != newEnemy.TypeId
                     || existingEnemy.NameId != newEnemy.NameId
-                    || !string.Equals(
-                        existingEnemy.Name,
-                        newEnemy.Name,
-                        System.StringComparison.Ordinal
-                    )
+                    || !string.Equals(existingEnemy.Name, newEnemy.Name, System.StringComparison.Ordinal)
                     || existingEnemy.CurHp != newEnemy.CurHp
                     || existingEnemy.MaxHp != newEnemy.MaxHp
                     || existingEnemy.BossType != newEnemy.BossType
                     || existingEnemy.Status != newEnemy.Status
-                    || !string.Equals(
-                        existingEnemy.RoomName,
-                        newEnemy.RoomName,
-                        System.StringComparison.Ordinal
-                    )
+                    || !string.Equals(existingEnemy.RoomName, newEnemy.RoomName, System.StringComparison.Ordinal)
                 )
                 {
                     Enemies[index] = newEnemy;
@@ -151,11 +136,7 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
                 if (
                     existingDoor.Hp != newDoor.Hp
                     || existingDoor.Flag != newDoor.Flag
-                    || !string.Equals(
-                        existingDoor.Status,
-                        newDoor.Status,
-                        System.StringComparison.Ordinal
-                    )
+                    || !string.Equals(existingDoor.Status, newDoor.Status, System.StringComparison.Ordinal)
                 )
                 {
                     Doors[index] = newDoor;

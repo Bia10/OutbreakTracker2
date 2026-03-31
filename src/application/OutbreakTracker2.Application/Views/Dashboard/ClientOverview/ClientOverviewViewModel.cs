@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGame;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoors;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies;

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace OutbreakTracker2.Application.Comparers;
+﻿namespace OutbreakTracker2.Application.Comparers;
 
 internal sealed class ArraySequenceComparer<T> : IEqualityComparer<T[]?>
     where T : IEquatable<T>
@@ -21,9 +17,6 @@ internal sealed class ArraySequenceComparer<T> : IEqualityComparer<T[]?>
     {
         return obj is null
             ? 0
-            : obj.Aggregate(
-                obj.Length,
-                (current, item) => HashCode.Combine(current, item.GetHashCode())
-            );
+            : obj.Aggregate(obj.Length, (current, item) => HashCode.Combine(current, item.GetHashCode()));
     }
 }

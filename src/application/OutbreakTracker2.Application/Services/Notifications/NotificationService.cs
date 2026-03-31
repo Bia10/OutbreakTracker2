@@ -1,5 +1,4 @@
-﻿using System;
-using OutbreakTracker2.Application.Services.Data;
+﻿using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.PlayerTracking;
 using OutbreakTracker2.Application.Services.Toasts;
 using R3;
@@ -12,8 +11,8 @@ public sealed class NotificationService(
     IDataManager dataManager
 ) : IDisposable
 {
-    private readonly IDisposable _playerStateChangeSubscription =
-        playerStateTracker.PlayerStateChanges.Subscribe(playerStateChangedEvent =>
+    private readonly IDisposable _playerStateChangeSubscription = playerStateTracker.PlayerStateChanges.Subscribe(
+        playerStateChangedEvent =>
         {
             _ = playerStateChangedEvent.Type switch
             {
@@ -33,12 +32,10 @@ public sealed class NotificationService(
                     playerStateChangedEvent.Message,
                     playerStateChangedEvent.Title
                 ),
-                _ => toastService.InvokeInfoToastAsync(
-                    playerStateChangedEvent.Message,
-                    playerStateChangedEvent.Title
-                ),
+                _ => toastService.InvokeInfoToastAsync(playerStateChangedEvent.Message, playerStateChangedEvent.Title),
             };
-        });
+        }
+    );
     private readonly IDisposable _dataManagerSubscription = dataManager
         .InGamePlayersObservable.SelectMany(players => players.ToObservable())
         .Subscribe(playerStateTracker.PublishPlayerUpdate);

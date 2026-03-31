@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using OutbreakTracker2.Outbreak.Models;
+﻿using OutbreakTracker2.Outbreak.Models;
 using R3;
 
 namespace OutbreakTracker2.Application.Services.PlayerTracking;
@@ -24,10 +21,7 @@ public sealed class PlayerStateTracker : IPlayerStateTracker
 
             List<PlayerStateChangeEventArgs> notifications = [];
 
-            _lastKnownPlayerStates.TryGetValue(
-                currentPlayer.Id,
-                out DecodedInGamePlayer? lastKnownStateForThisPlayer
-            );
+            _lastKnownPlayerStates.TryGetValue(currentPlayer.Id, out DecodedInGamePlayer? lastKnownStateForThisPlayer);
 
             DecodedInGamePlayer previousState =
                 lastKnownStateForThisPlayer ?? new DecodedInGamePlayer { Id = currentPlayer.Id };
@@ -49,28 +43,18 @@ public sealed class PlayerStateTracker : IPlayerStateTracker
         });
     }
 
-    public void PublishPlayerUpdate(DecodedInGamePlayer player) =>
-        _playerUpdateSubject.OnNext(player);
+    public void PublishPlayerUpdate(DecodedInGamePlayer player) => _playerUpdateSubject.OnNext(player);
 
     private static IReadOnlyList<PlayerStateTrackingRule> BuildDefaultRules()
     {
         IReadOnlyList<PlayerStateTrackingRule> playerTrackingRules = new PlayerStateTrackerBuilder()
-            .TrackCondition(
-                "danger",
-                (_, charName) => ($"{charName} is now in DANGER!", ToastType.Error)
-            )
+            .TrackCondition("danger", (_, charName) => ($"{charName} is now in DANGER!", ToastType.Error))
             //.TrackCondition("down", (_, charName) => ($"{charName} is DOWN!", ToastType.Error))
             .TrackCondition("gas", (_, charName) => ($"{charName} is gassed!", ToastType.Warning))
             .TrackStatus("Dead", (_, charName) => ($"{charName} has DIED!", ToastType.Error))
-            .TrackStatus(
-                "Zombie",
-                (_, charName) => ($"{charName} turned into a ZOMBIE!", ToastType.Error)
-            )
+            .TrackStatus("Zombie", (_, charName) => ($"{charName} turned into a ZOMBIE!", ToastType.Error))
             .TrackStatus("Down", (_, charName) => ($"{charName} is now DOWNED!", ToastType.Warning))
-            .TrackStatus(
-                "Bleed",
-                (_, charName) => ($"{charName} is now BLEEDING!", ToastType.Warning)
-            )
+            .TrackStatus("Bleed", (_, charName) => ($"{charName} is now BLEEDING!", ToastType.Warning))
             .TrackGeneralChange(
                 (current, last) => current.CurHealth <= 0 && last.CurHealth > 0,
                 current => new PlayerStateChangeEventArgs(

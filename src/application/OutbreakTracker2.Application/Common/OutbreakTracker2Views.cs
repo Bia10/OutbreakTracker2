@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,11 +30,7 @@ public class OutbreakTracker2Views
         return this;
     }
 
-    public bool TryCreateView(
-        IServiceProvider? provider,
-        Type viewModelType,
-        [NotNullWhen(true)] out Control? view
-    )
+    public bool TryCreateView(IServiceProvider? provider, Type viewModelType, [NotNullWhen(true)] out Control? view)
     {
         view = null;
 

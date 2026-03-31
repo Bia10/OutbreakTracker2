@@ -7,8 +7,7 @@ namespace OutbreakTracker2.Application.Views.Map.Canvas;
 
 public partial class MapCanvasViewModel(IDataManager dataManager) : ObservableObject
 {
-    public Observable<DecodedInGamePlayer[]> PlayersObservable { get; } =
-        dataManager.InGamePlayersObservable;
+    public Observable<DecodedInGamePlayer[]> PlayersObservable { get; } = dataManager.InGamePlayersObservable;
 
     [ObservableProperty]
     private double _mapWidth = 800;

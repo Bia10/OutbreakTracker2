@@ -1,22 +1,31 @@
 <Solution>
-  <Configurations>
-    <Platform Name="Any CPU" />
-    <Platform Name="x64" />
-    <Platform Name="x86" />
-  </Configurations>
-  <Folder Name="/libs/">
+  <!-- ═══════════ Application ═══════════ -->
+  <Folder Name="/Application/">
+    <Project Path="application/OutbreakTracker2.Application/OutbreakTracker2.Application.csproj" />
+  </Folder>
+
+  <!-- ═══════════ Libs ═══════════ -->
+  <Folder Name="/Libs/">
+    <Project Path="libs/OutbreakTracker2.Extensions/OutbreakTracker2.Extensions.csproj" />
     <Project Path="libs/OutbreakTracker2.LinuxInterop/OutbreakTracker2.LinuxInterop.csproj" />
+    <Project Path="libs/OutbreakTracker2.Memory/OutbreakTracker2.Memory.csproj" />
+    <Project Path="libs/OutbreakTracker2.Outbreak/OutbreakTracker2.Outbreak.csproj" />
+    <Project Path="libs/OutbreakTracker2.PCSX2/OutbreakTracker2.PCSX2.csproj" />
+    <Project Path="libs/OutbreakTracker2.WinInterop/OutbreakTracker2.WinInterop.csproj" />
   </Folder>
-  <Folder Name="/Solution Items/">
-    <File Path=".editorconfig" />
+
+  <!-- ═══════════ Tests ═══════════ -->
+  <Folder Name="/Tests/">
+    <Project Path="insights/OutbreakTracker2.UnitTests/OutbreakTracker2.UnitTests.csproj" />
   </Folder>
-  <Project Path="application/OutbreakTracker2.Application/OutbreakTracker2.Application.csproj" />
-  <Project Path="insights/OutbreakTracker2.Benchmarks/OutbreakTracker2.Benchmarks.csproj" />
-  <Project Path="insights/OutbreakTracker2.Sandbox/OutbreakTracker2.Sandbox.csproj" />
-  <Project Path="insights/OutbreakTracker2.UnitTests/OutbreakTracker2.UnitTests.csproj" />
-  <Project Path="libs/OutbreakTracker2.Extensions/OutbreakTracker2.Extensions.csproj" />
-  <Project Path="libs/OutbreakTracker2.Memory/OutbreakTracker2.Memory.csproj" />
-  <Project Path="libs/OutbreakTracker2.Outbreak/OutbreakTracker2.Outbreak.csproj" />
-  <Project Path="libs/OutbreakTracker2.PCSX2/OutbreakTracker2.PCSX2.csproj" />
-  <Project Path="libs/OutbreakTracker2.WinInterop/OutbreakTracker2.WinInterop.csproj" />
+
+  <!-- ═══════════ Benchmarks ═══════════ -->
+  <Folder Name="/Benchmarks/">
+    <Project Path="insights/OutbreakTracker2.Benchmarks/OutbreakTracker2.Benchmarks.csproj" />
+  </Folder>
+
+  <!-- ═══════════ Tools ═══════════ -->
+  <Folder Name="/Tools/">
+    <Project Path="insights/OutbreakTracker2.Sandbox/OutbreakTracker2.Sandbox.csproj" />
+  </Folder>
 </Solution>

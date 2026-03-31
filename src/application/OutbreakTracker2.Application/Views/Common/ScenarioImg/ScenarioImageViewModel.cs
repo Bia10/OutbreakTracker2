@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
@@ -40,34 +38,20 @@ public class ScenarioImageViewModel : ObservableObject
         if (spriteName.StartsWith("unknown", StringComparison.Ordinal))
             return ValueTask.CompletedTask;
 
-        _logger.LogDebug(
-            "Requesting scenario image update for scenario: {ScenarioType}",
-            scenarioType
-        );
+        _logger.LogDebug("Requesting scenario image update for scenario: {ScenarioType}", scenarioType);
 
         return ImageViewModel.UpdateImageAsync(spriteName, $"Scenario Image for {scenarioType}");
     }
 
     public ValueTask UpdateToDefaultImageAsync()
     {
-        string spriteName = _textureAtlasService.GetSpriteNameFromScenarioName(
-            Scenario.TrainingGround
-        );
-        _logger.LogDebug(
-            "Requesting scenario image update for scenario: {ScenarioType}",
-            Scenario.TrainingGround
-        );
+        string spriteName = _textureAtlasService.GetSpriteNameFromScenarioName(Scenario.TrainingGround);
+        _logger.LogDebug("Requesting scenario image update for scenario: {ScenarioType}", Scenario.TrainingGround);
 
-        return ImageViewModel.UpdateImageAsync(
-            spriteName,
-            $"Scenario Image for {nameof(Scenario.TrainingGround)}"
-        );
+        return ImageViewModel.UpdateImageAsync(spriteName, $"Scenario Image for {nameof(Scenario.TrainingGround)}");
     }
 
-    private void OnImageViewModelSourceImageChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs
-    )
+    private void OnImageViewModelSourceImageChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (sender is not ImageViewModel _)
         {

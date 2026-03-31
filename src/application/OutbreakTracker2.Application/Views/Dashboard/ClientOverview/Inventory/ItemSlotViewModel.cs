@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Views.Common.Item;
 using OutbreakTracker2.Outbreak.Enums;

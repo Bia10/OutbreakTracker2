@@ -1,5 +1,4 @@
-using System;
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
 using OutbreakTracker2.WinInterop;
 
 namespace OutbreakTracker2.Application.Services.Embedding;
@@ -90,10 +89,7 @@ internal sealed class WindowsWindowEmbedder : IWindowEmbedder
             return;
 
         // Strip title bar and resize frame, add WS_CHILD
-        long style = Win32WindowNativeMethods.GetWindowLongPtr(
-            targetHandle,
-            Win32WindowNativeMethods.GWL_STYLE
-        );
+        long style = Win32WindowNativeMethods.GetWindowLongPtr(targetHandle, Win32WindowNativeMethods.GWL_STYLE);
         style &= ~(
             Win32WindowNativeMethods.WS_CAPTION
             | Win32WindowNativeMethods.WS_THICKFRAME
@@ -103,11 +99,7 @@ internal sealed class WindowsWindowEmbedder : IWindowEmbedder
             | Win32WindowNativeMethods.WS_MAXIMIZEBOX
         );
         style |= Win32WindowNativeMethods.WS_CHILD | Win32WindowNativeMethods.WS_CLIPCHILDREN;
-        Win32WindowNativeMethods.SetWindowLongPtr(
-            targetHandle,
-            Win32WindowNativeMethods.GWL_STYLE,
-            style
-        );
+        Win32WindowNativeMethods.SetWindowLongPtr(targetHandle, Win32WindowNativeMethods.GWL_STYLE, style);
 
         Win32WindowNativeMethods.SetParent(targetHandle, containerHandle);
         Win32WindowNativeMethods.MoveWindow(
@@ -157,17 +149,10 @@ internal sealed class WindowsWindowEmbedder : IWindowEmbedder
         // Re-parent to desktop, restore a minimal set of decorations and show it
         Win32WindowNativeMethods.SetParent(targetHandle, nint.Zero);
 
-        long style = Win32WindowNativeMethods.GetWindowLongPtr(
-            targetHandle,
-            Win32WindowNativeMethods.GWL_STYLE
-        );
+        long style = Win32WindowNativeMethods.GetWindowLongPtr(targetHandle, Win32WindowNativeMethods.GWL_STYLE);
         style &= ~Win32WindowNativeMethods.WS_CHILD;
         style |= Win32WindowNativeMethods.WS_CAPTION | Win32WindowNativeMethods.WS_THICKFRAME;
-        Win32WindowNativeMethods.SetWindowLongPtr(
-            targetHandle,
-            Win32WindowNativeMethods.GWL_STYLE,
-            style
-        );
+        Win32WindowNativeMethods.SetWindowLongPtr(targetHandle, Win32WindowNativeMethods.GWL_STYLE, style);
 
         Win32WindowNativeMethods.SetWindowPos(
             targetHandle,

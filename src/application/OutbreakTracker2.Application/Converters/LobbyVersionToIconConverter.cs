@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Material.Icons;
@@ -21,10 +20,6 @@ public sealed class LobbyVersionToIconConverter : IValueConverter
         };
     }
 
-    public object ConvertBack(
-        object? value,
-        Type targetType,
-        object? parameter,
-        CultureInfo culture
-    ) => new BindingNotification(new NotSupportedException(), BindingErrorType.Error);
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        new BindingNotification(new NotSupportedException(), BindingErrorType.Error);
 }

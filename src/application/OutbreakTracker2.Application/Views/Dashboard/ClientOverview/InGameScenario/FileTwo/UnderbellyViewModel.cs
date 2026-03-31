@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
 
@@ -118,6 +117,5 @@ public partial class UnderbellyViewModel : ObservableObject
     }
 
     private static bool IsValidScenario(string scenarioName) =>
-        !string.IsNullOrEmpty(scenarioName)
-        && scenarioName.Equals("Underbelly", StringComparison.Ordinal);
+        !string.IsNullOrEmpty(scenarioName) && scenarioName.Equals("Underbelly", StringComparison.Ordinal);
 }

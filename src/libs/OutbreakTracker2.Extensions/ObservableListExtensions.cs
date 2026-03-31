@@ -9,7 +9,7 @@ public static class ObservableListExtensions
     /// This operation first clears the list and then adds the new items.
     /// </summary>
     /// <typeparam name="T">The type of elements in the list.</typeparam>
-    /// <param name="list">The ObservableList<T> instance to extend.</param>
+    /// <param name="list">The ObservableList{T} instance to extend.</param>
     /// <param name="newItems">The enumerable collection of items to add.</param>
     public static void ReplaceAll<T>(this ObservableList<T> list, IEnumerable<T> newItems)
     {
@@ -22,8 +22,8 @@ public static class ObservableListExtensions
     /// This operation first clears the list and then adds the new items.
     /// </summary>
     /// <typeparam name="T">The type of elements in the list.</typeparam>
-    /// <param name="list">The ObservableList<T> instance to extend.</param>
-    /// <param name="newItems">The ReadOnlySpan<T> of items to add.</param>
+    /// <param name="list">The ObservableList{T} instance to extend.</param>
+    /// <param name="newItems">The ReadOnlySpan{T} of items to add.</param>
     public static void ReplaceAll<T>(this ObservableList<T> list, ReadOnlySpan<T> newItems)
     {
         list.Clear();
@@ -35,8 +35,8 @@ public static class ObservableListExtensions
     /// This operation first clears the list and then adds the new items.
     /// </summary>
     /// <typeparam name="T">The type of elements in the list.</typeparam>
-    /// <param name="list">The ObservableList<T> instance to extend.</param>
-    /// <param name="newItems">The Span<T> of items to add.</param>
+    /// <param name="list">The ObservableList{T} instance to extend.</param>
+    /// <param name="newItems">The Span{T} of items to add.</param>
     public static void ReplaceAll<T>(this ObservableList<T> list, Span<T> newItems)
     {
         list.Clear();

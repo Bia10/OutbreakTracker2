@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
@@ -20,10 +19,7 @@ public partial class DecisionsDecisionsViewModel : ObservableObject
         if (!IsValidScenario(scenario.ScenarioName))
             return;
 
-        DecisionsDecisionsPassDisplay = CalculateDecisionsDecisionsPassDisplay(
-            scenario.Pass3,
-            scenario.Pass6
-        );
+        DecisionsDecisionsPassDisplay = CalculateDecisionsDecisionsPassDisplay(scenario.Pass3, scenario.Pass6);
         ClockTimeDisplay = CalculateClockTimeDisplay(scenario.Difficulty);
         DecisionsDecisionsDisplay = GetDecisionsDecisionsDisplay();
     }
@@ -60,10 +56,8 @@ public partial class DecisionsDecisionsViewModel : ObservableObject
         return $"Unrecognized Decisions, decisions Pass3({pass3})";
     }
 
-    private string GetDecisionsDecisionsDisplay() =>
-        $"{DecisionsDecisionsPassDisplay}-{ClockTimeDisplay}";
+    private string GetDecisionsDecisionsDisplay() => $"{DecisionsDecisionsPassDisplay}-{ClockTimeDisplay}";
 
     private static bool IsValidScenario(string scenarioName) =>
-        !string.IsNullOrEmpty(scenarioName)
-        && scenarioName.Equals("decisions, decisions", StringComparison.Ordinal);
+        !string.IsNullOrEmpty(scenarioName) && scenarioName.Equals("decisions, decisions", StringComparison.Ordinal);
 }

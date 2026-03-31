@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Runtime.Versioning;
 using R3;
 #if WINDOWS
@@ -13,10 +10,7 @@ namespace OutbreakTracker2.Application.Services.Locator;
 public class ProcessLocator : IProcessLocator
 {
     // Polling-based implementation
-    public Observable<bool> IsProcessRunningPolling(
-        string processName,
-        TimeSpan? checkInterval = null
-    )
+    public Observable<bool> IsProcessRunningPolling(string processName, TimeSpan? checkInterval = null)
     {
         return Observable
             .Timer(TimeSpan.Zero, checkInterval ?? TimeSpan.FromSeconds(1))
@@ -37,10 +31,7 @@ public class ProcessLocator : IProcessLocator
 
     // WMI event-driven implementation (Windows only)
     [SupportedOSPlatform("windows")]
-    public Observable<bool> IsProcessRunningEventDriven(
-        string processName,
-        TimeSpan? checkInterval = null
-    )
+    public Observable<bool> IsProcessRunningEventDriven(string processName, TimeSpan? checkInterval = null)
     {
 #if WINDOWS
         return Observable
@@ -48,9 +39,7 @@ public class ProcessLocator : IProcessLocator
             {
                 if (Environment.OSVersion.Platform is not PlatformID.Win32NT)
                 {
-                    observer.OnCompleted(
-                        new NotSupportedException("WMI is only supported on Windows")
-                    );
+                    observer.OnCompleted(new NotSupportedException("WMI is only supported on Windows"));
                     return Disposable.Empty;
                 }
 
@@ -60,8 +49,7 @@ public class ProcessLocator : IProcessLocator
                     {
                         EventClassName = "__InstanceCreationEvent",
                         WithinInterval = checkInterval ?? TimeSpan.FromSeconds(1),
-                        Condition =
-                            $"TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{processName}.exe'",
+                        Condition = $"TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{processName}.exe'",
                     };
 
                     ManagementEventWatcher watcher = new(query);
@@ -84,8 +72,7 @@ public class ProcessLocator : IProcessLocator
                     {
                         try
                         {
-                            bool isRunning =
-                                Process.GetProcessesByName(processName).Length is not 0;
+                            bool isRunning = Process.GetProcessesByName(processName).Length is not 0;
                             observer.OnNext(isRunning);
                         }
                         catch (Exception ex)
@@ -125,6 +112,5 @@ public class ProcessLocator : IProcessLocator
         }
     }
 
-    public IEnumerable<Process> GetProcessesByName(string processName) =>
-        Process.GetProcessesByName(processName);
+    public IEnumerable<Process> GetProcessesByName(string processName) => Process.GetProcessesByName(processName);
 }

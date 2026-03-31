@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 namespace OutbreakTracker2.LinuxInterop;
@@ -19,11 +19,7 @@ public static partial class X11NativeMethods
 
     /// <summary>Opens a connection to the X server named by <paramref name="displayName"/>.
     /// Pass <see langword="null"/> to use the value of the <c>DISPLAY</c> environment variable.</summary>
-    [LibraryImport(
-        "libX11.so.6",
-        EntryPoint = "XOpenDisplay",
-        StringMarshalling = StringMarshalling.Utf8
-    )]
+    [LibraryImport("libX11.so.6", EntryPoint = "XOpenDisplay", StringMarshalling = StringMarshalling.Utf8)]
     public static partial nint XOpenDisplay(string? displayName);
 
     /// <summary>Closes a display connection previously opened with <see cref="XOpenDisplay"/>.</summary>
@@ -69,14 +65,7 @@ public static partial class X11NativeMethods
 
     /// <summary>Changes the geometry (position and size) of a window atomically.</summary>
     [LibraryImport("libX11.so.6", EntryPoint = "XMoveResizeWindow")]
-    public static partial int XMoveResizeWindow(
-        nint display,
-        nint w,
-        int x,
-        int y,
-        uint width,
-        uint height
-    );
+    public static partial int XMoveResizeWindow(nint display, nint w, int x, int y, uint width, uint height);
 
     /// <summary>Flushes the output buffer. Does not wait for a server reply.</summary>
     [LibraryImport("libX11.so.6", EntryPoint = "XFlush")]
@@ -105,11 +94,7 @@ public static partial class X11NativeMethods
     public static partial int XFree(nint data);
 
     /// <summary>Returns the atom identifier for the given name, optionally creating it if it does not exist.</summary>
-    [LibraryImport(
-        "libX11.so.6",
-        EntryPoint = "XInternAtom",
-        StringMarshalling = StringMarshalling.Utf8
-    )]
+    [LibraryImport("libX11.so.6", EntryPoint = "XInternAtom", StringMarshalling = StringMarshalling.Utf8)]
     public static partial nint XInternAtom(
         nint display,
         string atomName,

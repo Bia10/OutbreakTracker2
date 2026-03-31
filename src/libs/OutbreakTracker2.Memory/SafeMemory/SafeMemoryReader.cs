@@ -42,15 +42,7 @@ public sealed class SafeMemoryReader(ILogger<SafeMemoryReader> logger) : ISafeMe
 
         try
         {
-            if (
-                !SafeNativeMethods.ReadProcessMemory(
-                    hProcess,
-                    address,
-                    buffer,
-                    size,
-                    out int bytesRead
-                )
-            )
+            if (!SafeNativeMethods.ReadProcessMemory(hProcess, address, buffer, size, out int bytesRead))
             {
                 int lastError = Marshal.GetLastPInvokeError();
                 _logger.LogError(
@@ -124,15 +116,7 @@ public sealed class SafeMemoryReader(ILogger<SafeMemoryReader> logger) : ISafeMe
 
         try
         {
-            if (
-                !SafeNativeMethods.ReadProcessMemory(
-                    hProcess,
-                    address,
-                    buffer,
-                    size,
-                    out int bytesRead
-                )
-            )
+            if (!SafeNativeMethods.ReadProcessMemory(hProcess, address, buffer, size, out int bytesRead))
             {
                 int lastError = Marshal.GetLastPInvokeError();
                 _logger.LogError(

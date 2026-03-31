@@ -1,6 +1,4 @@
-using System;
-
-namespace OutbreakTracker2.Application.Services.Embedding;
+﻿namespace OutbreakTracker2.Application.Services.Embedding;
 
 /// <summary>
 /// Cross-platform abstraction for embedding a child-process window into a native container.

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Channels;
-using System.Threading.Tasks;
+﻿using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.LogStorage;
 using OutbreakTracker2.Application.Views.Logging;
@@ -54,11 +50,7 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
     {
         try
         {
-            while (
-                await _logEventChannel
-                    .Reader.WaitToReadAsync(cancellationToken)
-                    .ConfigureAwait(false)
-            )
+            while (await _logEventChannel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
             while (_logEventChannel.Reader.TryRead(out LogEvent? logEvent))
                 try
                 {
@@ -111,8 +103,7 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
     {
         string message = logEvent.RenderMessage(_formatProvider);
         string exception =
-            logEvent.Exception?.Message
-            ?? (logEvent.Level >= LogEventLevel.Error ? message : string.Empty);
+            logEvent.Exception?.Message ?? (logEvent.Level >= LogEventLevel.Error ? message : string.Empty);
 
         return (message, exception);
     }
@@ -152,10 +143,7 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
             x.Name.Equals("Id", StringComparison.Ordinal)
         );
         if (idProperty is not null)
-            id = int.Parse(
-                idProperty.Value.ToString(),
-                System.Globalization.CultureInfo.InvariantCulture
-            );
+            id = int.Parse(idProperty.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture);
 
         LogEventProperty? nameProperty = value.Properties.FirstOrDefault(x =>
             x.Name.Equals("Name", StringComparison.Ordinal)
@@ -180,10 +168,7 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
             }
             catch (AggregateException ex)
             {
-                _logger?.LogError(
-                    ex.InnerException ?? ex,
-                    "An error occurred while awaiting end of background task"
-                );
+                _logger?.LogError(ex.InnerException ?? ex, "An error occurred while awaiting end of background task");
             }
             finally
             {
@@ -192,10 +177,7 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
         }
         catch (Exception ex)
         {
-            _logger?.LogError(
-                ex.InnerException ?? ex,
-                "An error occurred while disposing the sink"
-            );
+            _logger?.LogError(ex.InnerException ?? ex, "An error occurred while disposing the sink");
         }
     }
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Atlas.Models;
 using OutbreakTracker2.Outbreak.Enums;
@@ -17,8 +13,7 @@ public class TextureAtlasService(
 ) : ITextureAtlasService
 {
     private readonly ILogger<TextureAtlasService> _logger = logger;
-    private readonly Func<Stream, SpriteSheet, ITextureAtlas> _textureAtlasFactory =
-        textureAtlasFactory;
+    private readonly Func<Stream, SpriteSheet, ITextureAtlas> _textureAtlasFactory = textureAtlasFactory;
     private readonly List<(string jsonPath, string imagePath, string name)> _atlasConfigs =
     [
         // TODO: maybe load from appsettings.json?
@@ -75,18 +70,11 @@ public class TextureAtlasService(
                     fullImagePath
                 );
 
-                SpriteSheet sheet = await TextureAtlasLoader
-                    .LoadFromJsonAsync(fullJsonPath)
-                    .ConfigureAwait(false);
+                SpriteSheet sheet = await TextureAtlasLoader.LoadFromJsonAsync(fullJsonPath).ConfigureAwait(false);
 
                 Stream imageStream;
                 if (File.Exists(fullImagePath))
-                    imageStream = new FileStream(
-                        fullImagePath,
-                        FileMode.Open,
-                        FileAccess.Read,
-                        FileShare.Read
-                    );
+                    imageStream = new FileStream(fullImagePath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 else
                     throw new FileNotFoundException(
                         $"Image file not found at '{fullImagePath}' for TextureAtlas '{name}'. Ensure '{imagePath}' is copied to output directory."
@@ -98,18 +86,12 @@ public class TextureAtlasService(
         }
         catch (FileNotFoundException ex)
         {
-            _logger.LogCritical(
-                ex,
-                "One or more texture atlas files not found. Application cannot start!"
-            );
+            _logger.LogCritical(ex, "One or more texture atlas files not found. Application cannot start!");
             throw;
         }
         catch (JsonException ex)
         {
-            _logger.LogCritical(
-                ex,
-                "Error deserializing JSON data for texture atlas. Application cannot start!"
-            );
+            _logger.LogCritical(ex, "Error deserializing JSON data for texture atlas. Application cannot start!");
             throw;
         }
         catch (Exception ex)
@@ -158,11 +140,7 @@ public class TextureAtlasService(
         if (!spriteName.StartsWith("item", StringComparison.OrdinalIgnoreCase))
             spriteName = $"item{spriteName}";
 
-        _logger.LogDebug(
-            "Obtained sprite name '{SpriteName}' for item type '{ItemType}'",
-            spriteName,
-            itemType
-        );
+        _logger.LogDebug("Obtained sprite name '{SpriteName}' for item type '{ItemType}'", spriteName, itemType);
         return spriteName;
     }
 
@@ -174,11 +152,7 @@ public class TextureAtlasService(
         if (!itemName.StartsWith("File Two/", StringComparison.OrdinalIgnoreCase))
             spriteName = $"FileTwo/{itemName}";
 
-        _logger.LogDebug(
-            "Obtained sprite name '{SpriteName}' for item id '{ItemId}'",
-            spriteName,
-            itemName
-        );
+        _logger.LogDebug("Obtained sprite name '{SpriteName}' for item id '{ItemId}'", spriteName, itemName);
         return spriteName;
     }
 }

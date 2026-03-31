@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using FastEnumUtility;
@@ -26,8 +25,7 @@ public sealed class LobbySlotStatusToIconConverter : IValueConverter
                 when FastEnum.TryParse(statusString, ignoreCase: true, out SlotStatus parsedStatus):
                 status = parsedStatus;
                 break;
-            case string statusString
-                when statusString.Equals("Join in", StringComparison.OrdinalIgnoreCase):
+            case string statusString when statusString.Equals("Join in", StringComparison.OrdinalIgnoreCase):
                 status = SlotStatus.JoinIn;
                 break;
             case string:
@@ -49,10 +47,6 @@ public sealed class LobbySlotStatusToIconConverter : IValueConverter
         };
     }
 
-    public object ConvertBack(
-        object? value,
-        Type targetType,
-        object? parameter,
-        CultureInfo culture
-    ) => new BindingNotification(new NotSupportedException(), BindingErrorType.Error);
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        new BindingNotification(new NotSupportedException(), BindingErrorType.Error);
 }

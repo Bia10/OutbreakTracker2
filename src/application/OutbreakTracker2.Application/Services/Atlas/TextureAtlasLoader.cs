@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 using OutbreakTracker2.Application.Services.Atlas.Models;
 using OutbreakTracker2.Application.Services.Atlas.Serialization;
 
@@ -27,9 +25,7 @@ public static class TextureAtlasLoader
                 await JsonSerializer
                     .DeserializeAsync(stream, SpriteSheetJsonContext.Default.SpriteSheet)
                     .ConfigureAwait(false)
-                ?? throw new JsonException(
-                    "Failed to deserialize sprite sheet data. Deserialized object was null."
-                );
+                ?? throw new JsonException("Failed to deserialize sprite sheet data. Deserialized object was null.");
             if (spriteSheet.Frames is null || spriteSheet.Frames.Count is 0)
                 throw new JsonException(
                     "Failed to deserialize sprite sheet data. Deserialized object did not contain any frames."

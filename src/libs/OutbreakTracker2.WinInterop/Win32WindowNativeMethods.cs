@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 namespace OutbreakTracker2.WinInterop;
@@ -69,15 +69,7 @@ public static partial class Win32WindowNativeMethods
     /// <summary>Changes the size, position, and Z-order of a window.</summary>
     [LibraryImport("user32.dll", EntryPoint = "SetWindowPos")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static partial bool SetWindowPos(
-        nint hWnd,
-        nint hWndInsertAfter,
-        int x,
-        int y,
-        int cx,
-        int cy,
-        uint uFlags
-    );
+    public static partial bool SetWindowPos(nint hWnd, nint hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
 
     /// <summary>Shows or hides a window.</summary>
     [LibraryImport("user32.dll", EntryPoint = "ShowWindow")]
@@ -99,11 +91,7 @@ public static partial class Win32WindowNativeMethods
     public static partial bool EnumWindows(EnumWindowsProc lpEnumFunc, nint lParam);
 
     /// <summary>Creates a window with an extended style.</summary>
-    [LibraryImport(
-        "user32.dll",
-        EntryPoint = "CreateWindowExW",
-        StringMarshalling = StringMarshalling.Utf16
-    )]
+    [LibraryImport("user32.dll", EntryPoint = "CreateWindowExW", StringMarshalling = StringMarshalling.Utf16)]
     public static partial nint CreateWindowEx(
         uint dwExStyle,
         string lpClassName,

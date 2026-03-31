@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Material.Icons;
@@ -26,10 +25,6 @@ public sealed class StatusToIconConverter : IValueConverter
         };
     }
 
-    public object ConvertBack(
-        object? value,
-        Type targetType,
-        object? parameter,
-        CultureInfo culture
-    ) => new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
 }

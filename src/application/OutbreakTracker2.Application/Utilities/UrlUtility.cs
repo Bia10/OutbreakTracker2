@@ -8,10 +8,7 @@ public static class UrlUtility
     {
         if (System.OperatingSystem.IsWindows())
             Process.Start(
-                new ProcessStartInfo(url.Replace("&", "^&", System.StringComparison.Ordinal))
-                {
-                    UseShellExecute = true,
-                }
+                new ProcessStartInfo(url.Replace("&", "^&", System.StringComparison.Ordinal)) { UseShellExecute = true }
             );
         else if (System.OperatingSystem.IsLinux())
             Process.Start("xdg-open", url);

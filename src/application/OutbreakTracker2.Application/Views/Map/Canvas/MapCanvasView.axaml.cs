@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using OutbreakTracker2.Outbreak.Models;

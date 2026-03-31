@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
@@ -33,33 +31,24 @@ public partial class ImageViewModel : ObservableObject
         if (_uiAtlas is null)
         {
             _logger.LogError("UI Texture Atlas could not be retrieved by ImageViewModel");
-            throw new InvalidOperationException(
-                "UI Texture Atlas could not be retrieved by ImageViewModel"
-            );
+            throw new InvalidOperationException("UI Texture Atlas could not be retrieved by ImageViewModel");
         }
 
         _itemsAtlas = textureAtlasService.GetAtlas("Items");
         if (_itemsAtlas is null)
         {
             _logger.LogError("Items Texture Atlas could not be retrieved by ImageViewModel");
-            throw new InvalidOperationException(
-                "Items Texture Atlas could not be retrieved by ImageViewModel"
-            );
+            throw new InvalidOperationException("Items Texture Atlas could not be retrieved by ImageViewModel");
         }
     }
 
     public async ValueTask UpdateImageAsync(string spriteName, string debugContext = "")
     {
-        ITextureAtlas? selectedAtlas = spriteName.StartsWith("File", StringComparison.Ordinal)
-            ? _itemsAtlas
-            : _uiAtlas;
+        ITextureAtlas? selectedAtlas = spriteName.StartsWith("File", StringComparison.Ordinal) ? _itemsAtlas : _uiAtlas;
 
         if (selectedAtlas is null)
         {
-            _logger.LogError(
-                "Cannot update image: UI Texture Atlas is null. Context: {DebugContext}",
-                debugContext
-            );
+            _logger.LogError("Cannot update image: UI Texture Atlas is null. Context: {DebugContext}", debugContext);
             return;
         }
 
@@ -91,9 +80,7 @@ public partial class ImageViewModel : ObservableObject
                 // Note: tbh not rly sure why CroppedBitmap is not thread safe, but it seems to be the case
                 // i.e. why does a CroppedBitmap needs to be created on the UI thread?
                 newImage = await _dispatcherService
-                    .InvokeOnUIAsync(() =>
-                        ImageUtility.GetCroppedBitmap(selectedAtlas.Texture, sourceRect)
-                    )
+                    .InvokeOnUIAsync(() => ImageUtility.GetCroppedBitmap(selectedAtlas.Texture, sourceRect))
                     .ConfigureAwait(true);
             }
             catch (Exception ex)

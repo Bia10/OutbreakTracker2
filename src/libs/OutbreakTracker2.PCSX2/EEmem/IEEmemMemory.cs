@@ -6,10 +6,7 @@ namespace OutbreakTracker2.PCSX2.EEmem;
 
 public interface IEEmemMemory
 {
-    public ValueTask<bool> InitializeAsync(
-        GameClient gameClient,
-        CancellationToken cancellationToken
-    );
+    public ValueTask<bool> InitializeAsync(GameClient gameClient, CancellationToken cancellationToken);
 
     public nint BaseAddress { get; }
 

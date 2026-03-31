@@ -1,7 +1,4 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.Configuration;
@@ -76,9 +73,7 @@ public class App : Avalonia.Application
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                IConfigurationRoot configuration = new ConfigurationBuilder()
-                    .AddJsonFile("appsettings.json")
-                    .Build();
+                IConfigurationRoot configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 
                 ServiceCollection services = new();
                 services.AddSingleton(desktop);
@@ -86,8 +81,7 @@ public class App : Avalonia.Application
 
                 _serviceProvider = ConfigureServicesAndLogging(services, configuration);
                 _serviceProvider.GetRequiredService<NotificationService>();
-                ITextureAtlasService textureAtlasService =
-                    _serviceProvider.GetRequiredService<ITextureAtlasService>();
+                ITextureAtlasService textureAtlasService = _serviceProvider.GetRequiredService<ITextureAtlasService>();
                 try
                 {
                     textureAtlasService.LoadAtlases();
@@ -101,8 +95,7 @@ public class App : Avalonia.Application
 
                 ConfigureExceptionHandling();
                 DataTemplates.Add(new ViewLocator(views));
-                desktop.MainWindow =
-                    views.CreateView<Views.OutbreakTracker2ViewModel>(_serviceProvider) as Window;
+                desktop.MainWindow = views.CreateView<Views.OutbreakTracker2ViewModel>(_serviceProvider) as Window;
 
                 Log.Information("Application initialized successfully!");
             }
@@ -184,13 +177,9 @@ public class App : Avalonia.Application
         return serviceProvider;
     }
 
-    private static void ConfigureSerilog(
-        IServiceProvider serviceProvider,
-        IConfiguration configuration
-    )
+    private static void ConfigureSerilog(IServiceProvider serviceProvider, IConfiguration configuration)
     {
-        ILogDataStorageService logDataStore =
-            serviceProvider.GetRequiredService<ILogDataStorageService>();
+        ILogDataStorageService logDataStore = serviceProvider.GetRequiredService<ILogDataStorageService>();
 
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(configuration)
@@ -201,10 +190,7 @@ public class App : Avalonia.Application
         loggerFactory.AddSerilog(Log.Logger);
     }
 
-    private static ServiceProvider ConfigureServices(
-        IServiceCollection services,
-        IConfiguration configuration
-    )
+    private static ServiceProvider ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton(configuration);
 
@@ -250,19 +236,15 @@ public class App : Avalonia.Application
 #endif
             }
 
-            throw new PlatformNotSupportedException(
-                "Only Windows and Linux are currently supported."
-            );
+            throw new PlatformNotSupportedException("Only Windows and Linux are currently supported.");
         }
 
         // Window embedding: platform-specific implementation
         if (OperatingSystem.IsWindows())
             services.AddSingleton<IWindowEmbedder, WindowsWindowEmbedder>();
-        else if (OperatingSystem.IsLinux())
 #if LINUX
+        else if (OperatingSystem.IsLinux())
             services.AddSingleton<IWindowEmbedder, LinuxWindowEmbedder>();
-#else
-            services.AddSingleton<IWindowEmbedder, NullWindowEmbedder>();
 #endif
         else
             services.AddSingleton<IWindowEmbedder, NullWindowEmbedder>();
@@ -277,9 +259,7 @@ public class App : Avalonia.Application
         {
             return (imageStream, spriteSheet) =>
             {
-                ILogger<TextureAtlas> logger = serviceProvider.GetRequiredService<
-                    ILogger<TextureAtlas>
-                >();
+                ILogger<TextureAtlas> logger = serviceProvider.GetRequiredService<ILogger<TextureAtlas>>();
                 return new TextureAtlas(imageStream, spriteSheet, logger);
             };
         });
@@ -302,11 +282,7 @@ public class App : Avalonia.Application
 
         services.AddSingleton<LobbySlotsViewModel>();
 
-        ServiceProviderOptions providerOptions = new()
-        {
-            ValidateOnBuild = true,
-            ValidateScopes = true,
-        };
+        ServiceProviderOptions providerOptions = new() { ValidateOnBuild = true, ValidateScopes = true };
 
         return services.BuildServiceProvider(providerOptions);
     }
@@ -315,9 +291,7 @@ public class App : Avalonia.Application
     {
         (_serviceProvider as IDisposable)?.Dispose();
 
-        if (
-            _serviceProvider?.GetService<ITextureAtlasService>() is TextureAtlasService atlasService
-        )
+        if (_serviceProvider?.GetService<ITextureAtlasService>() is TextureAtlasService atlasService)
         {
             foreach (ITextureAtlas atlas in atlasService.GetAllAtlases().Values)
                 (atlas as IDisposable)?.Dispose();

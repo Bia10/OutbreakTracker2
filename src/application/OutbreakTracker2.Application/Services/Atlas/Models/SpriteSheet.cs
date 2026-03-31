@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace OutbreakTracker2.Application.Services.Atlas.Models;
 
@@ -21,9 +19,5 @@ public sealed class SpriteSheet
     /// This should be called after deserialization.
     /// </summary>
     public void BuildFrameLookup() =>
-        FrameLookup = Frames.ToDictionary(
-            frame => frame.Name,
-            frame => frame,
-            System.StringComparer.Ordinal
-        );
+        FrameLookup = Frames.ToDictionary(frame => frame.Name, frame => frame, System.StringComparer.Ordinal);
 }

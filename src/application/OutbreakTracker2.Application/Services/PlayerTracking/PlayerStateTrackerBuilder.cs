@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using OutbreakTracker2.Application.Services.PlayerTracking.Rules;
+﻿using OutbreakTracker2.Application.Services.PlayerTracking.Rules;
 using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Services.PlayerTracking;

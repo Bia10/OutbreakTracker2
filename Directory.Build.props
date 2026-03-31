@@ -1,0 +1,41 @@
+<Project>
+  <PropertyGroup>
+    <Company>Bia10</Company>
+    <Authors>Bia10</Authors>
+    <Copyright>Copyright © Bia10 2026</Copyright>
+    <NeutralLanguage>en</NeutralLanguage>
+
+    <TargetFramework>net10.0</TargetFramework>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+
+    <LangVersion>14.0</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <DebugType>portable</DebugType>
+    <Nullable>enable</Nullable>
+
+    <!-- Artifact output layout: all bins go to artifacts/ at repo root -->
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
+    <VSTestResultsDirectory>$(ArtifactsPath)/TestResults</VSTestResultsDirectory>
+
+    <!-- Generate docs XML; suppress missing-doc warnings globally -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <!-- Analyzers: warnings are errors -->
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+  </PropertyGroup>
+
+  <!-- CSharpier formatting enforcement: checks formatting on every build.
+       Install the local tool first: dotnet tool restore -->
+  <ItemGroup>
+    <PackageReference Include="CSharpier.MsBuild" PrivateAssets="All" />
+  </ItemGroup>
+</Project>

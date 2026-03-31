@@ -1,5 +1,4 @@
-﻿using System;
-using OutbreakTracker2.Application.Pages;
+﻿using OutbreakTracker2.Application.Pages;
 
 namespace OutbreakTracker2.Application.Services;
 

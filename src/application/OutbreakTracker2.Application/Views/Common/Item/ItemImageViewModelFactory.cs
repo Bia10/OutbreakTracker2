@@ -1,13 +1,10 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace OutbreakTracker2.Application.Views.Common.Item;
 
-public class ItemImageViewModelFactory(
-    ILogger<ItemImageViewModelFactory> logger,
-    IServiceProvider serviceProvider
-) : IItemImageViewModelFactory
+public class ItemImageViewModelFactory(ILogger<ItemImageViewModelFactory> logger, IServiceProvider serviceProvider)
+    : IItemImageViewModelFactory
 {
     private readonly ILogger<ItemImageViewModelFactory> _logger = logger;
     private readonly IServiceProvider _serviceProvider = serviceProvider;
@@ -16,8 +13,7 @@ public class ItemImageViewModelFactory(
     {
         _logger.LogDebug("Creating a new ItemImageViewModel instance");
 
-        ItemImageViewModel newItemImageViewModel =
-            _serviceProvider.GetRequiredService<ItemImageViewModel>();
+        ItemImageViewModel newItemImageViewModel = _serviceProvider.GetRequiredService<ItemImageViewModel>();
 
         _logger.LogDebug("ItemImageViewModel created successfully");
         return newItemImageViewModel;

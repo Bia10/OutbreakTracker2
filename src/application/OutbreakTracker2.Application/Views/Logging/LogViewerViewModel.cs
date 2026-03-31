@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using ObservableCollections;
@@ -283,9 +278,7 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
 
     private void UpdateSelectedLogLevel(LogLevel logLevel, bool isSelected)
     {
-        bool changed = isSelected
-            ? SelectedLogLevels.Add(logLevel)
-            : SelectedLogLevels.Remove(logLevel);
+        bool changed = isSelected ? SelectedLogLevels.Add(logLevel) : SelectedLogLevels.Remove(logLevel);
 
         OnPropertyChanged(nameof(IsTraceSelected));
         OnPropertyChanged(nameof(IsDebugSelected));

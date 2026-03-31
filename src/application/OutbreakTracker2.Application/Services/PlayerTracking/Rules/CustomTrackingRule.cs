@@ -1,5 +1,4 @@
-﻿using System;
-using OutbreakTracker2.Outbreak.Models;
+﻿using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Services.PlayerTracking.Rules
 {
@@ -10,23 +9,15 @@ namespace OutbreakTracker2.Application.Services.PlayerTracking.Rules
     {
         private readonly Func<DecodedInGamePlayer, DecodedInGamePlayer, bool> _condition =
             condition ?? throw new ArgumentNullException(nameof(condition));
-        private readonly Func<
-            DecodedInGamePlayer,
-            PlayerStateChangeEventArgs
-        > _notificationFactory =
+        private readonly Func<DecodedInGamePlayer, PlayerStateChangeEventArgs> _notificationFactory =
             notificationFactory ?? throw new ArgumentNullException(nameof(notificationFactory));
 
-        public override bool ShouldTrigger(
-            DecodedInGamePlayer currentPlayer,
-            DecodedInGamePlayer lastKnownPlayerState
-        )
+        public override bool ShouldTrigger(DecodedInGamePlayer currentPlayer, DecodedInGamePlayer lastKnownPlayerState)
         {
             return _condition(currentPlayer, lastKnownPlayerState);
         }
 
-        public override PlayerStateChangeEventArgs CreateNotification(
-            DecodedInGamePlayer currentPlayer
-        )
+        public override PlayerStateChangeEventArgs CreateNotification(DecodedInGamePlayer currentPlayer)
         {
             return _notificationFactory(currentPlayer);
         }

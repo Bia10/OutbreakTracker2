@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
@@ -21,6 +20,5 @@ public partial class EndOfTheRoadViewModel : ObservableObject
         pass4.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
     private static bool IsValidScenario(string scenarioName) =>
-        !string.IsNullOrEmpty(scenarioName)
-        && scenarioName.Equals("End of the road", StringComparison.Ordinal);
+        !string.IsNullOrEmpty(scenarioName) && scenarioName.Equals("End of the road", StringComparison.Ordinal);
 }

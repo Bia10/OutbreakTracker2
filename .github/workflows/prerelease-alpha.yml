@@ -39,7 +39,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
-          dotnet-version: '10.0.x'
+          global-json-file: global.json
 
       - name: Restore dotnet tools
         run: dotnet tool restore
@@ -75,7 +75,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
-          dotnet-version: '10.0.x'
+          global-json-file: global.json
 
       - name: Restore dependencies
         run: dotnet restore src/OutbreakTracker2.slnx
@@ -84,7 +84,7 @@ jobs:
         run: dotnet build src/OutbreakTracker2.slnx -c ${{ matrix.configuration }} --no-restore
 
       - name: Run unit tests
-        run: dotnet test src/insights/OutbreakTracker2.UnitTests/OutbreakTracker2.UnitTests.csproj -c ${{ matrix.configuration }} --no-build
+        run: dotnet test --project src/insights/OutbreakTracker2.UnitTests/OutbreakTracker2.UnitTests.csproj -c ${{ matrix.configuration }}
 
   prepare:
     name: Prepare Release
@@ -174,7 +174,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
-          dotnet-version: '10.0.x'
+          global-json-file: global.json
 
       - name: Restore dependencies
         run: dotnet restore src/OutbreakTracker2.slnx --runtime ${{ matrix.rid }}

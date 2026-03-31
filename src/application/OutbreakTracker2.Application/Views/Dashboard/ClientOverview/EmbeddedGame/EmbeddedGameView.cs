@@ -1,7 +1,4 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -40,11 +37,11 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGa
 ///   </description></item>
 ///   <item><description>
 ///     PCSX2 must be launched <b>through OutbreakTracker2</b> (not started independently).
-///     See <see cref="Services.Embedding.LinuxWindowEmbedder"/> for the full explanation.
+///     See <c>Services.Embedding.LinuxWindowEmbedder</c> for the full explanation.
 ///   </description></item>
 ///   <item><description>
 ///     If the window does not embed within 60 s, see the diagnostic commands documented on
-///     <see cref="Services.Embedding.LinuxWindowEmbedder"/>.
+///     <c>Services.Embedding.LinuxWindowEmbedder</c>.
 ///   </description></item>
 /// </list>
 /// </remarks>
@@ -127,17 +124,10 @@ public sealed class EmbeddedGameView : NativeControlHost
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
-    private void OnViewModelPropertyChanged(
-        object? sender,
-        System.ComponentModel.PropertyChangedEventArgs e
-    )
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (
-            string.Equals(
-                e.PropertyName,
-                nameof(EmbeddedGameViewModel.TrackedPid),
-                StringComparison.Ordinal
-            )
+            string.Equals(e.PropertyName, nameof(EmbeddedGameViewModel.TrackedPid), StringComparison.Ordinal)
             && sender is EmbeddedGameViewModel vm
             && vm.TrackedPid > 0
             && _embeddedHandle == nint.Zero
@@ -177,10 +167,7 @@ public sealed class EmbeddedGameView : NativeControlHost
                     // happen there to keep the NativeControlHost lifecycle consistent.
                     Dispatcher.UIThread.Post(() =>
                     {
-                        if (
-                            _containerHandle == nint.Zero
-                            || DataContext is not EmbeddedGameViewModel current
-                        )
+                        if (_containerHandle == nint.Zero || DataContext is not EmbeddedGameViewModel current)
                             return;
 
                         int w = Math.Max(1, (int)Bounds.Width);

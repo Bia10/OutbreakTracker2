@@ -1,0 +1,21 @@
+<Project>
+  <!-- Import the parent (repo root) Directory.Build.props -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- No source project is a NuGet package -->
+    <IsPackable>false</IsPackable>
+
+    <!-- All source projects allow unsafe (P/Invoke, memory, interop) -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Non-CLS-compliant: required for P/Invoke and low-level interop types -->
+    <CLSCompliant>false</CLSCompliant>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.CLSCompliantAttribute">
+      <_Parameter1>false</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>

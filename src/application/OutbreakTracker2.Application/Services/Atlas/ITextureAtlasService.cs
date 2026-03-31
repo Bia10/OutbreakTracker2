@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using OutbreakTracker2.Outbreak.Enums;
+﻿using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Character;
 
 namespace OutbreakTracker2.Application.Services.Atlas;

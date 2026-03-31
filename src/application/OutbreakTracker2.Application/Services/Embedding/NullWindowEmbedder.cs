@@ -1,4 +1,4 @@
-namespace OutbreakTracker2.Application.Services.Embedding;
+﻿namespace OutbreakTracker2.Application.Services.Embedding;
 
 /// <summary>
 /// Fallback <see cref="IWindowEmbedder"/> for platforms where window embedding is not supported

@@ -1,5 +1,4 @@
-using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Embedding;
 using OutbreakTracker2.Application.Services.Launcher;

@@ -25,15 +25,7 @@ internal static class SafeMemoryReader
 
                 try
                 {
-                    if (
-                        !Kernel32.ReadProcessMemory_Safe(
-                            hProcess,
-                            address,
-                            buffer,
-                            size,
-                            out int bytesRead
-                        )
-                    )
+                    if (!Kernel32.ReadProcessMemory_Safe(hProcess, address, buffer, size, out int bytesRead))
                         throw new Win32Exception(Marshal.GetLastWin32Error());
                     if (bytesRead != size)
                         throw new InvalidOperationException(
@@ -80,15 +72,7 @@ internal static class UnsafeMemoryReader
                         byte* stackAllocatedBuffer = stackalloc byte[size];
                         bufferPtr = stackAllocatedBuffer;
 
-                        if (
-                            !Kernel32.ReadProcessMemory_Unsafe(
-                                hProcess,
-                                address,
-                                bufferPtr,
-                                size,
-                                out int bytesRead
-                            )
-                        )
+                        if (!Kernel32.ReadProcessMemory_Unsafe(hProcess, address, bufferPtr, size, out int bytesRead))
                             throw new Win32Exception(Marshal.GetLastWin32Error());
                         if (bytesRead != size)
                             throw new InvalidOperationException(
@@ -213,11 +197,7 @@ public class MemoryReadBenchmark<T>
     [GlobalSetup]
     public void Setup()
     {
-        _hProcess = Kernel32.OpenProcess(
-            ProcessAccessFlags.VirtualMemoryRead,
-            false,
-            Environment.ProcessId
-        );
+        _hProcess = Kernel32.OpenProcess(ProcessAccessFlags.VirtualMemoryRead, false, Environment.ProcessId);
         if (_hProcess == nint.Zero)
             throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to open process handle.");
 
@@ -254,6 +234,5 @@ public class MemoryReadBenchmark<T>
 
 public class Program
 {
-    public static void Main(string[] args) =>
-        BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
+    public static void Main(string[] args) => BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 }

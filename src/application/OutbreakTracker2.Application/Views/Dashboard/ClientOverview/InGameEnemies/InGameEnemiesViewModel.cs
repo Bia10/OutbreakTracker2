@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.Application.Services.Data;
@@ -34,9 +31,7 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
         _dispatcherService = dispatcherService;
         _logger.LogInformation("Initializing InGameEnemiesViewModel");
 
-        EnemiesView = _enemies.ToNotifyCollectionChanged(
-            SynchronizationContextCollectionEventDispatcher.Current
-        );
+        EnemiesView = _enemies.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
         _subscription = dataManager
             .EnemiesObservable.ObserveOnThreadPool()
@@ -74,18 +69,13 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
                                     filteredIncomingEnemies.Count
                                 );
 
-                                Dictionary<Ulid, DecodedEnemy> incomingEnemyDataMap =
-                                    filteredIncomingEnemies
-                                        .AsValueEnumerable()
-                                        .ToDictionary(enemy => enemy.Id);
+                                Dictionary<Ulid, DecodedEnemy> incomingEnemyDataMap = filteredIncomingEnemies
+                                    .AsValueEnumerable()
+                                    .ToDictionary(enemy => enemy.Id);
 
-                                List<InGameEnemyViewModel> desiredViewModels = new(
-                                    filteredIncomingEnemies.Count
-                                );
+                                List<InGameEnemyViewModel> desiredViewModels = new(filteredIncomingEnemies.Count);
 
-                                foreach (
-                                    DecodedEnemy incomingEnemy in filteredIncomingEnemies.AsValueEnumerable()
-                                )
+                                foreach (DecodedEnemy incomingEnemy in filteredIncomingEnemies.AsValueEnumerable())
                                 {
                                     if (
                                         _viewModelCache.TryGetValue(
@@ -106,10 +96,7 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
                                             "Creating new ViewModel on TP for {UniqueId}",
                                             incomingEnemy.Id
                                         );
-                                        InGameEnemyViewModel newVm = new(
-                                            incomingEnemy,
-                                            dataManager
-                                        );
+                                        InGameEnemyViewModel newVm = new(incomingEnemy, dataManager);
                                         desiredViewModels.Add(newVm);
                                     }
                                 }
@@ -123,9 +110,7 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
                                     .InvokeOnUIAsync(
                                         () =>
                                         {
-                                            _logger.LogInformation(
-                                                "Applying enemy updates on UI thread"
-                                            );
+                                            _logger.LogInformation("Applying enemy updates on UI thread");
 
                                             foreach (InGameEnemyViewModel vm in desiredViewModels)
                                                 if (
@@ -157,11 +142,7 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
                                             for (int i = _enemies.Count - 1; i >= 0; i--)
                                             {
                                                 InGameEnemyViewModel currentVmInList = _enemies[i];
-                                                if (
-                                                    desiredUniqueIdsLookup.Contains(
-                                                        currentVmInList.UniqueId
-                                                    )
-                                                )
+                                                if (desiredUniqueIdsLookup.Contains(currentVmInList.UniqueId))
                                                     continue;
 
                                                 _logger.LogDebug(
@@ -174,15 +155,12 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
 
                                             for (int i = 0; i < desiredViewModels.Count; i++)
                                             {
-                                                InGameEnemyViewModel desiredVm = desiredViewModels[
-                                                    i
-                                                ];
+                                                InGameEnemyViewModel desiredVm = desiredViewModels[i];
 
                                                 int currentIndexInEnemies;
                                                 if (
                                                     i < _enemies.Count
-                                                    && _enemies[i]
-                                                        .UniqueId.Equals(desiredVm.UniqueId)
+                                                    && _enemies[i].UniqueId.Equals(desiredVm.UniqueId)
                                                 )
                                                 {
                                                     currentIndexInEnemies = i;
@@ -193,9 +171,7 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
                                                 }
                                                 else
                                                 {
-                                                    currentIndexInEnemies = _enemies.IndexOf(
-                                                        desiredVm
-                                                    );
+                                                    currentIndexInEnemies = _enemies.IndexOf(desiredVm);
                                                 }
 
                                                 if (currentIndexInEnemies is -1)
@@ -245,10 +221,7 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
                             }
                             catch (Exception ex)
                             {
-                                _logger.LogError(
-                                    ex,
-                                    "Error during enemy snapshot processing cycle"
-                                );
+                                _logger.LogError(ex, "Error during enemy snapshot processing cycle");
                             }
 
                             break;
@@ -276,9 +249,7 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
         {
             _enemies.Clear();
             _viewModelCache.Clear();
-            _logger.LogDebug(
-                "InGameEnemiesViewModel collections cleared on UI thread during dispose"
-            );
+            _logger.LogDebug("InGameEnemiesViewModel collections cleared on UI thread during dispose");
         });
 
         EnemiesView.Dispose();

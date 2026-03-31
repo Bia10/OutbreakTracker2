@@ -1,6 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using OutbreakTracker2.Outbreak.Models;
+﻿using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.PCSX2.Client;
 using R3;
 

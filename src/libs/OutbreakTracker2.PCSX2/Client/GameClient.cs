@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.Runtime.Versioning;
 using OutbreakTracker2.WinInterop;
 using OutbreakTracker2.WinInterop.Enums;
@@ -40,9 +39,7 @@ public sealed class GameClient : IDisposable
         else if (OperatingSystem.IsLinux())
             AttachLinux();
         else
-            throw new PlatformNotSupportedException(
-                "GameClient.Attach is only supported on Windows and Linux."
-            );
+            throw new PlatformNotSupportedException("GameClient.Attach is only supported on Windows and Linux.");
     }
 
     [SupportedOSPlatform("windows")]
@@ -91,7 +88,5 @@ public sealed class GameClient : IDisposable
     /// Used for diagnostics only — do not parse the output.
     /// </summary>
     public override string ToString() =>
-        IsAttached
-            ? $"GameClient[PID={Process?.Id}, Base=0x{MainModuleBase:X}]"
-            : "GameClient[not attached]";
+        IsAttached ? $"GameClient[PID={Process?.Id}, Base=0x{MainModuleBase:X}]" : "GameClient[not attached]";
 }

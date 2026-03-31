@@ -1,13 +1,10 @@
 ﻿namespace OutbreakTracker2.UnitTests;
 
-[TestFixture]
 public class GasCalculationTests
 {
-    private int GasRandom { get; set; }
-
-    private int CalculateGasRandomOrderDisplay_Original()
+    private static int CalculateGasRandomOrderDisplay_Original(int gasRandom)
     {
-        return GasRandom switch
+        return gasRandom switch
         {
             > 0 and < 10 => 1,
             >= 10 and < 20 => 2,
@@ -38,36 +35,27 @@ public class GasCalculationTests
         };
     }
 
-    private int CalculateGasRandomOrderDisplay_Algorithmic()
+    private static int CalculateGasRandomOrderDisplay_Algorithmic(int gasRandom)
     {
-        return GasRandom switch
+        return gasRandom switch
         {
-            > 0 and < 240 => (GasRandom / 10) + 1,
+            > 0 and < 240 => (gasRandom / 10) + 1,
             >= 240 and < 255 => 25,
             _ => -1,
         };
     }
 
     [Test]
-    [TestCaseSource(nameof(GetGasRandomValuesToTest))]
-    public void OriginalAndAlgorithmicImplementationsAreFunctionallyEquivalent(int gasRandomValue)
+    [MethodDataSource(nameof(GetGasRandomValuesToTest))]
+    public async Task OriginalAndAlgorithmicImplementationsAreFunctionallyEquivalent(int gasRandomValue)
     {
-        // Arrange
-        GasRandom = gasRandomValue;
+        int originalResult = CalculateGasRandomOrderDisplay_Original(gasRandomValue);
+        int algorithmicResult = CalculateGasRandomOrderDisplay_Algorithmic(gasRandomValue);
 
-        // Act
-        int originalResult = CalculateGasRandomOrderDisplay_Original();
-        int algorithmicResult = CalculateGasRandomOrderDisplay_Algorithmic();
-
-        // Assert that the results are the same
-        Assert.That(
-            algorithmicResult,
-            Is.EqualTo(originalResult),
-            $"Mismatch for GasRandom = {gasRandomValue}"
-        );
+        await Assert.That(algorithmicResult).IsEqualTo(originalResult);
     }
 
-    private static IEnumerable<int> GetGasRandomValuesToTest()
+    public static IEnumerable<int> GetGasRandomValuesToTest()
     {
         yield return -10; // Below min
         yield return 0; // Min boundary for default

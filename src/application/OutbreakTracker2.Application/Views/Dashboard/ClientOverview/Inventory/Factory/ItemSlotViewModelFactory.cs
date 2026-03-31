@@ -9,8 +9,7 @@ public class ItemSlotViewModelFactory(
 ) : IItemSlotViewModelFactory
 {
     private readonly ILogger<ItemSlotViewModel> _logger = logger;
-    private readonly IItemImageViewModelFactory _itemImageViewModelFactory =
-        itemImageViewModelFactory;
+    private readonly IItemImageViewModelFactory _itemImageViewModelFactory = itemImageViewModelFactory;
 
     public ItemSlotViewModel Create(int slotNumber)
     {

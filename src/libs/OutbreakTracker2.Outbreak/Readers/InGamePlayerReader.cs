@@ -36,17 +36,13 @@ public sealed class InGamePlayerReader : ReaderBase
 
     private bool GetIsEnabled(nint basePlayerAddress)
     {
-        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(
-            InGamePlayerOffsets.CharacterEnabledOffset
-        );
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.CharacterEnabledOffset);
         return ReadValue<bool>(basePlayerAddress, offsets);
     }
 
     private bool GetIsInGame(nint basePlayerAddress)
     {
-        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(
-            InGamePlayerOffsets.CharacterInGameOffset
-        );
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.CharacterInGameOffset);
         return ReadValue<bool>(basePlayerAddress, offsets);
     }
 
@@ -70,9 +66,7 @@ public sealed class InGamePlayerReader : ReaderBase
 
     private byte GetCharacterType(nint basePlayerAddress)
     {
-        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(
-            InGamePlayerOffsets.CharacterTypeOffset
-        );
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.CharacterTypeOffset);
         return ReadValue<byte>(basePlayerAddress, offsets);
     }
 
@@ -155,11 +149,7 @@ public sealed class InGamePlayerReader : ReaderBase
             nint curItemOffset = (8 * characterId) + 4 + i;
             nint fileOneAddress = FileOnePtrs.DeadInventoryStart + curItemOffset;
             nint fileTwoAddress = FileTwoPtrs.DeadInventoryStart + curItemOffset;
-            specialDeadInventory[i] = ReadValue<byte>(
-                [fileOneAddress],
-                [fileTwoAddress],
-                errorValue: 0
-            );
+            specialDeadInventory[i] = ReadValue<byte>([fileOneAddress], [fileTwoAddress], errorValue: 0);
         }
 
         return specialDeadInventory;
@@ -173,9 +163,7 @@ public sealed class InGamePlayerReader : ReaderBase
 
     private ushort GetAntiVirusGTime(nint basePlayerAddress)
     {
-        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(
-            InGamePlayerOffsets.AntiVirusGTimeOffset
-        );
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.AntiVirusGTimeOffset);
         return ReadValue<ushort>(basePlayerAddress, offsets);
     }
 
@@ -187,9 +175,7 @@ public sealed class InGamePlayerReader : ReaderBase
 
     private ushort GetAntiVirusTime(nint basePlayerAddress)
     {
-        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(
-            InGamePlayerOffsets.AntiVirusTimeOffset
-        );
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.AntiVirusTimeOffset);
         return ReadValue<ushort>(basePlayerAddress, offsets);
     }
 
@@ -251,9 +237,7 @@ public sealed class InGamePlayerReader : ReaderBase
 
     private byte GetStatus(nint basePlayerAddress)
     {
-        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(
-            InGamePlayerOffsets.CharacterStatusOffset
-        );
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.CharacterStatusOffset);
         return ReadValue<byte>(basePlayerAddress, offsets);
     }
 
@@ -321,9 +305,7 @@ public sealed class InGamePlayerReader : ReaderBase
         if (debug)
             Logger.LogDebug("Decoding in-game players");
 
-        DecodedInGamePlayer[] newDecodedInGamePlayers = new DecodedInGamePlayer[
-            GameConstants.MaxPlayers
-        ];
+        DecodedInGamePlayer[] newDecodedInGamePlayers = new DecodedInGamePlayer[GameConstants.MaxPlayers];
 
         for (int i = 0; i < GameConstants.MaxPlayers; i++)
         {
@@ -386,10 +368,7 @@ public sealed class InGamePlayerReader : ReaderBase
         Logger.LogDebug("Decoded in-game players in {Duration}ms", duration);
         foreach (
             string jsonObject in DecodedInGamePlayers.Select(player =>
-                JsonSerializer.Serialize(
-                    player,
-                    DecodedInGamePlayersJsonContext.Default.DecodedInGamePlayer
-                )
+                JsonSerializer.Serialize(player, DecodedInGamePlayersJsonContext.Default.DecodedInGamePlayer)
             )
         )
             Logger.LogDebug("Decoded in-game player: {JsonObject}", jsonObject);

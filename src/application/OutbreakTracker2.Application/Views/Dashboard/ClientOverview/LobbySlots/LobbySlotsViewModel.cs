@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.Application.Services.Data;
@@ -54,9 +50,7 @@ public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
 
                     try
                     {
-                        List<LobbySlotViewModel> desiredViewModelsForUiList = new(
-                            lobbySlotsSnapshot.Length
-                        );
+                        List<LobbySlotViewModel> desiredViewModelsForUiList = new(lobbySlotsSnapshot.Length);
                         HashSet<Ulid> activeIncomingUlids = [];
 
                         for (int i = 0; i < lobbySlotsSnapshot.Length; i++)
@@ -69,19 +63,10 @@ public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
                             if (i < _lobbySlotsInternal.Count)
                             {
                                 LobbySlotViewModel currentVmInList = _lobbySlotsInternal[i];
-                                if (
-                                    _viewModelCache.TryGetValue(
-                                        currentVmInList.Id,
-                                        out LobbySlotViewModel? cachedVm
-                                    )
-                                )
+                                if (_viewModelCache.TryGetValue(currentVmInList.Id, out LobbySlotViewModel? cachedVm))
                                 {
                                     vmToUse = cachedVm;
-                                    _logger.LogTrace(
-                                        "Reusing cached VM {Ulid} for index {Index}",
-                                        vmToUse.Id,
-                                        i
-                                    );
+                                    _logger.LogTrace("Reusing cached VM {Ulid} for index {Index}", vmToUse.Id, i);
                                 }
                                 else
                                 {
@@ -96,11 +81,7 @@ public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
                             else
                             {
                                 vmToUse = lobbySlotVmFactory.Create(incomingData);
-                                _logger.LogDebug(
-                                    "Creating new VM {Ulid} for new index {Index}",
-                                    vmToUse.Id,
-                                    i
-                                );
+                                _logger.LogDebug("Creating new VM {Ulid} for new index {Index}", vmToUse.Id, i);
                             }
 
                             vmToUse.Update(incomingData);
@@ -108,12 +89,8 @@ public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
                             activeIncomingUlids.Add(vmToUse.Id);
                         }
 
-                        IReadOnlyDictionary<Ulid, LobbySlotViewModel> cacheAsKvpDict =
-                            _viewModelCache;
-                        List<Ulid> ulidsToRemoveFromCache =
-                        [
-                            .. cacheAsKvpDict.Keys.Except(activeIncomingUlids),
-                        ];
+                        IReadOnlyDictionary<Ulid, LobbySlotViewModel> cacheAsKvpDict = _viewModelCache;
+                        List<Ulid> ulidsToRemoveFromCache = [.. cacheAsKvpDict.Keys.Except(activeIncomingUlids)];
 
                         _logger.LogInformation(
                             "ViewModel preparation complete on thread pool. {DesiredCount} desired VMs. {RemovedCount} VMs to remove from cache",
@@ -125,9 +102,7 @@ public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
                             .InvokeOnUIAsync(
                                 () =>
                                 {
-                                    _logger.LogInformation(
-                                        "Applying lobby slot updates on UI thread"
-                                    );
+                                    _logger.LogInformation("Applying lobby slot updates on UI thread");
 
                                     foreach (Ulid ulid in ulidsToRemoveFromCache)
                                     {
@@ -155,10 +130,7 @@ public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
                                         }
                                     }
 
-                                    _logger.LogTrace(
-                                        "Cache count after additions: {Count}",
-                                        _viewModelCache.Count
-                                    );
+                                    _logger.LogTrace("Cache count after additions: {Count}", _viewModelCache.Count);
 
                                     for (int i = _lobbySlotsInternal.Count - 1; i >= 0; i--)
                                     {
@@ -176,12 +148,8 @@ public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
 
                                     for (int i = 0; i < desiredViewModelsForUiList.Count; i++)
                                     {
-                                        LobbySlotViewModel desiredVm = desiredViewModelsForUiList[
-                                            i
-                                        ];
-                                        int currentIndexInList = _lobbySlotsInternal.IndexOf(
-                                            desiredVm
-                                        );
+                                        LobbySlotViewModel desiredVm = desiredViewModelsForUiList[i];
+                                        int currentIndexInList = _lobbySlotsInternal.IndexOf(desiredVm);
 
                                         if (currentIndexInList == -1)
                                         {
@@ -213,10 +181,7 @@ public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
                                         _lobbySlotsInternal.Count
                                     );
 
-                                    if (
-                                        _lobbySlotsInternal.Count
-                                        != desiredViewModelsForUiList.Count
-                                    )
+                                    if (_lobbySlotsInternal.Count != desiredViewModelsForUiList.Count)
                                         _logger.LogWarning(
                                             "_lobbySlotsInternal count ({InternalCount}) differs from desiredViewModels count ({DesiredCount}) after sync. This indicates a potential sync logic error",
                                             _lobbySlotsInternal.Count,
@@ -258,9 +223,7 @@ public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
             {
                 _lobbySlotsInternal.Clear();
                 _viewModelCache.Clear();
-                _logger.LogDebug(
-                    "LobbySlotsViewModel collections cleared on UI thread during async dispose"
-                );
+                _logger.LogDebug("LobbySlotsViewModel collections cleared on UI thread during async dispose");
             })
             .ConfigureAwait(false);
 

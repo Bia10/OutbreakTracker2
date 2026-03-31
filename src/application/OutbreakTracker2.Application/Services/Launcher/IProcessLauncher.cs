@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using OutbreakTracker2.PCSX2.Client;
 using R3;
 
@@ -16,11 +14,7 @@ public interface IProcessLauncher
 
     GameClient? AttachedGameClient { get; }
 
-    Task<GameClient> LaunchAsync(
-        string fileName,
-        string? arguments,
-        CancellationToken cancellationToken = default
-    );
+    Task<GameClient> LaunchAsync(string fileName, string? arguments, CancellationToken cancellationToken = default);
 
     Task<GameClient> AttachAsync(int processId);
 

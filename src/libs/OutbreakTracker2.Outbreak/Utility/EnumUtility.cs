@@ -166,10 +166,7 @@ public static class EnumUtility
         Span<char> charBuffer = stackalloc char[3];
         if (value.TryFormat(charBuffer, out int charsWritten))
         {
-            if (
-                FastEnum.TryParse(charBuffer[..charsWritten], out result)
-                && FastEnum.IsDefined(result)
-            )
+            if (FastEnum.TryParse(charBuffer[..charsWritten], out result) && FastEnum.IsDefined(result))
                 return true;
         }
 
@@ -185,10 +182,7 @@ public static class EnumUtility
         Span<char> charBuffer = stackalloc char[6];
         if (value.TryFormat(charBuffer, out int charsWritten))
         {
-            if (
-                FastEnum.TryParse(charBuffer[..charsWritten], out result)
-                && FastEnum.IsDefined(result)
-            )
+            if (FastEnum.TryParse(charBuffer[..charsWritten], out result) && FastEnum.IsDefined(result))
                 return true;
         }
 
@@ -204,10 +198,7 @@ public static class EnumUtility
         Span<char> charBuffer = stackalloc char[11];
         if (value.TryFormat(charBuffer, out int charsWritten))
         {
-            if (
-                FastEnum.TryParse(charBuffer[..charsWritten], out result)
-                && FastEnum.IsDefined(result)
-            )
+            if (FastEnum.TryParse(charBuffer[..charsWritten], out result) && FastEnum.IsDefined(result))
                 return true;
         }
 
@@ -243,10 +234,6 @@ public static class EnumUtility
             Scenario.TheHive => GetEnumString(roomId, HiveRooms.Spawning),
             Scenario.BelowFreezingPoint => GetEnumString(roomId, BelowFreezingRooms.Spawning),
             Scenario.DecisionsDecisions => GetEnumString(roomId, DecisionsRooms.Spawning),
-            _ => throw new ArgumentOutOfRangeException(
-                nameof(scenarioName),
-                scenarioName,
-                message: null
-            ),
+            _ => throw new ArgumentOutOfRangeException(nameof(scenarioName), scenarioName, message: null),
         };
 }

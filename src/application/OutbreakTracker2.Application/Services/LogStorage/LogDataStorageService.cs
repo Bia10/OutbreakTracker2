@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Channels;
-using System.Threading.Tasks;
+﻿using System.Threading.Channels;
 using ObservableCollections;
 using OutbreakTracker2.Application.Views.Logging;
 
@@ -32,9 +29,7 @@ public class LogDataStorageService : ILogDataStorageService, IAsyncDisposable
         try
         {
             await foreach (
-                LogModel logModel in _logChannel
-                    .Reader.ReadAllAsync(cancellationToken)
-                    .ConfigureAwait(false)
+                LogModel logModel in _logChannel.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false)
             )
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -70,9 +65,7 @@ public class LogDataStorageService : ILogDataStorageService, IAsyncDisposable
         }
         catch (Exception ex)
         {
-            Console.WriteLine(
-                $"Error awaiting log processing task completion during DisposeAsync: {ex}"
-            );
+            Console.WriteLine($"Error awaiting log processing task completion during DisposeAsync: {ex}");
         }
         finally
         {

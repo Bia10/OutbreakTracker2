@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Views.Common.ScenarioImg;
 using OutbreakTracker2.Outbreak.Common;
@@ -96,8 +95,7 @@ public partial class LobbySlotViewModel : ObservableObject
         }
     }
 
-    public override bool Equals(object? obj) =>
-        obj is LobbySlotViewModel viewModel && Id == viewModel.Id;
+    public override bool Equals(object? obj) => obj is LobbySlotViewModel viewModel && Id == viewModel.Id;
 
     public override int GetHashCode() => HashCode.Combine(Id);
 }

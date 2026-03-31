@@ -8,10 +8,7 @@ internal static class EnemyOffsets
         [FileOnePtrs.EnemyEnabled],
         [FileTwoPtrs.EnemyEnabled]
     );
-    public static readonly (nint[] File1, nint[] File2) InGame = (
-        [FileOnePtrs.EnemyInGame],
-        [FileTwoPtrs.EnemyInGame]
-    );
+    public static readonly (nint[] File1, nint[] File2) InGame = ([FileOnePtrs.EnemyInGame], [FileTwoPtrs.EnemyInGame]);
     public static readonly (nint[] File1, nint[] File2) NameId = (
         [FileOnePtrs.EnemyNameIdOffset],
         [FileTwoPtrs.EnemyNameIdOffset]

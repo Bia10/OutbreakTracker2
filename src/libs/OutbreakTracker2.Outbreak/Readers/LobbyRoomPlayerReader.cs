@@ -83,9 +83,7 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
         if (debug)
             Logger.LogDebug("Decoding lobby room players");
 
-        DecodedLobbyRoomPlayer[] newDecodedLobbyRoomPlayers = new DecodedLobbyRoomPlayer[
-            GameConstants.MaxPlayers
-        ];
+        DecodedLobbyRoomPlayer[] newDecodedLobbyRoomPlayers = new DecodedLobbyRoomPlayer[GameConstants.MaxPlayers];
 
         for (int i = 0; i < GameConstants.MaxPlayers; i++)
         {
@@ -115,9 +113,7 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
                     );
                     break;
                 case "Other NPCs":
-                    newDecodedLobbyRoomPlayers[i].NpcName = GetCharacterNpcName(
-                        newDecodedLobbyRoomPlayers[i].NameId
-                    );
+                    newDecodedLobbyRoomPlayers[i].NpcName = GetCharacterNpcName(newDecodedLobbyRoomPlayers[i].NameId);
                     newDecodedLobbyRoomPlayers[i].Npchp = GetCharacterNpcHealthName(
                         newDecodedLobbyRoomPlayers[i].NameId
                     );
@@ -146,10 +142,7 @@ public sealed class LobbyRoomPlayerReader : ReaderBase
         Logger.LogDebug("Decoded room players in {Duration}ms", duration);
         foreach (
             string jsonObject in DecodedLobbyRoomPlayers.Select(inGamePlayer =>
-                JsonSerializer.Serialize(
-                    inGamePlayer,
-                    DecodedLobbyRoomPlayerJsonContext.Default.DecodedLobbyRoomPlayer
-                )
+                JsonSerializer.Serialize(inGamePlayer, DecodedLobbyRoomPlayerJsonContext.Default.DecodedLobbyRoomPlayer)
             )
         )
             Logger.LogDebug("Decoded room player: {JsonObject}", jsonObject);

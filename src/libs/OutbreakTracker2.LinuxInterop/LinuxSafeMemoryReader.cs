@@ -1,4 +1,4 @@
-using System.Buffers;
+﻿using System.Buffers;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -80,27 +80,14 @@ public sealed class LinuxSafeMemoryReader(ILogger<LinuxSafeMemoryReader> logger)
         }
     }
 
-    private unsafe void ReadIntoBuffer(
-        nint hProcess,
-        nint address,
-        byte[] buffer,
-        int size,
-        string? typeName
-    )
+    private unsafe void ReadIntoBuffer(nint hProcess, nint address, byte[] buffer, int size, string? typeName)
     {
         fixed (byte* ptr = buffer)
         {
             Iovec localIov = new() { iov_base = (nint)ptr, iov_len = (nuint)size };
             Iovec remoteIov = new() { iov_base = address, iov_len = (nuint)size };
 
-            long bytesRead = LinuxNativeMethods.ProcessVmReadv(
-                (int)hProcess,
-                ref localIov,
-                1,
-                ref remoteIov,
-                1,
-                0
-            );
+            long bytesRead = LinuxNativeMethods.ProcessVmReadv((int)hProcess, ref localIov, 1, ref remoteIov, 1, 0);
 
             if (bytesRead < 0)
             {

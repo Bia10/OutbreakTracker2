@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
@@ -55,10 +55,7 @@ public sealed class LinuxStringReader : IStringReader
                 {
                     if (chunk[i] == 0)
                     {
-                        _logger.LogDebug(
-                            "Null terminator found at offset {Offset}",
-                            bytes.Count + i
-                        );
+                        _logger.LogDebug("Null terminator found at offset {Offset}", bytes.Count + i);
                         goto done;
                     }
                     bytes.Add(chunk[i]);
@@ -75,12 +72,7 @@ public sealed class LinuxStringReader : IStringReader
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "Critical error during string read at 0x{Address:X}: {Message}",
-                address,
-                ex.Message
-            );
+            _logger.LogError(ex, "Critical error during string read at 0x{Address:X}: {Message}", address, ex.Message);
             return string.Empty;
         }
     }
@@ -92,14 +84,7 @@ public sealed class LinuxStringReader : IStringReader
             Iovec localIov = new() { iov_base = (nint)ptr, iov_len = (nuint)size };
             Iovec remoteIov = new() { iov_base = address, iov_len = (nuint)size };
 
-            long result = LinuxNativeMethods.ProcessVmReadv(
-                pid,
-                ref localIov,
-                1,
-                ref remoteIov,
-                1,
-                0
-            );
+            long result = LinuxNativeMethods.ProcessVmReadv(pid, ref localIov, 1, ref remoteIov, 1, 0);
             if (result < 0)
             {
                 int errno = Marshal.GetLastPInvokeError();

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Threading;
@@ -10,13 +8,10 @@ namespace OutbreakTracker2.Application.Behaviors;
 
 public class ScrollToDataGridItemBehavior : Behavior<DataGrid>
 {
-    public static readonly StyledProperty<object?> ItemToScrollToProperty =
-        AvaloniaProperty.Register<ScrollToDataGridItemBehavior, object?>(
-            nameof(ItemToScrollTo),
-            defaultValue: null,
-            inherits: false,
-            (BindingMode)BindingPriority.LocalValue
-        );
+    public static readonly StyledProperty<object?> ItemToScrollToProperty = AvaloniaProperty.Register<
+        ScrollToDataGridItemBehavior,
+        object?
+    >(nameof(ItemToScrollTo), defaultValue: null, inherits: false, (BindingMode)BindingPriority.LocalValue);
 
     public object? ItemToScrollTo
     {

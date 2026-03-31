@@ -1,4 +1,4 @@
-namespace OutbreakTracker2.WinInterop.Enums;
+﻿namespace OutbreakTracker2.WinInterop.Enums;
 
 [Flags]
 public enum ProcessAccessFlags : uint

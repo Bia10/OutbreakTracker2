@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace OutbreakTracker2.Application.Services.Dispatcher;
+﻿namespace OutbreakTracker2.Application.Services.Dispatcher;
 
 public interface IDispatcherService
 {
@@ -12,8 +8,5 @@ public interface IDispatcherService
 
     public Task InvokeOnUIAsync(Action action, CancellationToken cancellationToken = default);
 
-    public Task<TResult?> InvokeOnUIAsync<TResult>(
-        Func<TResult> action,
-        CancellationToken cancellationToken = default
-    );
+    public Task<TResult?> InvokeOnUIAsync<TResult>(Func<TResult> action, CancellationToken cancellationToken = default);
 }

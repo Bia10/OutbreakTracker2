@@ -1,5 +1,4 @@
-﻿using System;
-using OutbreakTracker2.Application.Services.LogStorage;
+﻿using OutbreakTracker2.Application.Services.LogStorage;
 using Serilog;
 using Serilog.Configuration;
 

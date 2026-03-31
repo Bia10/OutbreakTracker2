@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Material.Icons;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Pages;

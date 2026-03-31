@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
 
@@ -65,8 +64,7 @@ public partial class WildThingsViewModel : ObservableObject
 
     private static bool IsValidScenario(string scenarioName)
     {
-        return !string.IsNullOrEmpty(scenarioName)
-            && scenarioName.Equals("Wild things", StringComparison.Ordinal);
+        return !string.IsNullOrEmpty(scenarioName) && scenarioName.Equals("Wild things", StringComparison.Ordinal);
     }
 
     private string GetWildThingsTimeDisplay() => TimeUtility.GetTimeToString3(WildThingsTime);

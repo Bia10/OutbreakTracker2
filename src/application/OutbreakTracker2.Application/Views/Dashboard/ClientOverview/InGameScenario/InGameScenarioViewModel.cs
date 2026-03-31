@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Data;
@@ -221,9 +218,7 @@ public partial class InGameScenarioViewModel : ObservableObject
                             .InvokeOnUIAsync(
                                 () =>
                                 {
-                                    _logger.LogTrace(
-                                        "Updating InGameScenarioViewModel properties on UI thread"
-                                    );
+                                    _logger.LogTrace("Updating InGameScenarioViewModel properties on UI thread");
                                     Update(inGameScenario);
                                 },
                                 cancellationToken
@@ -384,31 +379,17 @@ public partial class InGameScenarioViewModel : ObservableObject
 
         CurrentScenarioSpecificViewModel = null;
 
-        bool parsedScenario = EnumUtility.TryParseByValueOrMember(
-            scenario.ScenarioName,
-            out Scenario scenarioType
-        );
+        bool parsedScenario = EnumUtility.TryParseByValueOrMember(scenario.ScenarioName, out Scenario scenarioType);
         if (!parsedScenario)
         {
-            _logger.LogWarning(
-                "Failed to parse scenario name: {ScenarioName}",
-                scenario.ScenarioName
-            );
+            _logger.LogWarning("Failed to parse scenario name: {ScenarioName}", scenario.ScenarioName);
             return;
         }
 
-        if (
-            _scenarioUpdateActions.TryGetValue(
-                scenarioType,
-                out Action<DecodedInGameScenario>? updateAction
-            )
-        )
+        if (_scenarioUpdateActions.TryGetValue(scenarioType, out Action<DecodedInGameScenario>? updateAction))
             updateAction(scenario);
         else
-            _logger.LogInformation(
-                "No specific view configured for scenario: {ScenarioName}",
-                scenario.ScenarioName
-            );
+            _logger.LogInformation("No specific view configured for scenario: {ScenarioName}", scenario.ScenarioName);
     }
 
     private string GetClearedDisplay() => Status is 12 or 13 or 15 ? "Yes" : "No";

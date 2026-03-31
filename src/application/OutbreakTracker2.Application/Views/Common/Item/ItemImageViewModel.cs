@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
@@ -15,10 +13,7 @@ public class ItemImageViewModel : ObservableObject
 
     public CroppedBitmap? ItemImage => ImageViewModel.SourceImage;
 
-    public ItemImageViewModel(
-        ILogger<ItemImageViewModel> logger,
-        IImageViewModelFactory imageViewModelFactory
-    )
+    public ItemImageViewModel(ILogger<ItemImageViewModel> logger, IImageViewModelFactory imageViewModelFactory)
     {
         _logger = logger;
         ImageViewModel = imageViewModelFactory.Create();
@@ -35,10 +30,7 @@ public class ItemImageViewModel : ObservableObject
         return ImageViewModel.UpdateImageAsync(itemName, $"Item Image for {itemName}");
     }
 
-    private void OnImageViewModelSourceImageChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs
-    )
+    private void OnImageViewModelSourceImageChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (sender is not ImageViewModel _)
         {

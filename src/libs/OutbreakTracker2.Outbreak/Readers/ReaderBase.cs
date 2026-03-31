@@ -87,18 +87,11 @@ public abstract class ReaderBase : IDisposable
         }
     }
 
-    private string ReadString(
-        nint address,
-        Encoding? encoding = null,
-        [CallerMemberName] string methodName = ""
-    )
+    private string ReadString(nint address, Encoding? encoding = null, [CallerMemberName] string methodName = "")
     {
         if (address == nint.Zero)
         {
-            Logger.LogWarning(
-                "[{MethodName}] Attempted to read string from a null address.",
-                methodName
-            );
+            Logger.LogWarning("[{MethodName}] Attempted to read string from a null address.", methodName);
             return string.Empty;
         }
 
@@ -177,10 +170,7 @@ public abstract class ReaderBase : IDisposable
     {
         if (basePtr == nint.Zero)
         {
-            Logger.LogWarning(
-                "[{MethodName}] Attempted to compute address with a null base pointer.",
-                methodName
-            );
+            Logger.LogWarning("[{MethodName}] Attempted to compute address with a null base pointer.", methodName);
             return nint.Zero;
         }
 
@@ -212,17 +202,11 @@ public abstract class ReaderBase : IDisposable
         return computedAddress;
     }
 
-    private nint ComputeAddress(
-        ReadOnlySpan<nint> offsets,
-        [CallerMemberName] string methodName = ""
-    )
+    private nint ComputeAddress(ReadOnlySpan<nint> offsets, [CallerMemberName] string methodName = "")
     {
         if (offsets.IsEmpty)
         {
-            Logger.LogWarning(
-                "[{MethodName}] Attempted to compute address with an empty offset list.",
-                methodName
-            );
+            Logger.LogWarning("[{MethodName}] Attempted to compute address with an empty offset list.", methodName);
             return nint.Zero;
         }
 
@@ -344,10 +328,7 @@ public abstract class ReaderBase : IDisposable
         return basePointer;
     }
 
-    protected nint GetLobbyRoomPlayerBasePointer(
-        int characterId,
-        [CallerMemberName] string methodName = ""
-    )
+    protected nint GetLobbyRoomPlayerBasePointer(int characterId, [CallerMemberName] string methodName = "")
     {
         nint basePointer = CurrentFile switch
         {
@@ -431,8 +412,7 @@ public abstract class ReaderBase : IDisposable
         );
         if (offsets.IsEmpty)
         {
-            errorMessage =
-                $"[{methodName}] Selected offsets for current game file {CurrentFile} are empty.";
+            errorMessage = $"[{methodName}] Selected offsets for current game file {CurrentFile} are empty.";
             return false;
         }
 
@@ -462,15 +442,7 @@ public abstract class ReaderBase : IDisposable
         [CallerMemberName] string methodName = ""
     )
     {
-        if (
-            !TryComputeAddress(
-                offsetsFile1,
-                offsetsFile2,
-                out nint address,
-                out string? errorMessage,
-                methodName
-            )
-        )
+        if (!TryComputeAddress(offsetsFile1, offsetsFile2, out nint address, out string? errorMessage, methodName))
         {
             Logger.LogError(
                 "Failed to read {Type} for method '{MethodName}' due to address computation error: {ErrorMessage}",
@@ -553,15 +525,7 @@ public abstract class ReaderBase : IDisposable
         [CallerMemberName] string methodName = ""
     )
     {
-        if (
-            !TryComputeLobbyAddress(
-                slotIndex,
-                offsetsFile1,
-                offsetsFile2,
-                out nint address,
-                methodName
-            )
-        )
+        if (!TryComputeLobbyAddress(slotIndex, offsetsFile1, offsetsFile2, out nint address, methodName))
             return errorValue;
 
         TResult result = readOperation(address);
@@ -672,10 +636,7 @@ public abstract class ReaderBase : IDisposable
             _ => "Unknown Scenario",
         };
 
-        if (
-            string.IsNullOrEmpty(scenarioName)
-            || scenarioName.Equals("Unknown Scenario", StringComparison.Ordinal)
-        )
+        if (string.IsNullOrEmpty(scenarioName) || scenarioName.Equals("Unknown Scenario", StringComparison.Ordinal))
         {
             Logger.LogError(
                 "[{MethodName}] Unrecognized game file '{CurrentFile}' or invalid scenario ID {ScenarioId}. Cannot determine scenario string.",

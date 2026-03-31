@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Cysharp.Diagnostics;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.PCSX2.Client;
@@ -81,9 +77,7 @@ public class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessLauncher
             process.Id
         );
 
-        CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(
-            cancellationToken
-        );
+        CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         _ = HandleProcessOutputAsync(process, stdOut, stdError, cts.Token);
 
@@ -107,10 +101,7 @@ public class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessLauncher
         try
         {
             Task[] processingTasks = CreateProcessingTasks(stdOut, stdError, cts.Token);
-            _ = await Task.WhenAny(
-                    Task.WhenAll(processingTasks),
-                    process.WaitForExitAsync(cts.Token)
-                )
+            _ = await Task.WhenAny(Task.WhenAll(processingTasks), process.WaitForExitAsync(cts.Token))
                 .ConfigureAwait(false);
         }
         catch (ProcessErrorException ex)
@@ -126,10 +117,7 @@ public class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessLauncher
 
         void ExitHandler(object? sender, EventArgs e)
         {
-            if (
-                weakCts.TryGetTarget(out CancellationTokenSource? strongCts)
-                && !strongCts.IsCancellationRequested
-            )
+            if (weakCts.TryGetTarget(out CancellationTokenSource? strongCts) && !strongCts.IsCancellationRequested)
                 strongCts.Cancel();
         }
     }
@@ -206,8 +194,7 @@ public class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessLauncher
         {
             return process.StartTime;
         }
-        catch (Exception ex)
-            when (ex is InvalidOperationException or Win32Exception or NotSupportedException)
+        catch (Exception ex) when (ex is InvalidOperationException or Win32Exception or NotSupportedException)
         {
             return DateTime.MinValue;
         }
@@ -247,8 +234,7 @@ public class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessLauncher
 
     public Observable<string> GetErrorObservable() => _processErrors.AsObservable();
 
-    public bool HasExited(int processId) =>
-        !_processes.ContainsKey(processId) || _processes[processId].HasExited;
+    public bool HasExited(int processId) => !_processes.ContainsKey(processId) || _processes[processId].HasExited;
 
     public int GetExitCode(int processId) =>
         _processes.TryGetValue(processId, out Process? process) ? process.ExitCode : -1;

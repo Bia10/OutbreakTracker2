@@ -36,15 +36,9 @@ internal static class InGameScenarioOffsets
         [FileOnePtrs.PuzzleRandom],
         [FileTwoPtrs.PuzzleRandom]
     );
-    public static readonly (nint[] File1, nint[] File2) Pass4 = (
-        [FileOnePtrs.Pass4],
-        [FileTwoPtrs.Pass4]
-    );
+    public static readonly (nint[] File1, nint[] File2) Pass4 = ([FileOnePtrs.Pass4], [FileTwoPtrs.Pass4]);
 
-    public static readonly (nint[] File1, nint[] File2) WildThingsTime = (
-        [],
-        [FileTwoPtrs.WildThingsTime]
-    );
+    public static readonly (nint[] File1, nint[] File2) WildThingsTime = ([], [FileTwoPtrs.WildThingsTime]);
     public static readonly (nint[] File1, nint[] File2) EscapeTime = ([], [FileTwoPtrs.EscapeTime]);
     public static readonly (nint[] File1, nint[] File2) DesperateTimesFightTime = (
         [],
@@ -71,38 +65,14 @@ internal static class InGameScenarioOffsets
         [FileTwoPtrs.DesperateTimesGasRandom]
     );
     public static readonly (nint[] File1, nint[] File2) Coin = ([], [FileTwoPtrs.Coin]);
-    public static readonly (nint[] File1, nint[] File2) KilledZombies = (
-        [],
-        [FileTwoPtrs.KilledZombie]
-    );
-    public static readonly (nint[] File1, nint[] File2) PassWildThings = (
-        [],
-        [FileTwoPtrs.PassWildThings]
-    );
-    public static readonly (nint[] File1, nint[] File2) PassDesperateTimes = (
-        [],
-        [FileTwoPtrs.PassDesperateTimes]
-    );
-    public static readonly (nint[] File1, nint[] File2) PassDesperateTimes2 = (
-        [],
-        [FileTwoPtrs.PassDesperateTimes2]
-    );
-    public static readonly (nint[] File1, nint[] File2) PassDesperateTimes3 = (
-        [],
-        [FileTwoPtrs.PassDesperateTimes3]
-    );
-    public static readonly (nint[] File1, nint[] File2) PassUnderBelly1 = (
-        [],
-        [FileTwoPtrs.PassUnderBelly1]
-    );
-    public static readonly (nint[] File1, nint[] File2) PassUnderBelly2 = (
-        [],
-        [FileTwoPtrs.PassUnderBelly2]
-    );
-    public static readonly (nint[] File1, nint[] File2) PassUnderBelly3 = (
-        [],
-        [FileTwoPtrs.PassUnderBelly3]
-    );
+    public static readonly (nint[] File1, nint[] File2) KilledZombies = ([], [FileTwoPtrs.KilledZombie]);
+    public static readonly (nint[] File1, nint[] File2) PassWildThings = ([], [FileTwoPtrs.PassWildThings]);
+    public static readonly (nint[] File1, nint[] File2) PassDesperateTimes = ([], [FileTwoPtrs.PassDesperateTimes]);
+    public static readonly (nint[] File1, nint[] File2) PassDesperateTimes2 = ([], [FileTwoPtrs.PassDesperateTimes2]);
+    public static readonly (nint[] File1, nint[] File2) PassDesperateTimes3 = ([], [FileTwoPtrs.PassDesperateTimes3]);
+    public static readonly (nint[] File1, nint[] File2) PassUnderBelly1 = ([], [FileTwoPtrs.PassUnderBelly1]);
+    public static readonly (nint[] File1, nint[] File2) PassUnderBelly2 = ([], [FileTwoPtrs.PassUnderBelly2]);
+    public static readonly (nint[] File1, nint[] File2) PassUnderBelly3 = ([], [FileTwoPtrs.PassUnderBelly3]);
 
     public static readonly (nint[] File1, nint[] File2) Pass1 = ([FileOnePtrs.Pass1], []);
     public static readonly (nint[] File1, nint[] File2) Pass2 = ([FileOnePtrs.Pass2], []);
@@ -126,14 +96,8 @@ internal static class InGameScenarioOffsets
         FileOnePtrs.NumberOffset,
         FileTwoPtrs.NumberOffset
     );
-    public static readonly (nint File1, nint File2) ItemIdOffset = (
-        FileOnePtrs.IdOffset,
-        FileTwoPtrs.IdOffset
-    );
-    public static readonly (nint File1, nint File2) ItemMixOffset = (
-        FileOnePtrs.MixOffset,
-        FileTwoPtrs.MixOffset
-    );
+    public static readonly (nint File1, nint File2) ItemIdOffset = (FileOnePtrs.IdOffset, FileTwoPtrs.IdOffset);
+    public static readonly (nint File1, nint File2) ItemMixOffset = (FileOnePtrs.MixOffset, FileTwoPtrs.MixOffset);
     public static readonly (nint File1, nint File2) ItemPresentOffset = (
         FileOnePtrs.PresentOffset,
         FileTwoPtrs.PresentOffset

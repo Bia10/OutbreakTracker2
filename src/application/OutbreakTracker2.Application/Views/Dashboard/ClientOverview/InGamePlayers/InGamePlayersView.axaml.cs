@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers;
 

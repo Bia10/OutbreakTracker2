@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OutbreakTracker2.Application.Services.Launcher;
+﻿namespace OutbreakTracker2.Application.Services.Launcher;
 
 public sealed record ProcessModel
 {

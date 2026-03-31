@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
@@ -64,13 +63,10 @@ public partial class HellfireViewModel : ObservableObject
         };
     }
 
-    private static string CalculateHellfirePowerDisplay(byte puzzleRandom) =>
-        puzzleRandom % 2 == 0 ? "1" : "2";
+    private static string CalculateHellfirePowerDisplay(byte puzzleRandom) => puzzleRandom % 2 == 0 ? "1" : "2";
 
-    private string GetHellfireDisplay() =>
-        $"{HellfirePassDisplay}-{HellfireMapDisplay}-{HellfirePowerDisplay}";
+    private string GetHellfireDisplay() => $"{HellfirePassDisplay}-{HellfireMapDisplay}-{HellfirePowerDisplay}";
 
     private static bool IsValidScenario(string scenarioName) =>
-        !string.IsNullOrEmpty(scenarioName)
-        && scenarioName.Equals("hellfire", StringComparison.Ordinal);
+        !string.IsNullOrEmpty(scenarioName) && scenarioName.Equals("hellfire", StringComparison.Ordinal);
 }

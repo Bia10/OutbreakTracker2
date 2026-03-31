@@ -65,8 +65,7 @@ public sealed class DoorReader : ReaderBase
     private ushort GetHealthPoints(int doorId) =>
         ReadDoorProperty(doorId, DoorPropertyType.Health, DefaultHealthErrorValue);
 
-    private ushort GetFlag(int doorId) =>
-        ReadDoorProperty(doorId, DoorPropertyType.Flag, DefaultFlagErrorValue);
+    private ushort GetFlag(int doorId) => ReadDoorProperty(doorId, DoorPropertyType.Flag, DefaultFlagErrorValue);
 
     private static string DecodeFlag(ushort doorHp, ushort flag)
     {

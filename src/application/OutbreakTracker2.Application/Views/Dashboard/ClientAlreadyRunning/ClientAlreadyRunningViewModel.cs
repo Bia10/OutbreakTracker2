@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -59,25 +55,19 @@ public partial class ClientAlreadyRunningViewModel(
         try
         {
             await _processLauncher.AttachAsync(processId).ConfigureAwait(false);
-            await _toastService
-                .InvokeSuccessToastAsync("Successfully attached to process!")
-                .ConfigureAwait(false);
+            await _toastService.InvokeSuccessToastAsync("Successfully attached to process!").ConfigureAwait(false);
 
             GameClient? activeGameClient = _processLauncher.GetActiveGameClient();
             if (activeGameClient is not null)
             {
-                await _dataManager
-                    .InitializeAsync(activeGameClient, CancellationToken.None)
-                    .ConfigureAwait(false);
+                await _dataManager.InitializeAsync(activeGameClient, CancellationToken.None).ConfigureAwait(false);
                 _logger.LogInformation("DataManager initialized successfully");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to attach to process {ProcessId}", processId);
-            await _toastService
-                .InvokeErrorToastAsync($"Attachment failed: {ex.Message}")
-                .ConfigureAwait(false);
+            await _toastService.InvokeErrorToastAsync($"Attachment failed: {ex.Message}").ConfigureAwait(false);
             UpdateProcesses([processId]);
         }
     }

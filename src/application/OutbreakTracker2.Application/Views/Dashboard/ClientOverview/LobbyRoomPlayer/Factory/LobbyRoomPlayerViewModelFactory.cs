@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Views.Common.Character;
 using OutbreakTracker2.Outbreak.Models;
 
@@ -11,8 +10,7 @@ public class LobbyRoomPlayerViewModelFactory(
 ) : ILobbyRoomPlayerViewModelFactory
 {
     private readonly ILogger<LobbyRoomPlayerViewModelFactory> _logger = logger;
-    private readonly ICharacterBustViewModelFactory _characterBustViewModelFactory =
-        characterBustViewModelFactory;
+    private readonly ICharacterBustViewModelFactory _characterBustViewModelFactory = characterBustViewModelFactory;
 
     public LobbyRoomPlayerViewModel Create(DecodedLobbyRoomPlayer playerData)
     {

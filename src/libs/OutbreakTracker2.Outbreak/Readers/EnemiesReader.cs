@@ -76,26 +76,20 @@ public sealed class EnemiesReader : ReaderBase
         return ReadValue<ushort>(baseAddress, offsets);
     }
 
-    private static string GetEnemyName(byte nameId) =>
-        EnumUtility.GetEnumString(nameId, EnemyType.Unknown);
+    private static string GetEnemyName(byte nameId) => EnumUtility.GetEnumString(nameId, EnemyType.Unknown);
 
-    private static string GetZombieName(byte typeId) =>
-        EnumUtility.GetEnumString(typeId, ZombieType.Unknown0);
+    private static string GetZombieName(byte typeId) => EnumUtility.GetEnumString(typeId, ZombieType.Unknown0);
 
-    private static string GetDogName(byte typeId) =>
-        EnumUtility.GetEnumString(typeId, DogType.Unknown0);
+    private static string GetDogName(byte typeId) => EnumUtility.GetEnumString(typeId, DogType.Unknown0);
 
     private static string GetScissorTailName(byte typeId) =>
         EnumUtility.GetEnumString(typeId, ScissorTailType.ScissorTail);
 
-    private static string GetLionName(byte typeId) =>
-        EnumUtility.GetEnumString(typeId, LionType.Stalker);
+    private static string GetLionName(byte typeId) => EnumUtility.GetEnumString(typeId, LionType.Stalker);
 
-    private static string GetThanatosName(byte typeId) =>
-        EnumUtility.GetEnumString(typeId, ThanatosType.Thanatos);
+    private static string GetThanatosName(byte typeId) => EnumUtility.GetEnumString(typeId, ThanatosType.Thanatos);
 
-    private static string GetTyrantName(byte typeId) =>
-        EnumUtility.GetEnumString(typeId, TyrantType.Tyrant);
+    private static string GetTyrantName(byte typeId) => EnumUtility.GetEnumString(typeId, TyrantType.Tyrant);
 
     public void UpdateEnemies()
     {
@@ -142,65 +136,23 @@ public sealed class EnemiesReader : ReaderBase
             switch (CurrentFile)
             {
                 case GameFile.FileOne:
-                    newDecodedEnemies2[i].SlotId = ReadValue<byte>(
-                        FileOnePtrs.EnemyListOffset,
-                        [curMobOffset + 0x1]
-                    );
-                    newDecodedEnemies2[i].NameId = ReadValue<byte>(
-                        FileOnePtrs.EnemyListOffset,
-                        [curMobOffset + 0x2]
-                    );
-                    newDecodedEnemies2[i].TypeId = ReadValue<byte>(
-                        FileOnePtrs.EnemyListOffset,
-                        [curMobOffset + 0x3]
-                    );
-                    newDecodedEnemies2[i].CurHp = ReadValue<ushort>(
-                        FileOnePtrs.EnemyListOffset,
-                        [curMobOffset + 0x1C]
-                    );
-                    newDecodedEnemies2[i].MaxHp = ReadValue<ushort>(
-                        FileOnePtrs.EnemyListOffset,
-                        [curMobOffset + 0x1E]
-                    );
-                    newDecodedEnemies2[i].RoomId = ReadValue<byte>(
-                        FileOnePtrs.EnemyListOffset,
-                        [curMobOffset + 0x22]
-                    );
-                    newDecodedEnemies2[i].Status = ReadValue<byte>(
-                        FileOnePtrs.EnemyListOffset,
-                        [curMobOffset + 0x45]
-                    );
+                    newDecodedEnemies2[i].SlotId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x1]);
+                    newDecodedEnemies2[i].NameId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x2]);
+                    newDecodedEnemies2[i].TypeId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x3]);
+                    newDecodedEnemies2[i].CurHp = ReadValue<ushort>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x1C]);
+                    newDecodedEnemies2[i].MaxHp = ReadValue<ushort>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x1E]);
+                    newDecodedEnemies2[i].RoomId = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x22]);
+                    newDecodedEnemies2[i].Status = ReadValue<byte>(FileOnePtrs.EnemyListOffset, [curMobOffset + 0x45]);
                     break;
 
                 case GameFile.FileTwo:
-                    newDecodedEnemies2[i].SlotId = ReadValue<byte>(
-                        FileTwoPtrs.EnemyListOffset,
-                        [curMobOffset + 0x1]
-                    );
-                    newDecodedEnemies2[i].NameId = ReadValue<byte>(
-                        FileTwoPtrs.EnemyListOffset,
-                        [curMobOffset + 0x2]
-                    );
-                    newDecodedEnemies2[i].TypeId = ReadValue<byte>(
-                        FileTwoPtrs.EnemyListOffset,
-                        [curMobOffset + 0x3]
-                    );
-                    newDecodedEnemies2[i].CurHp = ReadValue<ushort>(
-                        FileTwoPtrs.EnemyListOffset,
-                        [curMobOffset + 0x1C]
-                    );
-                    newDecodedEnemies2[i].MaxHp = ReadValue<ushort>(
-                        FileTwoPtrs.EnemyListOffset,
-                        [curMobOffset + 0x1E]
-                    );
-                    newDecodedEnemies2[i].RoomId = ReadValue<byte>(
-                        FileTwoPtrs.EnemyListOffset,
-                        [curMobOffset + 0x22]
-                    );
-                    newDecodedEnemies2[i].Status = ReadValue<byte>(
-                        FileTwoPtrs.EnemyListOffset,
-                        [curMobOffset + 0x45]
-                    );
+                    newDecodedEnemies2[i].SlotId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x1]);
+                    newDecodedEnemies2[i].NameId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x2]);
+                    newDecodedEnemies2[i].TypeId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x3]);
+                    newDecodedEnemies2[i].CurHp = ReadValue<ushort>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x1C]);
+                    newDecodedEnemies2[i].MaxHp = ReadValue<ushort>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x1E]);
+                    newDecodedEnemies2[i].RoomId = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x22]);
+                    newDecodedEnemies2[i].Status = ReadValue<byte>(FileTwoPtrs.EnemyListOffset, [curMobOffset + 0x45]);
                     break;
 
                 case GameFile.Unknown:

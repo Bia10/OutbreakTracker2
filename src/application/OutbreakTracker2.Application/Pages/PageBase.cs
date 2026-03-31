@@ -3,8 +3,7 @@ using Material.Icons;
 
 namespace OutbreakTracker2.Application.Pages;
 
-public abstract partial class PageBase(string displayName, MaterialIconKind icon, int index = 0)
-    : ObservableValidator
+public abstract partial class PageBase(string displayName, MaterialIconKind icon, int index = 0) : ObservableValidator
 {
     [ObservableProperty]
     private string _displayName = displayName;

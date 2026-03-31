@@ -1,13 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using Avalonia.Controls.Notifications;
+﻿using Avalonia.Controls.Notifications;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using SukiUI.Toasts;
 
 namespace OutbreakTracker2.Application.Services.Toasts;
 
-public class ToastService(ISukiToastManager toastManager, IDispatcherService dispatcher)
-    : IToastService
+public class ToastService(ISukiToastManager toastManager, IDispatcherService dispatcher) : IToastService
 {
     public Task InvokeInfoToastAsync(string content, string? title = "")
     {

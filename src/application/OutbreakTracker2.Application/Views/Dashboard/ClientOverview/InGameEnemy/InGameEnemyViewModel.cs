@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Outbreak.Common;
@@ -65,12 +64,7 @@ public partial class InGameEnemyViewModel : ObservableObject
         CurrentHp = enemy.CurHp;
         MaxHp = enemy.MaxHp;
         HealthPercentage = PercentageUtility.GetPercentage(enemy.CurHp, enemy.MaxHp);
-        HealthStatus = GetEnemiesHealthStatusStringForFileTwo(
-            enemy.SlotId,
-            enemy.NameId,
-            enemy.CurHp,
-            enemy.MaxHp
-        );
+        HealthStatus = GetEnemiesHealthStatusStringForFileTwo(enemy.SlotId, enemy.NameId, enemy.CurHp, enemy.MaxHp);
         BossType = ConvertBossType(enemy.BossType);
         Status = ConvertStatus(enemy.Status);
         RoomName = UpdateRoomName(enemy.RoomId);
@@ -111,12 +105,7 @@ public partial class InGameEnemyViewModel : ObservableObject
             _ => "Unknown",
         };
 
-    public static string GetEnemyHealthStatusStringForFileOne(
-        int slotId,
-        byte nameId,
-        ushort curHp,
-        ushort maxHp
-    )
+    public static string GetEnemyHealthStatusStringForFileOne(int slotId, byte nameId, ushort curHp, ushort maxHp)
     {
         if (slotId is < 0 or >= GameConstants.MaxEnemies1)
             return $"Invalid enemy SlotId({slotId})";
@@ -140,21 +129,14 @@ public partial class InGameEnemyViewModel : ObservableObject
 
         return curHp switch
         {
-            0x0
-            or 0xffff
-            or >= 0x8000 when enemyType is not (EnemyType.Mine or EnemyType.GasolineTank) => "Dead",
+            0x0 or 0xffff or >= 0x8000 when enemyType is not (EnemyType.Mine or EnemyType.GasolineTank) => "Dead",
             0xffff when maxHp is 0x1 && enemyType is EnemyType.Mine => "Destroyed",
             0x0 when enemyType is EnemyType.GasolineTank => "Exploded",
             _ => healthString,
         };
     }
 
-    public static string GetEnemiesHealthStatusStringForFileTwo(
-        int slotId,
-        byte nameId,
-        ushort curHp,
-        ushort maxHp
-    )
+    public static string GetEnemiesHealthStatusStringForFileTwo(int slotId, byte nameId, ushort curHp, ushort maxHp)
     {
         //if (slotId is < 0 or >= GameConstants.MaxEnemies2)
         //return $"Invalid enemy SlotId({slotId})";
@@ -178,9 +160,7 @@ public partial class InGameEnemyViewModel : ObservableObject
 
         return curHp switch
         {
-            0x0
-            or 0xffff
-            or >= 0x8000 when enemyType is not (EnemyType.Mine or EnemyType.GasolineTank) => "Dead",
+            0x0 or 0xffff or >= 0x8000 when enemyType is not (EnemyType.Mine or EnemyType.GasolineTank) => "Dead",
             0xffff when maxHp is 0x1 && enemyType is EnemyType.Mine => "Destroyed",
             0x0 when enemyType is EnemyType.GasolineTank => "Exploded",
             _ => healthString,
@@ -198,18 +178,8 @@ public partial class InGameEnemyViewModel : ObservableObject
 
         return enemyType switch
         {
-            EnemyType.Mine or EnemyType.GasolineTank or EnemyType.Fire => Color.FromArgb(
-                255,
-                255,
-                80,
-                40
-            ),
-            EnemyType.Mouse or EnemyType.Rafflesia or EnemyType.Typewriter => Color.FromArgb(
-                255,
-                0,
-                255,
-                0
-            ),
+            EnemyType.Mine or EnemyType.GasolineTank or EnemyType.Fire => Color.FromArgb(255, 255, 80, 40),
+            EnemyType.Mouse or EnemyType.Rafflesia or EnemyType.Typewriter => Color.FromArgb(255, 0, 255, 0),
             _ => Color.FromArgb(255, 255, 255, 255),
         };
     }
@@ -225,18 +195,8 @@ public partial class InGameEnemyViewModel : ObservableObject
 
         return enemyType switch
         {
-            EnemyType.Mine or EnemyType.GasolineTank or EnemyType.Fire => Color.FromArgb(
-                255,
-                255,
-                80,
-                40
-            ),
-            EnemyType.Mouse or EnemyType.Rafflesia or EnemyType.Typewriter => Color.FromArgb(
-                255,
-                0,
-                255,
-                0
-            ),
+            EnemyType.Mine or EnemyType.GasolineTank or EnemyType.Fire => Color.FromArgb(255, 255, 80, 40),
+            EnemyType.Mouse or EnemyType.Rafflesia or EnemyType.Typewriter => Color.FromArgb(255, 0, 255, 0),
             _ => Color.FromArgb(255, 255, 255, 255),
         };
     }

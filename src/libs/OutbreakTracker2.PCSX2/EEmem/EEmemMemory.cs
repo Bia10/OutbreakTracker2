@@ -8,14 +8,10 @@ using OutbreakTracker2.WinInterop.Structs;
 
 namespace OutbreakTracker2.PCSX2.EEmem;
 
-public sealed class EEmemMemory(
-    ISafeMemoryReader memoryReader,
-    IStringReader stringReader,
-    ILogger<EEmemMemory> logger
-) : IEEmemMemory
+public sealed class EEmemMemory(ISafeMemoryReader memoryReader, IStringReader stringReader, ILogger<EEmemMemory> logger)
+    : IEEmemMemory
 {
-    private readonly ILogger<EEmemMemory> _logger =
-        logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogger<EEmemMemory> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private GameClient? _gameClient;
 
     public nint BaseAddress { get; private set; }
@@ -23,13 +19,9 @@ public sealed class EEmemMemory(
     public ISafeMemoryReader MemoryReader { get; } =
         memoryReader ?? throw new ArgumentNullException(nameof(memoryReader));
 
-    public IStringReader StringReader { get; } =
-        stringReader ?? throw new ArgumentNullException(nameof(stringReader));
+    public IStringReader StringReader { get; } = stringReader ?? throw new ArgumentNullException(nameof(stringReader));
 
-    public async ValueTask<bool> InitializeAsync(
-        GameClient gameClient,
-        CancellationToken cancellationToken
-    )
+    public async ValueTask<bool> InitializeAsync(GameClient gameClient, CancellationToken cancellationToken)
     {
         _gameClient = gameClient ?? throw new ArgumentNullException(nameof(gameClient));
 
@@ -81,25 +73,18 @@ public sealed class EEmemMemory(
         if (OperatingSystem.IsLinux())
             return GetEEmemBaseAddressLinux(gameClient);
 
-        throw new PlatformNotSupportedException(
-            "EEmem resolution is only supported on Windows and Linux."
-        );
+        throw new PlatformNotSupportedException("EEmem resolution is only supported on Windows and Linux.");
     }
 
     [SupportedOSPlatform("windows")]
     private nint GetEEmemBaseAddressWindows(GameClient gameClient)
     {
         nint baseAddress = gameClient.MainModuleBase;
-        _logger.LogDebug(
-            "Scanning for EEmem base address. GameClient MainModuleBase: 0x{BaseAddress:X}",
-            baseAddress
-        );
+        _logger.LogDebug("Scanning for EEmem base address. GameClient MainModuleBase: 0x{BaseAddress:X}", baseAddress);
 
         if (baseAddress == nint.Zero)
         {
-            _logger.LogWarning(
-                "GameClient MainModuleBase is zero. Cannot proceed with EEmem search."
-            );
+            _logger.LogWarning("GameClient MainModuleBase is zero. Cannot proceed with EEmem search.");
             return nint.Zero;
         }
 
@@ -143,8 +128,10 @@ public sealed class EEmemMemory(
             }
 
             nint exportDirPtr = baseAddress + (int)exportDir.VirtualAddress;
-            Pe32.ImageExportDirectory exportDirStruct =
-                MemoryReader.Read<Pe32.ImageExportDirectory>(gameClient.Handle, exportDirPtr);
+            Pe32.ImageExportDirectory exportDirStruct = MemoryReader.Read<Pe32.ImageExportDirectory>(
+                gameClient.Handle,
+                exportDirPtr
+            );
 
             // Read Export Names
             nint namesAddr = baseAddress + (int)exportDirStruct.AddressOfNames;
@@ -155,20 +142,13 @@ public sealed class EEmemMemory(
                 nint namePtr = baseAddress + (int)nameRva;
                 string name = StringReader.Read(gameClient.Handle, namePtr);
 
-                _logger.LogTrace(
-                    "Found export name: '{ExportName}' at RVA 0x{NameRva:X}",
-                    name,
-                    nameRva
-                );
+                _logger.LogTrace("Found export name: '{ExportName}' at RVA 0x{NameRva:X}", name, nameRva);
 
                 if (name.Equals("EEmem", StringComparison.Ordinal))
                 {
                     // Get corresponding ordinal and function address
                     nint ordinalsAddr = baseAddress + (int)exportDirStruct.AddressOfNameOrdinals;
-                    ushort ordinal = MemoryReader.Read<ushort>(
-                        gameClient.Handle,
-                        ordinalsAddr + (i * 2)
-                    );
+                    ushort ordinal = MemoryReader.Read<ushort>(gameClient.Handle, ordinalsAddr + (i * 2));
 
                     nint functionsAddr = baseAddress + (int)exportDirStruct.AddressOfFunctions;
                     nint functionRvaPtr = functionsAddr + (ordinal * 4);
@@ -184,10 +164,7 @@ public sealed class EEmemMemory(
                     return (nint)eememValue;
                 }
             }
-            _logger.LogDebug(
-                "Did not find 'EEmem' export among {NumberOfNames} names.",
-                exportDirStruct.NumberOfNames
-            );
+            _logger.LogDebug("Did not find 'EEmem' export among {NumberOfNames} names.", exportDirStruct.NumberOfNames);
         }
         catch (Exception ex)
         {
@@ -216,16 +193,10 @@ public sealed class EEmemMemory(
             // /proc/<pid>/exe is a symlink to the actual executable path.
             // It is readable by the owning user for any child process without elevated privileges,
             // unlike Process.MainModule which requires ptrace access on some .NET runtimes.
-            string? exePath = File.ResolveLinkTarget(
-                $"/proc/{pid}/exe",
-                returnFinalTarget: true
-            )?.FullName;
+            string? exePath = File.ResolveLinkTarget($"/proc/{pid}/exe", returnFinalTarget: true)?.FullName;
             if (string.IsNullOrEmpty(exePath))
             {
-                _logger.LogWarning(
-                    "Cannot determine PCSX2 executable path from /proc/{Pid}/exe.",
-                    pid
-                );
+                _logger.LogWarning("Cannot determine PCSX2 executable path from /proc/{Pid}/exe.", pid);
                 return nint.Zero;
             }
 
@@ -234,10 +205,7 @@ public sealed class EEmemMemory(
             nint symbolOffset = FindElfDynSymOffset(exePath, "EEmem");
             if (symbolOffset == nint.Zero)
             {
-                _logger.LogWarning(
-                    "'EEmem' symbol not found in ELF .dynsym of '{ExePath}'.",
-                    exePath
-                );
+                _logger.LogWarning("'EEmem' symbol not found in ELF .dynsym of '{ExePath}'.", exePath);
                 return nint.Zero;
             }
 
@@ -246,10 +214,7 @@ public sealed class EEmemMemory(
             nint loadBase = GetProcMapsLoadBase(pid, exePath);
             if (loadBase == nint.Zero)
             {
-                _logger.LogWarning(
-                    "Failed to determine runtime load base for PID {Pid} from /proc/maps.",
-                    pid
-                );
+                _logger.LogWarning("Failed to determine runtime load base for PID {Pid} from /proc/maps.", pid);
                 return nint.Zero;
             }
 
@@ -287,13 +252,7 @@ public sealed class EEmemMemory(
         using FileStream fs = new(exePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using BinaryReader reader = new(fs);
         Span<byte> ident = stackalloc byte[16];
-        if (
-            fs.Read(ident) < 16
-            || ident[0] != 0x7f
-            || ident[1] != 'E'
-            || ident[2] != 'L'
-            || ident[3] != 'F'
-        )
+        if (fs.Read(ident) < 16 || ident[0] != 0x7f || ident[1] != 'E' || ident[2] != 'L' || ident[3] != 'F')
             return false;
         ushort eType = reader.ReadUInt16(); // e_type
         return eType == EtDyn;
@@ -314,13 +273,7 @@ public sealed class EEmemMemory(
 
         // --- ELF identity (16 bytes) ---
         byte[] ident = reader.ReadBytes(16);
-        if (
-            ident.Length < 16
-            || ident[0] != 0x7f
-            || ident[1] != 'E'
-            || ident[2] != 'L'
-            || ident[3] != 'F'
-        )
+        if (ident.Length < 16 || ident[0] != 0x7f || ident[1] != 'E' || ident[2] != 'L' || ident[3] != 'F')
             return nint.Zero;
 
         bool is64 = ident[4] == 2; // EI_CLASS: 1 = 32-bit, 2 = 64-bit
@@ -345,13 +298,7 @@ public sealed class EEmemMemory(
         // --- Fast path: section headers (present unless aggressively stripped) ---
         if (sectionCount > 0 && sectionHeaderOffset != 0)
         {
-            nint result = FindDynsymViaShdr(
-                fs,
-                reader,
-                sectionHeaderOffset,
-                sectionCount,
-                symbolName
-            );
+            nint result = FindDynsymViaShdr(fs, reader, sectionHeaderOffset, sectionCount, symbolName);
             if (result != nint.Zero)
                 return result;
         }
@@ -376,12 +323,9 @@ public sealed class EEmemMemory(
     )
     {
         // --- Read all section headers (64 bytes each for ELF64) ---
-        (uint shType, ulong shOffset, ulong shSize, uint shLink)[] sections = new (
-            uint,
-            ulong,
-            ulong,
-            uint
-        )[sectionCount];
+        (uint shType, ulong shOffset, ulong shSize, uint shLink)[] sections = new (uint, ulong, ulong, uint)[
+            sectionCount
+        ];
 
         fs.Seek((long)sectionHeaderOffset, SeekOrigin.Begin);
         for (int i = 0; i < sectionCount; i++)
@@ -448,11 +392,7 @@ public sealed class EEmemMemory(
             while (nameEnd < dynstr.Length && dynstr[nameEnd] != 0)
                 nameEnd++;
 
-            string name = System.Text.Encoding.UTF8.GetString(
-                dynstr,
-                (int)stName,
-                nameEnd - (int)stName
-            );
+            string name = System.Text.Encoding.UTF8.GetString(dynstr, (int)stName, nameEnd - (int)stName);
             if (name.Equals(symbolName, StringComparison.Ordinal))
                 return (nint)stValue;
         }
@@ -602,11 +542,7 @@ public sealed class EEmemMemory(
             while (nameEnd < dynstr.Length && dynstr[nameEnd] != 0)
                 nameEnd++;
 
-            string name = System.Text.Encoding.UTF8.GetString(
-                dynstr,
-                (int)stName,
-                nameEnd - (int)stName
-            );
+            string name = System.Text.Encoding.UTF8.GetString(dynstr, (int)stName, nameEnd - (int)stName);
             if (name.Equals(symbolName, StringComparison.Ordinal))
                 return (nint)stValue;
         }
@@ -656,14 +592,7 @@ public sealed class EEmemMemory(
 
             // parts[0] is "startAddr-endAddr"
             string startHex = parts[0].Split('-')[0];
-            if (
-                !long.TryParse(
-                    startHex,
-                    NumberStyles.HexNumber,
-                    CultureInfo.InvariantCulture,
-                    out long startAddr
-                )
-            )
+            if (!long.TryParse(startHex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long startAddr))
                 continue;
 
             if (exactMatch)
@@ -682,11 +611,7 @@ public sealed class EEmemMemory(
             throw new InvalidOperationException("EEmemMemory not initialized with a GameClient.");
 
         nint result = BaseAddress + ptrOffset;
-        _logger.LogTrace(
-            "Calculated address from pointer offset 0x{PtrOffset:X}: 0x{Result:X}",
-            ptrOffset,
-            result
-        );
+        _logger.LogTrace("Calculated address from pointer offset 0x{PtrOffset:X}: 0x{Result:X}", ptrOffset, result);
         return result;
     }
 

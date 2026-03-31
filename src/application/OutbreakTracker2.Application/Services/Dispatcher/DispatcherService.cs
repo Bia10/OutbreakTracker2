@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 
 namespace OutbreakTracker2.Application.Services.Dispatcher;
 
@@ -20,11 +17,7 @@ public sealed class DispatcherService : IDispatcherService
     {
         ArgumentNullException.ThrowIfNull(action);
 
-        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(
-            action,
-            DispatcherPriority.Normal,
-            cancellationToken
-        );
+        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(action, DispatcherPriority.Normal, cancellationToken);
     }
 
     public async Task<TResult?> InvokeOnUIAsync<TResult>(

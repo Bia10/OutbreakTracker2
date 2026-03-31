@@ -6,7 +6,7 @@ namespace OutbreakTracker2.Sandbox;
 public class Frame
 {
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     [JsonPropertyName("x")]
     public int X { get; set; }
@@ -147,9 +147,7 @@ public static class TextureAtlasLoader
             await JsonSerializer
                 .DeserializeAsync(stream, SpriteSheetJsonContext.Default.SpriteSheet)
                 .ConfigureAwait(false)
-            ?? throw new JsonException(
-                "Failed to deserialize sprite sheet data. Deserialized object was null."
-            );
+            ?? throw new JsonException("Failed to deserialize sprite sheet data. Deserialized object was null.");
         if (spriteSheet.Frames is null || spriteSheet.Frames.Count is 0)
             throw new JsonException(
                 "Failed to deserialize sprite sheet data. Deserialized object did not contain any frames."

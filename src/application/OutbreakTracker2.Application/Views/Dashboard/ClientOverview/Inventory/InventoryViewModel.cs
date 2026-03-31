@@ -108,11 +108,7 @@ public partial class InventoryViewModel : ObservableObject
             .FirstOrDefault(item => item.Id.Equals(itemId));
 
         return item is not null
-            ? (
-                item.TypeName,
-                item.Quantity.ToString(CultureInfo.InvariantCulture),
-                $"0x{itemId:X2} | {itemId}"
-            )
+            ? (item.TypeName, item.Quantity.ToString(CultureInfo.InvariantCulture), $"0x{itemId:X2} | {itemId}")
             : ("Unknown", "0", $"0x{itemId:X2} | {itemId}");
     }
 
