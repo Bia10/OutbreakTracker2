@@ -19,13 +19,11 @@ public class ScrollToDataGridItemBehavior : Behavior<DataGrid>
         set => SetValue(ItemToScrollToProperty, value);
     }
 
-    protected override void OnAttached()
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnAttached();
-        if (AssociatedObject is not null)
-        {
-            this.GetObservable(ItemToScrollToProperty).Subscribe(OnItemToScrollToChanged);
-        }
+        base.OnPropertyChanged(change);
+        if (change.Property == ItemToScrollToProperty)
+            OnItemToScrollToChanged(change.GetNewValue<object?>());
     }
 
     private void OnItemToScrollToChanged(object? item)
