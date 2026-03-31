@@ -126,7 +126,7 @@ jobs:
           exclusions: '*.git* .github/* insights/* .idea/*'
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
         with:
           tag_name: ${{ steps.generate_version_tag.outputs.TAG_NAME }}
           name: Pre-release (${{ github.event.inputs.prerelease_identifier }}) - ${{ steps.generate_version_tag.outputs.FULL_VERSION }}
@@ -193,7 +193,7 @@ jobs:
           path: '${{ github.workspace }}/publish_output'
 
       - name: Upload artifact to release
-        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
         with:
           tag_name: ${{ needs.prepare.outputs.tag_name }}
           files: OutbreakTracker2-${{ needs.prepare.outputs.full_version }}-${{ matrix.artifact_suffix }}-published.zip
