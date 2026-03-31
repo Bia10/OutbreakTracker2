@@ -1,5 +1,4 @@
 ﻿#if LINUX
-using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using OutbreakTracker2.LinuxInterop;
