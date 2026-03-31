@@ -15,11 +15,11 @@
        UI / AVALONIA
        ═══════════════════════════════════════════════════════ -->
   <ItemGroup Label="Avalonia">
-    <PackageVersion Include="Avalonia" Version="11.3.0" />
+    <PackageVersion Include="Avalonia" Version="11.3.8" />
     <PackageVersion Include="Avalonia.Desktop" Version="11.3.0" />
     <PackageVersion Include="Avalonia.Diagnostics" Version="11.3.0" />
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.0" />
-    <PackageVersion Include="Avalonia.ReactiveUI" Version="11.3.0" />
+    <PackageVersion Include="Avalonia.ReactiveUI" Version="11.3.8" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.0" />
     <PackageVersion Include="Avalonia.Xaml.Interactivity" Version="11.3.0.6" />
     <PackageVersion Include="Material.Icons.Avalonia" Version="2.4.1" />
