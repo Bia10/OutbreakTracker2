@@ -1,5 +1,5 @@
-﻿using OutbreakTracker2.WinInterop;
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
+using OutbreakTracker2.WinInterop;
 
 namespace OutbreakTracker2.Application.Services.Embedding;
 

@@ -1,5 +1,5 @@
-﻿using OutbreakTracker2.Application.Services.Atlas.Models;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
+using OutbreakTracker2.Application.Services.Atlas.Models;
 
 namespace OutbreakTracker2.Application.Services.Atlas.Serialization;
 

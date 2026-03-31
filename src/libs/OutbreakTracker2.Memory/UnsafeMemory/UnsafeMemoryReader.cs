@@ -1,9 +1,9 @@
-﻿using OutbreakTracker2.WinInterop;
-using System.Buffers;
+﻿using System.Buffers;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using OutbreakTracker2.WinInterop;
 
 namespace OutbreakTracker2.Memory.UnsafeMemory;
 

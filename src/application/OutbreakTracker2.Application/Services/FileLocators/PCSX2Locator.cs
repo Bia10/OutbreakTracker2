@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
+using Microsoft.Extensions.Logging;
 using ZLinq;
 
 namespace OutbreakTracker2.Application.Services.FileLocators;

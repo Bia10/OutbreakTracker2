@@ -1,8 +1,8 @@
-﻿using Avalonia.Controls;
+﻿using System.Diagnostics.CodeAnalysis;
+using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using OutbreakTracker2.Application.Pages;
-using System.Diagnostics.CodeAnalysis;
 
 namespace OutbreakTracker2.Application.Common;
 

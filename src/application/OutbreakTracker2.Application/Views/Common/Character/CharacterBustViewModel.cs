@@ -1,9 +1,9 @@
-﻿using Avalonia.Media.Imaging;
+﻿using System.ComponentModel;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Atlas;
 using OutbreakTracker2.Outbreak.Enums.Character;
-using System.ComponentModel;
 
 namespace OutbreakTracker2.Application.Views.Common.Character;
 

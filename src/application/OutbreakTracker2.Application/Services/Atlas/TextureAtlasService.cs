@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Atlas.Models;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Character;
 using OutbreakTracker2.Outbreak.Utility;
-using System.Text.Json;
 
 namespace OutbreakTracker2.Application.Services.Atlas;
 

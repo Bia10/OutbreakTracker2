@@ -1,6 +1,6 @@
-﻿using OutbreakTracker2.PCSX2.Client;
+﻿using System.Diagnostics;
+using OutbreakTracker2.PCSX2.Client;
 using R3;
-using System.Diagnostics;
 
 namespace OutbreakTracker2.Application.Services.Launcher;
 

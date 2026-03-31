@@ -1,10 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Globalization;
+using System.Runtime.Versioning;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Memory.SafeMemory;
 using OutbreakTracker2.Memory.String;
 using OutbreakTracker2.PCSX2.Client;
 using OutbreakTracker2.WinInterop.Structs;
-using System.Globalization;
-using System.Runtime.Versioning;
 
 namespace OutbreakTracker2.PCSX2.EEmem;
 

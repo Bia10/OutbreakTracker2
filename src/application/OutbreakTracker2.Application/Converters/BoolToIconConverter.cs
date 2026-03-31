@@ -1,7 +1,7 @@
-﻿using Avalonia.Data;
+﻿using System.Globalization;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Material.Icons;
-using System.Globalization;
 
 namespace OutbreakTracker2.Application.Converters
 {

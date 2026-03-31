@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
-using OutbreakTracker2.Memory.String;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
+using Microsoft.Extensions.Logging;
+using OutbreakTracker2.Memory.String;
 
 namespace OutbreakTracker2.LinuxInterop;
 
