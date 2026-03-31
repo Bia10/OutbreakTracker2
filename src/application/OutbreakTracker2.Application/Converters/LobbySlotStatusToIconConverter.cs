@@ -1,9 +1,9 @@
-﻿using System.Globalization;
-using Avalonia.Data;
+﻿using Avalonia.Data;
 using Avalonia.Data.Converters;
 using FastEnumUtility;
 using Material.Icons;
 using OutbreakTracker2.Outbreak.Enums.LobbySlot;
+using System.Globalization;
 
 namespace OutbreakTracker2.Application.Converters;
 

@@ -1,9 +1,9 @@
-﻿using System.Buffers;
+﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Running;
+using System.Buffers;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Running;
 
 namespace OutbreakTracker2.Benchmarks;
 

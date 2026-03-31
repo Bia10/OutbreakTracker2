@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Data;
@@ -9,6 +8,7 @@ using OutbreakTracker2.Application.Services.Toasts;
 using OutbreakTracker2.PCSX2.Client;
 using R3;
 using SukiUI.Toasts;
+using System.Diagnostics;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientNotRunning;
 

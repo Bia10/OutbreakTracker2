@@ -1,6 +1,6 @@
-﻿using System.Threading.Channels;
-using ObservableCollections;
+﻿using ObservableCollections;
 using OutbreakTracker2.Application.Views.Logging;
+using System.Threading.Channels;
 
 namespace OutbreakTracker2.Application.Services.LogStorage;
 

@@ -1,8 +1,8 @@
-﻿using System.Runtime.InteropServices;
+﻿using Microsoft.Extensions.Logging;
+using OutbreakTracker2.WinInterop;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
-using Microsoft.Extensions.Logging;
-using OutbreakTracker2.WinInterop;
 
 namespace OutbreakTracker2.Memory.String;
 

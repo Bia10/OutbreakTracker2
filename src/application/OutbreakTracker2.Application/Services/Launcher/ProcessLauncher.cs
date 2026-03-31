@@ -1,10 +1,10 @@
-﻿using System.Collections.Concurrent;
-using System.ComponentModel;
-using System.Diagnostics;
-using Cysharp.Diagnostics;
+﻿using Cysharp.Diagnostics;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.PCSX2.Client;
 using R3;
+using System.Collections.Concurrent;
+using System.ComponentModel;
+using System.Diagnostics;
 
 namespace OutbreakTracker2.Application.Services.Launcher;
 

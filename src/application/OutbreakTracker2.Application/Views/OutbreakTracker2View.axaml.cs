@@ -1,9 +1,9 @@
-﻿using System.Runtime.CompilerServices;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Interactivity;
 using SukiUI.Controls;
 using SukiUI.Enums;
 using SukiUI.Models;
+using System.Runtime.CompilerServices;
 
 namespace OutbreakTracker2.Application.Views;
 

@@ -1,9 +1,9 @@
-﻿using System.Collections.ObjectModel;
-using System.Globalization;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
 using OutbreakTracker2.Outbreak.Models;
+using System.Collections.ObjectModel;
+using System.Globalization;
 using ZLinq;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;

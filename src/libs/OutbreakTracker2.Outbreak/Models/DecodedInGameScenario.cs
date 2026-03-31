@@ -1,5 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using OutbreakTracker2.Outbreak.Common;
+﻿using OutbreakTracker2.Outbreak.Common;
+using System.Text.Json.Serialization;
 
 namespace OutbreakTracker2.Outbreak.Models;
 

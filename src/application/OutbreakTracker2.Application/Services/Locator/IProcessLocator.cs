@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using R3;
+﻿using R3;
+using System.Diagnostics;
 
 namespace OutbreakTracker2.Application.Services.Locator;
 

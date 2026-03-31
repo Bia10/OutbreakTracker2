@@ -1,8 +1,8 @@
-﻿using System.Globalization;
-using System.Runtime.CompilerServices;
-using FastEnumUtility;
+﻿using FastEnumUtility;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Rooms;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace OutbreakTracker2.Outbreak.Utility;
 

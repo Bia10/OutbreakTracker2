@@ -1,6 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using OutbreakTracker2.WinInterop.Enums;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using OutbreakTracker2.WinInterop.Enums;
 
 namespace OutbreakTracker2.WinInterop;
 

@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
-using Avalonia.Media.Imaging;
+﻿using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
+using System.ComponentModel;
 
 namespace OutbreakTracker2.Application.Views.Common.Item;
 

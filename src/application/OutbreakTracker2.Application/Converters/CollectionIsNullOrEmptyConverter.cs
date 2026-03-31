@@ -1,7 +1,7 @@
-﻿using System.Collections;
-using System.Globalization;
-using Avalonia.Data;
+﻿using Avalonia.Data;
 using Avalonia.Data.Converters;
+using System.Collections;
+using System.Globalization;
 
 namespace OutbreakTracker2.Application.Converters;
 

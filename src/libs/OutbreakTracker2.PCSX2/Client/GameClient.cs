@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
+﻿using OutbreakTracker2.WinInterop;
+using OutbreakTracker2.WinInterop.Enums;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Versioning;
-using OutbreakTracker2.WinInterop;
-using OutbreakTracker2.WinInterop.Enums;
 
 namespace OutbreakTracker2.PCSX2.Client;
 
