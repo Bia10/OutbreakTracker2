@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using System.Runtime.CompilerServices;
+using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -6,7 +7,9 @@ namespace OutbreakTracker2.Application.Common;
 
 public class ViewLocator(OutbreakTracker2Views views) : IDataTemplate
 {
-    private readonly Dictionary<object, Control> _controlCache = [];
+    // ConditionalWeakTable lets the GC collect both the ViewModel key and the Control value
+    // when the ViewModel is no longer referenced — prevents leaks for transient VMs.
+    private readonly ConditionalWeakTable<object, Control> _controlCache = new();
 
     public Control Build(object? param)
     {
@@ -18,8 +21,7 @@ public class ViewLocator(OutbreakTracker2Views views) : IDataTemplate
 
         if (views.TryCreateView(param, out Control? view))
         {
-            _controlCache.Add(param, view);
-
+            _controlCache.AddOrUpdate(param, view);
             return view;
         }
 

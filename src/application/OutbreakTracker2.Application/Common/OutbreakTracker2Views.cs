@@ -8,19 +8,17 @@ namespace OutbreakTracker2.Application.Common;
 
 public class OutbreakTracker2Views
 {
-    private readonly Dictionary<Type, Type> _vmToViewMap = [];
+    // Stores a compile-time factory per ViewModel type — no Activator.CreateInstance needed.
+    // The static () => new TView() lambda is a pure newobj IL instruction, fully AOT-safe.
+    private readonly Dictionary<Type, Func<Control>> _vmToViewFactoryMap = [];
 
-    public OutbreakTracker2Views AddView<
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView,
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel
-    >(ServiceCollection services)
-        where TView : ContentControl
+    public OutbreakTracker2Views AddView<TView, TViewModel>(ServiceCollection services)
+        where TView : ContentControl, new()
         where TViewModel : ObservableObject
     {
-        Type viewType = typeof(TView);
         Type viewModelType = typeof(TViewModel);
 
-        _vmToViewMap.Add(viewModelType, viewType);
+        _vmToViewFactoryMap[viewModelType] = static () => new TView();
 
         if (viewModelType.IsAssignableTo(typeof(PageBase)))
             services.AddSingleton(typeof(PageBase), viewModelType);
@@ -50,12 +48,10 @@ public class OutbreakTracker2Views
 
         Type viewModelType = viewModel.GetType();
 
-        if (_vmToViewMap.TryGetValue(viewModelType, out Type? viewType))
+        if (_vmToViewFactoryMap.TryGetValue(viewModelType, out Func<Control>? factory))
         {
-            view = Activator.CreateInstance(viewType) as Control;
-
-            if (view is not null)
-                view.DataContext = viewModel;
+            view = factory();
+            view.DataContext = viewModel;
         }
 
         return view is not null;
