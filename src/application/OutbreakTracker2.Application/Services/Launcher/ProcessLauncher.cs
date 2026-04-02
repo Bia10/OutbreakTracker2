@@ -117,8 +117,17 @@ public class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessLauncher
 
         void ExitHandler(object? sender, EventArgs e)
         {
-            if (weakCts.TryGetTarget(out CancellationTokenSource? strongCts) && !strongCts.IsCancellationRequested)
+            if (!weakCts.TryGetTarget(out CancellationTokenSource? strongCts) || strongCts.IsCancellationRequested)
+                return;
+
+            // Guard against the race where process.Exited fires from the thread pool after the
+            // 'using' block has already disposed cts (the unsubscription in 'finally' does not
+            // prevent callbacks that were already enqueued before unsubscription completed).
+            try
+            {
                 strongCts.Cancel();
+            }
+            catch (ObjectDisposedException) { }
         }
     }
 
@@ -162,6 +171,9 @@ public class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessLauncher
         _processes.TryRemove(process.Id, out _);
         _clientProcessIds.TryRemove(process.Id, out _);
 
+        if (ReferenceEquals(ClientMonitoredProcess, process))
+            ClientMonitoredProcess = null;
+
         _processUpdate.OnNext(
             new ProcessModel
             {
@@ -202,15 +214,55 @@ public class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessLauncher
 
     public Task<GameClient> AttachAsync(int processId)
     {
-        if (ClientMonitoredProcess?.Id == processId)
+        Process? monitoredProcess = ClientMonitoredProcess;
+        int? monitoredProcessId = null;
+        try
+        {
+            monitoredProcessId = monitoredProcess?.Id;
+        }
+        catch (InvalidOperationException)
+        {
+            // The Process object exists but has lost its backing OS process (e.g. it was closed/disposed
+            // by an external caller). Clear the stale reference so we fall through to fresh attach logic.
+            _logger.LogWarning(
+                "ClientMonitoredProcess handle invalid for PID {ProcessId}; clearing stale reference",
+                processId
+            );
+            ClientMonitoredProcess = null;
+            monitoredProcess = null;
+        }
+
+        if (monitoredProcessId == processId && monitoredProcess is not null)
         {
             _logger.LogInformation("Already attached to process {ProcessId}", processId);
 
             if (AttachedGameClient is { IsAttached: true })
+            {
+                // Re-broadcast so late subscribers (e.g. EmbeddedGameViewModel) receive the PID.
+                _processUpdate.OnNext(
+                    new ProcessModel
+                    {
+                        IsRunning = true,
+                        Id = processId,
+                        Name = monitoredProcess.ProcessName,
+                        StartTime = GetSafeStartTime(monitoredProcess),
+                    }
+                );
                 return Task.FromResult(AttachedGameClient);
+            }
 
             AttachedGameClient = new GameClient();
             AttachedGameClient.Attach(Process.GetProcessById(processId));
+
+            _processUpdate.OnNext(
+                new ProcessModel
+                {
+                    IsRunning = true,
+                    Id = processId,
+                    Name = monitoredProcess.ProcessName,
+                    StartTime = GetSafeStartTime(monitoredProcess),
+                }
+            );
 
             return Task.FromResult(AttachedGameClient);
         }
