@@ -14,10 +14,7 @@
     <DebugType>portable</DebugType>
     <Nullable>enable</Nullable>
 
-    <!-- Artifact output layout: all bins go to artifacts/ at repo root -->
-    <UseArtifactsOutput>true</UseArtifactsOutput>
-    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
-    <VSTestResultsDirectory>$(ArtifactsPath)/TestResults</VSTestResultsDirectory>
+    <VSTestResultsDirectory>$(MSBuildThisFileDirectory)artifacts/TestResults</VSTestResultsDirectory>
 
     <!-- Generate docs XML; suppress missing-doc warnings globally -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
