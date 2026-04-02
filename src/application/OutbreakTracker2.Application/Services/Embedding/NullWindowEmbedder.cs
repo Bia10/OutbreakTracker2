@@ -21,5 +21,7 @@ internal sealed class NullWindowEmbedder : IWindowEmbedder
 
     public void ReleaseWindow(nint targetHandle) { }
 
+    public string GetDiagnosticInfo(int pid) => string.Empty;
+
     public void Dispose() { }
 }

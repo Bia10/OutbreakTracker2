@@ -51,4 +51,11 @@ public interface IWindowEmbedder : IDisposable
     /// clearing its parent (Windows). Call before destroying the container.
     /// </summary>
     void ReleaseWindow(nint targetHandle);
+
+    /// <summary>
+    /// Returns a human-readable summary of all top-level windows currently owned by
+    /// <paramref name="pid"/>. Intended for debugging embedding failures.
+    /// Safe to call from a background thread. Returns an empty string when not supported.
+    /// </summary>
+    string GetDiagnosticInfo(int pid);
 }

@@ -190,6 +190,8 @@ internal sealed class LinuxWindowEmbedder : IWindowEmbedder
         X11NativeMethods.XSync(_display, discard: false);
     }
 
+    public string GetDiagnosticInfo(int pid) => string.Empty;
+
     // ── X11 helpers ───────────────────────────────────────────────────────────
 
     private static int GetWindowPid(nint display, nint window, nint pidAtom)
