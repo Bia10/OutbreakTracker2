@@ -11,7 +11,6 @@ using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
 using R3;
-using ZLinq;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoom;
 

@@ -160,15 +160,15 @@ public partial class LogViewerViewModel : ObservableObject, IDisposable
 
             ct.ThrowIfCancellationRequested();
 
-            HashSet<LogLevel> selectedLevels = Enumerable.ToHashSet(SelectedLogLevels);
-            IEnumerable<LogModel> filteredQuery = currentEntriesSnapshot;
-
-            if (selectedLevels.Count > 0)
-                filteredQuery = filteredQuery.Where(log => selectedLevels.Contains(log.LogLevel));
+            HashSet<LogLevel> selectedLevels = SelectedLogLevels.ToHashSet();
 
             List<LogModel> formattedAndFiltered =
             [
-                .. filteredQuery.Select(LogModel.ToDisplayForm).TakeLast(MaxLogEntries),
+                .. currentEntriesSnapshot
+                    .AsValueEnumerable()
+                    .Where(log => selectedLevels.Count == 0 || selectedLevels.Contains(log.LogLevel))
+                    .Select(LogModel.ToDisplayForm)
+                    .TakeLast(MaxLogEntries),
             ];
 
             ct.ThrowIfCancellationRequested();

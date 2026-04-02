@@ -32,9 +32,8 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
 
         foreach (DecodedItem newItem in newItemsList)
         {
-            DecodedItem? existingItem = Enumerable.FirstOrDefault(
-                Items,
-                existingItem => existingItem.SlotIndex == newItem.SlotIndex && existingItem.Id == newItem.Id
+            DecodedItem? existingItem = Items.FirstOrDefault(existingItem =>
+                existingItem.SlotIndex == newItem.SlotIndex && existingItem.Id == newItem.Id
             );
             if (existingItem == null)
                 Items.Add(newItem);
@@ -77,9 +76,8 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
 
         foreach (DecodedEnemy newEnemy in newEnemiesList)
         {
-            DecodedEnemy? existingEnemy = Enumerable.FirstOrDefault(
-                Enemies,
-                e => e.SlotId == newEnemy.SlotId && e.Id == newEnemy.Id
+            DecodedEnemy? existingEnemy = Enemies.FirstOrDefault(e =>
+                e.SlotId == newEnemy.SlotId && e.Id == newEnemy.Id
             );
 
             if (existingEnemy is null)
@@ -123,7 +121,7 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
 
         foreach (DecodedDoor newDoor in newDoorsList)
         {
-            DecodedDoor? existingDoor = Enumerable.FirstOrDefault(Doors, d => d.Id == newDoor.Id);
+            DecodedDoor? existingDoor = Doors.FirstOrDefault(d => d.Id == newDoor.Id);
 
             if (existingDoor is null)
                 Doors.Add(newDoor);

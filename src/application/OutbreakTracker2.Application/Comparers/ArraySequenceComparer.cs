@@ -10,7 +10,7 @@ internal sealed class ArraySequenceComparer<T> : IEqualityComparer<T[]?>
         if (x is null || y is null)
             return false;
 
-        return x.SequenceEqual(y);
+        return x.AsSpan().SequenceEqual(y.AsSpan());
     }
 
     public int GetHashCode(T[]? obj)

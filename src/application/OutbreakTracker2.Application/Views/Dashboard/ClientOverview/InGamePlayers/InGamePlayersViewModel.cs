@@ -7,7 +7,6 @@ using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer.Factory;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
-using ZLinq;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers;
 
@@ -121,9 +120,11 @@ public class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
                                         }
 
                                     HashSet<string> desiredUniqueIdsLookup = new(
-                                        desiredViewModels.Select<InGamePlayerViewModel, string>(vm => vm.UniqueNameId),
+                                        desiredViewModels.Count,
                                         StringComparer.Ordinal
                                     );
+                                    foreach (InGamePlayerViewModel vm2 in desiredViewModels)
+                                        desiredUniqueIdsLookup.Add(vm2.UniqueNameId);
                                     for (int i = _players.Count - 1; i >= 0; i--)
                                     {
                                         InGamePlayerViewModel currentVmInList = _players[i];

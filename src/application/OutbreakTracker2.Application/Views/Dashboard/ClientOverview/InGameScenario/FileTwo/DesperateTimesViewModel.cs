@@ -163,8 +163,7 @@ public partial class DesperateTimesViewModel : ObservableObject
         if (roomIds.Count is 0)
             return string.Empty;
 
-        IEnumerable<string> roomNames = roomIds.Select(GetRoomName);
-        return string.Join(Environment.NewLine, roomNames);
+        return string.Join(Environment.NewLine, roomIds.AsValueEnumerable().Select(GetRoomName).ToArray());
     }
 
     private static bool IsHardOrVeryHard(string difficulty)

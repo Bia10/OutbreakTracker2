@@ -1,6 +1,5 @@
 ﻿using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
-using ZLinq;
 
 namespace OutbreakTracker2.Application.Services.FileLocators;
 
@@ -82,10 +81,12 @@ public class Pcsx2Locator(ILogger<Pcsx2Locator> logger) : IPcsx2Locator
             AttributesToSkip = FileAttributes.System | FileAttributes.Hidden,
         };
 
-        IEnumerable<string> drives = DriveInfo
+        string[] drives = DriveInfo
             .GetDrives()
+            .AsValueEnumerable()
             .Where(d => d is { DriveType: DriveType.Fixed, IsReady: true })
-            .Select(d => d.RootDirectory.FullName);
+            .Select(d => d.RootDirectory.FullName)
+            .ToArray();
 
         foreach (string drive in drives)
         {

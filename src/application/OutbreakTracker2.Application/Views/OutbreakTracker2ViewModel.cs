@@ -11,7 +11,6 @@ using SukiUI.Enums;
 using SukiUI.Models;
 using SukiUI.Theme.Shadcn;
 using SukiUI.Toasts;
-using ZLinq;
 
 namespace OutbreakTracker2.Application.Views;
 
@@ -68,9 +67,7 @@ internal sealed partial class OutbreakTracker2ViewModel : ObservableObject
     {
         ToastManager = toastManager;
         DialogManager = dialogManager;
-        Pages = new AvaloniaList<PageBase>(
-            demoPages.OrderBy(x => x.Index).ThenBy<PageBase, string>(x => x.DisplayName, StringComparer.Ordinal)
-        );
+        Pages = new AvaloniaList<PageBase>(demoPages.AsValueEnumerable().OrderBy(x => x.Index).ToArray());
         BackgroundStyles = new AvaloniaList<SukiBackgroundStyle>(Enum.GetValues<SukiBackgroundStyle>());
         _theme = SukiTheme.GetInstance();
 
