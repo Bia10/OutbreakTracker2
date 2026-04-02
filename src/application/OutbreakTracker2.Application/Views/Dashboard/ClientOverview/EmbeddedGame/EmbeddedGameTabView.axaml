@@ -1,0 +1,89 @@
+<UserControl
+    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGame.EmbeddedGameTabView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGame"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="local:EmbeddedGameViewModel"
+    mc:Ignorable="d">
+
+    <!--
+        Layout: DockPanel so the status strip (Dock="Top") and diagnostics panel (Dock="Top")
+        are always visible above the fill area that contains the Win32 NativeControlHost.
+        Win32 child HWNDs always paint over Avalonia surfaces in the same layout cell, so these
+        strips must not share a cell with the EmbeddedGameView.
+    -->
+    <DockPanel>
+
+        <!-- ── Status strip ── always visible when the platform supports embedding -->
+        <Border
+            DockPanel.Dock="Top"
+            Padding="8,4"
+            IsVisible="{Binding IsSupported}">
+            <DockPanel>
+                <Button
+                    DockPanel.Dock="Right"
+                    Margin="8,0,0,0"
+                    Padding="6,2"
+                    Content="Diagnostics"
+                    Command="{Binding ToggleDiagnosticsCommand}" />
+                <Button
+                    DockPanel.Dock="Right"
+                    Margin="8,0,0,0"
+                    Padding="6,2"
+                    Content="{Binding EmbedButtonContent}"
+                    Command="{Binding EmbedButtonCommand}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Text="{Binding StatusMessage}"
+                    TextWrapping="Wrap" />
+            </DockPanel>
+        </Border>
+
+        <!-- ── Diagnostics panel ── collapsible, above the HWND fill area -->
+        <Border
+            DockPanel.Dock="Top"
+            Padding="8,4"
+            MaxHeight="200"
+            IsVisible="{Binding ShowDiagnostics}">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <TextBlock
+                    FontFamily="Consolas,Courier New,monospace"
+                    FontSize="11"
+                    Text="{Binding DiagnosticInfo}"
+                    TextWrapping="NoWrap" />
+            </ScrollViewer>
+        </Border>
+
+        <!-- ── Fill area ── -->
+        <Grid>
+            <!-- Platform not supported -->
+            <TextBlock
+                IsVisible="{Binding IsNotSupported}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                TextAlignment="Center"
+                Text="Window embedding is not available on this platform.&#xA;X11 display required (Linux / WSLg with DISPLAY set)." />
+
+            <!-- Pre-embed placeholder: supported platform but embed not yet requested -->
+            <TextBlock
+                IsVisible="{Binding IsPreEmbedState}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                TextAlignment="Center"
+                MaxWidth="400"
+                Opacity="0.55"
+                Text="{Binding StatusMessage}"
+                TextWrapping="Wrap" />
+
+            <!-- Native host: only created (HWND allocated) when IsEmbedRequested = true -->
+            <local:EmbeddedGameView
+                x:Name="GameView"
+                IsVisible="{Binding IsEmbedRequested}"
+                DataContext="{Binding}" />
+        </Grid>
+    </DockPanel>
+</UserControl>
