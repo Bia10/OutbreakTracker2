@@ -22,7 +22,18 @@ public abstract class ReaderBase : IDisposable
     private readonly ISafeMemoryReader _memoryReader;
     private readonly IStringReader _stringReader;
 
-    protected GameFile CurrentFile { get; }
+    private volatile GameFile _detectedFile;
+
+    protected GameFile CurrentFile
+    {
+        get
+        {
+            if (_detectedFile is not GameFile.Unknown)
+                return _detectedFile;
+            _detectedFile = GetGameFile();
+            return _detectedFile;
+        }
+    }
 
     private bool _disposed;
 
@@ -34,8 +45,6 @@ public abstract class ReaderBase : IDisposable
 
         _memoryReader = eememMemory.MemoryReader;
         _stringReader = eememMemory.StringReader;
-
-        CurrentFile = GetGameFile();
     }
 
     private T Read<T>(nint address, [CallerMemberName] string methodName = "")
@@ -153,7 +162,7 @@ public abstract class ReaderBase : IDisposable
             return GameFile.FileTwo;
         }
 
-        Logger.LogWarning(
+        Logger.LogTrace(
             "Failed to detect game file. FileOne signature byte: 0x{F1Byte:X2}, FileTwo signature byte: 0x{F2Byte:X2}. Defaulting to Unknown",
             f1Byte,
             f2Byte
@@ -252,7 +261,7 @@ public abstract class ReaderBase : IDisposable
 
         if (CurrentFile is GameFile.Unknown)
         {
-            Logger.LogWarning(
+            Logger.LogTrace(
                 "[{MethodName}] GetFileSpecificOffsets called with CurrentFile set to Unknown. Returning empty offsets array.",
                 methodName
             );
@@ -444,12 +453,20 @@ public abstract class ReaderBase : IDisposable
     {
         if (!TryComputeAddress(offsetsFile1, offsetsFile2, out nint address, out string? errorMessage, methodName))
         {
-            Logger.LogError(
-                "Failed to read {Type} for method '{MethodName}' due to address computation error: {ErrorMessage}",
-                typeof(TResult).Name,
-                methodName,
-                errorMessage
-            );
+            if (CurrentFile is GameFile.Unknown)
+                Logger.LogTrace(
+                    "Failed to read {Type} for method '{MethodName}' due to address computation error: {ErrorMessage}",
+                    typeof(TResult).Name,
+                    methodName,
+                    errorMessage
+                );
+            else
+                Logger.LogError(
+                    "Failed to read {Type} for method '{MethodName}' due to address computation error: {ErrorMessage}",
+                    typeof(TResult).Name,
+                    methodName,
+                    errorMessage
+                );
             return errorValue;
         }
 
