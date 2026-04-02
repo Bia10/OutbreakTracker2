@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Data;
@@ -17,8 +16,7 @@ public partial class ClientNotRunningViewModel(
     IToastService toastService,
     IProcessLauncher processLauncher,
     IPcsx2Locator pcsx2Locator,
-    IDataManager dataManager,
-    IGameClientFactory gameClientFactory
+    IDataManager dataManager
 ) : ObservableObject, IDisposable
 {
     private readonly CompositeDisposable _disposables = [];
@@ -27,7 +25,6 @@ public partial class ClientNotRunningViewModel(
     private readonly IProcessLauncher _processLauncher = processLauncher;
     private readonly IPcsx2Locator _pcsx2Locator = pcsx2Locator;
     private readonly IDataManager _dataManager = dataManager;
-    private readonly IGameClientFactory _gameClientFactory = gameClientFactory;
 
     private const byte LaunchTimeout = 3;
 
@@ -75,7 +72,6 @@ public partial class ClientNotRunningViewModel(
         IsCancellationRequested = false;
 
         CancellationTokenSource cts = new();
-        GameClient? gameClient = null;
 
         _processLauncher
             .IsCancelling.Subscribe(
@@ -126,17 +122,10 @@ public partial class ClientNotRunningViewModel(
                     await _processLauncher.LaunchAsync(pcsx2ExePath, arguments, cts.Token).ConfigureAwait(false);
                     _logger.LogInformation("PCSX2 process launched successfully");
 
-                    Process? pcsx2Process = _processLauncher.ClientMonitoredProcess;
-                    if (pcsx2Process is null)
-                    {
-                        _logger.LogError("PCSX2 process not available from ProcessLauncher after launch.");
-                        throw new InvalidOperationException("PCSX2 process not available.");
-                    }
-
-                    gameClient = await _gameClientFactory
-                        .CreateAndAttachGameClientAsync(pcsx2Process, cts.Token)
-                        .ConfigureAwait(false);
-                    _logger.LogInformation("GameClient created and attached successfully.");
+                    GameClient gameClient =
+                        _processLauncher.GetActiveGameClient()
+                        ?? throw new InvalidOperationException("GameClient not available after launch.");
+                    _logger.LogInformation("GameClient acquired successfully.");
 
                     await _dataManager.InitializeAsync(gameClient, cts.Token).ConfigureAwait(false);
                     _logger.LogInformation("DataManager initialized successfully");
@@ -232,7 +221,6 @@ public partial class ClientNotRunningViewModel(
         finally
         {
             IsClientLaunching = false;
-            gameClient?.Dispose();
         }
     }
 

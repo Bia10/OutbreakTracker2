@@ -56,7 +56,16 @@ public partial class DashboardViewModel : PageBase
                 {
                     if (isRunning)
                     {
-                        int? clientProcessId = processLauncher.ClientMonitoredProcess?.Id;
+                        int? clientProcessId = null;
+                        try
+                        {
+                            clientProcessId = processLauncher.ClientMonitoredProcess?.Id;
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // Process handle invalidated between null check and Id access (race with exit)
+                        }
+
                         IReadOnlyList<int> processIds = processLocator.GetProcessIds("pcsx2-qt");
 
                         if (clientProcessId.HasValue && processIds.Contains(clientProcessId.Value))
