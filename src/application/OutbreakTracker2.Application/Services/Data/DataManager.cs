@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Comparers;
+using OutbreakTracker2.Application.Services.Launcher;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Readers;
 using OutbreakTracker2.PCSX2.Client;
@@ -15,6 +16,8 @@ public sealed class DataManager : IDataManager, IDisposable
     private GameClient? _gameClient;
     private IDisposable? _updateSubscription;
     private IDisposable? _loggingSubscriptions;
+    private IDisposable? _processSubscription;
+    private CancellationTokenSource? _updateCts;
 
     private DoorReader? _doorReader;
     private EnemiesReader? _enemiesReader;
@@ -53,10 +56,14 @@ public sealed class DataManager : IDataManager, IDisposable
     private readonly TimeSpan _fastUpdateInterval = TimeSpan.FromMilliseconds(250);
     private readonly TimeSpan _slowUpdateInterval = TimeSpan.FromMilliseconds(500);
 
-    public DataManager(ILogger<DataManager> logger, IEEmemMemory eememMemory)
+    public DataManager(ILogger<DataManager> logger, IEEmemMemory eememMemory, IProcessLauncher processLauncher)
     {
         _logger = logger;
         _eememMemory = eememMemory;
+
+        _processSubscription = processLauncher
+            .ProcessUpdate.Where(model => !model.IsRunning)
+            .Subscribe(_ => StopUpdateLoops());
 
         DoorsObservable = _doorsState.DistinctUntilChanged(new ArraySequenceComparer<DecodedDoor>());
         EnemiesObservable = _enemiesState.DistinctUntilChanged(new ArraySequenceComparer<DecodedEnemy>());
@@ -129,8 +136,12 @@ public sealed class DataManager : IDataManager, IDisposable
         _lobbyRoomReader = new LobbyRoomReader(_gameClient, _eememMemory, _logger);
         _lobbySlotReader = new LobbySlotReader(_gameClient, _eememMemory, _logger);
 
-        Observable<Unit> fastUpdateTrigger = Observable.Interval(_fastUpdateInterval, cancellationToken);
-        Observable<Unit> slowUpdateTrigger = Observable.Interval(_slowUpdateInterval, cancellationToken);
+        _updateCts?.Cancel();
+        _updateCts?.Dispose();
+        _updateCts = new CancellationTokenSource();
+
+        Observable<Unit> fastUpdateTrigger = Observable.Interval(_fastUpdateInterval, _updateCts.Token);
+        Observable<Unit> slowUpdateTrigger = Observable.Interval(_slowUpdateInterval, _updateCts.Token);
 
         IDisposable fastSubscription = fastUpdateTrigger
             .Where(_ => IsInScenario())
@@ -269,10 +280,33 @@ public sealed class DataManager : IDataManager, IDisposable
 
     private bool IsInScenario() => _inGameScenarioReader is not null && _inGameScenarioReader.IsInScenario();
 
+    private void StopUpdateLoops()
+    {
+        _updateSubscription?.Dispose();
+        _updateSubscription = null;
+
+        _updateCts?.Cancel();
+        _updateCts?.Dispose();
+        _updateCts = null;
+
+        _doorReader = null;
+        _enemiesReader = null;
+        _inGamePlayerReader = null;
+        _inGameScenarioReader = null;
+        _lobbyRoomPlayerReader = null;
+        _lobbyRoomReader = null;
+        _lobbySlotReader = null;
+
+        _gameClient = null;
+        IsInitialized = false;
+        _logger.LogInformation("DataManager update loops stopped; ready for re-initialization.");
+    }
+
     public void Dispose()
     {
         _logger.LogInformation("Disposing DataManager...");
-        _updateSubscription?.Dispose();
+        _processSubscription?.Dispose();
+        StopUpdateLoops();
         _loggingSubscriptions?.Dispose();
 
         _doorsState.Dispose();
@@ -283,7 +317,6 @@ public sealed class DataManager : IDataManager, IDisposable
         _lobbyRoomPlayersState.Dispose();
         _lobbySlotsState.Dispose();
 
-        IsInitialized = false;
         _logger.LogInformation("DataManager disposed");
     }
 }
