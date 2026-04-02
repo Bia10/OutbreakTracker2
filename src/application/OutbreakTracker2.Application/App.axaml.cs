@@ -45,7 +45,6 @@ using OutbreakTracker2.Application.Views.Map;
 using OutbreakTracker2.Application.Views.Map.Canvas;
 using OutbreakTracker2.Memory.SafeMemory;
 using OutbreakTracker2.Memory.String;
-using OutbreakTracker2.PCSX2.Client;
 using OutbreakTracker2.PCSX2.EEmem;
 using R3;
 using Serilog;
@@ -96,6 +95,11 @@ public class App : Avalonia.Application
                 ConfigureExceptionHandling();
                 DataTemplates.Add(new ViewLocator(views));
                 desktop.MainWindow = views.CreateView<Views.OutbreakTracker2ViewModel>(_serviceProvider) as Window;
+
+                // Terminate any PCSX2 process whose window surface OT2 is currently embedding
+                // so the process is not left running headless when OT2 exits.
+                desktop.ShutdownRequested += (_, _) => KillEmbeddedProcessIfOwned();
+                desktop.Exit += async (_, _) => await OnExitAsync().ConfigureAwait(false);
 
                 Log.Information("Application initialized successfully!");
             }
@@ -236,19 +240,16 @@ public class App : Avalonia.Application
             throw new PlatformNotSupportedException("Only Windows and Linux are currently supported.");
         }
 
-        // Window embedding: platform-specific implementation
+        // Window embedding: Windows only for now.
+        // Linux support is planned (PCSX2 must be launched by OT2 to inherit permissions),
+        // but is not yet implemented.
         if (OperatingSystem.IsWindows())
             services.AddSingleton<IWindowEmbedder, WindowsWindowEmbedder>();
-#if LINUX
-        else if (OperatingSystem.IsLinux())
-            services.AddSingleton<IWindowEmbedder, LinuxWindowEmbedder>();
-#endif
         else
-            services.AddSingleton<IWindowEmbedder, NullWindowEmbedder>();
+            throw new PlatformNotSupportedException("Window embedding is currently only supported on Windows.");
 
         services.AddSingleton<EmbeddedGameViewModel>();
 
-        services.AddSingleton<IGameClientFactory, GameClientFactory>();
         services.AddSingleton<IEEmemMemory, EEmemMemory>();
         services.AddSingleton<IDataManager, DataManager>();
         services.AddSingleton<ITextureAtlasService, TextureAtlasService>();
@@ -284,16 +285,58 @@ public class App : Avalonia.Application
         return services.BuildServiceProvider(providerOptions);
     }
 
-    public void OnExit()
+    private async Task OnExitAsync()
     {
-        (_serviceProvider as IDisposable)?.Dispose();
-
+        // Dispose texture atlases before the container so the service provider is still
+        // alive when we resolve ITextureAtlasService.
         if (_serviceProvider?.GetService<ITextureAtlasService>() is TextureAtlasService atlasService)
         {
             foreach (ITextureAtlas atlas in atlasService.GetAllAtlases().Values)
                 (atlas as IDisposable)?.Dispose();
         }
 
+        // Several singletons only implement IAsyncDisposable (InGamePlayersViewModel,
+        // LobbySlotsViewModel, LobbyRoomViewModel, LogDataStorageService, …).
+        // Calling the synchronous Dispose() on the container throws InvalidOperationException
+        // for those types; DisposeAsync() handles both IDisposable and IAsyncDisposable.
+        if (_serviceProvider is IAsyncDisposable asyncDisposable)
+            await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+        else
+            (_serviceProvider as IDisposable)?.Dispose();
+
         Log.Information("Application exited!");
+    }
+
+    /// <summary>
+    /// Kills the PCSX2 process if OT2 currently has its window surface embedded.
+    /// Must be synchronous (called from <c>ShutdownRequested</c>); uses
+    /// <c>Process.Kill()</c> so the process exits immediately without waiting for a graceful close.
+    /// </summary>
+    private void KillEmbeddedProcessIfOwned()
+    {
+        if (_serviceProvider is null)
+            return;
+
+        EmbeddedGameViewModel? embeddedVm = _serviceProvider.GetService<EmbeddedGameViewModel>();
+        IProcessLauncher? launcher = _serviceProvider.GetService<IProcessLauncher>();
+
+        if (
+            embeddedVm is not { IsEmbedded: true }
+            || launcher?.ClientMonitoredProcess is not { HasExited: false } process
+        )
+            return;
+
+        try
+        {
+            Log.Information(
+                "OT2 shutting down with PCSX2 window embedded (PID {Pid}). Terminating process.",
+                process.Id
+            );
+            process.Kill();
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to terminate PCSX2 process on OT2 shutdown");
+        }
     }
 }
