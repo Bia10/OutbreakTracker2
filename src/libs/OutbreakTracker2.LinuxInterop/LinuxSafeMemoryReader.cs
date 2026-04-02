@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
@@ -44,7 +45,12 @@ public sealed class LinuxSafeMemoryReader(ILogger<LinuxSafeMemoryReader> logger)
         }
     }
 
-    public T ReadStruct<T>(nint hProcess, nint address)
+    public T ReadStruct<
+        [DynamicallyAccessedMembers(
+            DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors
+        )]
+            T
+    >(nint hProcess, nint address)
         where T : struct
     {
         int size = Marshal.SizeOf<T>();

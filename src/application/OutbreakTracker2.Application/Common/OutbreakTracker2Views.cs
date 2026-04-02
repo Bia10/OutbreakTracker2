@@ -12,7 +12,10 @@ public class OutbreakTracker2Views
     // The static () => new TView() lambda is a pure newobj IL instruction, fully AOT-safe.
     private readonly Dictionary<Type, Func<Control>> _vmToViewFactoryMap = [];
 
-    public OutbreakTracker2Views AddView<TView, TViewModel>(ServiceCollection services)
+    public OutbreakTracker2Views AddView<
+        TView,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel
+    >(ServiceCollection services)
         where TView : ContentControl, new()
         where TViewModel : ObservableObject
     {
