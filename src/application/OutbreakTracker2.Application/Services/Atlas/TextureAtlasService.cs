@@ -1,9 +1,6 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Atlas.Models;
-using OutbreakTracker2.Outbreak.Enums;
-using OutbreakTracker2.Outbreak.Enums.Character;
-using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Services.Atlas;
 
@@ -17,8 +14,8 @@ public class TextureAtlasService(
     private readonly List<(string jsonPath, string imagePath, string name)> _atlasConfigs =
     [
         // TODO: maybe load from appsettings.json?
-        ("Assets/uiFramesData.json", "Assets/ui.png", "UI"),
-        ("Assets/itemsFramesData.json", "Assets/items.png", "Items"),
+        ("Assets/uiFramesData.json", "Assets/ui.png", AtlasName.UI),
+        ("Assets/itemsFramesData.json", "Assets/items.png", AtlasName.Items),
     ];
     private readonly Dictionary<string, ITextureAtlas> _loadedAtlases = [];
 
@@ -32,19 +29,6 @@ public class TextureAtlasService(
     }
 
     public IReadOnlyDictionary<string, ITextureAtlas> GetAllAtlases() => _loadedAtlases;
-
-    // Todo: this solely exist so that we don't need async app initialization
-    // We async load the atlas in the background and block the UI thread until it's done
-    // The blocking operation either succeeds or throws an exception which ultimately ends up with Environment.Exit(1)
-    // The are 2 fundamental issues to solve:
-    // 1. implement support for async app initialization, for which we don't have much use case yet
-    // 2. there is no reason to crash the app init, if we fail to build up the texture atlas just log the error and use dummy fallbacks
-    public void LoadAtlases()
-    {
-        // ReSharper disable once AsyncApostle.AsyncWait
-        // ReSharper disable once AsyncApostle.AsyncAwaitMayBeElidedHighlighting
-        Task.Run(async () => await LoadAtlasesInternalAsync().ConfigureAwait(false)).Wait();
-    }
 
     private async Task LoadAtlasesInternalAsync()
     {
@@ -105,54 +89,4 @@ public class TextureAtlasService(
     }
 
     public Task LoadAtlasesAsync() => LoadAtlasesInternalAsync();
-
-    public string GetSpriteNameFromCharacterType(CharacterBaseType characterType)
-    {
-        string spriteName = EnumUtility.GetEnumString(characterType, CharacterBaseType.Unknown);
-
-        if (!spriteName.StartsWith("bust", StringComparison.OrdinalIgnoreCase))
-            spriteName = $"bust{spriteName}";
-
-        _logger.LogDebug(
-            "Obtained sprite name '{SpriteName}' for character type '{CharacterType}'",
-            spriteName,
-            characterType
-        );
-        return spriteName;
-    }
-
-    public string GetSpriteNameFromScenarioName(Scenario scenarioName)
-    {
-        string spriteName = EnumUtility.GetEnumString(scenarioName, Scenario.Unknown);
-
-        _logger.LogDebug(
-            "Obtained sprite name '{SpriteName}' for scenario name '{ScenarioName}'",
-            spriteName,
-            scenarioName
-        );
-        return spriteName.ToLowerInvariant();
-    }
-
-    public string GetSpriteNameFromItemType(ItemType itemType)
-    {
-        string spriteName = EnumUtility.GetEnumString(itemType, ItemType.Unknown);
-
-        if (!spriteName.StartsWith("item", StringComparison.OrdinalIgnoreCase))
-            spriteName = $"item{spriteName}";
-
-        _logger.LogDebug("Obtained sprite name '{SpriteName}' for item type '{ItemType}'", spriteName, itemType);
-        return spriteName;
-    }
-
-    public string GetSpriteNameFromItemName(string itemName)
-    {
-        string spriteName = itemName;
-
-        // TODO: the format is a bit weird (GameFile/ItemTypeName)
-        if (!itemName.StartsWith("File Two/", StringComparison.OrdinalIgnoreCase))
-            spriteName = $"FileTwo/{itemName}";
-
-        _logger.LogDebug("Obtained sprite name '{SpriteName}' for item id '{ItemId}'", spriteName, itemName);
-        return spriteName;
-    }
 }

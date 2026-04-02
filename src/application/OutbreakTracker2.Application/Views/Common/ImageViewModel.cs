@@ -27,14 +27,14 @@ public partial class ImageViewModel : ObservableObject
         _logger = logger;
         _dispatcherService = dispatcherService;
 
-        _uiAtlas = textureAtlasService.GetAtlas("UI");
+        _uiAtlas = textureAtlasService.GetAtlas(AtlasName.UI);
         if (_uiAtlas is null)
         {
             _logger.LogError("UI Texture Atlas could not be retrieved by ImageViewModel");
             throw new InvalidOperationException("UI Texture Atlas could not be retrieved by ImageViewModel");
         }
 
-        _itemsAtlas = textureAtlasService.GetAtlas("Items");
+        _itemsAtlas = textureAtlasService.GetAtlas(AtlasName.Items);
         if (_itemsAtlas is null)
         {
             _logger.LogError("Items Texture Atlas could not be retrieved by ImageViewModel");

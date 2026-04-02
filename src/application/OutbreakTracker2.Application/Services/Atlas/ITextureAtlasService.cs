@@ -1,7 +1,4 @@
-﻿using OutbreakTracker2.Outbreak.Enums;
-using OutbreakTracker2.Outbreak.Enums.Character;
-
-namespace OutbreakTracker2.Application.Services.Atlas;
+﻿namespace OutbreakTracker2.Application.Services.Atlas;
 
 public interface ITextureAtlasService
 {
@@ -9,15 +6,5 @@ public interface ITextureAtlasService
 
     public IReadOnlyDictionary<string, ITextureAtlas> GetAllAtlases();
 
-    public void LoadAtlases();
-
     public Task LoadAtlasesAsync();
-
-    public string GetSpriteNameFromCharacterType(CharacterBaseType characterType);
-
-    public string GetSpriteNameFromScenarioName(Scenario scenarioName);
-
-    public string GetSpriteNameFromItemType(ItemType itemType);
-
-    public string GetSpriteNameFromItemName(string itemName);
 }

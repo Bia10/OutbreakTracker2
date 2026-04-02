@@ -13,6 +13,7 @@ public sealed class DataManager : IDataManager, IDisposable
 {
     private readonly ILogger<IDataManager> _logger;
     private readonly IEEmemMemory _eememMemory;
+    private readonly IGameReaderFactory _readerFactory;
     private GameClient? _gameClient;
     private IDisposable? _updateSubscription;
     private IDisposable? _loggingSubscriptions;
@@ -56,10 +57,16 @@ public sealed class DataManager : IDataManager, IDisposable
     private readonly TimeSpan _fastUpdateInterval = TimeSpan.FromMilliseconds(250);
     private readonly TimeSpan _slowUpdateInterval = TimeSpan.FromMilliseconds(500);
 
-    public DataManager(ILogger<DataManager> logger, IEEmemMemory eememMemory, IProcessLauncher processLauncher)
+    public DataManager(
+        ILogger<DataManager> logger,
+        IEEmemMemory eememMemory,
+        IProcessLauncher processLauncher,
+        IGameReaderFactory readerFactory
+    )
     {
         _logger = logger;
         _eememMemory = eememMemory;
+        _readerFactory = readerFactory;
 
         _processSubscription = processLauncher
             .ProcessUpdate.Where(model => !model.IsRunning)
@@ -128,13 +135,13 @@ public sealed class DataManager : IDataManager, IDisposable
             throw new InvalidOperationException("Failed to initialize EEmemory.");
         }
 
-        _doorReader = new DoorReader(_gameClient, _eememMemory, _logger);
-        _enemiesReader = new EnemiesReader(_gameClient, _eememMemory, _logger);
-        _inGamePlayerReader = new InGamePlayerReader(_gameClient, _eememMemory, _logger);
-        _inGameScenarioReader = new InGameScenarioReader(_gameClient, _eememMemory, _logger);
-        _lobbyRoomPlayerReader = new LobbyRoomPlayerReader(_gameClient, _eememMemory, _logger);
-        _lobbyRoomReader = new LobbyRoomReader(_gameClient, _eememMemory, _logger);
-        _lobbySlotReader = new LobbySlotReader(_gameClient, _eememMemory, _logger);
+        _doorReader = _readerFactory.CreateDoorReader(_gameClient, _eememMemory);
+        _enemiesReader = _readerFactory.CreateEnemiesReader(_gameClient, _eememMemory);
+        _inGamePlayerReader = _readerFactory.CreateInGamePlayerReader(_gameClient, _eememMemory);
+        _inGameScenarioReader = _readerFactory.CreateInGameScenarioReader(_gameClient, _eememMemory);
+        _lobbyRoomPlayerReader = _readerFactory.CreateLobbyRoomPlayerReader(_gameClient, _eememMemory);
+        _lobbyRoomReader = _readerFactory.CreateLobbyRoomReader(_gameClient, _eememMemory);
+        _lobbySlotReader = _readerFactory.CreateLobbySlotReader(_gameClient, _eememMemory);
 
         _updateCts?.Cancel();
         _updateCts?.Dispose();
@@ -193,43 +200,43 @@ public sealed class DataManager : IDataManager, IDisposable
         _logger.LogInformation("Data manager has been initialized and update loop started");
     }
 
-    public void UpdateDoors()
+    private void UpdateDoors()
     {
         _doorReader?.UpdateDoors();
         _doorsState.Value = _doorReader?.DecodedDoors ?? [];
     }
 
-    public void UpdateEnemies()
+    private void UpdateEnemies()
     {
         _enemiesReader?.UpdateEnemies2();
         _enemiesState.Value = _enemiesReader?.DecodedEnemies2 ?? [];
     }
 
-    public void UpdateInGamePlayer()
+    private void UpdateInGamePlayer()
     {
         _inGamePlayerReader?.UpdateInGamePlayers();
         _inGamePlayersState.Value = _inGamePlayerReader?.DecodedInGamePlayers ?? [];
     }
 
-    public void UpdateInGameScenario()
+    private void UpdateInGameScenario()
     {
         _inGameScenarioReader?.UpdateScenario();
         _inGameScenarioState.Value = _inGameScenarioReader?.DecodedScenario ?? new DecodedInGameScenario();
     }
 
-    public void UpdateLobbyRoom()
+    private void UpdateLobbyRoom()
     {
         _lobbyRoomReader?.UpdateLobbyRoom();
         _lobbyRoomState.Value = _lobbyRoomReader?.DecodedLobbyRoom ?? new DecodedLobbyRoom();
     }
 
-    public void UpdateLobbyRoomPlayers()
+    private void UpdateLobbyRoomPlayers()
     {
         _lobbyRoomPlayerReader?.UpdateRoomPlayers();
         _lobbyRoomPlayersState.Value = _lobbyRoomPlayerReader?.DecodedLobbyRoomPlayers ?? [];
     }
 
-    public void UpdateLobbySlots()
+    private void UpdateLobbySlots()
     {
         _lobbySlotReader?.UpdateLobbySlots();
         _lobbySlotsState.Value = _lobbySlotReader?.DecodedLobbySlots ?? [];
@@ -289,12 +296,19 @@ public sealed class DataManager : IDataManager, IDisposable
         _updateCts?.Dispose();
         _updateCts = null;
 
+        _doorReader?.Dispose();
         _doorReader = null;
+        _enemiesReader?.Dispose();
         _enemiesReader = null;
+        _inGamePlayerReader?.Dispose();
         _inGamePlayerReader = null;
+        _inGameScenarioReader?.Dispose();
         _inGameScenarioReader = null;
+        _lobbyRoomPlayerReader?.Dispose();
         _lobbyRoomPlayerReader = null;
+        _lobbyRoomReader?.Dispose();
         _lobbyRoomReader = null;
+        _lobbySlotReader?.Dispose();
         _lobbySlotReader = null;
 
         _gameClient = null;

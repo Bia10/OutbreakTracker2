@@ -22,9 +22,18 @@ public sealed class DoorReader : ReaderBase
     private const ushort DefaultHealthErrorValue = 0xFF;
     private const ushort DefaultFlagErrorValue = 0xFF;
 
-    public DoorReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
+    private readonly IReadOnlyDictionary<GameFile, IDoorAddressProvider> _addressProviders;
+
+    public DoorReader(
+        GameClient gameClient,
+        IEEmemMemory eememMemory,
+        ILogger logger,
+        IEnumerable<IDoorAddressProvider> addressProviders
+    )
         : base(gameClient, eememMemory, logger)
     {
+        _addressProviders = addressProviders.ToDictionary(p => p.SupportedFile);
+
         DecodedDoors = new DecodedDoor[GameConstants.MaxDoors];
         for (int i = 0; i < GameConstants.MaxDoors; i++)
             DecodedDoors[i] = new DecodedDoor();
@@ -33,29 +42,15 @@ public sealed class DoorReader : ReaderBase
     private T ReadDoorProperty<T>(int doorId, DoorPropertyType propertyType, T errorValue)
         where T : unmanaged
     {
-        nint doorPropertyAddress;
+        if (!_addressProviders.TryGetValue(CurrentFile, out IDoorAddressProvider? provider))
+            return errorValue;
 
-        switch (CurrentFile)
+        nint doorPropertyAddress = propertyType switch
         {
-            case GameFile.FileOne:
-                doorPropertyAddress = propertyType switch
-                {
-                    DoorPropertyType.Health => FileOnePtrs.GetDoorHealthAddress(doorId),
-                    DoorPropertyType.Flag => FileOnePtrs.GetDoorFlagAddress(doorId),
-                    _ => nint.Zero,
-                };
-                break;
-            case GameFile.FileTwo:
-                doorPropertyAddress = propertyType switch
-                {
-                    DoorPropertyType.Health => FileTwoPtrs.GetDoorHealthAddress(doorId),
-                    DoorPropertyType.Flag => FileTwoPtrs.GetDoorFlagAddress(doorId),
-                    _ => nint.Zero,
-                };
-                break;
-            default:
-                return errorValue;
-        }
+            DoorPropertyType.Health => provider.GetHealthAddress(doorId),
+            DoorPropertyType.Flag => provider.GetFlagAddress(doorId),
+            _ => nint.Zero,
+        };
 
         return doorPropertyAddress == nint.Zero
             ? errorValue
@@ -97,21 +92,17 @@ public sealed class DoorReader : ReaderBase
         if (CurrentFile is GameFile.Unknown)
             return;
 
+        if (!_addressProviders.TryGetValue(CurrentFile, out IDoorAddressProvider? provider))
+            return;
+
         long start = Environment.TickCount64;
 
         if (debug)
             Logger.LogDebug("Decoding doors");
 
-        int maxDoors = CurrentFile switch
-        {
-            GameFile.FileOne => GameConstants.MaxDoors - 9,
-            GameFile.FileTwo => GameConstants.MaxDoors,
-            _ => 0,
-        };
-
         DecodedDoor[] newDecodedDoors = new DecodedDoor[GameConstants.MaxDoors];
 
-        for (int i = 0; i < maxDoors; i++)
+        for (int i = 0; i < provider.MaxDoors; i++)
         {
             Ulid doorUlid = GetPersistentUlidForDoorSlot(i);
             ushort curHp = GetHealthPoints(i);

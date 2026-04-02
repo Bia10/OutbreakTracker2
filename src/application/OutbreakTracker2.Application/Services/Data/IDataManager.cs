@@ -34,19 +34,5 @@ public interface IDataManager
 
     public Observable<DecodedLobbySlot[]> LobbySlotsObservable { get; }
 
-    public void UpdateDoors();
-
-    public void UpdateEnemies();
-
-    public void UpdateInGamePlayer();
-
-    public void UpdateInGameScenario();
-
-    public void UpdateLobbyRoom();
-
-    public void UpdateLobbyRoomPlayers();
-
-    public void UpdateLobbySlots();
-
     public ValueTask InitializeAsync(GameClient gameClient, CancellationToken cancellationToken);
 }

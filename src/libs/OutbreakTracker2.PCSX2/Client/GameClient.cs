@@ -20,11 +20,10 @@ public sealed class GameClient : IDisposable
     /// Windows: fresh base address of the main module, re-read on every access so that
     /// <see cref="OutbreakTracker2.PCSX2.EEmem.EEmemMemory"/> retry loops see the correct
     /// value once the process finishes loading its modules.
-    /// Linux: returns <see cref="nint.Zero"/> — EEmem resolution uses <c>/proc/&lt;pid&gt;/maps</c>
-    /// directly and does not need this property.
+    /// Linux: not supported — EEmem resolution uses <c>/proc/&lt;pid&gt;/maps</c> directly.
     /// </summary>
-    public nint MainModuleBase =>
-        OperatingSystem.IsWindows() ? Process?.MainModule?.BaseAddress ?? nint.Zero : nint.Zero;
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public nint MainModuleBase => Process?.MainModule?.BaseAddress ?? nint.Zero;
 
     public Process? Process { get; private set; }
 
@@ -87,6 +86,13 @@ public sealed class GameClient : IDisposable
     /// Returns a human-readable string describing the attached process.
     /// Used for diagnostics only — do not parse the output.
     /// </summary>
-    public override string ToString() =>
-        IsAttached ? $"GameClient[PID={Process?.Id}, Base=0x{MainModuleBase:X}]" : "GameClient[not attached]";
+    public override string ToString()
+    {
+        if (!IsAttached)
+            return "GameClient[not attached]";
+
+        string baseInfo = OperatingSystem.IsWindows() ? $"Base=0x{MainModuleBase:X}" : $"PID={Process?.Id}";
+
+        return $"GameClient[PID={Process?.Id}, {baseInfo}]";
+    }
 }

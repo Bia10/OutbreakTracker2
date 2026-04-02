@@ -76,7 +76,17 @@ public sealed partial class App : Avalonia.Application
             ITextureAtlasService textureAtlasService = _serviceProvider.GetRequiredService<ITextureAtlasService>();
             try
             {
-                textureAtlasService.LoadAtlases();
+                // Atlas loading must complete synchronously before the window is created.
+                // Avalonia's classic desktop lifetime requires MainWindow to be set during
+                // the synchronous execution of OnFrameworkInitializationCompleted; any real
+                // await point before desktop.MainWindow = ... causes the app to start without
+                // a window. Running the async load on the thread pool and blocking here
+                // preserves that contract without deadlocking (LoadAtlasesAsync uses
+                // ConfigureAwait(false) throughout and never needs to return to the UI thread).
+                // ReSharper disable once AsyncApostle.AsyncWait
+                Task.Run(async () => await textureAtlasService.LoadAtlasesAsync().ConfigureAwait(false))
+                    .GetAwaiter()
+                    .GetResult();
             }
             catch (Exception ex)
             {
@@ -120,7 +130,7 @@ public sealed partial class App : Avalonia.Application
 
         // Dispose texture atlases before the container so the service provider is still
         // alive when we resolve ITextureAtlasService.
-        if (_serviceProvider?.GetService<ITextureAtlasService>() is TextureAtlasService atlasService)
+        if (_serviceProvider?.GetService<ITextureAtlasService>() is { } atlasService)
         {
             foreach (ITextureAtlas atlas in atlasService.GetAllAtlases().Values)
                 (atlas as IDisposable)?.Dispose();

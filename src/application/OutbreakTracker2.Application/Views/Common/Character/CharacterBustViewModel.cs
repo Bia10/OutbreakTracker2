@@ -10,7 +10,7 @@ namespace OutbreakTracker2.Application.Views.Common.Character;
 public class CharacterBustViewModel : ObservableObject
 {
     private readonly ILogger<CharacterBustViewModel> _logger;
-    private readonly ITextureAtlasService _textureAtlasService;
+    private readonly ISpriteNameResolver _spriteNameResolver;
 
     private ImageViewModel ImageViewModel { get; }
 
@@ -18,12 +18,12 @@ public class CharacterBustViewModel : ObservableObject
 
     public CharacterBustViewModel(
         ILogger<CharacterBustViewModel> logger,
-        ITextureAtlasService textureAtlasService,
+        ISpriteNameResolver spriteNameResolver,
         IImageViewModelFactory imageViewModelFactory
     )
     {
         _logger = logger;
-        _textureAtlasService = textureAtlasService;
+        _spriteNameResolver = spriteNameResolver;
         ImageViewModel = imageViewModelFactory.Create();
 
         ImageViewModel.PropertyChanged += OnImageViewModelSourceImageChanged;
@@ -34,7 +34,7 @@ public class CharacterBustViewModel : ObservableObject
 
     public ValueTask UpdateBustAsync(CharacterBaseType characterType)
     {
-        string spriteName = _textureAtlasService.GetSpriteNameFromCharacterType(characterType);
+        string spriteName = _spriteNameResolver.GetSpriteNameFromCharacterType(characterType);
         _logger.LogDebug("Requesting bust update for character: {CharacterType}", characterType);
 
         return ImageViewModel.UpdateImageAsync(spriteName, $"Character Bust for {characterType}");

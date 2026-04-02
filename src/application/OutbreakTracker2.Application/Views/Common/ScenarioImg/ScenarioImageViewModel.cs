@@ -10,7 +10,7 @@ namespace OutbreakTracker2.Application.Views.Common.ScenarioImg;
 public class ScenarioImageViewModel : ObservableObject
 {
     private readonly ILogger<ScenarioImageViewModel> _logger;
-    private readonly ITextureAtlasService _textureAtlasService;
+    private readonly ISpriteNameResolver _spriteNameResolver;
 
     private ImageViewModel ImageViewModel { get; }
 
@@ -18,12 +18,12 @@ public class ScenarioImageViewModel : ObservableObject
 
     public ScenarioImageViewModel(
         ILogger<ScenarioImageViewModel> logger,
-        ITextureAtlasService textureAtlasService,
+        ISpriteNameResolver spriteNameResolver,
         IImageViewModelFactory imageViewModelFactory
     )
     {
         _logger = logger;
-        _textureAtlasService = textureAtlasService;
+        _spriteNameResolver = spriteNameResolver;
         ImageViewModel = imageViewModelFactory.Create();
 
         ImageViewModel.PropertyChanged += OnImageViewModelSourceImageChanged;
@@ -34,7 +34,7 @@ public class ScenarioImageViewModel : ObservableObject
 
     public ValueTask UpdateImageAsync(Scenario scenarioType)
     {
-        string spriteName = _textureAtlasService.GetSpriteNameFromScenarioName(scenarioType);
+        string spriteName = _spriteNameResolver.GetSpriteNameFromScenarioName(scenarioType);
         if (spriteName.StartsWith("unknown", StringComparison.Ordinal))
             return ValueTask.CompletedTask;
 
@@ -45,7 +45,7 @@ public class ScenarioImageViewModel : ObservableObject
 
     public ValueTask UpdateToDefaultImageAsync()
     {
-        string spriteName = _textureAtlasService.GetSpriteNameFromScenarioName(Scenario.TrainingGround);
+        string spriteName = _spriteNameResolver.GetSpriteNameFromScenarioName(Scenario.TrainingGround);
         _logger.LogDebug("Requesting scenario image update for scenario: {ScenarioType}", Scenario.TrainingGround);
 
         return ImageViewModel.UpdateImageAsync(spriteName, $"Scenario Image for {nameof(Scenario.TrainingGround)}");

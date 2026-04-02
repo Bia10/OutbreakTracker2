@@ -42,6 +42,7 @@ using OutbreakTracker2.Application.Views.Map;
 using OutbreakTracker2.Application.Views.Map.Canvas;
 using OutbreakTracker2.Memory.SafeMemory;
 using OutbreakTracker2.Memory.String;
+using OutbreakTracker2.Outbreak.Readers;
 using OutbreakTracker2.PCSX2.EEmem;
 using Serilog;
 using SukiUI.Dialogs;
@@ -157,6 +158,10 @@ internal static class CompositionRoot
 
         services.AddSingleton<IEEmemMemory, EEmemMemory>();
         services.AddSingleton<IDataManager, DataManager>();
+        services.AddSingleton<IGameReaderFactory, GameReaderFactory>();
+        services.AddSingleton<IDoorAddressProvider, FileOneDoorAddressProvider>();
+        services.AddSingleton<IDoorAddressProvider, FileTwoDoorAddressProvider>();
+        services.AddSingleton<ISpriteNameResolver, SpriteNameResolver>();
         services.AddSingleton<ITextureAtlasService, TextureAtlasService>();
         services.AddSingleton<Func<Stream, SpriteSheet, ITextureAtlas>>(serviceProvider =>
         {
