@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -48,6 +49,7 @@ using OutbreakTracker2.Memory.String;
 using OutbreakTracker2.PCSX2.EEmem;
 using R3;
 using Serilog;
+using Serilog.Extensions.Logging;
 using SukiUI.Dialogs;
 using SukiUI.Toasts;
 using StringReader = OutbreakTracker2.Memory.String.StringReader;
@@ -57,97 +59,145 @@ using OutbreakTracker2.LinuxInterop;
 
 namespace OutbreakTracker2.Application;
 
-public class App : Avalonia.Application
+public sealed partial class App : Avalonia.Application
 {
+    private static readonly TimeSpan CleanUpTimeout = TimeSpan.FromSeconds(5);
+
+    // Bootstrap logger available before DI is wired — used by the static error handlers.
+    // Backed by a minimal Serilog configuration set up in OnFrameworkInitializationCompleted.
+    private ILogger<App>? _bootstrapLogger;
     private IServiceProvider? _serviceProvider;
 
-    public override void Initialize()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
+    public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     public override void OnFrameworkInitializationCompleted()
     {
+        // Configure a minimal bootstrap Serilog logger before DI is available, so the
+        // process-level exception handlers below always have somewhere to write.
+        // ConfigureSerilog() later replaces Log.Logger with the full configuration from
+        // appsettings.json; the SerilogLoggerFactory with no explicit logger forwards to
+        // the global Log.Logger dynamically, so _bootstrapLogger automatically picks up the
+        // upgraded logger without being recreated.
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Warning()
+            .WriteTo.Console()
+            .WriteTo.File("logs/log-.txt", rollingInterval: Serilog.RollingInterval.Day)
+            .CreateLogger();
+        _bootstrapLogger = new SerilogLoggerFactory(dispose: false).CreateLogger<App>();
+
+        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+        Dispatcher.UIThread.UnhandledException += OnUiUnhandledException;
+
+        ObservableSystem.RegisterUnhandledExceptionHandler(ex =>
+            _bootstrapLogger?.LogError(ex, "Unhandled R3 exception")
+        );
+
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            _ = InitializeApplicationAsync(desktop)
+                .ContinueWith(
+                    t => _bootstrapLogger?.LogCritical(t.Exception, "Unhandled fault in application initialization"),
+                    CancellationToken.None,
+                    TaskContinuationOptions.OnlyOnFaulted,
+                    TaskScheduler.Default
+                );
+    }
+
+    private async Task InitializeApplicationAsync(IClassicDesktopStyleApplicationLifetime desktop)
+    {
         try
         {
-            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            IConfigurationRoot configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+
+            ServiceCollection services = new();
+            services.AddSingleton(desktop);
+            OutbreakTracker2Views views = ConfigureViews(services);
+
+            _serviceProvider = ConfigureServicesAndLogging(services, configuration);
+            _serviceProvider.GetRequiredService<NotificationService>();
+
+            ITextureAtlasService textureAtlasService = _serviceProvider.GetRequiredService<ITextureAtlasService>();
+            try
             {
-                IConfigurationRoot configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-
-                ServiceCollection services = new();
-                services.AddSingleton(desktop);
-                OutbreakTracker2Views views = ConfigureViews(services);
-
-                _serviceProvider = ConfigureServicesAndLogging(services, configuration);
-                _serviceProvider.GetRequiredService<NotificationService>();
-                ITextureAtlasService textureAtlasService = _serviceProvider.GetRequiredService<ITextureAtlasService>();
-                try
-                {
-                    textureAtlasService.LoadAtlases();
-                }
-                catch (Exception ex)
-                {
-                    Log.Fatal(ex, "Failed to load texture atlas data. Application cannot start");
-                    Environment.Exit(1);
-                    return;
-                }
-
-                ConfigureExceptionHandling();
-                DataTemplates.Add(new ViewLocator(views));
-                desktop.MainWindow = views.CreateView<Views.OutbreakTracker2ViewModel>(_serviceProvider) as Window;
-
-                // Terminate any PCSX2 process whose window surface OT2 is currently embedding
-                // so the process is not left running headless when OT2 exits.
-                desktop.ShutdownRequested += (_, _) => KillEmbeddedProcessIfOwned();
-                desktop.Exit += async (_, _) => await OnExitAsync().ConfigureAwait(false);
-
-                Log.Information("Application initialized successfully!");
+                textureAtlasService.LoadAtlases();
+            }
+            catch (Exception ex)
+            {
+                _bootstrapLogger?.LogCritical(ex, "Failed to load texture atlas data. Application cannot start");
+                await CleanUpWithTimeoutAsync("texture atlas load failure").ConfigureAwait(true);
+                return;
             }
 
+            DataTemplates.Add(new ViewLocator(views));
+            desktop.MainWindow = views.CreateView<Views.OutbreakTracker2ViewModel>(_serviceProvider) as Window;
+
+            // Terminate any PCSX2 process whose window surface OT2 is currently embedding
+            // so the process is not left running headless when OT2 exits.
+            desktop.ShutdownRequested += OnShutdownRequested;
+
+            _bootstrapLogger?.LogInformation("Application initialized successfully!");
             base.OnFrameworkInitializationCompleted();
         }
         catch (Exception ex)
         {
-            Log.Fatal(ex, "Application failed to initialize");
-            // Todo: show msgBox to user
-            throw;
+            _bootstrapLogger?.LogCritical(ex, "Application terminated unexpectedly!");
+            await CleanUpWithTimeoutAsync("startup exception").ConfigureAwait(true);
         }
     }
 
-    private static void ConfigureExceptionHandling()
+    private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
     {
-        Avalonia.Threading.Dispatcher.UIThread.UnhandledException += (_, e) =>
-        {
-            Log.Error(e.Exception, "Unhandled exception on UI thread");
-            e.Handled = true;
-        };
+        KillEmbeddedProcessIfOwned();
+        _ = CleanUpWithTimeoutAsync("application shutdown")
+            .ContinueWith(
+                t => _bootstrapLogger?.LogError(t.Exception, "Cleanup failed during shutdown"),
+                TaskContinuationOptions.OnlyOnFaulted
+            );
+    }
 
-        TaskScheduler.UnobservedTaskException += (_, e) =>
-        {
-            Log.Error(e.Exception, "Unobserved task exception");
-            e.SetObserved();
-        };
+    private async Task CleanUpAsync()
+    {
+        AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
+        TaskScheduler.UnobservedTaskException -= OnUnobservedTaskException;
+        Dispatcher.UIThread.UnhandledException -= OnUiUnhandledException;
 
-        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+        // Dispose texture atlases before the container so the service provider is still
+        // alive when we resolve ITextureAtlasService.
+        if (_serviceProvider?.GetService<ITextureAtlasService>() is TextureAtlasService atlasService)
         {
-            if (e.ExceptionObject is Exception ex)
-                Log.Fatal(
-                    ex,
-                    "Unhandled exception in application domain (IsTerminating: {IsTerminating})",
-                    e.IsTerminating
-                );
-            else
-                Log.Fatal(
-                    "Unhandled exception in application domain with unknown exception object: {ExceptionObject} (IsTerminating: {IsTerminating})",
-                    e.ExceptionObject,
-                    e.IsTerminating
-                );
-        };
+            foreach (ITextureAtlas atlas in atlasService.GetAllAtlases().Values)
+                (atlas as IDisposable)?.Dispose();
+        }
 
-        ObservableSystem.RegisterUnhandledExceptionHandler(ex =>
+        // Several singletons only implement IAsyncDisposable (InGamePlayersViewModel,
+        // LobbySlotsViewModel, LobbyRoomViewModel, LogDataStorageService, …).
+        if (_serviceProvider is IAsyncDisposable asyncDisposable)
+            await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+        else
+            (_serviceProvider as IDisposable)?.Dispose();
+        _serviceProvider = null;
+
+        await Log.CloseAndFlushAsync().ConfigureAwait(false);
+
+        _bootstrapLogger?.LogInformation("Application exited!");
+    }
+
+    private async Task CleanUpWithTimeoutAsync(string operationName)
+    {
+        Task cleanUpTask = CleanUpAsync();
+        Task completedTask = await Task.WhenAny(cleanUpTask, Task.Delay(CleanUpTimeout)).ConfigureAwait(false);
+
+        if (completedTask != cleanUpTask)
         {
-            Log.Error(ex, "Unhandled R3 exception");
-        });
+            _bootstrapLogger?.LogWarning(
+                "Cleanup timed out after {Timeout} during {Operation}.",
+                CleanUpTimeout,
+                operationName
+            );
+            return;
+        }
+
+        await cleanUpTask.ConfigureAwait(false);
     }
 
     private static OutbreakTracker2Views ConfigureViews(ServiceCollection services) =>
@@ -285,31 +335,9 @@ public class App : Avalonia.Application
         return services.BuildServiceProvider(providerOptions);
     }
 
-    private async Task OnExitAsync()
-    {
-        // Dispose texture atlases before the container so the service provider is still
-        // alive when we resolve ITextureAtlasService.
-        if (_serviceProvider?.GetService<ITextureAtlasService>() is TextureAtlasService atlasService)
-        {
-            foreach (ITextureAtlas atlas in atlasService.GetAllAtlases().Values)
-                (atlas as IDisposable)?.Dispose();
-        }
-
-        // Several singletons only implement IAsyncDisposable (InGamePlayersViewModel,
-        // LobbySlotsViewModel, LobbyRoomViewModel, LogDataStorageService, …).
-        // Calling the synchronous Dispose() on the container throws InvalidOperationException
-        // for those types; DisposeAsync() handles both IDisposable and IAsyncDisposable.
-        if (_serviceProvider is IAsyncDisposable asyncDisposable)
-            await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-        else
-            (_serviceProvider as IDisposable)?.Dispose();
-
-        Log.Information("Application exited!");
-    }
-
     /// <summary>
     /// Kills the PCSX2 process if OT2 currently has its window surface embedded.
-    /// Must be synchronous (called from <c>ShutdownRequested</c>); uses
+    /// Must be synchronous (called before async cleanup); uses
     /// <c>Process.Kill()</c> so the process exits immediately without waiting for a graceful close.
     /// </summary>
     private void KillEmbeddedProcessIfOwned()
@@ -328,7 +356,7 @@ public class App : Avalonia.Application
 
         try
         {
-            Log.Information(
+            _bootstrapLogger?.LogInformation(
                 "OT2 shutting down with PCSX2 window embedded (PID {Pid}). Terminating process.",
                 process.Id
             );
@@ -336,7 +364,7 @@ public class App : Avalonia.Application
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "Failed to terminate PCSX2 process on OT2 shutdown");
+            _bootstrapLogger?.LogWarning(ex, "Failed to terminate PCSX2 process on OT2 shutdown");
         }
     }
 }
