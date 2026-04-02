@@ -30,6 +30,14 @@
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
 
+  <!-- Enable trim and AOT analyzers in Release builds to surface incompatibilities early.
+       Disabled in Debug to keep incremental build times short. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <IsTrimmable>true</IsTrimmable>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+  </PropertyGroup>
+
   <!-- CSharpier formatting enforcement: checks formatting on every build.
        Install the local tool first: dotnet tool restore -->
   <ItemGroup>

@@ -64,6 +64,7 @@
     <PackageVersion Include="ProcessX" Version="1.5.6" />
     <PackageVersion Include="Ulid" Version="1.4.1" />
     <PackageVersion Include="ZLinq" Version="1.5.5" />
+    <PackageVersion Include="ZLinq.DropInGenerator" Version="1.5.5" />
   </ItemGroup>
   <!-- ═══════════════════════════════════════════════════════
        PLATFORM-SPECIFIC

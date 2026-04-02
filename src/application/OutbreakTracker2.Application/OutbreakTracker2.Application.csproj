@@ -4,6 +4,8 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <!-- Source-generated IConfiguration.Get<T>() — eliminates reflection-based config binding -->
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
   </PropertyGroup>
 
   <!-- Windows-only manifest for DPI awareness and compatibility declarations -->
@@ -62,6 +64,16 @@
     <PackageReference Condition="$([MSBuild]::IsOsPlatform('Windows'))" Include="System.Management" />
     <PackageReference Include="Ulid" />
     <PackageReference Include="ZLinq" />
+    <!-- ZLinq drop-in replaces System.Linq; remove the implicit using to avoid ambiguity -->
+    <PackageReference Include="ZLinq.DropInGenerator">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- ZLinq drop-in replaces System.Linq; remove the implicit using to avoid ambiguity -->
+    <Using Remove="System.Linq" />
   </ItemGroup>
 
   <ItemGroup>
