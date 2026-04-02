@@ -73,7 +73,7 @@ public sealed class GameClient : IDisposable
             CloseHandleWindows();
 
         Handle = nint.Zero;
-        Process?.Dispose();
+        Process = null;
         _disposed = true;
     }
 
