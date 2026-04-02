@@ -77,13 +77,13 @@
   <ItemGroup Label="Analyzers">
     <PackageVersion Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2" />
     <PackageVersion Include="ErrorProne.NET.Structs" Version="0.1.2" />
-    <PackageVersion Include="Meziantou.Analyzer" Version="3.0.37" />
+    <PackageVersion Include="Meziantou.Analyzer" Version="3.0.43" />
   </ItemGroup>
   <!-- ═══════════════════════════════════════════════════════
        TESTING
        ═══════════════════════════════════════════════════════ -->
   <ItemGroup Label="Testing">
-    <PackageVersion Include="TUnit" Version="1.24.0" />
+    <PackageVersion Include="TUnit" Version="1.24.18" />
   </ItemGroup>
   <!-- ═══════════════════════════════════════════════════════
        BENCHMARKS
