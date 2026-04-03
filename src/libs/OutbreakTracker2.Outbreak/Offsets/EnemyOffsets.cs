@@ -40,4 +40,10 @@ internal static class EnemyOffsets
     public static readonly (nint File1, nint File2) EnemyListMaxHp = (0x1E, 0x1E);
     public static readonly (nint File1, nint File2) EnemyListRoomId = (0x22, 0x22);
     public static readonly (nint File1, nint File2) EnemyListStatus = (0x45, 0x45);
+
+    // Position offsets within the flat enemy list entry (0x60 bytes).
+    // These mirror the per-entity struct offsets (same as player PositionXOffset/PositionYOffset).
+    // May need adjustment based on in-game verification.
+    public static readonly (nint File1, nint File2) EnemyListPositionX = (0x38, 0x38);
+    public static readonly (nint File1, nint File2) EnemyListPositionY = (0x40, 0x40);
 }

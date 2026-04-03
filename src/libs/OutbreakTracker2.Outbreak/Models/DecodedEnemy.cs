@@ -55,4 +55,12 @@ public sealed record DecodedEnemy
     [JsonInclude]
     [JsonPropertyName(nameof(RoomName))]
     public string RoomName { get; set; } = string.Empty;
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(PositionX))]
+    public float PositionX { get; set; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(PositionY))]
+    public float PositionY { get; set; }
 }
