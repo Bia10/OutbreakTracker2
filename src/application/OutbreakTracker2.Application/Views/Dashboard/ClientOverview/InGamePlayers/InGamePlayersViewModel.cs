@@ -230,10 +230,10 @@ public partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
 
     private static bool IsPlayerActive(DecodedInGamePlayer? player)
     {
-        if (player is null)
+        if (player is null || !player.IsEnabled || !player.IsInGame)
             return false;
 
-        return player.NameId > 0 || (player.NameId is 0 && !string.IsNullOrEmpty(player.Type));
+        return player.NameId > 0 || !string.IsNullOrEmpty(player.Type);
     }
 
     public async ValueTask DisposeAsync()

@@ -306,6 +306,8 @@ public sealed class InGamePlayerReader : ReaderBase
             Logger.LogDebug("Decoding in-game players");
 
         DecodedInGamePlayer[] newDecodedInGamePlayers = new DecodedInGamePlayer[GameConstants.MaxPlayers];
+        for (int i = 0; i < GameConstants.MaxPlayers; i++)
+            newDecodedInGamePlayers[i] = new DecodedInGamePlayer();
 
         for (int i = 0; i < GameConstants.MaxPlayers; i++)
         {
