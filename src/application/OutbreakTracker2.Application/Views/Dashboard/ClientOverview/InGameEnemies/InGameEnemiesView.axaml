@@ -6,20 +6,15 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:suki="https://github.com/kikipoulet/SukiUI"
     xmlns:inGameEnemies="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies"
-    xmlns:converters="clr-namespace:OutbreakTracker2.Application.Converters"
     xmlns:inGameEnemy="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="inGameEnemies:InGameEnemiesViewModel"
     mc:Ignorable="d">
 
-    <UserControl.Resources>
-        <converters:CollectionIsNullOrEmptyConverter x:Key="CollectionIsNullOrEmptyConverter" />
-    </UserControl.Resources>
-
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <StackPanel Orientation="Vertical">
-            <ItemsControl IsVisible="{Binding EnemiesView, Converter={StaticResource CollectionIsNullOrEmptyConverter}, ConverterParameter=Inverse}" ItemsSource="{Binding EnemiesView}">
+            <ItemsControl IsVisible="{Binding HasEnemies}" ItemsSource="{Binding EnemiesView}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel Orientation="Horizontal" />
@@ -41,7 +36,7 @@
             <suki:GlassCard
                 Margin="0,20,0,0"
                 HorizontalAlignment="Center"
-                IsVisible="{Binding EnemiesView, Converter={StaticResource CollectionIsNullOrEmptyConverter}}">
+                IsVisible="{Binding !HasEnemies}">
                 <TextBlock
                     Margin="20"
                     HorizontalAlignment="Center"

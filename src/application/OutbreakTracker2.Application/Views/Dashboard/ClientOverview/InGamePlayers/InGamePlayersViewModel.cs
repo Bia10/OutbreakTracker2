@@ -10,7 +10,7 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers;
 
-public class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
+public partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
 {
     private readonly IDisposable _subscription;
     private readonly ILogger<InGamePlayersViewModel> _logger;
@@ -18,6 +18,9 @@ public class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
     private readonly Dictionary<string, InGamePlayerViewModel> _viewModelCache = [];
     private readonly ObservableList<InGamePlayerViewModel> _players = [];
     public NotifyCollectionChangedSynchronizedViewList<InGamePlayerViewModel> PlayersView { get; }
+
+    [ObservableProperty]
+    private bool _hasPlayers;
 
     public InGamePlayersViewModel(
         IDataManager dataManager,
@@ -194,6 +197,8 @@ public class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
                                             _players.Count,
                                             desiredViewModels.Count
                                         );
+
+                                    HasPlayers = _players.Count > 0;
 
                                     _logger.LogInformation(
                                         "UI update complete. Players ObservableList count: {Count}",

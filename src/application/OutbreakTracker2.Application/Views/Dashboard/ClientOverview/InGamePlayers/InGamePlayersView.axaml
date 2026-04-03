@@ -6,20 +6,15 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
     xmlns:inGamePlayers="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers"
-    xmlns:converters="clr-namespace:OutbreakTracker2.Application.Converters"
     xmlns:inGamePlayer="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="inGamePlayers:InGamePlayersViewModel"
     mc:Ignorable="d">
 
-    <UserControl.Resources>
-        <converters:CollectionIsNullOrEmptyConverter x:Key="CollectionIsNullOrEmptyConverter" />
-    </UserControl.Resources>
-
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <StackPanel Orientation="Vertical">
-            <ItemsControl IsVisible="{Binding PlayersView, Converter={StaticResource CollectionIsNullOrEmptyConverter}, ConverterParameter=Inverse}" ItemsSource="{Binding PlayersView}">
+            <ItemsControl IsVisible="{Binding HasPlayers}" ItemsSource="{Binding PlayersView}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <UniformGrid Columns="4" />
@@ -40,7 +35,7 @@
             <suki:GlassCard
                 Margin="0,20,0,0"
                 HorizontalAlignment="Center"
-                IsVisible="{Binding PlayersView, Converter={StaticResource CollectionIsNullOrEmptyConverter}}">
+                IsVisible="{Binding !HasPlayers}">
                 <TextBlock
                     Margin="20"
                     HorizontalAlignment="Center"

@@ -10,7 +10,7 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies;
 
-public class InGameEnemiesViewModel : ObservableObject, IDisposable
+public partial class InGameEnemiesViewModel : ObservableObject, IDisposable
 {
     private readonly ILogger<InGameEnemiesViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
@@ -19,6 +19,9 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
     private readonly ObservableList<InGameEnemyViewModel> _enemies = [];
 
     public NotifyCollectionChangedSynchronizedViewList<InGameEnemyViewModel> EnemiesView { get; }
+
+    [ObservableProperty]
+    private bool _hasEnemies;
 
     public InGameEnemiesViewModel(
         ILogger<InGameEnemiesViewModel> logger,
@@ -202,6 +205,8 @@ public class InGameEnemiesViewModel : ObservableObject, IDisposable
                                                     desiredViewModels.Count
                                                 );
                                             }
+
+                                            HasEnemies = _enemies.Count > 0;
 
                                             _logger.LogInformation(
                                                 "UI update complete. Enemies ObservableList count: {Count}",
