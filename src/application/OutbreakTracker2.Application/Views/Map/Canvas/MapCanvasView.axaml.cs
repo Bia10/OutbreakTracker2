@@ -24,6 +24,9 @@ public partial class MapCanvasView : UserControl
     private const double MinZoom = 0.1;
     private const double MaxZoom = 20.0;
     private const double LabelWidth = 80;
+    private const double CoordLabelOffsetY = 13;
+    private const double DistLabelOffsetX = 2;
+    private const double DistLabelOffsetY = -8;
 
     private IDisposable? _playersSubscription;
     private DecodedInGamePlayer[]? _lastPlayers;
@@ -129,7 +132,10 @@ public partial class MapCanvasView : UserControl
             _panY = _panYAtDragStart + (pos.Y - _dragStart.Y);
         }
 
-        Redraw();
+        // Only redraw when the move actually changes what is displayed:
+        // either we are panning the map, or the distance overlay is active.
+        if (_isDragging || _isMouseOverCanvas)
+            Redraw();
     }
 
     private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -267,7 +273,7 @@ public partial class MapCanvasView : UserControl
             };
 
             Avalonia.Controls.Canvas.SetLeft(coordLabel, cx - LabelWidth / 2);
-            Avalonia.Controls.Canvas.SetTop(coordLabel, cy + CircleRadius + 13);
+            Avalonia.Controls.Canvas.SetTop(coordLabel, cy + CircleRadius + CoordLabelOffsetY);
 
             GameMapCanvas.Children.Add(circle);
             GameMapCanvas.Children.Add(nameLabel);
@@ -328,8 +334,8 @@ public partial class MapCanvasView : UserControl
                 Background = labelBackground,
             };
 
-            Avalonia.Controls.Canvas.SetLeft(distLabel, midX + 2);
-            Avalonia.Controls.Canvas.SetTop(distLabel, midY - 8);
+            Avalonia.Controls.Canvas.SetLeft(distLabel, midX + DistLabelOffsetX);
+            Avalonia.Controls.Canvas.SetTop(distLabel, midY + DistLabelOffsetY);
 
             GameMapCanvas.Children.Add(line);
             GameMapCanvas.Children.Add(distLabel);
