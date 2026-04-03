@@ -92,13 +92,13 @@ public sealed class DataManager : IDataManager, IDisposable
         IDisposable[] subscriptions =
         [
             DoorsObservable
-                .Do(doors => _logger.LogInformation("Doors data CHANGED: {Count} doors.", doors.Length))
+                .Do(doors => _logger.LogDebug("Doors data CHANGED: {Count} doors.", doors.Length))
                 .Subscribe(),
             EnemiesObservable
-                .Do(enemies => _logger.LogInformation("Enemies data CHANGED: {Count} enemies.", enemies.Length))
+                .Do(enemies => _logger.LogDebug("Enemies data CHANGED: {Count} enemies.", enemies.Length))
                 .Subscribe(),
             InGamePlayersObservable
-                .Do(players => _logger.LogInformation("InGamePlayers data CHANGED: {Count} players.", players.Length))
+                .Do(players => _logger.LogDebug("InGamePlayers data CHANGED: {Count} players.", players.Length))
                 .Subscribe(),
             InGameScenarioObservable
                 .Select(scenario => scenario.Status)

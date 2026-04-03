@@ -389,7 +389,7 @@ public partial class InGameScenarioViewModel : ObservableObject
         if (_scenarioUpdateActions.TryGetValue(scenarioType, out Action<DecodedInGameScenario>? updateAction))
             updateAction(scenario);
         else
-            _logger.LogInformation("No specific view configured for scenario: {ScenarioName}", scenario.ScenarioName);
+            _logger.LogDebug("No specific view configured for scenario: {ScenarioName}", scenario.ScenarioName);
     }
 
     private string GetClearedDisplay() => Status is 12 or 13 or 15 ? "Yes" : "No";

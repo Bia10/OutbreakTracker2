@@ -8,10 +8,10 @@ namespace OutbreakTracker2.Application.Views.Map.Canvas;
 
 // TODO: Map background images and a proper coordinate system are not yet available.
 // Circles are placed by scaling raw game-world coordinates onto the canvas size.
-// Self   = green  (player slot 0)
-// Ally   = blue   (player slots 1-3, human characters)
-// NPC    = yellow (player slots with non-zero NameId, i.e. friendly NPCs)
-// Enemy  = red    (DecodedEnemy — position data not yet tracked; reserved for future use)
+// Self  = green  (player slot 0)
+// Ally  = blue   (player slots 1-3, human characters)
+// NPC   = yellow (player slots with non-zero NameId, i.e. friendly NPCs)
+// Enemy rendering is not yet implemented — position offsets for the flat enemy list are unknown.
 public partial class MapCanvasView : UserControl
 {
     private const double CircleRadius = 5;
@@ -32,20 +32,36 @@ public partial class MapCanvasView : UserControl
             {
                 _playersSubscription = viewModel
                     .PlayersObservable.ObserveOn(SynchronizationContext.Current)
-                    .Subscribe(DrawPlayers);
+                    .Subscribe(players =>
+                    {
+                        _lastPlayers = players;
+                        Redraw();
+                    });
             }
         };
 
-        GameMapCanvas.SizeChanged += (_, _) =>
-        {
-            if (_lastPlayers is not null)
-                DrawPlayers(_lastPlayers);
-        };
+        GameMapCanvas.SizeChanged += (_, _) => Redraw();
     }
 
-    private void DrawPlayers(DecodedInGamePlayer[] players)
+    private void Redraw()
     {
-        _lastPlayers = players;
+        GameMapCanvas.Children.Clear();
+
+        double canvasW =
+            GameMapCanvas.Bounds.Width > 0 ? GameMapCanvas.Bounds.Width : ViewModel?.MapWidth ?? MaxMapCoordinate;
+        double canvasH =
+            GameMapCanvas.Bounds.Height > 0 ? GameMapCanvas.Bounds.Height : ViewModel?.MapHeight ?? MaxMapCoordinate;
+
+        double scaleX = canvasW / MaxMapCoordinate;
+        double scaleY = canvasH / MaxMapCoordinate;
+
+        DrawPlayers(_lastPlayers, scaleX, scaleY);
+    }
+
+    private void DrawPlayers(DecodedInGamePlayer[]? players, double scaleX, double scaleY)
+    {
+        if (players is null)
+            return;
 
         bool anyInGame = false;
         foreach (DecodedInGamePlayer p in players)
@@ -57,18 +73,8 @@ public partial class MapCanvasView : UserControl
             }
         }
 
-        GameMapCanvas.Children.Clear();
-
         if (!anyInGame)
             return;
-
-        double canvasW =
-            GameMapCanvas.Bounds.Width > 0 ? GameMapCanvas.Bounds.Width : ViewModel?.MapWidth ?? MaxMapCoordinate;
-        double canvasH =
-            GameMapCanvas.Bounds.Height > 0 ? GameMapCanvas.Bounds.Height : ViewModel?.MapHeight ?? MaxMapCoordinate;
-
-        double scaleX = canvasW / MaxMapCoordinate;
-        double scaleY = canvasH / MaxMapCoordinate;
 
         for (int i = 0; i < players.Length; i++)
         {

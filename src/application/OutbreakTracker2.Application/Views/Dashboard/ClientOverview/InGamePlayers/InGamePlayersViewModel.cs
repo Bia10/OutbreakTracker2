@@ -43,7 +43,7 @@ public partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
             .SubscribeAwait(
                 async (incomingPlayersSnapshot, ct) =>
                 {
-                    _logger.LogInformation(
+                    _logger.LogDebug(
                         "Processing players snapshot on thread pool with {Length} entries",
                         incomingPlayersSnapshot.Length
                     );
@@ -55,7 +55,7 @@ public partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
                             .Where(IsPlayerActive)
                             .ToList();
 
-                        _logger.LogInformation(
+                        _logger.LogDebug(
                             "Processed {Count} filtered player entries on thread pool",
                             filteredIncomingPlayers.Count
                         );
@@ -92,7 +92,7 @@ public partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
                             }
                         }
 
-                        _logger.LogInformation(
+                        _logger.LogDebug(
                             "ViewModel preparation complete on thread pool. {DesiredCount} desired VMs",
                             desiredViewModels.Count
                         );
@@ -101,7 +101,7 @@ public partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
                             .InvokeOnUIAsync(
                                 () =>
                                 {
-                                    _logger.LogInformation("Applying player updates on UI thread");
+                                    _logger.LogDebug("Applying player updates on UI thread");
 
                                     foreach (InGamePlayerViewModel vm in desiredViewModels)
                                         if (
@@ -204,7 +204,7 @@ public partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
                                     HasPlayers = _players.Count > 0;
                                     PlayerColumnCount = _players.Count > 0 ? _players.Count : 1;
 
-                                    _logger.LogInformation(
+                                    _logger.LogDebug(
                                         "UI update complete. Players ObservableList count: {Count}",
                                         _players.Count
                                     );
@@ -213,7 +213,7 @@ public partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
                             )
                             .ConfigureAwait(false);
 
-                        _logger.LogInformation("Finished processing player snapshot cycle");
+                        _logger.LogDebug("Finished processing player snapshot cycle");
                     }
                     catch (OperationCanceledException)
                     {
