@@ -18,7 +18,6 @@ public partial class NotInGameWatermark : UserControl
 
     public NotInGameWatermark()
     {
-        DataContext = this;
         InitializeComponent();
     }
 }
