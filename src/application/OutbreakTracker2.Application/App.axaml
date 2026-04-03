@@ -5,9 +5,17 @@
     xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:suki="https://github.com/kikipoulet/SukiUI"
     RequestedThemeVariant="Default">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Presets/Ide/Default.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
     <Application.Styles>
         <FluentTheme />
         <suki:SukiTheme Locale="en-US" ThemeColor="Blue" />
         <avalonia:MaterialIconStyles />
+        <DockFluentTheme DensityStyle="Normal" />
     </Application.Styles>
 </Application>

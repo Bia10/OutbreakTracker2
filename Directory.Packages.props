@@ -21,6 +21,9 @@
     <PackageVersion Include="Xaml.Behaviors.Avalonia" Version="11.3.9.5" />
     <PackageVersion Include="Material.Icons.Avalonia" Version="3.0.0" />
     <PackageVersion Include="SukiUI" Version="6.0.3" />
+    <PackageVersion Include="Dock.Avalonia" Version="11.3.11.22" />
+    <PackageVersion Include="Dock.Avalonia.Themes.Fluent" Version="11.3.11.22" />
+    <PackageVersion Include="Dock.Model.Mvvm" Version="11.3.11.22" />
   </ItemGroup>
   <!-- ═══════════════════════════════════════════════════════
        REACTIVE / MVVM

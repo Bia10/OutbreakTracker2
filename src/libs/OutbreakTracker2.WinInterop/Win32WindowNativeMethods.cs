@@ -3,6 +3,14 @@ using System.Runtime.Versioning;
 
 namespace OutbreakTracker2.WinInterop;
 
+/// <summary>Screen coordinate point, as returned by <see cref="Win32WindowNativeMethods.GetCursorPos"/>.</summary>
+[StructLayout(LayoutKind.Sequential)]
+public struct POINT
+{
+    public int X;
+    public int Y;
+}
+
 /// <summary>Bounding rectangle in screen coordinates, as returned by <see cref="Win32WindowNativeMethods.GetWindowRect"/>.</summary>
 [StructLayout(LayoutKind.Sequential)]
 public struct RECT
@@ -28,6 +36,9 @@ public static partial class Win32WindowNativeMethods
     public const int GWL_STYLE = -16;
     public const int GWL_EXSTYLE = -20;
 
+    // Extended window styles
+    public const long WS_EX_NOACTIVATE = 0x08000000L;
+
     // Common window styles
     public const long WS_CHILD = 0x40000000L;
     public const long WS_POPUP = 0x80000000L;
@@ -52,6 +63,7 @@ public static partial class Win32WindowNativeMethods
     // ShowWindow commands
     public const int SW_HIDE = 0;
     public const int SW_SHOW = 5;
+    public const int SW_SHOWNOACTIVATE = 8;
 
     // WM_SIZE constants
     public const uint WM_SIZE = 0x0005;
@@ -190,4 +202,169 @@ public static partial class Win32WindowNativeMethods
     [LibraryImport("user32.dll", EntryPoint = "UpdateWindow")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool UpdateWindow(nint hWnd);
+
+    /// <summary>
+    /// Sets the keyboard focus to the specified window.  The window must be attached to the
+    /// calling thread's message queue, or the calling thread must be attached to the target
+    /// thread's input state via <see cref="AttachThreadInput"/>.
+    /// </summary>
+    [LibraryImport("user32.dll", EntryPoint = "SetFocus")]
+    public static partial nint SetFocus(nint hWnd);
+
+    /// <summary>
+    /// Returns the handle of the window that has the keyboard focus within the calling
+    /// thread's message queue (also reflects the shared state when thread inputs are attached).
+    /// </summary>
+    [LibraryImport("user32.dll", EntryPoint = "GetFocus")]
+    public static partial nint GetFocus();
+
+    /// <summary>
+    /// Attaches or detaches the input processing mechanism of one thread to that of another,
+    /// enabling cross-thread <see cref="SetFocus"/> calls.
+    /// </summary>
+    [LibraryImport("user32.dll", EntryPoint = "AttachThreadInput")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool AttachThreadInput(
+        uint idAttach,
+        uint idAttachTo,
+        [MarshalAs(UnmanagedType.Bool)] bool fAttach
+    );
+
+    /// <summary>Returns the position of the cursor in screen coordinates.</summary>
+    [LibraryImport("user32.dll", EntryPoint = "GetCursorPos")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool GetCursorPos(out POINT lpPoint);
+
+    /// <summary>Returns the thread identifier of the calling thread (Win32 thread ID).</summary>
+    [LibraryImport("kernel32.dll", EntryPoint = "GetCurrentThreadId")]
+    public static partial uint GetCurrentThreadId();
+
+    // ── WinEvent hook ─────────────────────────────────────────────────────────
+
+    // Events
+    public const uint EVENT_OBJECT_DESTROY = 0x8001;
+    public const uint EVENT_OBJECT_SHOW = 0x8002;
+    public const uint EVENT_OBJECT_HIDE = 0x8003;
+    public const uint EVENT_OBJECT_LOCATIONCHANGE = 0x800B;
+
+    // SetWinEventHook flags
+    /// <summary>
+    /// The callback is posted to the message queue of the thread that called
+    /// <see cref="SetWinEventHook"/>.  That thread must pump its Win32 message queue
+    /// (Avalonia's UI thread does this automatically).
+    /// </summary>
+    public const uint WINEVENT_OUTOFCONTEXT = 0x0000;
+
+    /// <summary>
+    /// <c>idObject</c> value passed to a <see cref="WinEventProc"/> callback when the event
+    /// applies to the window itself rather than one of its child objects (e.g. scroll bars).
+    /// </summary>
+    public const int OBJID_SELF = 0;
+
+    /// <summary>
+    /// Callback signature for <see cref="SetWinEventHook"/>.
+    /// Must be stored in a field to prevent GC collection while the hook is active.
+    /// </summary>
+    public delegate void WinEventProc(
+        nint hWinEventHook,
+        uint @event,
+        nint hwnd,
+        int idObject,
+        int idChild,
+        uint idEventThread,
+        uint dwmsEventTime
+    );
+
+    /// <summary>
+    /// Installs a WinEvent hook that receives notifications when the specified events fire.
+    /// Must be unhooked with <see cref="UnhookWinEvent"/> from the <em>same thread</em>.
+    /// </summary>
+    /// <remarks>
+    /// With <see cref="WINEVENT_OUTOFCONTEXT"/> the callback is posted to the calling
+    /// thread's queue and delivered the next time it pumps messages — no in-process injection
+    /// is required and the target process does not need to cooperate.
+    /// </remarks>
+    [DllImport("user32.dll", EntryPoint = "SetWinEventHook")]
+    public static extern nint SetWinEventHook(
+        uint eventMin,
+        uint eventMax,
+        nint hmodWinEventProc,
+        WinEventProc lpfnWinEventProc,
+        uint idProcess,
+        uint idThread,
+        uint dwFlags
+    );
+
+    /// <summary>Removes a WinEvent hook previously installed with <see cref="SetWinEventHook"/>.</summary>
+    [LibraryImport("user32.dll", EntryPoint = "UnhookWinEvent")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool UnhookWinEvent(nint hWinEventHook);
+
+    // ── Low-level mouse hook ──────────────────────────────────────────────────
+
+    /// <summary>Hook type for <see cref="SetWindowsHookEx"/>: low-level mouse input events.</summary>
+    public const int WH_MOUSE_LL = 14;
+
+    /// <summary>The hook procedure must process the message.</summary>
+    public const int HC_ACTION = 0;
+
+    /// <summary>Window message: mouse moved.</summary>
+    public const uint WM_MOUSEMOVE = 0x0200;
+
+    /// <summary>Data structure passed via <c>lParam</c> to a <see cref="LowLevelMouseProc"/> callback.</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MSLLHOOKSTRUCT
+    {
+        public POINT pt;
+        public uint mouseData;
+        public uint flags;
+        public uint time;
+        public nuint dwExtraInfo;
+    }
+
+    /// <summary>
+    /// Callback signature for a low-level mouse hook installed via <see cref="SetWindowsHookEx"/>.
+    /// Must be stored in a field to prevent GC collection while the hook is active.
+    /// </summary>
+    public delegate nint LowLevelMouseProc(int nCode, nint wParam, nint lParam);
+
+    /// <summary>Installs a low-level mouse hook (or other hook type).</summary>
+    [DllImport("user32.dll", EntryPoint = "SetWindowsHookExW")]
+    public static extern nint SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn, nint hMod, uint dwThreadId);
+
+    /// <summary>Removes a hook installed with <see cref="SetWindowsHookEx"/>.</summary>
+    [LibraryImport("user32.dll", EntryPoint = "UnhookWindowsHookEx")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool UnhookWindowsHookEx(nint hhk);
+
+    /// <summary>Passes the hook information to the next hook procedure in the current hook chain.</summary>
+    [DllImport("user32.dll", EntryPoint = "CallNextHookEx")]
+    public static extern nint CallNextHookEx(nint hhk, int nCode, nint wParam, nint lParam);
+
+    /// <summary>Retrieves a module handle for the specified module.</summary>
+    [LibraryImport("kernel32.dll", EntryPoint = "GetModuleHandleW", StringMarshalling = StringMarshalling.Utf16)]
+    public static partial nint GetModuleHandle(string? lpModuleName);
+
+    // ── Additional window queries ─────────────────────────────────────────────
+
+    /// <summary>Flag for <see cref="GetAncestor"/>: retrieves the parent window (as set by <c>SetParent</c>).</summary>
+    public const uint GA_PARENT = 1;
+
+    /// <summary>Flag for <see cref="GetAncestor"/>: retrieves the root (top-level) window.</summary>
+    public const uint GA_ROOT = 2;
+
+    /// <summary>Retrieves the ancestor window of the specified window at the given level.</summary>
+    [LibraryImport("user32.dll", EntryPoint = "GetAncestor")]
+    public static partial nint GetAncestor(nint hwnd, uint gaFlags);
+
+    /// <summary>
+    /// Retrieves the handle of the window (if any) that has captured the mouse within the
+    /// calling thread's message queue.  Returns <see cref="nint.Zero"/> if no capture is active.
+    /// </summary>
+    [LibraryImport("user32.dll", EntryPoint = "GetCapture")]
+    public static partial nint GetCapture();
+
+    /// <summary>Returns the foreground window handle.</summary>
+    [LibraryImport("user32.dll", EntryPoint = "GetForegroundWindow")]
+    public static partial nint GetForegroundWindow();
 }

@@ -101,6 +101,12 @@ internal sealed class WindowsWindowEmbedder : IWindowEmbedder
         if (containerHandle == nint.Zero || targetHandle == nint.Zero)
             return;
 
+        // Hide the window immediately so that none of the style manipulation,
+        // reparenting, or SWP_FRAMECHANGED processing is visible to the user.
+        // Qt may internally reposition the window in response to WM_STYLECHANGED
+        // or WM_NCCALCSIZE; keeping it hidden eliminates the visible glitch.
+        Win32WindowNativeMethods.ShowWindow(targetHandle, Win32WindowNativeMethods.SW_HIDE);
+
         // Strip decorations but KEEP WS_POPUP.
         //
         // Converting WS_POPUP → WS_CHILD via SetWindowLongPtr causes Qt-based applications
@@ -110,9 +116,10 @@ internal sealed class WindowsWindowEmbedder : IWindowEmbedder
         // the container.  Qt's swap-chain rendering is tied to the HWND, not the style bits,
         // so the game continues to render normally.
         //
-        // Consequence: WS_POPUP windows use SCREEN coordinates in MoveWindow / SetWindowPos,
-        // not coordinates relative to the parent.  We read the container's screen rect and use
-        // that as the position.
+        // After SetParent, MoveWindow / SetWindowPos use PARENT-RELATIVE coordinates
+        // regardless of WS_POPUP — the parent relationship set by SetParent overrides the
+        // style bits for coordinate calculations.  We use (0, 0) to fill the container
+        // from its top-left corner.
         long style = Win32WindowNativeMethods.GetWindowLongPtr(targetHandle, Win32WindowNativeMethods.GWL_STYLE);
         style &= ~(
             Win32WindowNativeMethods.WS_CAPTION
@@ -124,26 +131,39 @@ internal sealed class WindowsWindowEmbedder : IWindowEmbedder
         );
         Win32WindowNativeMethods.SetWindowLongPtr(targetHandle, Win32WindowNativeMethods.GWL_STYLE, style);
 
+        // Prevent the WS_POPUP window from becoming the foreground application when the user
+        // clicks inside it.  Without this flag the PCSX2 window would pop in front of
+        // Avalonia on every click.  Mouse messages still arrive at PCSX2 (it sits on top in
+        // Z-order); only the OS-level foreground activation is suppressed.
+        long exStyle = Win32WindowNativeMethods.GetWindowLongPtr(targetHandle, Win32WindowNativeMethods.GWL_EXSTYLE);
+        exStyle |= Win32WindowNativeMethods.WS_EX_NOACTIVATE;
+        Win32WindowNativeMethods.SetWindowLongPtr(targetHandle, Win32WindowNativeMethods.GWL_EXSTYLE, exStyle);
+
         Win32WindowNativeMethods.SetParent(targetHandle, containerHandle);
 
-        // Use the container's current screen position (WS_POPUP ignores the parent origin).
-        Win32WindowNativeMethods.GetWindowRect(containerHandle, out RECT containerRect);
         int w = Math.Max(1, width);
         int h = Math.Max(1, height);
-        Win32WindowNativeMethods.MoveWindow(targetHandle, containerRect.Left, containerRect.Top, w, h, bRepaint: true);
 
-        // Apply decoration style change (SWP_FRAMECHANGED) and show.
+        // Apply decoration style change (SWP_FRAMECHANGED) while still hidden.
+        // Position at (0, 0) parent-relative — fills the container from its top-left.
         Win32WindowNativeMethods.SetWindowPos(
             targetHandle,
             nint.Zero,
-            containerRect.Left,
-            containerRect.Top,
+            0,
+            0,
             w,
             h,
             Win32WindowNativeMethods.SWP_NOACTIVATE
+                | Win32WindowNativeMethods.SWP_NOZORDER
                 | Win32WindowNativeMethods.SWP_FRAMECHANGED
-                | Win32WindowNativeMethods.SWP_SHOWWINDOW
         );
+
+        // Final reposition: SWP_FRAMECHANGED may have triggered Qt layout
+        // adjustments that moved the window away from our target coordinates.
+        Win32WindowNativeMethods.MoveWindow(targetHandle, 0, 0, w, h, bRepaint: false);
+
+        // Show the window in its final, correct position without activating it.
+        Win32WindowNativeMethods.ShowWindow(targetHandle, Win32WindowNativeMethods.SW_SHOWNOACTIVATE);
 
         // D3D11/GL swap chains don't automatically repaint after SetParent.
         // Sending WM_SIZE makes Qt/PCSX2 resize its render surface and redraw.
@@ -158,7 +178,7 @@ internal sealed class WindowsWindowEmbedder : IWindowEmbedder
         Win32WindowNativeMethods.UpdateWindow(targetHandle);
     }
 
-    public void ResizeEmbeddedWindow(nint targetHandle, int width, int height)
+    public void ResizeEmbeddedWindow(nint targetHandle, nint containerHandle, int width, int height)
     {
         if (targetHandle == nint.Zero)
             return;
@@ -166,18 +186,9 @@ internal sealed class WindowsWindowEmbedder : IWindowEmbedder
         int w = Math.Max(1, width);
         int h = Math.Max(1, height);
 
-        // WS_POPUP windows use screen coordinates, not parent-relative coordinates.
-        // Retrieve the container's current screen position via its Win32 parent handle.
-        int x = 0;
-        int y = 0;
-        nint container = Win32WindowNativeMethods.GetParent(targetHandle);
-        if (container != nint.Zero && Win32WindowNativeMethods.GetWindowRect(container, out RECT containerRect))
-        {
-            x = containerRect.Left;
-            y = containerRect.Top;
-        }
-
-        Win32WindowNativeMethods.MoveWindow(targetHandle, x, y, w, h, bRepaint: true);
+        // After SetParent, coordinates are parent-relative regardless of WS_POPUP.
+        // Position at (0, 0) to fill the container from its top-left corner.
+        Win32WindowNativeMethods.MoveWindow(targetHandle, 0, 0, w, h, bRepaint: true);
 
         // D3D/Qt swap chains don't repaint on MoveWindow alone — WM_SIZE triggers a render-target resize.
         nint lParam = (nint)(((h & 0xFFFF) << 16) | (w & 0xFFFF));
@@ -203,6 +214,11 @@ internal sealed class WindowsWindowEmbedder : IWindowEmbedder
         long style = Win32WindowNativeMethods.GetWindowLongPtr(targetHandle, Win32WindowNativeMethods.GWL_STYLE);
         style |= Win32WindowNativeMethods.WS_CAPTION | Win32WindowNativeMethods.WS_THICKFRAME;
         Win32WindowNativeMethods.SetWindowLongPtr(targetHandle, Win32WindowNativeMethods.GWL_STYLE, style);
+
+        // Restore normal activation so the un-embedded PCSX2 window can be interacted with.
+        long exStyle = Win32WindowNativeMethods.GetWindowLongPtr(targetHandle, Win32WindowNativeMethods.GWL_EXSTYLE);
+        exStyle &= ~Win32WindowNativeMethods.WS_EX_NOACTIVATE;
+        Win32WindowNativeMethods.SetWindowLongPtr(targetHandle, Win32WindowNativeMethods.GWL_EXSTYLE, exStyle);
 
         Win32WindowNativeMethods.SetWindowPos(
             targetHandle,

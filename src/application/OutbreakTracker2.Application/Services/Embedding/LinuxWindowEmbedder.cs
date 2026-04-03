@@ -163,7 +163,7 @@ internal sealed class LinuxWindowEmbedder : IWindowEmbedder
         X11NativeMethods.XSync(_display, discard: false);
     }
 
-    public void ResizeEmbeddedWindow(nint targetHandle, int width, int height)
+    public void ResizeEmbeddedWindow(nint targetHandle, nint containerHandle, int width, int height)
     {
         if (targetHandle == nint.Zero)
             return;

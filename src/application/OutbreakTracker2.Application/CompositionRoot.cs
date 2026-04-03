@@ -36,6 +36,8 @@ using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoom;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoomPlayer.Factory;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlot.Factory;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlots;
+using OutbreakTracker2.Application.Views.GameDock;
+using OutbreakTracker2.Application.Views.GameDock.Dockables;
 using OutbreakTracker2.Application.Views.Log;
 using OutbreakTracker2.Application.Views.Logging;
 using OutbreakTracker2.Application.Views.Map;
@@ -73,7 +75,8 @@ internal static class CompositionRoot
             .AddView<InGameDoorsView, InGameDoorsViewModel>(services)
             .AddView<ItemSlotView, ItemSlotViewModel>(services)
             .AddView<LogView, LogViewModel>(services)
-            .AddView<MapView, MapViewModel>(services);
+            .AddView<MapView, MapViewModel>(services)
+            .AddView<GameDockView, GameDockViewModel>(services);
 
     internal static IServiceProvider ConfigureServicesAndLogging(
         IServiceCollection services,
@@ -155,6 +158,13 @@ internal static class CompositionRoot
             throw new PlatformNotSupportedException("Window embedding is currently only supported on Windows.");
 
         services.AddSingleton<EmbeddedGameViewModel>();
+
+        // Game Dock: dockable instances and the factory that wires them into a layout
+        services.AddSingleton<GameScreenDocument>();
+        services.AddSingleton<EnemyListDockTool>();
+        services.AddSingleton<PlayersDockTool>();
+        services.AddSingleton<ScenarioInfoDockTool>();
+        services.AddSingleton<GameDockFactory>();
 
         services.AddSingleton<IEEmemMemory, EEmemMemory>();
         services.AddSingleton<IDataManager, DataManager>();

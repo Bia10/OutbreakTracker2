@@ -23,6 +23,16 @@
 public interface IWindowPositionWatcher : IDisposable
 {
     /// <summary>
+    /// Raised when the embedded window is destroyed by the external process (e.g. PCSX2
+    /// recreating its render surface during a renderer or fullscreen toggle).  The subscriber
+    /// should re-discover the process's new window and re-embed it.
+    /// </summary>
+    /// <remarks>
+    /// On Windows this event fires on the Avalonia UI thread (delivered via a WinEvent hook).
+    /// </remarks>
+    event EventHandler? EmbeddedWindowLost;
+
+    /// <summary>
     /// Starts the watch loop. If already running, restarts with the new handles.
     /// </summary>
     /// <param name="embeddedHandle">
@@ -31,7 +41,12 @@ public interface IWindowPositionWatcher : IDisposable
     /// <param name="containerHandle">
     /// Handle of the Win32 container created by <see cref="IWindowEmbedder.CreateContainerWindow"/>.
     /// </param>
-    void Start(nint embeddedHandle, nint containerHandle);
+    /// <param name="rootWindowHandle">
+    /// Handle of the top-level Avalonia window that hosts the container.  Used to detect
+    /// window-level moves (fullscreen toggle, drag, display change) that change the
+    /// container's screen position without firing a container-level location event.
+    /// </param>
+    void Start(nint embeddedHandle, nint containerHandle, nint rootWindowHandle);
 
     /// <summary>Stops the watch loop. Safe to call when not started.</summary>
     void Stop();

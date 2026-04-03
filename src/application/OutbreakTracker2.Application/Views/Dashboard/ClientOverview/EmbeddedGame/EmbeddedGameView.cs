@@ -65,7 +65,10 @@ public sealed class EmbeddedGameView : NativeControlHost
     public EmbeddedGameView()
     {
         if (OperatingSystem.IsWindows())
+        {
             _positionWatcher = new WindowsWindowPositionWatcher();
+            _positionWatcher.EmbeddedWindowLost += OnEmbeddedWindowLost;
+        }
     }
 
     // ── NativeControlHost overrides ──────────────────────────────────────────
@@ -97,13 +100,20 @@ public sealed class EmbeddedGameView : NativeControlHost
             {
                 vm.Embedder.EmbedWindow(_containerHandle, found, w, h);
                 _embeddedHandle = found;
-                _positionWatcher?.Start(_embeddedHandle, _containerHandle);
+                _positionWatcher?.Start(_embeddedHandle, _containerHandle, GetRootWindowHandle());
                 vm.IsEmbedded = true;
                 vm.IsSearching = false;
                 vm.StatusMessage = System.FormattableString.Invariant(
                     $"Embedded HWND 0x{found:X8} (PID {vm.TrackedPid})."
                 );
                 vm.PropertyChanged += OnViewModelPropertyChanged;
+
+                // The container HWND was just created and hasn't been positioned by
+                // Avalonia yet — EmbedWindow used stale screen coordinates.  Post a
+                // deferred repaint so the embedded window is repositioned after
+                // Avalonia has arranged the container into its final layout slot.
+                Dispatcher.UIThread.Post(() => TriggerRepaint(), DispatcherPriority.Render);
+
                 return new PlatformHandle(_containerHandle, parent.HandleDescriptor);
             }
 
@@ -121,7 +131,12 @@ public sealed class EmbeddedGameView : NativeControlHost
     protected override void DestroyNativeControlCore(IPlatformHandle control)
     {
         CancelSearch();
-        _positionWatcher?.Stop();
+
+        if (_positionWatcher is not null)
+        {
+            _positionWatcher.EmbeddedWindowLost -= OnEmbeddedWindowLost;
+            _positionWatcher.Stop();
+        }
 
         if (DataContext is EmbeddedGameViewModel vm)
         {
@@ -161,7 +176,7 @@ public sealed class EmbeddedGameView : NativeControlHost
             double scale = VisualRoot?.RenderScaling ?? 1.0;
             int w = PhysicalSize(arranged.Width, scale);
             int h = PhysicalSize(arranged.Height, scale);
-            vm.Embedder.ResizeEmbeddedWindow(_embeddedHandle, w, h);
+            vm.Embedder.ResizeEmbeddedWindow(_embeddedHandle, _containerHandle, w, h);
         }
 
         return arranged;
@@ -186,7 +201,7 @@ public sealed class EmbeddedGameView : NativeControlHost
         double scale = VisualRoot?.RenderScaling ?? 1.0;
         int w = PhysicalSize(Bounds.Width, scale);
         int h = PhysicalSize(Bounds.Height, scale);
-        vm.Embedder.ResizeEmbeddedWindow(_embeddedHandle, w, h);
+        vm.Embedder.ResizeEmbeddedWindow(_embeddedHandle, _containerHandle, w, h);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
@@ -323,7 +338,7 @@ public sealed class EmbeddedGameView : NativeControlHost
 
                         embedder.EmbedWindow(_containerHandle, found, w, h);
                         _embeddedHandle = found;
-                        _positionWatcher?.Start(_embeddedHandle, _containerHandle);
+                        _positionWatcher?.Start(_embeddedHandle, _containerHandle, GetRootWindowHandle());
 
                         // IsEmbedRequested may still be false when auto-embedding fires before the
                         // user clicked "Embed" (Avalonia creates the NativeControlHost even when the
@@ -375,6 +390,27 @@ public sealed class EmbeddedGameView : NativeControlHost
         return nint.Zero;
     }
 
+    /// <summary>
+    /// Called (on the UI thread) when the embedded PCSX2 HWND is destroyed — typically
+    /// because PCSX2 recreated its <c>DisplaySurface</c> (renderer change, fullscreen toggle).
+    /// Automatically re-discovers the new window and re-embeds it.
+    /// </summary>
+    private void OnEmbeddedWindowLost(object? sender, EventArgs e)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            _embeddedHandle = nint.Zero;
+
+            if (DataContext is EmbeddedGameViewModel vm && vm.IsEmbedRequested && vm.TrackedPid > 0)
+            {
+                vm.IsEmbedded = false;
+                vm.StatusMessage = "PCSX2 window lost \u2014 re-scanning\u2026";
+                vm.LogInfo("Embedded HWND was destroyed by PCSX2 (window recreation). Starting re-embed search.");
+                BeginWindowSearch(vm);
+            }
+        });
+    }
+
     private void CancelSearch()
     {
         _searchCts?.Cancel();
@@ -388,6 +424,12 @@ public sealed class EmbeddedGameView : NativeControlHost
     /// </summary>
     private static PlatformHandle CreateFallbackHandle(IPlatformHandle parent) =>
         new(parent.Handle, parent.HandleDescriptor);
+
+    /// <summary>
+    /// Returns the native HWND of the Avalonia top-level window hosting this control.
+    /// Used by the position watcher to detect window-level moves (fullscreen toggle, drag).
+    /// </summary>
+    private nint GetRootWindowHandle() => TopLevel.GetTopLevel(this)?.TryGetPlatformHandle()?.Handle ?? nint.Zero;
 
     /// <summary>
     /// Converts a logical (device-independent) pixel value to a physical pixel count using

@@ -44,7 +44,15 @@ public interface IWindowEmbedder : IDisposable
     void EmbedWindow(nint containerHandle, nint targetHandle, int width, int height);
 
     /// <summary>Resizes the previously embedded window to the new dimensions.</summary>
-    void ResizeEmbeddedWindow(nint targetHandle, int width, int height);
+    /// <param name="targetHandle">Handle of the embedded process window.</param>
+    /// <param name="containerHandle">
+    /// Handle of the container window created by <see cref="CreateContainerWindow"/>.
+    /// On Windows this is required because <c>WS_POPUP</c> windows use screen coordinates
+    /// and the container's screen rect must be read explicitly.
+    /// </param>
+    /// <param name="width">New width in physical pixels.</param>
+    /// <param name="height">New height in physical pixels.</param>
+    void ResizeEmbeddedWindow(nint targetHandle, nint containerHandle, int width, int height);
 
     /// <summary>
     /// Releases an embedded window by reparenting it back to the desktop root (Linux) or

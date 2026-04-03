@@ -17,7 +17,7 @@ internal sealed class NullWindowEmbedder : IWindowEmbedder
 
     public void EmbedWindow(nint containerHandle, nint targetHandle, int width, int height) { }
 
-    public void ResizeEmbeddedWindow(nint targetHandle, int width, int height) { }
+    public void ResizeEmbeddedWindow(nint targetHandle, nint containerHandle, int width, int height) { }
 
     public void ReleaseWindow(nint targetHandle) { }
 
