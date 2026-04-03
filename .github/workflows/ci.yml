@@ -1,0 +1,77 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: CI
+
+permissions: read-all
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+
+jobs:
+  format:
+    name: Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Restore dotnet tools
+        run: dotnet tool restore
+
+      - name: CSharpier verify no changes
+        run: dotnet csharpier check .
+
+      - name: Restore dependencies
+        run: dotnet restore src/OutbreakTracker2.slnx
+
+      - name: Format style verify no changes
+        run: dotnet format style src/OutbreakTracker2.slnx --verify-no-changes
+
+      - name: Format analyzers verify no changes
+        run: dotnet format analyzers src/OutbreakTracker2.slnx --verify-no-changes
+
+  build-and-test:
+    name: Build and Test (${{ matrix.os }} / ${{ matrix.configuration }})
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-24.04]
+        configuration: [Debug, Release]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Restore dependencies
+        run: dotnet restore src/OutbreakTracker2.slnx
+
+      - name: Build solution
+        run: dotnet build src/OutbreakTracker2.slnx -c ${{ matrix.configuration }} --no-restore
+
+      - name: Run unit tests
+        run: dotnet test --project src/insights/OutbreakTracker2.UnitTests/OutbreakTracker2.UnitTests.csproj -c ${{ matrix.configuration }}

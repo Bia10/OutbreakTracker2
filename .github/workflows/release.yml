@@ -1,0 +1,136 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Release
+
+permissions: read-all
+
+on:
+  push:
+    tags: ["v*"]
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+
+jobs:
+  build-and-test:
+    name: Build and Test (${{ matrix.os }})
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Restore dependencies
+        run: dotnet restore src/OutbreakTracker2.slnx
+
+      - name: Build solution
+        run: dotnet build src/OutbreakTracker2.slnx -c Release --no-restore
+
+      - name: Run unit tests
+        run: dotnet test --project src/insights/OutbreakTracker2.UnitTests/OutbreakTracker2.UnitTests.csproj -c Release
+
+  release:
+    name: Create Release
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag_name: ${{ steps.tag.outputs.TAG_NAME }}
+      version: ${{ steps.tag.outputs.VERSION }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: tag
+        run: |
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG_NAME#v}"
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Archive source code
+        uses: thedoctor0/zip-release@b57d897cb5d60cb78b51a507f63fa184cfe35554 # 0.7.6
+        with:
+          type: 'zip'
+          filename: 'OutbreakTracker2-${{ steps.tag.outputs.VERSION }}-source.zip'
+          path: '${{ github.workspace }}/src'
+          exclusions: '*.git* .github/* insights/* .idea/*'
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+        with:
+          tag_name: ${{ steps.tag.outputs.TAG_NAME }}
+          name: ${{ steps.tag.outputs.TAG_NAME }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          files: OutbreakTracker2-${{ steps.tag.outputs.VERSION }}-source.zip
+
+  publish:
+    name: Publish (${{ matrix.rid }})
+    needs: release
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            artifact_suffix: windows
+          - os: ubuntu-24.04
+            rid: linux-x64
+            artifact_suffix: linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Restore dependencies
+        run: dotnet restore src/application/OutbreakTracker2.Application/OutbreakTracker2.Application.csproj --runtime ${{ matrix.rid }}
+
+      - name: Publish application
+        run: dotnet publish src/application/OutbreakTracker2.Application/OutbreakTracker2.Application.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --no-restore --output ${{ github.workspace }}/publish_output
+
+      - name: Archive published output
+        uses: thedoctor0/zip-release@b57d897cb5d60cb78b51a507f63fa184cfe35554 # 0.7.6
+        with:
+          type: 'zip'
+          filename: 'OutbreakTracker2-${{ needs.release.outputs.version }}-${{ matrix.artifact_suffix }}.zip'
+          path: '${{ github.workspace }}/publish_output'
+
+      - name: Upload artifact to release
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+        with:
+          tag_name: ${{ needs.release.outputs.tag_name }}
+          files: OutbreakTracker2-${{ needs.release.outputs.version }}-${{ matrix.artifact_suffix }}.zip
