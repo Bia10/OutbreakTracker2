@@ -10,10 +10,34 @@
     <Grid>
         <!-- Canvas: only shown when in-game; background deferred until a scenario map is loaded -->
         <Border BorderBrush="Gray" BorderThickness="1" IsVisible="{Binding IsInGame}">
-            <Canvas x:Name="GameMapCanvas"
-                    Background="DimGray"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch" />
+            <Grid>
+                <Canvas x:Name="GameMapCanvas"
+                        Background="DimGray"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        ClipToBounds="True" />
+
+                <!-- Overlay: zoom controls (top-right) -->
+                <StackPanel HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="4"
+                            Spacing="4">
+                    <Button Content="⟳ Reset"
+                            Padding="4,2"
+                            FontSize="9"
+                            Click="OnResetZoomClick"
+                            ToolTip.Tip="Reset zoom and pan&#x0a;Scroll to zoom · Drag to pan" />
+                </StackPanel>
+
+                <!-- Overlay: zoom level indicator (bottom-left) -->
+                <TextBlock x:Name="ZoomLabel"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Bottom"
+                           Margin="4"
+                           Foreground="White"
+                           FontSize="9"
+                           Opacity="0.7" />
+            </Grid>
         </Border>
 
         <!-- Watermark: shown while not in-game -->
