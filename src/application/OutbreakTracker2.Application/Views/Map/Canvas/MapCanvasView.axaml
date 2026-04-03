@@ -15,7 +15,8 @@
                         Background="DimGray"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
-                        ClipToBounds="True" />
+                        ClipToBounds="True"
+                        Focusable="True" />
 
                 <!-- Overlay: zoom controls (top-right) -->
                 <StackPanel HorizontalAlignment="Right"

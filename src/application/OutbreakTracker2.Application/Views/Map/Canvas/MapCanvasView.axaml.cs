@@ -40,9 +40,9 @@ public partial class MapCanvasView : UserControl
     private double _panXAtDragStart;
     private double _panYAtDragStart;
 
-    // Mouse presence tracking for the distance overlay
+    // Ctrl-held ally-distance overlay state
     private bool _isMouseOverCanvas;
-    private Point _mouseCanvasPosition;
+    private bool _isCtrlHeld;
 
     public MapCanvasView()
     {
@@ -74,17 +74,35 @@ public partial class MapCanvasView : UserControl
         GameMapCanvas.PointerMoved += OnPointerMoved;
         GameMapCanvas.PointerReleased += OnPointerReleased;
 
-        // Mouse presence tracking for the Euclidean-distance overlay
-        GameMapCanvas.PointerEntered += (_, e) =>
+        // Track whether the mouse is over the canvas; focus it so Ctrl key events land here.
+        GameMapCanvas.PointerEntered += (_, _) =>
         {
             _isMouseOverCanvas = true;
-            _mouseCanvasPosition = e.GetPosition(GameMapCanvas);
-            Redraw();
+            GameMapCanvas.Focus();
         };
         GameMapCanvas.PointerExited += (_, _) =>
         {
             _isMouseOverCanvas = false;
+            _isCtrlHeld = false;
             Redraw();
+        };
+
+        // Ctrl toggles the ally-distance overlay while the mouse is inside the canvas.
+        GameMapCanvas.KeyDown += (_, e) =>
+        {
+            if (e.Key is Key.LeftCtrl or Key.RightCtrl)
+            {
+                _isCtrlHeld = true;
+                Redraw();
+            }
+        };
+        GameMapCanvas.KeyUp += (_, e) =>
+        {
+            if (e.Key is Key.LeftCtrl or Key.RightCtrl)
+            {
+                _isCtrlHeld = false;
+                Redraw();
+            }
         };
     }
 
@@ -123,19 +141,21 @@ public partial class MapCanvasView : UserControl
 
     private void OnPointerMoved(object? sender, PointerEventArgs e)
     {
-        Point pos = e.GetPosition(GameMapCanvas);
-        _mouseCanvasPosition = pos;
+        // Keep Ctrl state in sync with whatever the pointer event reports.
+        _isCtrlHeld = e.KeyModifiers.HasFlag(KeyModifiers.Control);
 
         if (_isDragging)
         {
+            Point pos = e.GetPosition(GameMapCanvas);
             _panX = _panXAtDragStart + (pos.X - _dragStart.X);
             _panY = _panYAtDragStart + (pos.Y - _dragStart.Y);
-        }
-
-        // Only redraw when the move actually changes what is displayed:
-        // either we are panning the map, or the distance overlay is active.
-        if (_isDragging || _isMouseOverCanvas)
             Redraw();
+        }
+        else if (_isCtrlHeld)
+        {
+            // Distance overlay state changed — redraw so lines appear / disappear promptly.
+            Redraw();
+        }
     }
 
     private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -168,32 +188,21 @@ public partial class MapCanvasView : UserControl
 
         DrawPlayers(_lastPlayers, baseScaleX, baseScaleY);
 
-        if (_isMouseOverCanvas)
-            DrawDistanceLines(_lastPlayers, baseScaleX, baseScaleY);
+        // Show ally distances when Ctrl is held and the pointer is inside the canvas.
+        if (_isMouseOverCanvas && _isCtrlHeld)
+            DrawAllyDistances(_lastPlayers, baseScaleX, baseScaleY);
 
         if (ZoomLabel is not null)
             ZoomLabel.Text = $"{_zoomLevel * 100:F0}%";
     }
 
-    // ── Coordinate helpers ───────────────────────────────────────────────────
+    // ── Coordinate helper ────────────────────────────────────────────────────
 
     private (double cx, double cy) WorldToCanvas(float worldX, float worldY, double baseScaleX, double baseScaleY)
     {
         double cx = worldX * baseScaleX * _zoomLevel + _panX;
         double cy = worldY * baseScaleY * _zoomLevel + _panY;
         return (cx, cy);
-    }
-
-    private (float worldX, float worldY) CanvasToWorld(
-        double canvasX,
-        double canvasY,
-        double baseScaleX,
-        double baseScaleY
-    )
-    {
-        float worldX = (float)((canvasX - _panX) / (baseScaleX * _zoomLevel));
-        float worldY = (float)((canvasY - _panY) / (baseScaleY * _zoomLevel));
-        return (worldX, worldY);
     }
 
     // ── Drawing ──────────────────────────────────────────────────────────────
@@ -282,49 +291,49 @@ public partial class MapCanvasView : UserControl
     }
 
     /// <summary>
-    /// When the mouse is over the canvas, draw dashed lines from the cursor to every active
-    /// player and annotate each line with the Euclidean distance in game-world units.
+    /// Draws dashed lines from self (slot 0) to every other active ally, annotated with the
+    /// Euclidean distance in game-world units. Shown while Ctrl is held and the mouse is inside the canvas.
     /// </summary>
-    private void DrawDistanceLines(DecodedInGamePlayer[]? players, double baseScaleX, double baseScaleY)
+    private void DrawAllyDistances(DecodedInGamePlayer[]? players, double baseScaleX, double baseScaleY)
     {
-        if (players is null)
+        if (players is null || players.Length < 2)
             return;
 
-        (float mouseWorldX, float mouseWorldY) = CanvasToWorld(
-            _mouseCanvasPosition.X,
-            _mouseCanvasPosition.Y,
-            baseScaleX,
-            baseScaleY
-        );
+        DecodedInGamePlayer self = players[0];
+        if (!self.IsEnabled || !self.IsInGame)
+            return;
 
-        IBrush lineBrush = new SolidColorBrush(Color.FromArgb(180, 255, 255, 255));
+        (double selfCx, double selfCy) = WorldToCanvas(self.PositionX, self.PositionY, baseScaleX, baseScaleY);
+
+        IBrush lineBrush = new SolidColorBrush(Color.FromArgb(200, 100, 220, 255));
         IBrush labelBackground = new SolidColorBrush(Color.FromArgb(140, 0, 0, 0));
 
-        foreach (DecodedInGamePlayer player in players)
+        for (int i = 1; i < players.Length; i++)
         {
-            if (!player.IsEnabled || !player.IsInGame)
+            DecodedInGamePlayer ally = players[i];
+            if (!ally.IsEnabled || !ally.IsInGame)
                 continue;
 
-            (double cx, double cy) = WorldToCanvas(player.PositionX, player.PositionY, baseScaleX, baseScaleY);
+            (double allyCx, double allyCy) = WorldToCanvas(ally.PositionX, ally.PositionY, baseScaleX, baseScaleY);
 
-            double dx = player.PositionX - mouseWorldX;
-            double dy = player.PositionY - mouseWorldY;
+            double dx = ally.PositionX - self.PositionX;
+            double dy = ally.PositionY - self.PositionY;
             double dist = Math.Sqrt(dx * dx + dy * dy);
 
-            // Dashed line from mouse cursor to player dot
+            // Dashed line from self to ally
             Line line = new()
             {
-                StartPoint = _mouseCanvasPosition,
-                EndPoint = new Point(cx, cy),
+                StartPoint = new Point(selfCx, selfCy),
+                EndPoint = new Point(allyCx, allyCy),
                 Stroke = lineBrush,
                 StrokeThickness = 1,
-                Opacity = 0.7,
+                Opacity = 0.8,
             };
             line.StrokeDashArray = new AvaloniaList<double> { 4, 3 };
 
             // Distance label at the midpoint of the line
-            double midX = (_mouseCanvasPosition.X + cx) / 2;
-            double midY = (_mouseCanvasPosition.Y + cy) / 2;
+            double midX = (selfCx + allyCx) / 2;
+            double midY = (selfCy + allyCy) / 2;
 
             TextBlock distLabel = new()
             {
