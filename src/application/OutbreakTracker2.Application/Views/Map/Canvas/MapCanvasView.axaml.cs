@@ -57,9 +57,6 @@ public partial class MapCanvasView : UserControl
             }
         }
 
-        if (ViewModel is not null)
-            ViewModel.IsInGame = anyInGame;
-
         GameMapCanvas.Children.Clear();
 
         if (!anyInGame)
