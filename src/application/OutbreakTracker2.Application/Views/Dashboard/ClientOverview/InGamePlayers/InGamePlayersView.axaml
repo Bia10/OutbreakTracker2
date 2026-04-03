@@ -17,7 +17,7 @@
             <ItemsControl IsVisible="{Binding HasPlayers}" ItemsSource="{Binding PlayersView}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid Columns="4" />
+                        <UniformGrid Columns="{Binding PlayerColumnCount}" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>

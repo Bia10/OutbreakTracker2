@@ -22,6 +22,9 @@ public partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
     [ObservableProperty]
     private bool _hasPlayers;
 
+    [ObservableProperty]
+    private int _playerColumnCount = 1;
+
     public InGamePlayersViewModel(
         IDataManager dataManager,
         ILogger<InGamePlayersViewModel> logger,
@@ -199,6 +202,7 @@ public partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
                                         );
 
                                     HasPlayers = _players.Count > 0;
+                                    PlayerColumnCount = _players.Count > 0 ? _players.Count : 1;
 
                                     _logger.LogInformation(
                                         "UI update complete. Players ObservableList count: {Count}",
