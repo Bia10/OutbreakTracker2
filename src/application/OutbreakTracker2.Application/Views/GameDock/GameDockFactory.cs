@@ -15,8 +15,10 @@ namespace OutbreakTracker2.Application.Views.GameDock;
 /// ┌────────────┬────────────────────────────┬────────────────┐
 /// │  Mob List  │   Game Screen (Document)   │  Players (top) │
 /// │  (left     │        [22%  ←  fill  →    │  ─────────────  │
-/// │   22%)     │           56%)             │ Scenario (bot) │
-/// │            │                            │     (22%)      │
+/// │   22%,top) │           56%)             │ Scenario (bot) │
+/// ├────────────┤                            │     (22%)      │
+/// │    Map     │                            │                │
+/// │  (left,bot)│                            │                │
 /// └────────────┴────────────────────────────┴────────────────┘
 /// </code>
 /// </para>
@@ -29,6 +31,7 @@ namespace OutbreakTracker2.Application.Views.GameDock;
 public sealed class GameDockFactory(
     GameScreenDocument gameScreenDocument,
     EnemyListDockTool enemyListTool,
+    MapDockTool mapDockTool,
     PlayersDockTool playersTool,
     ScenarioInfoDockTool scenarioInfoTool
 ) : Factory
@@ -46,6 +49,11 @@ public sealed class GameDockFactory(
         enemyListTool.CanClose = false;
         enemyListTool.CanFloat = false;
 
+        mapDockTool.Id = "Map";
+        mapDockTool.Title = "Map";
+        mapDockTool.CanClose = false;
+        mapDockTool.CanFloat = false;
+
         playersTool.Id = "Players";
         playersTool.Title = "Players";
         playersTool.CanClose = false;
@@ -56,15 +64,34 @@ public sealed class GameDockFactory(
         scenarioInfoTool.CanClose = false;
         scenarioInfoTool.CanFloat = false;
 
-        var leftDock = new ToolDock
+        var leftDock = new ProportionalDock
         {
             Id = "LeftDock",
             Title = "Left",
             Proportion = 0.22,
-            ActiveDockable = enemyListTool,
-            VisibleDockables = CreateList<IDockable>(enemyListTool),
-            Alignment = Alignment.Left,
-            GripMode = GripMode.Visible,
+            Orientation = Orientation.Vertical,
+            ActiveDockable = null,
+            VisibleDockables = CreateList<IDockable>(
+                new ToolDock
+                {
+                    Id = "EnemyListToolDock",
+                    Proportion = 0.6,
+                    ActiveDockable = enemyListTool,
+                    VisibleDockables = CreateList<IDockable>(enemyListTool),
+                    Alignment = Alignment.Left,
+                    GripMode = GripMode.Visible,
+                },
+                new ProportionalDockSplitter(),
+                new ToolDock
+                {
+                    Id = "MapToolDock",
+                    Proportion = 0.4,
+                    ActiveDockable = mapDockTool,
+                    VisibleDockables = CreateList<IDockable>(mapDockTool),
+                    Alignment = Alignment.Left,
+                    GripMode = GripMode.Visible,
+                }
+            ),
         };
 
         var documentDock = new DocumentDock

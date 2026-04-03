@@ -9,6 +9,11 @@ public partial class MapCanvasViewModel(IDataManager dataManager) : ObservableOb
 {
     public Observable<DecodedInGamePlayer[]> PlayersObservable { get; } = dataManager.InGamePlayersObservable;
 
+    public Observable<DecodedEnemy[]> EnemiesObservable { get; } = dataManager.EnemiesObservable;
+
+    [ObservableProperty]
+    private bool _isInGame;
+
     [ObservableProperty]
     private double _mapWidth = 800;
 

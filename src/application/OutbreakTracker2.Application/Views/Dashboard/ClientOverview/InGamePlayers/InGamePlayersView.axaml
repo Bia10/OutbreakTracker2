@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:common="clr-namespace:OutbreakTracker2.Application.Views.Common"
     xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
     xmlns:inGamePlayers="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers"
     xmlns:inGamePlayer="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer"
@@ -12,9 +13,12 @@
     x:DataType="inGamePlayers:InGamePlayersViewModel"
     mc:Ignorable="d">
 
-    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        <StackPanel Orientation="Vertical">
-            <ItemsControl IsVisible="{Binding HasPlayers}" ItemsSource="{Binding PlayersView}">
+    <Grid>
+        <ScrollViewer
+            HorizontalScrollBarVisibility="Disabled"
+            IsVisible="{Binding HasPlayers}"
+            VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding PlayersView}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <UniformGrid Columns="{Binding PlayerColumnCount}" />
@@ -31,17 +35,10 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+        </ScrollViewer>
 
-            <suki:GlassCard
-                Margin="0,20,0,0"
-                HorizontalAlignment="Center"
-                IsVisible="{Binding !HasPlayers}">
-                <TextBlock
-                    Margin="20"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Text="No active players, you're not in in-game!" />
-            </suki:GlassCard>
-        </StackPanel>
-    </ScrollViewer>
+        <common:NotInGameWatermark
+            IsVisible="{Binding !HasPlayers}"
+            Message="No active players — not in-game" />
+    </Grid>
 </UserControl>

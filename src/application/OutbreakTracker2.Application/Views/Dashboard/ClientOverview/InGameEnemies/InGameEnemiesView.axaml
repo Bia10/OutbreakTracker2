@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:suki="https://github.com/kikipoulet/SukiUI"
+    xmlns:common="clr-namespace:OutbreakTracker2.Application.Views.Common"
     xmlns:inGameEnemies="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies"
     xmlns:inGameEnemy="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy"
     d:DesignHeight="450"
@@ -12,9 +12,12 @@
     x:DataType="inGameEnemies:InGameEnemiesViewModel"
     mc:Ignorable="d">
 
-    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        <StackPanel Orientation="Vertical">
-            <ItemsControl IsVisible="{Binding HasEnemies}" ItemsSource="{Binding EnemiesView}">
+    <Grid>
+        <ScrollViewer
+            HorizontalScrollBarVisibility="Disabled"
+            IsVisible="{Binding HasEnemies}"
+            VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding EnemiesView}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel Orientation="Horizontal" />
@@ -32,17 +35,10 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+        </ScrollViewer>
 
-            <suki:GlassCard
-                Margin="0,20,0,0"
-                HorizontalAlignment="Center"
-                IsVisible="{Binding !HasEnemies}">
-                <TextBlock
-                    Margin="20"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Text="No active enemies, you're not in in-game!" />
-            </suki:GlassCard>
-        </StackPanel>
-    </ScrollViewer>
+        <common:NotInGameWatermark
+            IsVisible="{Binding !HasEnemies}"
+            Message="No active enemies — not in-game" />
+    </Grid>
 </UserControl>

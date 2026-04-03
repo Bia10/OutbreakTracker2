@@ -10,6 +10,7 @@
     xmlns:inGameEnemies="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies"
     xmlns:inGamePlayers="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers"
     xmlns:inGameScenario="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario"
+    xmlns:canvas="clr-namespace:OutbreakTracker2.Application.Views.Map.Canvas"
     d:DesignHeight="600"
     d:DesignWidth="1200"
     x:DataType="gameDock:GameDockViewModel"
@@ -26,9 +27,14 @@
             <embeddedGame:EmbeddedGameTabView DataContext="{Binding EmbeddedGameViewModel}" />
         </DataTemplate>
 
-        <!-- Left: mob / enemy list -->
+        <!-- Left top: mob / enemy list -->
         <DataTemplate DataType="{x:Type dockables:EnemyListDockTool}">
             <inGameEnemies:InGameEnemiesView DataContext="{Binding InGameEnemiesViewModel}" />
+        </DataTemplate>
+
+        <!-- Left bottom: map canvas -->
+        <DataTemplate DataType="{x:Type dockables:MapDockTool}">
+            <canvas:MapCanvasView DataContext="{Binding MapCanvasViewModel}" />
         </DataTemplate>
 
         <!-- Right top: players -->

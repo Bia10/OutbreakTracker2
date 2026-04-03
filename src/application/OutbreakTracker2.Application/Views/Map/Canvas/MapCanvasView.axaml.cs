@@ -6,13 +6,19 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Map.Canvas;
 
-// TODO: Well need to get the map img data then resolving proper scaling onto the canvas
-// question remains wherever we will stitch together the map room images or simply use one map image
+// TODO: Map background images and a proper coordinate system are not yet available.
+// Circles are placed by scaling raw game-world coordinates onto the canvas size.
+// Self   = green  (player slot 0)
+// Ally   = blue   (player slots 1-3, human characters)
+// NPC    = yellow (player slots with non-zero NameId, i.e. friendly NPCs)
+// Enemy  = red    (DecodedEnemy — position data not yet tracked; reserved for future use)
 public partial class MapCanvasView : UserControl
 {
-    private const double PlayerCircleRadius = 4;
-    private const double MaxMapCoordinate = 25000.00000;
+    private const double CircleRadius = 5;
+    private const double MaxMapCoordinate = 25000.0;
+
     private IDisposable? _playersSubscription;
+    private DecodedInGamePlayer[]? _lastPlayers;
 
     public MapCanvasView()
     {
@@ -29,56 +35,90 @@ public partial class MapCanvasView : UserControl
                     .Subscribe(DrawPlayers);
             }
         };
+
+        GameMapCanvas.SizeChanged += (_, _) =>
+        {
+            if (_lastPlayers is not null)
+                DrawPlayers(_lastPlayers);
+        };
     }
 
     private void DrawPlayers(DecodedInGamePlayer[] players)
     {
-        GameMapCanvas.Children.Clear();
+        _lastPlayers = players;
 
-        double scaleX = GameMapCanvas.Width / MaxMapCoordinate;
-        double scaleY = GameMapCanvas.Height / MaxMapCoordinate;
-
-        if (GameMapCanvas.Width == 0 || GameMapCanvas.Height == 0)
+        bool anyInGame = false;
+        foreach (DecodedInGamePlayer p in players)
         {
-            scaleX = ViewModel?.MapWidth / MaxMapCoordinate ?? 1;
-            scaleY = ViewModel?.MapHeight / MaxMapCoordinate ?? 1;
+            if (p.IsEnabled && p.IsInGame)
+            {
+                anyInGame = true;
+                break;
+            }
         }
 
-        foreach (DecodedInGamePlayer? player in players)
+        if (ViewModel is not null)
+            ViewModel.IsInGame = anyInGame;
+
+        GameMapCanvas.Children.Clear();
+
+        if (!anyInGame)
+            return;
+
+        double canvasW =
+            GameMapCanvas.Bounds.Width > 0 ? GameMapCanvas.Bounds.Width : ViewModel?.MapWidth ?? MaxMapCoordinate;
+        double canvasH =
+            GameMapCanvas.Bounds.Height > 0 ? GameMapCanvas.Bounds.Height : ViewModel?.MapHeight ?? MaxMapCoordinate;
+
+        double scaleX = canvasW / MaxMapCoordinate;
+        double scaleY = canvasH / MaxMapCoordinate;
+
+        for (int i = 0; i < players.Length; i++)
         {
-            if (player is null)
-                continue;
+            DecodedInGamePlayer player = players[i];
             if (!player.IsEnabled || !player.IsInGame)
                 continue;
 
-            double canvasX = player.PositionX * scaleX;
-            double canvasY = player.PositionY * scaleY;
+            bool isSelf = i == 0;
+            bool isFriendlyNpc = player.NameId != 0;
 
-            Ellipse playerCircle = new()
+            IBrush fill =
+                isSelf ? Brushes.Green
+                : isFriendlyNpc ? Brushes.Yellow
+                : Brushes.Blue;
+
+            IBrush stroke =
+                isSelf ? Brushes.DarkGreen
+                : isFriendlyNpc ? Brushes.DarkGoldenrod
+                : Brushes.DarkBlue;
+
+            double cx = player.PositionX * scaleX;
+            double cy = player.PositionY * scaleY;
+
+            Ellipse circle = new()
             {
-                Width = PlayerCircleRadius * 2,
-                Height = PlayerCircleRadius * 2,
-                Fill = Brushes.Blue,
-                Stroke = Brushes.DarkBlue,
+                Width = CircleRadius * 2,
+                Height = CircleRadius * 2,
+                Fill = fill,
+                Stroke = stroke,
                 StrokeThickness = 1,
             };
 
-            Avalonia.Controls.Canvas.SetLeft(playerCircle, canvasX - PlayerCircleRadius);
-            Avalonia.Controls.Canvas.SetTop(playerCircle, canvasY - PlayerCircleRadius);
+            Avalonia.Controls.Canvas.SetLeft(circle, cx - CircleRadius);
+            Avalonia.Controls.Canvas.SetTop(circle, cy - CircleRadius);
 
-            TextBlock playerInfoText = new()
+            TextBlock label = new()
             {
-                Text = $"{player.Name} ({player.PositionX:F0}, {player.PositionY:F0})",
+                Text = player.Name,
                 Foreground = Brushes.White,
-                FontSize = 10,
-                TextAlignment = TextAlignment.Center,
+                FontSize = 9,
             };
 
-            Avalonia.Controls.Canvas.SetLeft(playerInfoText, canvasX - (PlayerCircleRadius * 2));
-            Avalonia.Controls.Canvas.SetTop(playerInfoText, canvasY - (PlayerCircleRadius * 2));
+            Avalonia.Controls.Canvas.SetLeft(label, cx + CircleRadius + 1);
+            Avalonia.Controls.Canvas.SetTop(label, cy - 5);
 
-            GameMapCanvas.Children.Add(playerCircle);
-            GameMapCanvas.Children.Add(playerInfoText);
+            GameMapCanvas.Children.Add(circle);
+            GameMapCanvas.Children.Add(label);
         }
     }
 
@@ -86,6 +126,7 @@ public partial class MapCanvasView : UserControl
     {
         _playersSubscription?.Dispose();
         _playersSubscription = null;
+        _lastPlayers = null;
 
         base.OnUnloaded(null!);
     }

@@ -41,7 +41,6 @@ using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlots;
 using OutbreakTracker2.Application.Views.GameDock;
 using OutbreakTracker2.Application.Views.GameDock.Dockables;
 using OutbreakTracker2.Application.Views.Log;
-using OutbreakTracker2.Application.Views.Map;
 using OutbreakTracker2.Application.Views.Map.Canvas;
 using OutbreakTracker2.Memory.SafeMemory;
 using OutbreakTracker2.Memory.String;
@@ -76,7 +75,6 @@ internal static class CompositionRoot
             .AddView<InGameDoorsView, InGameDoorsViewModel>(services)
             .AddView<ItemSlotView, ItemSlotViewModel>(services)
             .AddView<LogView, LogViewModel>(services)
-            .AddView<MapView, MapViewModel>(services)
             .AddView<GameDockView, GameDockViewModel>(services);
 
     internal static IServiceProvider ConfigureServicesAndLogging(
@@ -165,6 +163,7 @@ internal static class CompositionRoot
         // Game Dock: dockable instances and the factory that wires them into a layout
         services.AddSingleton<GameScreenDocument>();
         services.AddSingleton<EnemyListDockTool>();
+        services.AddSingleton<MapDockTool>();
         services.AddSingleton<PlayersDockTool>();
         services.AddSingleton<ScenarioInfoDockTool>();
         services.AddSingleton<GameDockFactory>();

@@ -10,12 +10,15 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoors;
 
-public class InGameDoorsViewModel : ObservableObject, IDisposable
+public partial class InGameDoorsViewModel : ObservableObject, IDisposable
 {
     private readonly IDisposable _subscription;
     private readonly ILogger<InGameDoorsViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
     private readonly Dictionary<Ulid, InGameDoorViewModel> _viewModelCache = [];
+
+    [ObservableProperty]
+    private bool _hasDoors;
 
     private ObservableList<InGameDoorViewModel> Doors { get; } = [];
     public NotifyCollectionChangedSynchronizedViewList<InGameDoorViewModel> DoorsView { get; }
@@ -201,6 +204,8 @@ public class InGameDoorsViewModel : ObservableObject, IDisposable
                                                     Doors.Count,
                                                     desiredViewModels.Count
                                                 );
+
+                                            HasDoors = Doors.Count > 0;
 
                                             _logger.LogInformation(
                                                 "UI update complete. Doors ObservableList count: {Count}",

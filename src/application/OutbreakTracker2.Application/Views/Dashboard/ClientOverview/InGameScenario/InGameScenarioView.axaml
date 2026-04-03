@@ -6,6 +6,7 @@
     xmlns:icons="using:Material.Icons.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    xmlns:common="clr-namespace:OutbreakTracker2.Application.Views.Common"
     xmlns:inGameScenario="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario"
     xmlns:fileTwo="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo"
     d:DesignHeight="800"
@@ -28,19 +29,12 @@
         </DataTemplate>
     </UserControl.DataTemplates>
 
-    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+    <Grid>
+        <ScrollViewer
+            HorizontalScrollBarVisibility="Disabled"
+            IsVisible="{Binding IsScenarioActive}"
+            VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="10">
-            <suki:GlassCard
-                Margin="0,20,0,0"
-                HorizontalAlignment="Center"
-                IsVisible="{Binding IsScenarioNotActive}">
-                <TextBlock
-                    Margin="20"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Text="No active scenario, you're not in in-game!" />
-            </suki:GlassCard>
-
             <suki:GroupBox
                 HorizontalAlignment="Stretch"
                 Header="{Binding ScenarioName}"
@@ -356,5 +350,10 @@
             </suki:GroupBox>
 
         </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+
+        <common:NotInGameWatermark
+            IsVisible="{Binding IsScenarioNotActive}"
+            Message="No active scenario — not in-game" />
+    </Grid>
 </UserControl>

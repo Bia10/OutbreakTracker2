@@ -1,0 +1,22 @@
+<UserControl
+    x:Class="OutbreakTracker2.Application.Views.Common.NotInGameWatermark"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:common="clr-namespace:OutbreakTracker2.Application.Views.Common"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    x:DataType="common:NotInGameWatermark"
+    mc:Ignorable="d">
+
+    <TextBlock
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        FontStyle="Italic"
+        Opacity="0.4"
+        Text="{Binding Message}"
+        TextAlignment="Center"
+        TextWrapping="Wrap" />
+
+</UserControl>

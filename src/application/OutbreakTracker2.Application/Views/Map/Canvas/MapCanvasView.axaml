@@ -3,16 +3,22 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:canvas="clr-namespace:OutbreakTracker2.Application.Views.Map.Canvas"
+             xmlns:common="clr-namespace:OutbreakTracker2.Application.Views.Common"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="OutbreakTracker2.Application.Views.Map.Canvas.MapCanvasView"
              x:DataType="canvas:MapCanvasViewModel">
     <Grid>
-        <Border BorderBrush="Gray" BorderThickness="1">
-            <Canvas Background="LightGray"
-                    x:Name="GameMapCanvas"
-                    Width="{Binding MapWidth}"
-                    Height="{Binding MapHeight}">
-            </Canvas>
+        <!-- Canvas: only shown when in-game; background deferred until a scenario map is loaded -->
+        <Border BorderBrush="Gray" BorderThickness="1" IsVisible="{Binding IsInGame}">
+            <Canvas x:Name="GameMapCanvas"
+                    Background="DimGray"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch" />
         </Border>
+
+        <!-- Watermark: shown while not in-game -->
+        <common:NotInGameWatermark
+            IsVisible="{Binding !IsInGame}"
+            Message="Not in-game&#x0a;Map loads when a scenario begins" />
     </Grid>
 </UserControl>
