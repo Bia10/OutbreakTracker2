@@ -1,7 +1,7 @@
 # Outbreak Tracker 2
 This is an attempt to rewrite and expand upon the old C99 Resident Evil Outbreak tracker in C#.
 
-<img width="2560" height="1400" alt="image" src="https://github.com/user-attachments/assets/56dad96d-a34b-4e2b-818d-137e5e8373d9" />
+<img width="2560" height="1397" alt="image" src="https://github.com/user-attachments/assets/88569ead-73a0-4208-92cf-6a7c31562b4a" />
 
 > [!Important]
 > This project is currently in early alpha version, nothing is set in stone yet, things may change.
@@ -14,7 +14,7 @@ This is an attempt to rewrite and expand upon the old C99 Resident Evil Outbreak
 - Windows (.NET 10) — fully supported
 
 - Linux (.NET 10) — partialy supported
-- PCSX2 must be launched via OutbreakTracker2 to inherit the same rights as owning app, this assumption may not hold many linux distros so verify beforehand.
+- PCSX2 must be launched via OutbreakTracker2 to inherit the same rights as owning app, this assumption may not hold for many linux distros so verify beforehand.
 - Retarded stuff like Wayland is not supported only X11 is supported, technicaly could be supported but a lot of work for what gains bunch of bugs and overally worse performance then X11?
   
 - macOS — **not supported**
