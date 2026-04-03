@@ -1,7 +1,7 @@
 ﻿using System.Threading.Channels;
+using Bia.LogViewer.Core;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.LogStorage;
-using OutbreakTracker2.Application.Views.Logging;
 using Serilog.Core;
 using Serilog.Events;
 
@@ -118,7 +118,14 @@ public class DataStoreLoggerSink : ILogEventSink, IDisposable
     {
         try
         {
-            LogModel logModel = new(logLevel, eventId, message, exception);
+            LogModel logModel = new()
+            {
+                Timestamp = DateTime.UtcNow,
+                LogLevel = logLevel,
+                EventId = eventId,
+                Message = message,
+                Exception = string.IsNullOrEmpty(exception) ? null : exception,
+            };
             await _dataStore.AddEntryAsync(logModel, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)

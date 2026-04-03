@@ -1,11 +1,11 @@
-﻿using ObservableCollections;
-using OutbreakTracker2.Application.Views.Logging;
+﻿using Bia.LogViewer.Core;
+using ObservableCollections;
 
 namespace OutbreakTracker2.Application.Services.LogStorage;
 
-public interface ILogDataStorageService
+public interface ILogDataStorageService : ILogEntrySource
 {
-    ObservableFixedSizeRingBuffer<LogModel> Entries { get; }
+    new ObservableList<LogModel> Entries { get; }
 
     ValueTask AddEntryAsync(LogModel logModel, CancellationToken cancellationToken);
 

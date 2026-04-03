@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Bia.LogViewer.Avalonia;
+using Bia.LogViewer.Core;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Common;
@@ -39,7 +41,6 @@ using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlots;
 using OutbreakTracker2.Application.Views.GameDock;
 using OutbreakTracker2.Application.Views.GameDock.Dockables;
 using OutbreakTracker2.Application.Views.Log;
-using OutbreakTracker2.Application.Views.Logging;
 using OutbreakTracker2.Application.Views.Map;
 using OutbreakTracker2.Application.Views.Map.Canvas;
 using OutbreakTracker2.Memory.SafeMemory;
@@ -108,6 +109,7 @@ internal static class CompositionRoot
         services.AddSingleton(configuration);
 
         services.AddSingleton<ClipboardService>();
+        services.AddSingleton<IClipboardService>(sp => sp.GetRequiredService<ClipboardService>());
         services.AddSingleton<PageNavigationService>();
         services.AddSingleton<ISukiToastManager, SukiToastManager>();
         services.AddSingleton<ISukiDialogManager, SukiDialogManager>();
@@ -118,6 +120,7 @@ internal static class CompositionRoot
         services.AddSingleton<NotificationService>();
 
         services.AddSingleton<ILogDataStorageService, LogDataStorageService>();
+        services.AddSingleton<ILogEntrySource>(sp => sp.GetRequiredService<ILogDataStorageService>());
         services.AddSingleton<LogViewerViewModel>();
         services.AddLogging(loggingBuilder =>
         {

@@ -10,6 +10,13 @@
     <PackageVersion Include="CSharpier.MsBuild" Version="1.2.6" />
   </ItemGroup>
   <!-- ═══════════════════════════════════════════════════════
+       BIA LOGVIEWER
+       ═══════════════════════════════════════════════════════ -->
+  <ItemGroup Label="LogViewer">
+    <PackageVersion Include="Bia.LogViewer.Core" Version="0.1.0" />
+    <PackageVersion Include="Bia.LogViewer.Avalonia" Version="0.1.0" />
+  </ItemGroup>
+  <!-- ═══════════════════════════════════════════════════════
        UI / AVALONIA
        ═══════════════════════════════════════════════════════ -->
   <ItemGroup Label="Avalonia">

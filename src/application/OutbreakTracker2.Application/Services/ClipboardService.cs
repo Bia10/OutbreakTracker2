@@ -1,12 +1,13 @@
 ﻿using Avalonia.Controls.ApplicationLifetimes;
+using Bia.LogViewer.Core;
 
 namespace OutbreakTracker2.Application.Services;
 
-public class ClipboardService(IClassicDesktopStyleApplicationLifetime lifeTime)
+public class ClipboardService(IClassicDesktopStyleApplicationLifetime lifeTime) : IClipboardService
 {
-    public async Task CopyToClipboard(string text)
+    public async Task CopyToClipboardAsync(string? text)
     {
-        if (lifeTime.MainWindow?.Clipboard != null)
+        if (text is not null && lifeTime.MainWindow?.Clipboard != null)
             await lifeTime.MainWindow.Clipboard.SetTextAsync(text).ConfigureAwait(false);
     }
 }

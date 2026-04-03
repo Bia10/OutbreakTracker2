@@ -1,6 +1,6 @@
-﻿using Material.Icons;
+﻿using Bia.LogViewer.Avalonia;
+using Material.Icons;
 using OutbreakTracker2.Application.Pages;
-using OutbreakTracker2.Application.Views.Logging;
 
 namespace OutbreakTracker2.Application.Views.Log;
 

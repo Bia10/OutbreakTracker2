@@ -1,23 +1,27 @@
 ﻿using System.Threading.Channels;
+using Bia.LogViewer.Core;
 using ObservableCollections;
-using OutbreakTracker2.Application.Views.Logging;
+using OutbreakTracker2.Application.Services.Dispatcher;
 
 namespace OutbreakTracker2.Application.Services.LogStorage;
 
 public class LogDataStorageService : ILogDataStorageService, IAsyncDisposable
 {
+    private readonly IDispatcherService _dispatcher;
     private readonly Channel<LogModel> _logChannel = Channel.CreateUnbounded<LogModel>();
     private readonly Task _processingTask;
     private readonly CancellationTokenSource _cts = new();
     private bool _isDisposed;
 
-    public ObservableFixedSizeRingBuffer<LogModel> Entries { get; }
+    public ObservableList<LogModel> Entries { get; } = [];
+
+    IReadOnlyObservableList<LogModel>? ILogEntrySource.Entries => Entries;
 
     public int MaxCapacity => 1000;
 
-    public LogDataStorageService()
+    public LogDataStorageService(IDispatcherService dispatcher)
     {
-        Entries = new ObservableFixedSizeRingBuffer<LogModel>(MaxCapacity);
+        _dispatcher = dispatcher;
         _processingTask = Task.Run(() => ProcessLogChannelAsync(_cts.Token), _cts.Token);
     }
 
@@ -33,7 +37,12 @@ public class LogDataStorageService : ILogDataStorageService, IAsyncDisposable
             )
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                Entries.AddLast(logModel);
+                _dispatcher.PostOnUI(() =>
+                {
+                    if (Entries.Count >= MaxCapacity)
+                        Entries.RemoveAt(0);
+                    Entries.Add(logModel);
+                });
             }
         }
         catch (OperationCanceledException)
