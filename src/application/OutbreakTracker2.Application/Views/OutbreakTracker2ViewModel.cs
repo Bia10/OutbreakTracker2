@@ -1,15 +1,12 @@
-﻿using Avalonia.Collections;
+﻿using System.Diagnostics;
+using Avalonia.Collections;
 using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OutbreakTracker2.Application.Pages;
 using OutbreakTracker2.Application.Services;
-using OutbreakTracker2.Application.Utilities;
 using SukiUI;
-using SukiUI.Dialogs;
-using SukiUI.Enums;
 using SukiUI.Models;
-using SukiUI.Theme.Shadcn;
 using SukiUI.Toasts;
 
 namespace OutbreakTracker2.Application.Views;
@@ -18,10 +15,8 @@ internal sealed partial class OutbreakTracker2ViewModel : ObservableObject
 {
     public IAvaloniaReadOnlyList<PageBase> Pages { get; }
     public IAvaloniaReadOnlyList<SukiColorTheme> Themes { get; }
-    public IAvaloniaReadOnlyList<SukiBackgroundStyle> BackgroundStyles { get; }
 
     public ISukiToastManager ToastManager { get; }
-    public ISukiDialogManager DialogManager { get; }
 
     [ObservableProperty]
     private ThemeVariant _baseTheme;
@@ -35,40 +30,16 @@ internal sealed partial class OutbreakTracker2ViewModel : ObservableObject
     [ObservableProperty]
     private bool _titleBarVisible = true;
 
-    [ObservableProperty]
-    private SukiBackgroundStyle _backgroundStyle = SukiBackgroundStyle.GradientSoft;
-
-    [ObservableProperty]
-    private bool _animationsEnabled;
-
-    [ObservableProperty]
-    private string? _customShaderFile;
-
-    [ObservableProperty]
-    private bool _transitionsEnabled;
-
-    [ObservableProperty]
-    private double _transitionTime;
-
-    [ObservableProperty]
-    private bool _showTitleBar = true;
-
-    [ObservableProperty]
-    private bool _showBottomBar = true;
-
     private readonly SukiTheme _theme;
 
     public OutbreakTracker2ViewModel(
-        IEnumerable<PageBase> demoPages,
+        IEnumerable<PageBase> pages,
         PageNavigationService pageNavigationService,
-        ISukiToastManager toastManager,
-        ISukiDialogManager dialogManager
+        ISukiToastManager toastManager
     )
     {
         ToastManager = toastManager;
-        DialogManager = dialogManager;
-        Pages = new AvaloniaList<PageBase>(demoPages.AsValueEnumerable().OrderBy(x => x.Index).ToArray());
-        BackgroundStyles = new AvaloniaList<SukiBackgroundStyle>(Enum.GetValues<SukiBackgroundStyle>());
+        Pages = new AvaloniaList<PageBase>(pages.AsValueEnumerable().OrderBy(x => x.Index).ToArray());
         _theme = SukiTheme.GetInstance();
 
         // Subscribe to the navigation service (when a page navigation is requested)
@@ -106,50 +77,7 @@ internal sealed partial class OutbreakTracker2ViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ToggleAnimations()
-    {
-        AnimationsEnabled = !AnimationsEnabled;
-        ToastManager
-            .CreateSimpleInfoToast()
-            .WithTitle(AnimationsEnabled ? "Animation Enabled" : "Animation Disabled")
-            .WithContent(
-                AnimationsEnabled ? "Background animations are now enabled." : "Background animations are now disabled."
-            )
-            .Queue();
-    }
-
-    [RelayCommand]
-    private void ToggleTransitions()
-    {
-        TransitionsEnabled = !TransitionsEnabled;
-        ToastManager
-            .CreateSimpleInfoToast()
-            .WithTitle(TransitionsEnabled ? "Transitions Enabled" : "Transitions Disabled")
-            .WithContent(
-                TransitionsEnabled
-                    ? "Background transitions are now enabled."
-                    : "Background transitions are now disabled."
-            )
-            .Queue();
-    }
-
-    [RelayCommand]
     private void ToggleBaseTheme() => _theme.SwitchBaseTheme();
-
-    public void ChangeTheme(SukiColorTheme theme) => _theme.ChangeColorTheme(theme);
-
-    [RelayCommand]
-    private void ShadCnMode()
-    {
-        if (Avalonia.Application.Current is not null)
-            Shadcn.Configure(Avalonia.Application.Current, Avalonia.Application.Current.ActualThemeVariant);
-        else
-            ToastManager
-                .CreateToast()
-                .WithTitle("Configuration Error")
-                .WithContent("Application or ThemeVariant is null. Unable to configure Shadcn mode.")
-                .Queue();
-    }
 
     [RelayCommand]
     private void ToggleWindowLock()
@@ -157,16 +85,9 @@ internal sealed partial class OutbreakTracker2ViewModel : ObservableObject
         WindowLocked = !WindowLocked;
         ToastManager
             .CreateSimpleInfoToast()
-            .WithTitle($"Window {(WindowLocked ? "Locked" : "Unlocked")}")
-            .WithContent($"Window has been {(WindowLocked ? "locked" : "unlocked")}.")
+            .WithTitle(WindowLocked ? "Window Locked" : "Window Unlocked")
+            .WithContent(WindowLocked ? "Window has been locked." : "Window has been unlocked.")
             .Queue();
-    }
-
-    [RelayCommand]
-    private void ToggleTitleBackground()
-    {
-        ShowTitleBar = !ShowTitleBar;
-        ShowBottomBar = !ShowBottomBar;
     }
 
     [RelayCommand]
@@ -175,14 +96,16 @@ internal sealed partial class OutbreakTracker2ViewModel : ObservableObject
         TitleBarVisible = !TitleBarVisible;
         ToastManager
             .CreateSimpleInfoToast()
-            .WithTitle($"Title Bar {(TitleBarVisible ? "Visible" : "Hidden")}")
-            .WithContent($"Window title bar has been {(TitleBarVisible ? "shown" : "hidden")}.")
+            .WithTitle(TitleBarVisible ? "Title Bar Shown" : "Title Bar Hidden")
+            .WithContent(TitleBarVisible ? "Window title bar has been shown." : "Window title bar has been hidden.")
             .Queue();
     }
 
-    [RelayCommand]
-    private void ToggleRightToLeft() => _theme.IsRightToLeft = !_theme.IsRightToLeft;
+    public void ChangeTheme(SukiColorTheme theme) => _theme.ChangeColorTheme(theme);
 
     [RelayCommand]
-    private static void OpenUrl(string url) => UrlUtility.OpenUrl(url);
+    private static void OpenUrl(string url)
+    {
+        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+    }
 }
