@@ -34,10 +34,10 @@
     </UserControl.DataTemplates>
 
     <suki:GlassCard
-        Margin="4,3"
+        Margin="2,2"
         Padding="5,4"
         CornerRadius="6">
-        <StackPanel Spacing="2">
+        <StackPanel Spacing="5">
             <TextBlock
                 FontSize="13"
                 FontWeight="Bold"

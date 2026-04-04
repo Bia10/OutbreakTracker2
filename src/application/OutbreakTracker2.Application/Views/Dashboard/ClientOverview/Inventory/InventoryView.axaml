@@ -10,10 +10,24 @@
     x:DataType="inventory:InventoryViewModel"
     mc:Ignorable="d">
 
-    <StackPanel Spacing="3">
-        <!-- Equipped + Special on one row -->
-        <Grid ColumnDefinitions="Auto,Auto" HorizontalAlignment="Left">
-            <StackPanel Grid.Column="0" Margin="0,0,6,0" Spacing="1">
+    <UserControl.DataTemplates>
+        <!--
+            Explicitly define ItemSlotViewModel → ItemSlotView here so Avalonia creates
+            a fresh ItemSlotView per ItemsControl instead of hitting the app-level
+            ViewLocator cache. The ViewLocator caches one view per ViewModel instance,
+            so two ItemsControl panels sharing the same ItemSlotViewModel objects would
+            get back the same cached ItemSlotView — causing the "already has a visual
+            parent" crash when both panels are in the visual tree simultaneously.
+        -->
+        <DataTemplate DataType="{x:Type inventory:ItemSlotViewModel}">
+            <inventory:ItemSlotView />
+        </DataTemplate>
+    </UserControl.DataTemplates>
+
+    <StackPanel Spacing="6">
+        <!-- Equipped + Special: side-by-side in horizontal, stacked in vertical -->
+        <UniformGrid Columns="{DynamicResource EquippedSpecialColumns}" HorizontalAlignment="Left">
+            <StackPanel Margin="0,0,6,0" Spacing="1">
                 <TextBlock
                     FontSize="9"
                     Foreground="{DynamicResource SukiLowText}"
@@ -26,7 +40,7 @@
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
             </StackPanel>
-            <StackPanel Grid.Column="1" Spacing="1">
+            <StackPanel Spacing="1">
                 <TextBlock
                     FontSize="9"
                     Foreground="{DynamicResource SukiLowText}"
@@ -39,62 +53,38 @@
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
             </StackPanel>
-        </Grid>
+        </UniformGrid>
 
-        <StackPanel IsVisible="{Binding !IsDeadOrZombie}" Spacing="1">
-            <TextBlock
-                FontSize="9"
-                Foreground="{DynamicResource SukiLowText}"
-                Text="Main" />
-            <ItemsControl ItemsSource="{Binding MainSlots}">
+            <ItemsControl IsVisible="{Binding !IsDeadOrZombie}" ItemsSource="{Binding MainSlots}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid Columns="2" HorizontalAlignment="Left" />
+                        <UniformGrid Columns="{DynamicResource InventorySlotColumns}" HorizontalAlignment="Left" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-        </StackPanel>
 
-        <StackPanel IsVisible="{Binding IsSpecialInventoryVisible}" Spacing="1">
-            <TextBlock
-                FontSize="9"
-                Foreground="{DynamicResource SukiLowText}"
-                Text="Special" />
-            <ItemsControl ItemsSource="{Binding SpecialSlots}">
+            <ItemsControl IsVisible="{Binding IsSpecialInventoryVisible}" ItemsSource="{Binding SpecialSlots}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid Columns="2" HorizontalAlignment="Left" />
+                        <UniformGrid Columns="{DynamicResource InventorySlotColumns}" HorizontalAlignment="Left" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-        </StackPanel>
 
-        <StackPanel IsVisible="{Binding IsDeadOrZombie}" Spacing="1">
-            <TextBlock
-                FontSize="9"
-                Foreground="{DynamicResource SukiLowText}"
-                Text="Dead" />
-            <ItemsControl ItemsSource="{Binding DeadSlots}">
+            <ItemsControl IsVisible="{Binding IsDeadOrZombie}" ItemsSource="{Binding DeadSlots}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid Columns="2" HorizontalAlignment="Left" />
+                        <UniformGrid Columns="{DynamicResource InventorySlotColumns}" HorizontalAlignment="Left" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-        </StackPanel>
 
-        <StackPanel IsVisible="{Binding IsSpecialDeadInventoryVisible}" Spacing="1">
-            <TextBlock
-                FontSize="9"
-                Foreground="{DynamicResource SukiLowText}"
-                Text="Special dead" />
-            <ItemsControl ItemsSource="{Binding SpecialDeadSlots}">
+            <ItemsControl IsVisible="{Binding IsSpecialDeadInventoryVisible}" ItemsSource="{Binding SpecialDeadSlots}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid Columns="2" HorizontalAlignment="Left" />
+                        <UniformGrid Columns="{DynamicResource InventorySlotColumns}" HorizontalAlignment="Left" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-        </StackPanel>
     </StackPanel>
 </UserControl>

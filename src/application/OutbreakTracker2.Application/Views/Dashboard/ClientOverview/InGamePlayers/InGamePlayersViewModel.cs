@@ -1,6 +1,4 @@
-﻿using Avalonia.Controls.Primitives;
-using Avalonia.Layout;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.Application.Services.Data;
@@ -29,21 +27,6 @@ public partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
 
     [ObservableProperty]
     private bool _isHorizontalLayout;
-
-    public Orientation PlayerListOrientation => IsHorizontalLayout ? Orientation.Horizontal : Orientation.Vertical;
-    public ScrollBarVisibility HScrollBarVisibility =>
-        IsHorizontalLayout ? ScrollBarVisibility.Auto : ScrollBarVisibility.Disabled;
-    public ScrollBarVisibility VScrollBarVisibility =>
-        IsHorizontalLayout ? ScrollBarVisibility.Disabled : ScrollBarVisibility.Auto;
-    public double PlayerCardWidth => IsHorizontalLayout ? 150.0 : double.NaN;
-
-    partial void OnIsHorizontalLayoutChanged(bool value)
-    {
-        OnPropertyChanged(nameof(PlayerListOrientation));
-        OnPropertyChanged(nameof(HScrollBarVisibility));
-        OnPropertyChanged(nameof(VScrollBarVisibility));
-        OnPropertyChanged(nameof(PlayerCardWidth));
-    }
 
     public InGamePlayersViewModel(
         IDataManager dataManager,

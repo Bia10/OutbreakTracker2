@@ -38,25 +38,57 @@
             </Panel>
         </ToggleButton>
 
-        <ScrollViewer
-            Grid.Row="1"
-            AllowAutoHide="True"
-            HorizontalScrollBarVisibility="{Binding HScrollBarVisibility}"
-            IsVisible="{Binding HasPlayers}"
-            VerticalScrollBarVisibility="{Binding VScrollBarVisibility}">
-            <ItemsControl ItemsSource="{Binding PlayersView}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="{Binding #root.DataContext.PlayerListOrientation}" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <inGamePlayer:InGamePlayerView Width="{Binding #root.DataContext.PlayerCardWidth}" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+        <Panel Grid.Row="1" IsVisible="{Binding HasPlayers}">
+            <!--  Horizontal mode: UniformGrid Rows=1 divides available width equally by player count  -->
+            <ScrollViewer
+                AllowAutoHide="True"
+                HorizontalScrollBarVisibility="Disabled"
+                IsVisible="{Binding IsHorizontalLayout}"
+                VerticalScrollBarVisibility="Disabled">
+                <ScrollViewer.Resources>
+                    <!--  2 slots per row; equip+special side-by-side in horizontal player cards  -->
+                    <x:Int32 x:Key="InventorySlotColumns">2</x:Int32>
+                    <x:Int32 x:Key="EquippedSpecialColumns">2</x:Int32>
+                </ScrollViewer.Resources>
+                <ItemsControl ItemsSource="{Binding PlayersView}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="1" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <inGamePlayer:InGamePlayerView />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!--  Vertical mode: full-width cards with vertical scroll  -->
+            <ScrollViewer
+                AllowAutoHide="True"
+                HorizontalScrollBarVisibility="Disabled"
+                IsVisible="{Binding !IsHorizontalLayout}"
+                VerticalScrollBarVisibility="Auto">
+                <ScrollViewer.Resources>
+                    <!--  4 slots per row; equip+special side-by-side across full-width vertical cards  -->
+                    <x:Int32 x:Key="InventorySlotColumns">4</x:Int32>
+                    <x:Int32 x:Key="EquippedSpecialColumns">2</x:Int32>
+                </ScrollViewer.Resources>
+                <ItemsControl ItemsSource="{Binding PlayersView}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <inGamePlayer:InGamePlayerView />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Panel>
 
         <common:NotInGameWatermark
             Grid.Row="1"

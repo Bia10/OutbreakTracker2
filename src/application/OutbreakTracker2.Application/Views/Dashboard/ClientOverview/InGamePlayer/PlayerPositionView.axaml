@@ -13,7 +13,7 @@
         <TextBlock
             FontSize="11"
             Text="{Binding RoomName, StringFormat='Room: {0}'}"
-            TextTrimming="CharacterEllipsis" />
+            TextWrapping="Wrap" />
         <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock
                 FontSize="11"

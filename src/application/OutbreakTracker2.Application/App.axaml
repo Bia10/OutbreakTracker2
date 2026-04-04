@@ -10,6 +10,9 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Presets/Ide/Default.axaml" />
             </ResourceDictionary.MergedDictionaries>
+            <!--  Fallback inventory column counts — overridden by layout-specific ScrollViewer.Resources  -->
+            <x:Int32 x:Key="InventorySlotColumns">2</x:Int32>
+            <x:Int32 x:Key="EquippedSpecialColumns">2</x:Int32>
         </ResourceDictionary>
     </Application.Resources>
     <Application.Styles>
