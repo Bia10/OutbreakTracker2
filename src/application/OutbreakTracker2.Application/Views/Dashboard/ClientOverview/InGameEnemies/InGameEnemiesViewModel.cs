@@ -12,11 +12,14 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnem
 
 public partial class InGameEnemiesViewModel : ObservableObject, IDisposable
 {
+    private static readonly TimeSpan DeadEnemyDisplayDuration = TimeSpan.FromSeconds(5);
+
     private readonly ILogger<InGameEnemiesViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
     private readonly IDisposable _subscription;
     private readonly Dictionary<Ulid, InGameEnemyViewModel> _viewModelCache = [];
     private readonly ObservableList<InGameEnemyViewModel> _enemies = [];
+    private readonly Dictionary<Ulid, DateTimeOffset> _enemyDeathTimes = [];
 
     public NotifyCollectionChangedSynchronizedViewList<InGameEnemyViewModel> EnemiesView { get; }
 
@@ -61,10 +64,10 @@ public partial class InGameEnemiesViewModel : ObservableObject, IDisposable
                             );
                             try
                             {
-                                List<DecodedEnemy> filteredIncomingEnemies = incomingEnemiesSnapshot
-                                    .AsValueEnumerable()
-                                    .Where(IsEnemyActive)
-                                    .ToList();
+                                List<DecodedEnemy> filteredIncomingEnemies = FilterEnemiesWithDeathTimer(
+                                    incomingEnemiesSnapshot,
+                                    DateTimeOffset.UtcNow
+                                );
 
                                 _logger.LogInformation(
                                     "Processed {Count} filtered enemy entries on thread pool",
@@ -236,13 +239,69 @@ public partial class InGameEnemiesViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Determines if a DecodedEnemy should be considered active and included for display/tracking.
-    /// This filter should be applied early in the processing pipeline.
+    /// Determines if a DecodedEnemy passes basic validity checks (has a name, valid slot, not in spawn room).
+    /// Does not filter on HP — death timer logic handles that separately.
     /// </summary>
-    private static bool IsEnemyActive(DecodedEnemy enemy) =>
+    private static bool IsEnemyBasicallyValid(DecodedEnemy enemy) =>
         !string.IsNullOrEmpty(enemy.Name)
         && !enemy.RoomName.Equals("Spawning/Scenario Cleared", StringComparison.Ordinal)
-        && enemy is { SlotId: > 0, CurHp: > 0, MaxHp: > 0 };
+        && enemy is { SlotId: > 0, MaxHp: > 0 };
+
+    /// <summary>
+    /// Filters the snapshot to include alive enemies and recently-dead enemies (within the 5-second grace period).
+    /// Dead enemies are tracked by time-of-death so they remain visible briefly before removal.
+    /// </summary>
+    private List<DecodedEnemy> FilterEnemiesWithDeathTimer(DecodedEnemy[] snapshot, DateTimeOffset now)
+    {
+        List<DecodedEnemy> result = new(snapshot.Length);
+
+        foreach (DecodedEnemy enemy in snapshot)
+        {
+            if (!IsEnemyBasicallyValid(enemy))
+                continue;
+
+            string healthStatus = InGameEnemyViewModel.GetEnemiesHealthStatusStringForFileTwo(
+                enemy.SlotId,
+                enemy.NameId,
+                enemy.CurHp,
+                enemy.MaxHp
+            );
+            bool isDead = InGameEnemyViewModel.IsDeadStatus(healthStatus);
+
+            if (!isDead)
+            {
+                _enemyDeathTimes.Remove(enemy.Id);
+                result.Add(enemy);
+                continue;
+            }
+
+            // Enemy is dead: record first time of death and include within the grace period
+            if (!_enemyDeathTimes.TryGetValue(enemy.Id, out DateTimeOffset deathTime))
+            {
+                deathTime = now;
+                _enemyDeathTimes[enemy.Id] = deathTime;
+                _logger.LogDebug("Enemy {UniqueId} died at {DeathTime}", enemy.Id, deathTime);
+            }
+
+            if ((now - deathTime) < DeadEnemyDisplayDuration)
+                result.Add(enemy);
+            else
+            {
+                _logger.LogDebug("Enemy {UniqueId} death grace period elapsed, removing from list", enemy.Id);
+                _enemyDeathTimes.Remove(enemy.Id);
+            }
+        }
+
+        // Clean up death-time entries for enemies no longer present in the snapshot
+        if (_enemyDeathTimes.Count > 0)
+        {
+            HashSet<Ulid> snapshotIds = snapshot.Select(e => e.Id).ToHashSet();
+            foreach (Ulid staleId in _enemyDeathTimes.Keys.Except(snapshotIds).ToList())
+                _enemyDeathTimes.Remove(staleId);
+        }
+
+        return result;
+    }
 
     public void Dispose()
     {
@@ -253,6 +312,7 @@ public partial class InGameEnemiesViewModel : ObservableObject, IDisposable
         {
             _enemies.Clear();
             _viewModelCache.Clear();
+            _enemyDeathTimes.Clear();
             _logger.LogDebug("InGameEnemiesViewModel collections cleared on UI thread during dispose");
         });
 

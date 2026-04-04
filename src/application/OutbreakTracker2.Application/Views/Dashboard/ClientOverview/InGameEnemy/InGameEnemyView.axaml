@@ -2,6 +2,7 @@
     x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy.InGameEnemyView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
@@ -32,12 +33,31 @@
                     Height="18"
                     Maximum="100"
                     Value="{Binding HealthPercentage}" />
-                <TextBlock
+                <StackPanel
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    FontSize="11"
-                    FontWeight="SemiBold"
-                    Text="{Binding HealthStatus}" />
+                    Orientation="Horizontal"
+                    Spacing="3">
+                    <avalonia:MaterialIcon
+                        Width="13"
+                        Height="13"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding IsDead}"
+                        Kind="Skull"
+                        ToolTip.Tip="This enemy is dead" />
+                    <avalonia:MaterialIcon
+                        Width="13"
+                        Height="13"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding IsInvincible}"
+                        Kind="Shield"
+                        ToolTip.Tip="This enemy is invincible" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="11"
+                        FontWeight="SemiBold"
+                        Text="{Binding HealthStatus}" />
+                </StackPanel>
             </Grid>
 
             <!-- Details -->
