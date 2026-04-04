@@ -76,6 +76,29 @@ public sealed class EnemiesReader : ReaderBase
         return ReadValue<ushort>(baseAddress, offsets);
     }
 
+    private static byte GetBossType(byte nameId)
+    {
+        if (!EnumUtility.TryParseByValueOrMember(nameId, out EnemyType enemyType))
+            return 0;
+
+        return enemyType switch
+        {
+            EnemyType.Thanatos or EnemyType.Nyx or EnemyType.NyxTyrant or EnemyType.Tyrant => 2,
+            EnemyType.Megabyte
+            or EnemyType.GLeech
+            or EnemyType.Leechman
+            or EnemyType.GMutant
+            or EnemyType.Titan
+            or EnemyType.Lion
+            or EnemyType.TyrantQuestion
+            or EnemyType.NyxCore
+            or EnemyType.Axeman
+            or EnemyType.Megabytes
+            or EnemyType.Gigabyte => 1,
+            _ => 0,
+        };
+    }
+
     private static string GetEnemyName(byte nameId) => EnumUtility.GetEnumString(nameId, EnemyType.Unknown);
 
     private static string GetZombieName(byte typeId) => EnumUtility.GetEnumString(typeId, ZombieType.Unknown0);
@@ -164,6 +187,8 @@ public sealed class EnemiesReader : ReaderBase
                         "Unexpected GameFile value."
                     );
             }
+
+            newDecodedEnemies2[i].BossType = GetBossType(newDecodedEnemies2[i].NameId);
 
             string enemyName = GetEnemyName(newDecodedEnemies2[i].NameId);
             string actualName = enemyName;
