@@ -12,74 +12,79 @@
     mc:Ignorable="d">
 
     <suki:GlassCard
-        Margin="5"
-        Padding="5"
+        Margin="4,3"
+        Padding="8,6"
         BorderBrush="{Binding BorderBrush}"
-        BorderThickness="4"
-        CornerRadius="8">
+        BorderThickness="2"
+        CornerRadius="6">
 
-        <StackPanel Spacing="5">
+        <StackPanel Spacing="4">
+
             <TextBlock
-                FontSize="14"
+                FontSize="13"
                 FontWeight="Bold"
-                Text="{Binding Name}" />
+                Text="{Binding Name}"
+                TextTrimming="CharacterEllipsis" />
 
-            <TextBlock
-                Margin="0,5,0,0"
-                FontSize="10"
-                FontWeight="SemiBold"
-                Text="Health:" />
-            <Grid ColumnDefinitions="Auto, Auto, Auto, *" RowDefinitions="Auto, Auto">
+            <!-- HP bar with cur/max values overlaid inside -->
+            <Grid>
                 <ProgressBar
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Margin="10,0,0,0"
-                    VerticalAlignment="Center"
+                    Height="18"
                     Maximum="100"
                     Value="{Binding HealthPercentage}" />
                 <TextBlock
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    Grid.ColumnSpan="2"
-                    FontSize="12"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    FontWeight="SemiBold"
                     Text="{Binding HealthStatus}" />
             </Grid>
 
-            <TextBlock
-                Margin="0,5,0,0"
-                FontSize="10"
-                FontWeight="SemiBold"
-                Text="Details:" />
-            <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto">
+            <!-- Details -->
+            <Grid
+                Margin="0,2,0,0"
+                ColumnDefinitions="Auto,*"
+                RowDefinitions="Auto,Auto,Auto">
                 <TextBlock
                     Grid.Row="0"
                     Grid.Column="0"
-                    Margin="0,0,5,0"
+                    Margin="0,0,6,1"
+                    FontSize="11"
+                    Foreground="{DynamicResource SukiLowText}"
                     Text="Boss Type:" />
                 <TextBlock
                     Grid.Row="0"
                     Grid.Column="1"
-                    Text="{Binding BossType}" />
+                    FontSize="11"
+                    Text="{Binding BossType}"
+                    TextTrimming="CharacterEllipsis" />
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="0"
-                    Margin="0,0,5,0"
+                    Margin="0,0,6,1"
+                    FontSize="11"
+                    Foreground="{DynamicResource SukiLowText}"
                     Text="Room:" />
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="1"
-                    Text="{Binding RoomName}" />
+                    FontSize="11"
+                    Text="{Binding RoomName}"
+                    TextTrimming="CharacterEllipsis" />
                 <TextBlock
                     Grid.Row="2"
                     Grid.Column="0"
-                    Margin="0,0,5,0"
+                    Margin="0,0,6,0"
+                    FontSize="11"
+                    Foreground="{DynamicResource SukiLowText}"
                     Text="Status:" />
                 <TextBlock
                     Grid.Row="2"
                     Grid.Column="1"
+                    FontSize="11"
                     Text="{Binding Status}" />
             </Grid>
+
         </StackPanel>
     </suki:GlassCard>
 </UserControl>

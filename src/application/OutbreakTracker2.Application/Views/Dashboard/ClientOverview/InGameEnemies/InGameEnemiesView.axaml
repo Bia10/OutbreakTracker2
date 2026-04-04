@@ -14,24 +14,19 @@
 
     <Grid>
         <ScrollViewer
+            AllowAutoHide="True"
             HorizontalScrollBarVisibility="Disabled"
             IsVisible="{Binding HasEnemies}"
             VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding EnemiesView}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" />
+                        <StackPanel Orientation="Vertical" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <ContentControl Margin="0,0,10,10" Content="{Binding}">
-                            <ContentControl.DataTemplates>
-                                <DataTemplate DataType="inGameEnemy:InGameEnemyViewModel">
-                                    <inGameEnemy:InGameEnemyView />
-                                </DataTemplate>
-                            </ContentControl.DataTemplates>
-                        </ContentControl>
+                    <DataTemplate DataType="inGameEnemy:InGameEnemyViewModel">
+                        <inGameEnemy:InGameEnemyView />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

@@ -145,7 +145,7 @@ public partial class InGameEnemyViewModel : ObservableObject
         if (!enemyTypeParsed)
             return $"Failed to parse enemyType for nameId {nameId}";
 
-        string healthString = $"CurHp: {curHp}/{maxHp} :MaxHp";
+        string healthString = $"{curHp} / {maxHp}";
 
         if (
             curHp is 0x7fff
