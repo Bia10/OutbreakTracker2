@@ -46,10 +46,22 @@ public partial class InGameEnemiesViewModel : ObservableObject, IDisposable
                     switch (incomingEnemiesSnapshot.Length)
                     {
                         case 0:
-                            _logger.LogWarning(
-                                "Received empty or null enemies snapshot. Entries {Length}",
+                            _logger.LogInformation(
+                                "Received empty enemies snapshot. Clearing enemy list. Entries {Length}",
                                 incomingEnemiesSnapshot.Length
                             );
+                            await _dispatcherService
+                                .InvokeOnUIAsync(
+                                    () =>
+                                    {
+                                        _enemies.Clear();
+                                        _viewModelCache.Clear();
+                                        _enemyDeathTimes.Clear();
+                                        HasEnemies = false;
+                                    },
+                                    ct
+                                )
+                                .ConfigureAwait(false);
                             return;
                         case > GameConstants.MaxEnemies2:
                             _logger.LogWarning(

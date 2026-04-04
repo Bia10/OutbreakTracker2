@@ -37,6 +37,7 @@ public sealed class DataManager : IDataManager, IDisposable
     private readonly ReactiveProperty<DecodedLobbySlot[]> _lobbySlotsState = new([]);
 
     private bool IsInitialized { get; set; }
+    private bool _wasInScenario;
 
     public Observable<DecodedDoor[]> DoorsObservable { get; }
     public Observable<DecodedEnemy[]> EnemiesObservable { get; }
@@ -242,11 +243,21 @@ public sealed class DataManager : IDataManager, IDisposable
         _lobbySlotsState.Value = _lobbySlotReader?.DecodedLobbySlots ?? [];
     }
 
+    private void ResetInGameData()
+    {
+        _logger.LogInformation("Resetting in-game data states to defaults (scenario ended or game stopped)");
+        _doorsState.Value = [];
+        _enemiesState.Value = [];
+        _inGamePlayersState.Value = [];
+        _inGameScenarioState.Value = new DecodedInGameScenario();
+    }
+
     private ValueTask UpdateCoreGameDataAsync(CancellationToken cancellationToken)
     {
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
+            _wasInScenario = true;
             UpdateInGameScenario();
             UpdateDoors();
             UpdateEnemies();
@@ -269,6 +280,11 @@ public sealed class DataManager : IDataManager, IDisposable
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (_wasInScenario)
+            {
+                _wasInScenario = false;
+                ResetInGameData();
+            }
             UpdateLobbyRoom();
             UpdateLobbyRoomPlayers();
             UpdateLobbySlots();
@@ -310,6 +326,9 @@ public sealed class DataManager : IDataManager, IDisposable
         _lobbyRoomReader = null;
         _lobbySlotReader?.Dispose();
         _lobbySlotReader = null;
+
+        _wasInScenario = false;
+        ResetInGameData();
 
         _gameClient = null;
         IsInitialized = false;
