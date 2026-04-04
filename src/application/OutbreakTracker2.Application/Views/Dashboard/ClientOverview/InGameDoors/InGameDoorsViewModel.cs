@@ -43,10 +43,21 @@ public partial class InGameDoorsViewModel : ObservableObject, IDisposable
                     switch (incomingDoorsSnapshot.Length)
                     {
                         case 0:
-                            _logger.LogWarning(
-                                "Received empty or null doors snapshot. Entries {Length}",
+                            _logger.LogInformation(
+                                "Received empty doors snapshot. Clearing doors list. Entries {Length}",
                                 incomingDoorsSnapshot.Length
                             );
+                            await _dispatcherService
+                                .InvokeOnUIAsync(
+                                    () =>
+                                    {
+                                        Doors.Clear();
+                                        _viewModelCache.Clear();
+                                        HasDoors = false;
+                                    },
+                                    ct
+                                )
+                                .ConfigureAwait(false);
                             return;
                         case > GameConstants.MaxDoors:
                             _logger.LogWarning(

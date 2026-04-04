@@ -337,7 +337,10 @@ public partial class InGameScenarioViewModel : ObservableObject
     public void Update(DecodedInGameScenario scenario)
     {
         if (scenario.CurrentFile is < 1 or > 2)
+        {
+            FrameCounter = 0;
             return;
+        }
 
         CurrentFile = scenario.CurrentFile;
         ScenarioName = scenario.ScenarioName;
