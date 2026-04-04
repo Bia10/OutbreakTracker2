@@ -8,6 +8,7 @@
        ═══════════════════════════════════════════════════════ -->
   <ItemGroup Label="Build">
     <PackageVersion Include="CSharpier.MsBuild" Version="1.2.6" />
+    <PackageVersion Include="MinVer" Version="7.0.0" />
   </ItemGroup>
   <!-- ═══════════════════════════════════════════════════════
        BIA LOGVIEWER

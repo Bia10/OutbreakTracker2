@@ -14,6 +14,14 @@
     <DebugType>portable</DebugType>
     <Nullable>enable</Nullable>
 
+    <!-- Centralise all build output under artifacts/ at the repo root -->
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+
+    <!-- MinVer: derives AssemblyVersion/InformationalVersion from git tags -->
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+    <MinVerDefaultPreReleaseIdentifiers>preview</MinVerDefaultPreReleaseIdentifiers>
+    <MinVerVerbosity>minimal</MinVerVerbosity>
+
     <VSTestResultsDirectory>$(MSBuildThisFileDirectory)artifacts/TestResults</VSTestResultsDirectory>
 
     <!-- Generate docs XML; suppress missing-doc warnings globally -->
@@ -42,5 +50,7 @@
        Install the local tool first: dotnet tool restore -->
   <ItemGroup>
     <PackageReference Include="CSharpier.MsBuild" PrivateAssets="All" />
+    <!-- MinVer: private build tool, not shipped to consumers -->
+    <PackageReference Include="MinVer" PrivateAssets="All" />
   </ItemGroup>
 </Project>

@@ -4,8 +4,17 @@ name: Release
 permissions: read-all
 
 on:
+  # Traditional flow: push a v-prefixed tag manually (git tag v1.0.0 && git push origin v1.0.0)
   push:
     tags: ["v*"]
+
+  # Manual flow: go to Actions → Release → Run workflow, type the version (e.g. 1.0.0)
+  # This creates the tag via the GitHub API (GITHUB_TOKEN actions do not re-trigger workflows).
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version — no 'v' prefix (e.g. 1.0.0)"
+        required: true
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
@@ -26,6 +35,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
@@ -36,7 +47,16 @@ jobs:
         run: dotnet restore src/OutbreakTracker2.slnx
 
       - name: Build solution
-        run: dotnet build src/OutbreakTracker2.slnx -c Release --no-restore
+        # Pass MinVerVersion explicitly when triggered by workflow_dispatch so the
+        # assembly version matches the release even before the tag exists in git.
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [ -n "$VERSION" ]; then
+            dotnet build src/OutbreakTracker2.slnx -c Release --no-restore -p:MinVerVersion=$VERSION
+          else
+            dotnet build src/OutbreakTracker2.slnx -c Release --no-restore
+          fi
+        shell: bash
 
       - name: Run unit tests
         run: dotnet test --project src/insights/OutbreakTracker2.UnitTests/OutbreakTracker2.UnitTests.csproj -c Release
@@ -48,8 +68,8 @@ jobs:
     permissions:
       contents: write
     outputs:
-      tag_name: ${{ steps.tag.outputs.TAG_NAME }}
-      version: ${{ steps.tag.outputs.VERSION }}
+      tag_name: ${{ steps.resolve.outputs.TAG_NAME }}
+      version: ${{ steps.resolve.outputs.VERSION }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
@@ -61,31 +81,46 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract version from tag
-        id: tag
+      - name: Resolve version and tag name
+        id: resolve
+        shell: bash
         run: |
-          TAG_NAME="${GITHUB_REF#refs/tags/}"
-          VERSION="${TAG_NAME#v}"
-          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            TAG_REF="${GITHUB_REF#refs/tags/}"
+            VERSION="${TAG_REF#v}"
+          fi
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "TAG_NAME=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create tag via GitHub API (workflow_dispatch only)
+        # GITHUB_TOKEN-based tag creation does NOT re-trigger workflows.
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api repos/${{ github.repository }}/git/refs \
+            -f ref="refs/tags/v${{ steps.resolve.outputs.VERSION }}" \
+            -f sha="${{ github.sha }}"
 
       - name: Archive source code
         uses: thedoctor0/zip-release@b57d897cb5d60cb78b51a507f63fa184cfe35554 # 0.7.6
         with:
           type: 'zip'
-          filename: 'OutbreakTracker2-${{ steps.tag.outputs.VERSION }}-source.zip'
+          filename: 'OutbreakTracker2-${{ steps.resolve.outputs.VERSION }}-source.zip'
           path: '${{ github.workspace }}/src'
           exclusions: '*.git* .github/* insights/* .idea/*'
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
         with:
-          tag_name: ${{ steps.tag.outputs.TAG_NAME }}
-          name: ${{ steps.tag.outputs.TAG_NAME }}
+          tag_name: ${{ steps.resolve.outputs.TAG_NAME }}
+          name: ${{ steps.resolve.outputs.TAG_NAME }}
           generate_release_notes: true
           draft: false
           prerelease: false
-          files: OutbreakTracker2-${{ steps.tag.outputs.VERSION }}-source.zip
+          files: OutbreakTracker2-${{ steps.resolve.outputs.VERSION }}-source.zip
 
   publish:
     name: Publish (${{ matrix.rid }})
@@ -110,6 +145,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
@@ -120,7 +157,17 @@ jobs:
         run: dotnet restore src/application/OutbreakTracker2.Application/OutbreakTracker2.Application.csproj --runtime ${{ matrix.rid }}
 
       - name: Publish application
-        run: dotnet publish src/application/OutbreakTracker2.Application/OutbreakTracker2.Application.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --no-restore --output ${{ github.workspace }}/publish_output
+        # Pass MinVerVersion so the binary version matches the release tag regardless
+        # of whether the tag was already in git history when this job starts.
+        run: >
+          dotnet publish
+          src/application/OutbreakTracker2.Application/OutbreakTracker2.Application.csproj
+          --configuration Release
+          --runtime ${{ matrix.rid }}
+          --self-contained true
+          --no-restore
+          --output ${{ github.workspace }}/publish_output
+          -p:MinVerVersion=${{ needs.release.outputs.version }}
 
       - name: Archive published output
         uses: thedoctor0/zip-release@b57d897cb5d60cb78b51a507f63fa184cfe35554 # 0.7.6
