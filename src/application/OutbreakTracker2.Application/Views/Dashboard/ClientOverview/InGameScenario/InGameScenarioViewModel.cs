@@ -10,7 +10,7 @@ using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
 using R3;
-using SukiUI.Dialogs;
+using SukiUI.Controls;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario;
 
@@ -19,8 +19,6 @@ public partial class InGameScenarioViewModel : ObservableObject
     private readonly ILogger<InGameScenarioViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
     private readonly Dictionary<Scenario, Action<DecodedInGameScenario>> _scenarioUpdateActions;
-
-    private ISukiDialogManager DialogManager { get; }
 
     [ObservableProperty]
     private byte _currentFile;
@@ -120,13 +118,11 @@ public partial class InGameScenarioViewModel : ObservableObject
     public InGameScenarioViewModel(
         ILogger<InGameScenarioViewModel> logger,
         IDataManager dataManager,
-        ISukiDialogManager dialogManager,
         IDispatcherService dispatcherService
     )
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
-        DialogManager = dialogManager;
 
         DesperateTimesViewModel desperateTimesVm = new();
         EndOfTheRoadViewModel endOfTheRoadVm = new();
@@ -295,43 +291,40 @@ public partial class InGameScenarioViewModel : ObservableObject
     [RelayCommand]
     private Task ShowItemsDialogAsync()
     {
-        return _dispatcherService.InvokeOnUIAsync(() =>
+        new SukiWindow
         {
-            DialogManager
-                .CreateDialog()
-                .WithTitle("Scenario Items")
-                .WithContent(new ScenarioItemsView { DataContext = ScenarioEntitiesVm })
-                .WithActionButton("Close ", _ => { }, dismissOnClick: true)
-                .TryShow();
-        });
+            Title = "Scenario Items",
+            Width = 800,
+            Height = 500,
+            Content = new ScenarioItemsView { DataContext = ScenarioEntitiesVm },
+        }.Show();
+        return Task.CompletedTask;
     }
 
     [RelayCommand]
     private Task ShowEnemiesDialogAsync()
     {
-        return _dispatcherService.InvokeOnUIAsync(() =>
+        new SukiWindow
         {
-            DialogManager
-                .CreateDialog()
-                .WithTitle("Scenario Enemies")
-                .WithContent(new ScenarioEnemiesView { DataContext = ScenarioEntitiesVm })
-                .WithActionButton("Close ", _ => { }, dismissOnClick: true)
-                .TryShow();
-        });
+            Title = "Scenario Enemies",
+            Width = 800,
+            Height = 500,
+            Content = new ScenarioEnemiesView { DataContext = ScenarioEntitiesVm },
+        }.Show();
+        return Task.CompletedTask;
     }
 
     [RelayCommand]
     private Task ShowDoorsDialogAsync()
     {
-        return _dispatcherService.InvokeOnUIAsync(() =>
+        new SukiWindow
         {
-            DialogManager
-                .CreateDialog()
-                .WithTitle("Scenario Doors")
-                .WithContent(new ScenarioDoorsView { DataContext = ScenarioEntitiesVm })
-                .WithActionButton("Close ", _ => { }, dismissOnClick: true)
-                .TryShow();
-        });
+            Title = "Scenario Doors",
+            Width = 800,
+            Height = 500,
+            Content = new ScenarioDoorsView { DataContext = ScenarioEntitiesVm },
+        }.Show();
+        return Task.CompletedTask;
     }
 
     public void Update(DecodedInGameScenario scenario)
