@@ -7,15 +7,21 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
     xmlns:inventory="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory"
-    d:DesignHeight="60"
-    d:DesignWidth="120"
+    d:DesignHeight="66"
+    d:DesignWidth="78"
     x:DataType="inventory:ItemSlotViewModel"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <!--  Defaults — overridden by ancestor ScrollViewer resources in InGamePlayersView  -->
+        <x:Double x:Key="ItemSlotWidth">78</x:Double>
+        <x:Double x:Key="ItemSlotHeight">66</x:Double>
+    </UserControl.Resources>
+
     <suki:GlassCard
-        Width="52"
-        Height="44"
-        Margin="1"
+        Width="{DynamicResource ItemSlotWidth}"
+        Height="{DynamicResource ItemSlotHeight}"
+        Margin="2"
         Padding="0"
         CornerRadius="3">
         <Grid>
