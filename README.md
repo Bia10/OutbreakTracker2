@@ -1,14 +1,14 @@
-# Outbreak Tracker 2
-This is an attempt to rewrite and expand upon the old C99 Resident Evil Outbreak tracker in C#.
-
-<img width="2560" height="1401" alt="image" src="https://github.com/user-attachments/assets/b05873d1-76f4-4a8b-b9a5-bf19b3d5324d" />
-
 > [!Important]
 > This project is currently in early alpha version, nothing is set in stone yet, things may change.
 > 
 > The docked embeding mode is only supported on windows platform for now, and is very experimental may be buggy.
 >
 > This version will only support PCSX2 version 2.0.0 or later.
+
+# Outbreak Tracker 2
+This is an attempt to rewrite and expand upon the old C99 Resident Evil Outbreak tracker in C#.
+
+<img width="2557" height="1402" alt="image" src="https://github.com/user-attachments/assets/28cff4ec-a2da-4cbb-a31b-07a5b35a08b1" />
 
 # Supported Platforms
 - Windows (.NET 10) — fully supported
