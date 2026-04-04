@@ -13,11 +13,11 @@
     mc:Ignorable="d">
 
     <suki:GlassCard
-        Width="120"
-        Height="60"
-        Margin="2"
+        Width="52"
+        Height="44"
+        Margin="1"
         Padding="0"
-        CornerRadius="4">
+        CornerRadius="3">
         <Grid>
             <Image
                 HorizontalAlignment="Stretch"
@@ -25,17 +25,17 @@
                 Source="{Binding ItemImageViewModel.ItemImage}"
                 Stretch="Uniform" />
             <TextBlock
-                Margin="2"
+                Margin="2,1"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
-                FontSize="12"
+                FontSize="9"
                 FontWeight="Heavy"
                 Text="{Binding ItemCount}" />
             <TextBlock
-                Margin="2"
+                Margin="2,1"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
-                FontSize="10"
+                FontSize="8"
                 FontWeight="Bold"
                 Text="{Binding SlotNumber}" />
 
@@ -45,11 +45,12 @@
                 IsVisible="{Binding ItemImageViewModel.ItemImage, Converter={x:Static adc:ObjectConverters.IsNull}}">
                 <TextBlock
                     HorizontalAlignment="Center"
+                    FontSize="8"
                     FontWeight="Bold"
                     Text="{Binding ItemName}" />
                 <TextBlock
                     HorizontalAlignment="Center"
-                    FontSize="10"
+                    FontSize="7"
                     Opacity="0.7"
                     Text="{Binding DebugInfo}" />
             </StackPanel>

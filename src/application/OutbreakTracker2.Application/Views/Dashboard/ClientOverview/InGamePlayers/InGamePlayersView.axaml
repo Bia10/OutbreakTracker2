@@ -5,39 +5,61 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:common="clr-namespace:OutbreakTracker2.Application.Views.Common"
-    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
     xmlns:inGamePlayers="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers"
     xmlns:inGamePlayer="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer"
+    xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    x:Name="root"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="inGamePlayers:InGamePlayersViewModel"
     mc:Ignorable="d">
 
-    <Grid>
-        <ScrollViewer
-            HorizontalScrollBarVisibility="Disabled"
+    <Grid RowDefinitions="Auto,*">
+        <!-- Layout toggle -->
+        <ToggleButton
+            Grid.Row="0"
+            Margin="4,2"
+            Padding="4,2"
+            HorizontalAlignment="Right"
+            IsChecked="{Binding IsHorizontalLayout}"
             IsVisible="{Binding HasPlayers}"
-            VerticalScrollBarVisibility="Auto">
+            ToolTip.Tip="Toggle horizontal / vertical layout">
+            <Panel>
+                <material:MaterialIcon
+                    Width="14"
+                    Height="14"
+                    IsVisible="{Binding !IsHorizontalLayout}"
+                    Kind="FormatListBulleted" />
+                <material:MaterialIcon
+                    Width="14"
+                    Height="14"
+                    IsVisible="{Binding IsHorizontalLayout}"
+                    Kind="ViewColumn" />
+            </Panel>
+        </ToggleButton>
+
+        <ScrollViewer
+            Grid.Row="1"
+            AllowAutoHide="True"
+            HorizontalScrollBarVisibility="{Binding HScrollBarVisibility}"
+            IsVisible="{Binding HasPlayers}"
+            VerticalScrollBarVisibility="{Binding VScrollBarVisibility}">
             <ItemsControl ItemsSource="{Binding PlayersView}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid Columns="{Binding PlayerColumnCount}" />
+                        <StackPanel Orientation="{Binding #root.DataContext.PlayerListOrientation}" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <suki:GlassCard
-                            Margin="10"
-                            Padding="15"
-                            CornerRadius="10">
-                            <inGamePlayer:InGamePlayerView />
-                        </suki:GlassCard>
+                        <inGamePlayer:InGamePlayerView Width="{Binding #root.DataContext.PlayerCardWidth}" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
 
         <common:NotInGameWatermark
+            Grid.Row="1"
             IsVisible="{Binding !HasPlayers}"
             Message="No active players — not in-game" />
     </Grid>

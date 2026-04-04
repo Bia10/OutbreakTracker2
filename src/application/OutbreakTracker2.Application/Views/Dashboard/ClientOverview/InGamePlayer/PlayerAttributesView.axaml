@@ -5,82 +5,63 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
     xmlns:inGamePlayer="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer"
     d:DesignHeight="100"
     d:DesignWidth="200"
     x:DataType="inGamePlayer:PlayerAttributesViewModel"
     mc:Ignorable="d">
 
-    <suki:GroupBox Header="Attributes">
-        <WrapPanel ItemSpacing="4" Orientation="Horizontal">
-            <suki:GlassCard
-                Margin="0"
-                Padding="8"
-                CornerRadius="6">
-                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                    <material:MaterialIcon
-                        Width="16"
-                        Height="16"
-                        Margin="0,0,6,0"
-                        Kind="ArmFlex" />
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="{Binding Power, StringFormat='Power: {0:P0}'}" />
-                </StackPanel>
-            </suki:GlassCard>
-
-            <suki:GlassCard
-                Margin="0"
-                Padding="8"
-                CornerRadius="6">
-                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                    <material:MaterialIcon
-                        Width="16"
-                        Height="16"
-                        Margin="0,0,6,0"
-                        Kind="Target" />
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="{Binding CriticalBonus, StringFormat='Critical Bonus: {0} %'}" />
-                </StackPanel>
-            </suki:GlassCard>
-
-            <suki:GlassCard
-                Margin="0"
-                Padding="8"
-                CornerRadius="6">
-                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                    <material:MaterialIcon
-                        Width="16"
-                        Height="16"
-                        Margin="0,0,6,0"
-                        Kind="Speedometer" />
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="{Binding Speed, StringFormat='Speed: {0:P0}'}" />
-                </StackPanel>
-            </suki:GlassCard>
-
-            <suki:GlassCard
-                Margin="0"
-                Padding="8"
-                CornerRadius="6">
-                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                    <material:MaterialIcon
-                        Width="16"
-                        Height="16"
-                        Margin="0,0,6,0"
-                        Kind="Resize" />
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="{Binding Size, StringFormat='Size: {0:P0}'}" />
-                </StackPanel>
-            </suki:GlassCard>
-        </WrapPanel>
-    </suki:GroupBox>
+    <WrapPanel Orientation="Horizontal">
+        <StackPanel
+            Margin="0,0,8,0"
+            Orientation="Horizontal"
+            Spacing="3">
+            <material:MaterialIcon
+                Width="12"
+                Height="12"
+                Kind="ArmFlex" />
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="10"
+                Text="{Binding Power, StringFormat='Pwr: {0:P0}'}" />
+        </StackPanel>
+        <StackPanel
+            Margin="0,0,8,0"
+            Orientation="Horizontal"
+            Spacing="3">
+            <material:MaterialIcon
+                Width="12"
+                Height="12"
+                Kind="Target" />
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="10"
+                Text="{Binding CriticalBonus, StringFormat='Crit: {0}%'}" />
+        </StackPanel>
+        <StackPanel
+            Margin="0,0,8,0"
+            Orientation="Horizontal"
+            Spacing="3">
+            <material:MaterialIcon
+                Width="12"
+                Height="12"
+                Kind="Speedometer" />
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="10"
+                Text="{Binding Speed, StringFormat='Spd: {0:P0}'}" />
+        </StackPanel>
+        <StackPanel
+            Orientation="Horizontal"
+            Spacing="3">
+            <material:MaterialIcon
+                Width="12"
+                Height="12"
+                Kind="Resize" />
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="10"
+                Text="{Binding Size, StringFormat='Sz: {0:P0}'}" />
+        </StackPanel>
+    </WrapPanel>
 </UserControl>

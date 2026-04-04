@@ -5,87 +5,75 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
     xmlns:inGamePlayer="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer"
     d:DesignHeight="100"
     d:DesignWidth="400"
     x:DataType="inGamePlayer:PlayerStatusEffectsViewModel"
     mc:Ignorable="d">
 
-    <suki:GroupBox Header="Status effects" IsVisible="{Binding AreEffectsVisible}">
-        <WrapPanel Orientation="Horizontal">
-            <suki:GlassCard
-                Margin="0"
-                Padding="8"
-                CornerRadius="6"
-                IsVisible="{Binding IsBleedActive}">
-                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                    <material:MaterialIcon
-                        Width="16"
-                        Height="16"
-                        Margin="0,0,6,0"
-                        Foreground="Red"
-                        Kind="WaterDrop" />
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="{Binding BleedTime}" />
-                </StackPanel>
-            </suki:GlassCard>
-            <suki:GlassCard
-                Margin="0"
-                Padding="8"
-                CornerRadius="6"
-                IsVisible="{Binding IsAntiVirusActive}">
-                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                    <material:MaterialIcon
-                        Width="16"
-                        Height="16"
-                        Margin="0,0,6,0"
-                        Foreground="Blue"
-                        Kind="Virus" />
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="{Binding AntiVirusTime}" />
-                </StackPanel>
-            </suki:GlassCard>
-            <suki:GlassCard
-                Margin="0"
-                Padding="8"
-                CornerRadius="6"
-                IsVisible="{Binding IsAntiVirusGActive}">
-                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                    <material:MaterialIcon
-                        Width="16"
-                        Height="16"
-                        Margin="0,0,6,0"
-                        Foreground="ForestGreen"
-                        Kind="Syringe" />
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="{Binding AntiVirusGTime}" />
-                </StackPanel>
-            </suki:GlassCard>
-            <suki:GlassCard
-                Margin="0"
-                Padding="8"
-                CornerRadius="6"
-                IsVisible="{Binding IsHerbActive}">
-                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                    <material:MaterialIcon
-                        Width="16"
-                        Height="16"
-                        Margin="0,0,6,0"
-                        Foreground="Green"
-                        Kind="LocalHospital" />
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="{Binding HerbTime}" />
-                </StackPanel>
-            </suki:GlassCard>
-        </WrapPanel>
-    </suki:GroupBox>
+    <WrapPanel
+        IsVisible="{Binding AreEffectsVisible}"
+        ItemSpacing="4"
+        Orientation="Horizontal">
+        <StackPanel
+            IsVisible="{Binding IsBleedActive}"
+            Orientation="Horizontal"
+            Spacing="4">
+            <material:MaterialIcon
+                Width="14"
+                Height="14"
+                Foreground="Red"
+                Kind="WaterDrop" />
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="11"
+                FontWeight="SemiBold"
+                Text="{Binding BleedTime}" />
+        </StackPanel>
+        <StackPanel
+            IsVisible="{Binding IsAntiVirusActive}"
+            Orientation="Horizontal"
+            Spacing="4">
+            <material:MaterialIcon
+                Width="14"
+                Height="14"
+                Foreground="Blue"
+                Kind="Virus" />
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="11"
+                FontWeight="SemiBold"
+                Text="{Binding AntiVirusTime}" />
+        </StackPanel>
+        <StackPanel
+            IsVisible="{Binding IsAntiVirusGActive}"
+            Orientation="Horizontal"
+            Spacing="4">
+            <material:MaterialIcon
+                Width="14"
+                Height="14"
+                Foreground="ForestGreen"
+                Kind="Syringe" />
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="11"
+                FontWeight="SemiBold"
+                Text="{Binding AntiVirusGTime}" />
+        </StackPanel>
+        <StackPanel
+            IsVisible="{Binding IsHerbActive}"
+            Orientation="Horizontal"
+            Spacing="4">
+            <material:MaterialIcon
+                Width="14"
+                Height="14"
+                Foreground="Green"
+                Kind="LocalHospital" />
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="11"
+                FontWeight="SemiBold"
+                Text="{Binding HerbTime}" />
+        </StackPanel>
+    </WrapPanel>
 </UserControl>

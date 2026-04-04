@@ -33,15 +33,16 @@
         </DataTemplate>
     </UserControl.DataTemplates>
 
-    <suki:GroupBox Header="{Binding CharacterName}">
+    <suki:GlassCard
+        Margin="4,3"
+        Padding="5,4"
+        CornerRadius="6">
         <StackPanel Spacing="2">
-            <Image
-                MaxWidth="250"
-                MaxHeight="250"
-                Margin="0,5,0,5"
-                HorizontalAlignment="Left"
-                Source="{Binding PlayerBustViewModel.PlayerBustImage}"
-                Stretch="Uniform" />
+            <TextBlock
+                FontSize="13"
+                FontWeight="Bold"
+                Text="{Binding CharacterName}"
+                TextTrimming="CharacterEllipsis" />
             <ContentControl Content="{Binding Gauges}" />
             <ContentControl Content="{Binding Conditions}" />
             <ContentControl Content="{Binding Inventory}" />
@@ -49,5 +50,5 @@
             <ContentControl Content="{Binding Attributes}" />
             <ContentControl Content="{Binding Position}" />
         </StackPanel>
-    </suki:GroupBox>
+    </suki:GlassCard>
 </UserControl>
