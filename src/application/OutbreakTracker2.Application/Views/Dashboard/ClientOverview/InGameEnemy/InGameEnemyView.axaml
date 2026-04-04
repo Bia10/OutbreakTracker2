@@ -61,49 +61,47 @@
             </Grid>
 
             <!-- Details -->
-            <Grid
-                Margin="0,2,0,0"
-                ColumnDefinitions="Auto,*"
-                RowDefinitions="Auto,Auto,Auto">
-                <TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    Margin="0,0,6,1"
-                    FontSize="11"
-                    Foreground="{DynamicResource SukiLowText}"
-                    Text="Boss Type:" />
-                <TextBlock
-                    Grid.Row="0"
-                    Grid.Column="1"
-                    FontSize="11"
-                    Text="{Binding BossType}"
-                    TextTrimming="CharacterEllipsis" />
-                <TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Margin="0,0,6,1"
-                    FontSize="11"
-                    Foreground="{DynamicResource SukiLowText}"
-                    Text="Room:" />
-                <TextBlock
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    FontSize="11"
-                    Text="{Binding RoomName}"
-                    TextTrimming="CharacterEllipsis" />
-                <TextBlock
-                    Grid.Row="2"
-                    Grid.Column="0"
-                    Margin="0,0,6,0"
-                    FontSize="11"
-                    Foreground="{DynamicResource SukiLowText}"
-                    Text="Status:" />
-                <TextBlock
-                    Grid.Row="2"
-                    Grid.Column="1"
-                    FontSize="11"
-                    Text="{Binding Status}" />
-            </Grid>
+            <StackPanel Margin="0,2,0,0" Spacing="1">
+                <DockPanel>
+                    <TextBlock
+                        DockPanel.Dock="Left"
+                        FontSize="11"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource SukiLowText}"
+                        Text="Boss Type:" />
+                    <TextBlock
+                        Margin="3,0,0,0"
+                        FontSize="11"
+                        Text="{Binding BossType}"
+                        TextTrimming="CharacterEllipsis" />
+                </DockPanel>
+                <DockPanel>
+                    <TextBlock
+                        DockPanel.Dock="Left"
+                        FontSize="11"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource SukiLowText}"
+                        Text="Room:" />
+                    <TextBlock
+                        Margin="3,0,0,0"
+                        FontSize="11"
+                        Text="{Binding RoomName}"
+                        TextTrimming="CharacterEllipsis" />
+                </DockPanel>
+                <DockPanel>
+                    <TextBlock
+                        DockPanel.Dock="Left"
+                        FontSize="11"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource SukiLowText}"
+                        Text="Status:" />
+                    <TextBlock
+                        Margin="3,0,0,0"
+                        FontSize="11"
+                        Text="{Binding Status}"
+                        TextTrimming="CharacterEllipsis" />
+                </DockPanel>
+            </StackPanel>
 
         </StackPanel>
     </suki:GlassCard>
