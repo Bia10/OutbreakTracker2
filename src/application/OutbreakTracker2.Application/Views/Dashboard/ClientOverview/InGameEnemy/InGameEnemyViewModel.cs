@@ -30,6 +30,12 @@ public partial class InGameEnemyViewModel : ObservableObject
     private string _healthStatus = string.Empty;
 
     [ObservableProperty]
+    private bool _isDead;
+
+    [ObservableProperty]
+    private bool _isInvincible;
+
+    [ObservableProperty]
     private string _bossType = string.Empty;
 
     [ObservableProperty]
@@ -63,8 +69,10 @@ public partial class InGameEnemyViewModel : ObservableObject
         Name = $"{enemy.Name}({enemy.SlotId})";
         CurrentHp = enemy.CurHp;
         MaxHp = enemy.MaxHp;
-        HealthPercentage = PercentageUtility.GetPercentage(enemy.CurHp, enemy.MaxHp);
         HealthStatus = GetEnemiesHealthStatusStringForFileTwo(enemy.SlotId, enemy.NameId, enemy.CurHp, enemy.MaxHp);
+        IsDead = IsDeadStatus(HealthStatus);
+        IsInvincible = HealthStatus is "Invincible";
+        HealthPercentage = IsDead ? 0.0 : PercentageUtility.GetPercentage(enemy.CurHp, enemy.MaxHp);
         BossType = ConvertBossType(enemy.BossType);
         Status = ConvertStatus(enemy.Status);
         RoomName = UpdateRoomName(enemy.RoomId);
@@ -166,6 +174,8 @@ public partial class InGameEnemyViewModel : ObservableObject
             _ => healthString,
         };
     }
+
+    public static bool IsDeadStatus(string healthStatus) => healthStatus is "Dead" or "Destroyed" or "Exploded";
 
     public static Color GetEnemyColorForFileOne(int slotId, byte nameId)
     {
