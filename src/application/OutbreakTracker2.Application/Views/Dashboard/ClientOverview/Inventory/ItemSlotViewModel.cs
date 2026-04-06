@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
@@ -56,7 +56,9 @@ public partial class ItemSlotViewModel(
         ItemCount = count;
         DebugInfo = debug;
 
-        if (!name.Equals(EmptySlotName, StringComparison.Ordinal))
+        if (name.Equals(EmptySlotName, StringComparison.Ordinal))
+            _ = ItemImageViewModel.ClearImageAsync();
+        else
         {
             string currentFile = EnumUtility.GetEnumString(GameFile.FileTwo, GameFile.Unknown);
             string itemSpriteLookupName = currentFile + "/" + name;

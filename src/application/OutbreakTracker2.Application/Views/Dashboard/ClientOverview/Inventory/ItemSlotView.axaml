@@ -14,8 +14,8 @@
 
     <UserControl.Resources>
         <!--  Defaults — overridden by ancestor ScrollViewer resources in InGamePlayersView  -->
-        <x:Double x:Key="ItemSlotWidth">78</x:Double>
-        <x:Double x:Key="ItemSlotHeight">66</x:Double>
+        <x:Double x:Key="ItemSlotWidth">58</x:Double>
+        <x:Double x:Key="ItemSlotHeight">50</x:Double>
     </UserControl.Resources>
 
     <Grid

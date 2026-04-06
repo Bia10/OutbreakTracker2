@@ -42,6 +42,16 @@ public partial class ImageViewModel : ObservableObject
         }
     }
 
+    public async ValueTask ClearImageAsync()
+    {
+        await _dispatcherService
+            .InvokeOnUIAsync(() =>
+            {
+                SourceImage = null;
+            })
+            .ConfigureAwait(true);
+    }
+
     public async ValueTask UpdateImageAsync(string spriteName, string debugContext = "")
     {
         ITextureAtlas? selectedAtlas = spriteName.StartsWith("File", StringComparison.Ordinal) ? _itemsAtlas : _uiAtlas;
