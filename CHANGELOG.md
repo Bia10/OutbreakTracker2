@@ -10,6 +10,38 @@ To create a release: go to **Actions → Release → Run workflow** and enter a 
 
 ## [Unreleased]
 
+---
+
+## [v0.3.0] — 2026-04-06
+
+### Added
+- Dock: integrate SukiUI.Dock and vendor Dock control themes for full SukiUI visual consistency
+- Dock: add scenario entity dock tools — Items, Enemies, Doors — as closable, pinnable tool panes
+- Dock: add `ScenarioEntityCommands` wiring ShowItems / ShowEnemies / ShowDoors relay commands to dock float
+- Dock: add `CollapseInPspWhenHiddenBehavior` for PSP layout mode
+- Dock: add `AvaloniaFileSink` writing Avalonia-internal diagnostics (binding errors, theme resolution) to `logs/avaloniaLog.txt`
+- Scenario: explicit DataGrid columns for Items, Enemies and Doors entity views (Slot / Type / Qty / Room / Held By / Mix / Present; Slot / Name / HP / MaxHP / Room / Boss / Status; HP / Flag / Status)
+- Scenario: `ResolveItemDisplayFields` — populate `RoomName` via scenario enum extension and `PickedUpByName` from live player roster
+- Model: add `RoomName` and `PickedUpByName` computed display fields to `DecodedItem`
+- Inventory: add `ClearImageAsync` to `ImageViewModel` and `ItemImageViewModel` for explicit slot clearing
+
+### Changed
+- Dock: replace `DocumentDock` + `GameScreenDocument` center pane with `GlobalToolDock` + `GameScreenTool` so all panes share the same dock type and theme path
+- Dock: move DataTemplates from `GameDockView` to `Application.DataTemplates` in `App.axaml` so they resolve in floating host windows
+- Dock: replace `DockFluentTheme DensityStyle=Normal` with plain `DockFluentTheme`; load SukiUI.Dock resource includes
+- Dock: `GameDockFactory` — add `CreateWindowFrom` / `FloatDockable` (blocked) / `PinDockable` / `OnDockableMoved` overrides plus floating-root sync and diagnostic window-drag hooks
+- Dock: `CanFloat=false` on `GameScreenTool` to prevent Win32 HWND z-order conflicts; `CanDrag/Drop/Pin=true` on all other tools
+- Scenario: replace SukiWindow popup dialogs with dock-integrated tool panes bound via `ScenarioEntityCommands`
+- UI: tune log levels — promote `OutbreakTracker2` namespace to `Debug`; pin `OutbreakTracker2.Outbreak` and `OutbreakTracker2.Application.Services` back to `Information`
+
+### Fixed
+- Inventory: empty item slot did not clear previous sprite — inverted condition in `ItemSlotViewModel.Update` to call `ClearImageAsync` on empty slot
+- UI: reduce default `ItemSlotWidth` 78→58, `ItemSlotHeight` 66→50 to fit docked player panel proportions
+
+---
+
+## [v0.2.0] — 2026-04-01
+
 ### Added
 - Visualize inventory slot events with border glow and fade animation (#26)
 - UI: player panel — condition/status on one row, responsive inventory columns per layout mode
