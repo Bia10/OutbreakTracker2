@@ -1,16 +1,16 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
+using OutbreakTracker2.Application.Views.GameDock;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
 using R3;
-using SukiUI.Controls;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario;
 
@@ -18,7 +18,13 @@ public partial class InGameScenarioViewModel : ObservableObject
 {
     private readonly ILogger<InGameScenarioViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
+    private readonly IDataManager _dataManager;
+    private readonly ScenarioEntityCommands _entityCommands;
     private readonly Dictionary<Scenario, Action<DecodedInGameScenario>> _scenarioUpdateActions;
+
+    public ICommand ShowItemsCommand => _entityCommands.ShowItems;
+    public ICommand ShowEnemiesCommand => _entityCommands.ShowEnemies;
+    public ICommand ShowDoorsCommand => _entityCommands.ShowDoors;
 
     [ObservableProperty]
     private byte _currentFile;
@@ -118,11 +124,16 @@ public partial class InGameScenarioViewModel : ObservableObject
     public InGameScenarioViewModel(
         ILogger<InGameScenarioViewModel> logger,
         IDataManager dataManager,
-        IDispatcherService dispatcherService
+        IDispatcherService dispatcherService,
+        ScenarioEntitiesViewModel scenarioEntitiesViewModel,
+        ScenarioEntityCommands entityCommands
     )
     {
         _logger = logger;
+        _dataManager = dataManager;
         _dispatcherService = dispatcherService;
+        _entityCommands = entityCommands;
+        _scenarioEntitiesVm = scenarioEntitiesViewModel;
 
         DesperateTimesViewModel desperateTimesVm = new();
         EndOfTheRoadViewModel endOfTheRoadVm = new();
@@ -133,7 +144,6 @@ public partial class InGameScenarioViewModel : ObservableObject
         DecisionsDecisionsViewModel decisionsDecisionsVm = new();
         BelowFreezingPointViewModel belowFreezingPointVm = new();
 
-        _scenarioEntitiesVm = new ScenarioEntitiesViewModel();
         _scenarioUpdateActions = new Dictionary<Scenario, Action<DecodedInGameScenario>>
         {
             {
@@ -288,45 +298,6 @@ public partial class InGameScenarioViewModel : ObservableObject
             );
     }
 
-    [RelayCommand]
-    private Task ShowItemsDialogAsync()
-    {
-        new SukiWindow
-        {
-            Title = "Scenario Items",
-            Width = 800,
-            Height = 500,
-            Content = new ScenarioItemsView { DataContext = ScenarioEntitiesVm },
-        }.Show();
-        return Task.CompletedTask;
-    }
-
-    [RelayCommand]
-    private Task ShowEnemiesDialogAsync()
-    {
-        new SukiWindow
-        {
-            Title = "Scenario Enemies",
-            Width = 800,
-            Height = 500,
-            Content = new ScenarioEnemiesView { DataContext = ScenarioEntitiesVm },
-        }.Show();
-        return Task.CompletedTask;
-    }
-
-    [RelayCommand]
-    private Task ShowDoorsDialogAsync()
-    {
-        new SukiWindow
-        {
-            Title = "Scenario Doors",
-            Width = 800,
-            Height = 500,
-            Content = new ScenarioDoorsView { DataContext = ScenarioEntitiesVm },
-        }.Show();
-        return Task.CompletedTask;
-    }
-
     public void Update(DecodedInGameScenario scenario)
     {
         if (scenario.CurrentFile is < 1 or > 2)
@@ -360,9 +331,40 @@ public partial class InGameScenarioViewModel : ObservableObject
         GasRandomOrderDisplay = CalculateGasRandomOrderDisplay();
         IsCleared = GetClearedDisplay();
 
+        ResolveItemDisplayFields(scenario);
         ScenarioEntitiesVm.UpdateItems(scenario.Items);
 
         UpdateScenarioSpecificViewModel(scenario);
+    }
+
+    private void ResolveItemDisplayFields(DecodedInGameScenario scenario)
+    {
+        bool scenarioParsed = EnumUtility.TryParseByValueOrMember(ScenarioName, out Scenario scenarioEnum);
+        DecodedInGamePlayer[] players = _dataManager.InGamePlayers;
+
+        foreach (DecodedItem item in scenario.Items)
+        {
+            item.RoomName = scenarioParsed ? scenarioEnum.GetRoomName(item.RoomId) : $"Room {item.RoomId}";
+
+            if (item.PickedUp == 0)
+            {
+                item.PickedUpByName = "None";
+            }
+            else
+            {
+                int slotIndex = item.PickedUp - 1;
+                if (slotIndex >= 0 && slotIndex < players.Length)
+                {
+                    DecodedInGamePlayer player = players[slotIndex];
+                    item.PickedUpByName =
+                        player.IsEnabled && !string.IsNullOrEmpty(player.Name) ? player.Name : $"P{item.PickedUp}";
+                }
+                else
+                {
+                    item.PickedUpByName = $"P{item.PickedUp}";
+                }
+            }
+        }
     }
 
     private void UpdateScenarioSpecificViewModel(DecodedInGameScenario scenario)

@@ -39,4 +39,12 @@ public sealed record DecodedItem
     [JsonInclude]
     [JsonPropertyName(nameof(RoomId))]
     public byte RoomId { get; set; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(RoomName))]
+    public string RoomName { get; set; } = string.Empty;
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(PickedUpByName))]
+    public string PickedUpByName { get; set; } = string.Empty;
 }

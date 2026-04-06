@@ -8,10 +8,21 @@
     x:DataType="entitites:ScenarioEntitiesViewModel"
     mc:Ignorable="d">
     <DataGrid
-        AutoGenerateColumns="True"
+        AutoGenerateColumns="False"
         CanUserReorderColumns="True"
         CanUserResizeColumns="True"
         CanUserSortColumns="True"
         IsReadOnly="True"
-        ItemsSource="{Binding Items}" />
+        ItemsSource="{Binding Items}">
+        <DataGrid.Columns>
+            <DataGridTextColumn Header="Slot" Binding="{Binding SlotIndex}" Width="45" />
+            <DataGridTextColumn Header="Type" Binding="{Binding TypeName}" Width="2*" />
+            <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="55" />
+            <DataGridTextColumn Header="Room" Binding="{Binding RoomName}" Width="2*" />
+            <DataGridTextColumn Header="P#" Binding="{Binding PickedUp}" Width="40" />
+            <DataGridTextColumn Header="Held By" Binding="{Binding PickedUpByName}" Width="*" />
+            <DataGridTextColumn Header="Mix" Binding="{Binding Mix}" Width="50" />
+            <DataGridTextColumn Header="Present" Binding="{Binding Present}" Width="70" />
+        </DataGrid.Columns>
+    </DataGrid>
 </UserControl>
