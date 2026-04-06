@@ -5,49 +5,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:gameDock="clr-namespace:OutbreakTracker2.Application.Views.GameDock"
-    xmlns:dockables="clr-namespace:OutbreakTracker2.Application.Views.GameDock.Dockables"
-    xmlns:embeddedGame="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGame"
-    xmlns:inGameEnemies="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies"
-    xmlns:inGamePlayers="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers"
-    xmlns:inGameScenario="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario"
-    xmlns:canvas="clr-namespace:OutbreakTracker2.Application.Views.Map.Canvas"
     d:DesignHeight="600"
     d:DesignWidth="1200"
     x:DataType="gameDock:GameDockViewModel"
     mc:Ignorable="d">
-
-    <!--
-        DataTemplates map each IDockable subtype to its content view.
-        The Dock library renders these inside ToolControl / DocumentControl.
-    -->
-    <UserControl.DataTemplates>
-
-        <!-- Centre: embedded game window -->
-        <DataTemplate DataType="{x:Type dockables:GameScreenDocument}">
-            <embeddedGame:EmbeddedGameTabView DataContext="{Binding EmbeddedGameViewModel}" />
-        </DataTemplate>
-
-        <!-- Left top: mob / enemy list -->
-        <DataTemplate DataType="{x:Type dockables:EnemyListDockTool}">
-            <inGameEnemies:InGameEnemiesView DataContext="{Binding InGameEnemiesViewModel}" />
-        </DataTemplate>
-
-        <!-- Left bottom: map canvas -->
-        <DataTemplate DataType="{x:Type dockables:MapDockTool}">
-            <canvas:MapCanvasView DataContext="{Binding MapCanvasViewModel}" />
-        </DataTemplate>
-
-        <!-- Right top: players -->
-        <DataTemplate DataType="{x:Type dockables:PlayersDockTool}">
-            <inGamePlayers:InGamePlayersView DataContext="{Binding InGamePlayersViewModel}" />
-        </DataTemplate>
-
-        <!-- Right bottom: scenario info -->
-        <DataTemplate DataType="{x:Type dockables:ScenarioInfoDockTool}">
-            <inGameScenario:InGameScenarioView DataContext="{Binding InGameScenarioViewModel}" />
-        </DataTemplate>
-
-    </UserControl.DataTemplates>
 
     <DockControl
         Margin="0"

@@ -4,11 +4,61 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:suki="https://github.com/kikipoulet/SukiUI"
+    xmlns:dockables="clr-namespace:OutbreakTracker2.Application.Views.GameDock.Dockables"
+    xmlns:entitites="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites"
+    xmlns:embeddedGame="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGame"
+    xmlns:inGameEnemies="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies"
+    xmlns:inGamePlayers="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers"
+    xmlns:inGameScenario="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario"
+    xmlns:canvas="clr-namespace:OutbreakTracker2.Application.Views.Map.Canvas"
     RequestedThemeVariant="Default">
+    <Application.DataTemplates>
+        <DataTemplate DataType="{x:Type dockables:GameScreenTool}">
+            <embeddedGame:EmbeddedGameTabView DataContext="{Binding EmbeddedGameViewModel}" />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type dockables:EnemyListDockTool}">
+            <inGameEnemies:InGameEnemiesView DataContext="{Binding InGameEnemiesViewModel}" />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type dockables:MapDockTool}">
+            <canvas:MapCanvasView DataContext="{Binding MapCanvasViewModel}" />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type dockables:PlayersDockTool}">
+            <inGamePlayers:InGamePlayersView DataContext="{Binding InGamePlayersViewModel}" />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type dockables:ScenarioInfoDockTool}">
+            <inGameScenario:InGameScenarioView DataContext="{Binding InGameScenarioViewModel}" />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type dockables:ScenarioItemsDockTool}">
+            <entitites:ScenarioItemsView DataContext="{Binding ScenarioEntitiesViewModel}" />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type dockables:ScenarioEnemiesDockTool}">
+            <entitites:ScenarioEnemiesView DataContext="{Binding ScenarioEntitiesViewModel}" />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type dockables:ScenarioDoorsDockTool}">
+            <entitites:ScenarioDoorsView DataContext="{Binding ScenarioEntitiesViewModel}" />
+        </DataTemplate>
+    </Application.DataTemplates>
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Presets/Ide/Default.axaml" />
+                <!-- Vendored ControlThemes — see doc/SukiUI_Dock_Integration_Issues.md -->
+                <ResourceInclude Source="/Views/GameDock/Themes/DockTargetTheme.axaml" />
+                <ResourceInclude Source="/Views/GameDock/Themes/GlobalDockTargetTheme.axaml" />
+                <ResourceInclude Source="/Views/GameDock/Themes/HostWindowTheme.axaml" />
+                <ResourceInclude Source="/Views/GameDock/Themes/PinnedDockControlTheme.axaml" />
+                <ResourceInclude Source="/Views/GameDock/Themes/ToolPinnedControlTheme.axaml" />
+                <ResourceInclude Source="/Views/GameDock/Themes/ToolPinItemControlTheme.axaml" />
+                <ResourceInclude Source="/Views/GameDock/Themes/ToolDockControlTheme.axaml" />
+                <ResourceInclude Source="/Views/GameDock/Themes/ToolTabStripItemTheme.axaml" />
+                <ResourceInclude Source="/Views/GameDock/Themes/ToolControlTheme.axaml" />
+                <ResourceInclude Source="/Views/GameDock/Themes/ToolChromeControlTheme.axaml" />
+                <ResourceInclude Source="/Views/GameDock/Themes/DocumentDockControlTheme.axaml" />
+                <!-- SukiUI.Dock NuGet — controls resolved in the initial visual tree -->
+                <ResourceInclude Source="avares://SukiUI.Dock/DocumentControl.axaml" />
+                <ResourceInclude Source="avares://SukiUI.Dock/DocumentTabStrip.axaml" />
+                <ResourceInclude Source="avares://SukiUI.Dock/DocumentTabStripItem.axaml" />
+                <ResourceInclude Source="avares://SukiUI.Dock/ToolContentControl.axaml" />
+                <ResourceInclude Source="avares://SukiUI.Dock/ToolTabStrip.axaml" />
             </ResourceDictionary.MergedDictionaries>
             <!--  Fallback inventory column counts — overridden by layout-specific ScrollViewer.Resources  -->
             <x:Int32 x:Key="InventorySlotColumns">2</x:Int32>
@@ -19,6 +69,7 @@
         <FluentTheme />
         <suki:SukiTheme Locale="en-US" ThemeColor="Blue" />
         <avalonia:MaterialIconStyles />
-        <DockFluentTheme DensityStyle="Normal" />
+        <DockFluentTheme />
+        <StyleInclude Source="/Views/GameDock/Themes/ToolChromeControlStyles.axaml" />
     </Application.Styles>
 </Application>
