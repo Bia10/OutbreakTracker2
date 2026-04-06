@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using Avalonia;
 using Avalonia.Dialogs;
+using Avalonia.Logging;
+using OutbreakTracker2.Application.SerilogSinks;
 
 namespace OutbreakTracker2.Application;
 
@@ -46,6 +48,11 @@ internal static class Program
         .LogToTrace()
 #endif
         .UseR3();
+
+        // Write Avalonia-internal diagnostics (binding errors, property coercion,
+        // control theme resolution) to a dedicated file. This captures issues that
+        // never flow through Serilog because Avalonia uses its own logging pipeline.
+        Logger.Sink = new AvaloniaFileSink("logs/avaloniaLog.txt");
 
         if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS() || OperatingSystem.IsLinux())
             app.UseManagedSystemDialogs();
