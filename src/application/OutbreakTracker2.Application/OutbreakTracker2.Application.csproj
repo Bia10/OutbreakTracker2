@@ -62,6 +62,7 @@
     <PackageReference Include="ObservableCollections" />
     <PackageReference Include="R3" />
     <PackageReference Include="SukiUI" />
+    <PackageReference Include="SukiUI.Dock" />
     <PackageReference Include="Dock.Avalonia" />
     <PackageReference Include="Dock.Avalonia.Themes.Fluent" />
     <PackageReference Include="Dock.Model.Mvvm" />

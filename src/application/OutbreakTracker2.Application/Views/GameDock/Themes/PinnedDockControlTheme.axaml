@@ -1,0 +1,55 @@
+<!--
+    Vendored PinnedDockControl ControlTheme.
+
+    Vendored because the NuGet's compiled ControlTheme key does not resolve
+    for dynamically-created pinned controls.
+    See doc/SukiUI_Dock_Integration_Issues.md, Issues 3 and 4.
+
+    Required template part names: PART_PinnedDockGrid, PART_PinnedDock, PART_PinnedDockSplitter.
+    PinnedDockDisplayMode and PinnedDock.VisibleDockables.Count are not available
+    in this NuGet build; uses !PinnedDock.IsEmpty for visibility instead.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:dmc="clr-namespace:Dock.Model.Controls;assembly=Dock.Model"
+                    xmlns:localConverters="clr-namespace:OutbreakTracker2.Application.Views.GameDock.Converters">
+
+    <ControlTheme x:Key="{x:Type PinnedDockControl}" TargetType="PinnedDockControl">
+
+        <Setter Property="PinnedDockAlignment"
+                Value="{CompiledBinding PinnedDock.Alignment}"
+                x:DataType="dmc:IRootDock" />
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid Name="PART_PinnedDockGrid"
+                      IsVisible="{Binding !PinnedDock.IsEmpty, FallbackValue=False}"
+                      x:DataType="dmc:IRootDock"
+                      x:CompileBindings="True">
+                    <ContentControl Content="{Binding PinnedDock}" Name="PART_PinnedDock">
+                        <ContentControl.Styles>
+                            <Style Selector="ToolDockControl">
+                                <Setter Property="Background">
+                                    <MultiBinding Converter="{x:Static localConverters:EitherNotNullConverter.Instance}">
+                                        <CompiledBinding Path="$parent[Window].Background" />
+                                        <CompiledBinding Path="$parent[Window].TransparencyBackgroundFallback" />
+                                    </MultiBinding>
+                                </Setter>
+                            </Style>
+                            <Style Selector="ToolControl">
+                                <Setter Property="IsHitTestVisible"
+                                        Value="{CompiledBinding !$parent[DockControl].IsDraggingDock}" />
+                            </Style>
+                        </ContentControl.Styles>
+                    </ContentControl>
+                    <GridSplitter Name="PART_PinnedDockSplitter"
+                                  Width="5"
+                                  Grid.Column="1" Grid.Row="1"
+                                  Background="Transparent" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+    </ControlTheme>
+
+</ResourceDictionary>

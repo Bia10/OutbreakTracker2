@@ -1,0 +1,75 @@
+<!--
+    Vendored ToolDockControl ControlTheme — SukiUI-styled dock panels.
+
+    Adds DockProperties.IsDropArea and IsDockTarget as inline attributes so
+    Dock.Avalonia's hit-test (which uses AvaloniaObject.IsSet()) can detect
+    valid drop targets. SukiUI.Dock's version omits these, making docking
+    back from a floating window impossible.
+    See doc/SukiUI_Dock_Integration_Issues.md, Issues 9 and 11.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:suki="https://github.com/kikipoulet/SukiUI"
+                    xmlns:core="using:Dock.Model.Core"
+                    xmlns:i="using:Avalonia.Xaml.Interactivity"
+                    xmlns:behaviors="using:OutbreakTracker2.Application.Behaviors"
+                    x:DataType="core:IDock">
+
+    <ControlTheme x:Key="{x:Type ToolDockControl}" TargetType="ToolDockControl">
+
+        <Setter Property="(DockProperties.IsDragEnabled)" Value="{ReflectionBinding CanDrag}" />
+        <Setter Property="(DockProperties.IsDropEnabled)" Value="{ReflectionBinding CanDrop}" />
+        <Setter Property="(DockProperties.DockGroup)" Value="{ReflectionBinding DockGroup}" />
+        <Setter Property="(DockProperties.IsDropArea)" Value="True" />
+        <Setter Property="(DockProperties.IsDockTarget)" Value="True" />
+        <Setter Property="IsVisible" Value="{Binding !!VisibleDockables.Count}" />
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel DockProperties.IsDropArea="True"
+                       DockProperties.IsDropEnabled="True">
+                    <i:Interaction.Behaviors>
+                        <behaviors:CollapseInPspWhenHiddenBehavior />
+                    </i:Interaction.Behaviors>
+                    <Border
+                        Margin="8"
+                        BoxShadow="{DynamicResource SukiPopupShadow}"
+                        CornerRadius="20"
+                        IsVisible="False" />
+                    <suki:GlassCard Margin="5" Padding="0">
+                        <Panel>
+                            <Panel IsVisible="False">
+                                <Panel Background="{DynamicResource SukiCardBackground}" />
+                                <Panel Margin="0">
+                                    <Panel.Background>
+                                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                            <GradientStop Offset="0" Color="{DynamicResource SukiAccentColor5}" />
+                                            <GradientStop Offset="1" Color="{DynamicResource SukiPrimaryColor10}" />
+                                        </LinearGradientBrush>
+                                    </Panel.Background>
+                                </Panel>
+                            </Panel>
+                            <DockableControl
+                                Name="PART_DockableControl"
+                                Margin="8"
+                                x:DataType="core:IDock"
+                                Background="Transparent"
+                                TrackingMode="Visible"
+                                DockProperties.IsDropArea="True"
+                                DockProperties.IsDockTarget="True"
+                                DockProperties.IsDropEnabled="True">
+                                <ToolChromeControl x:DataType="core:IDock"
+                                                   IsActive="{Binding IsActive}"
+                                                   IsVisible="{Binding !!VisibleDockables.Count}">
+                                    <ToolControl />
+                                </ToolChromeControl>
+                            </DockableControl>
+                        </Panel>
+                    </suki:GlassCard>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+
+    </ControlTheme>
+
+</ResourceDictionary>

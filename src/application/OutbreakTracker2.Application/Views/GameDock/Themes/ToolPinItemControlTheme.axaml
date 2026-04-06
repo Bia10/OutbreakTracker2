@@ -1,0 +1,50 @@
+<!--
+    Vendored ToolPinItemControl ControlTheme.
+
+    Vendored because the NuGet's compiled ControlTheme key does not resolve
+    for dynamically-created pinned controls.
+    See doc/SukiUI_Dock_Integration_Issues.md, Issue 3.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:core="using:Dock.Model.Core">
+
+    <ControlTheme x:Key="{x:Type ToolPinItemControl}" TargetType="ToolPinItemControl">
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <DockableControl TrackingMode="Pinned"
+                                 x:DataType="core:IDockable"
+                                 x:CompileBindings="True">
+                    <LayoutTransformControl x:Name="PART_LayoutTransformControl">
+                        <Button Background="Transparent"
+                                BorderBrush="Transparent"
+                                BorderThickness="0"
+                                CornerRadius="0"
+                                Command="{Binding Owner.Factory.PreviewPinnedDockable}"
+                                CommandParameter="{Binding}"
+                                IsVisible="{Binding CanPin}">
+                            <TextBlock Text="{Binding Title}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Left" />
+                        </Button>
+                    </LayoutTransformControl>
+                </DockableControl>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^[Orientation=Vertical]/template/ LayoutTransformControl#PART_LayoutTransformControl">
+            <Setter Property="LayoutTransform">
+                <RotateTransform Angle="270" />
+            </Setter>
+        </Style>
+
+        <Style Selector="^[Orientation=Horizontal]/template/ LayoutTransformControl#PART_LayoutTransformControl">
+            <Setter Property="LayoutTransform">
+                <RotateTransform Angle="0" />
+            </Setter>
+        </Style>
+
+    </ControlTheme>
+
+</ResourceDictionary>

@@ -1,0 +1,40 @@
+<!--
+    Local ToolChromeControl augmentation.
+
+    Keep SukiUI.Dock's original ToolChromeControl theme intact so all of its
+    buttons, pseudo-classes, and commands continue to work. The only behavior
+    change we need is a reliable floating-window grip hit area: after a tool is
+    floated, HostWindow only starts a new drag when the registered PART_Grip is
+    actually pointer-hot.
+
+    The packaged theme already has the right structure, but its grip is too easy
+    to miss. These styles keep the original template and widen the existing grip
+    hit target instead of replacing the entire control theme.
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style Selector="ToolChromeControl:floating /template/ Panel#PART_Grip">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="MinHeight" Value="28" />
+    </Style>
+
+    <Style Selector="ToolChromeControl:floating /template/ Border#PART_Grip">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="MinHeight" Value="28" />
+    </Style>
+
+    <Style Selector="ToolChromeControl:floating /template/ DockPanel#PART_Panel">
+        <Setter Property="LastChildFill" Value="True" />
+    </Style>
+
+    <Style Selector="ToolChromeControl:floating /template/ TextBlock#PART_Title">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+
+</Styles>

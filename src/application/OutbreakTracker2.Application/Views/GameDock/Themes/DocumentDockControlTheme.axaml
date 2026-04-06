@@ -1,0 +1,58 @@
+<!--
+    Vendored DocumentDockControl ControlTheme — SukiUI-styled document area.
+
+    DockFluentTheme's compiled template has no SukiUI styling, creating a
+    visual mismatch with the SukiUI-styled ToolDockControl panels.
+    DockProperties are set as inline attributes for IsSet() hit-test compatibility.
+    See doc/SukiUI_Dock_Integration_Issues.md, Issues 3 and 11.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:suki="https://github.com/kikipoulet/SukiUI"
+                    xmlns:core="using:Dock.Model.Core"
+                    xmlns:dmc="using:Dock.Model.Controls"
+                    xmlns:converters="using:Dock.Avalonia.Converters"
+                    xmlns:controls="using:Dock.Avalonia.Controls">
+
+    <ControlTheme x:Key="{x:Type DocumentDockControl}" TargetType="DocumentDockControl">
+
+        <Setter Property="(DockProperties.IsDragEnabled)" Value="{ReflectionBinding CanDrag}" />
+        <Setter Property="(DockProperties.IsDropEnabled)" Value="{ReflectionBinding CanDrop}" />
+        <Setter Property="(DockProperties.DockGroup)" Value="{ReflectionBinding DockGroup}" />
+        <Setter Property="(DockProperties.IsDropArea)" Value="True" />
+        <Setter Property="(DockProperties.IsDockTarget)" Value="True" />
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel DockProperties.IsDropArea="True"
+                       DockProperties.IsDropEnabled="True">
+                    <suki:GlassCard Margin="5" Padding="0">
+                        <DockableControl
+                            Name="PART_DockableControl"
+                            Margin="2"
+                            Background="Transparent"
+                            TrackingMode="Visible"
+                            DockProperties.IsDropArea="True"
+                            DockProperties.IsDockTarget="True"
+                            DockProperties.IsDropEnabled="True">
+                            <Panel>
+                                <DocumentControl
+                                    IsActive="{ReflectionBinding IsActive}"
+                                    IsVisible="{ReflectionBinding LayoutMode,
+                                        Converter={x:Static converters:DocumentLayoutModeMatchConverter.Instance},
+                                        ConverterParameter=Tabbed}" />
+                                <controls:MdiDocumentControl
+                                    IsActive="{ReflectionBinding IsActive}"
+                                    IsVisible="{ReflectionBinding LayoutMode,
+                                        Converter={x:Static converters:DocumentLayoutModeMatchConverter.Instance},
+                                        ConverterParameter=Mdi}" />
+                            </Panel>
+                        </DockableControl>
+                    </suki:GlassCard>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+
+    </ControlTheme>
+
+</ResourceDictionary>

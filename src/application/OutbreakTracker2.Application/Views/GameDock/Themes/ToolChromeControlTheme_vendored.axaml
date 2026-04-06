@@ -1,0 +1,124 @@
+<!--
+    Vendored ToolChromeControl — grip-only header, SukiUI-styled.
+
+    DockProperties.IsDragArea must be set as an inline attribute (not via
+    a Style setter) because DockHelpers.GetControl uses AvaloniaObject.IsSet(),
+    which returns false for Style-derived values.
+    See doc/SukiUI_Dock_Integration_Issues.md, Issue 11.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Dock.Model.Controls"
+                    xmlns:core="using:Dock.Model.Core">
+
+    <ControlTheme x:Key="{x:Type ToolChromeControl}" TargetType="ToolChromeControl">
+
+        <Setter Property="(DockProperties.IsDragEnabled)" Value="{ReflectionBinding CanDrag}" />
+        <Setter Property="(DockProperties.IsDropEnabled)" Value="{ReflectionBinding CanDrop}" />
+        <Setter Property="(DockProperties.DockGroup)" Value="{ReflectionBinding DockGroup}" />
+
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{DynamicResource DockThemeBorderLowBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid RowDefinitions="Auto,*">
+
+                    <!-- Grip header (Row 0) -->
+                    <Border x:Name="PART_Border"
+                            CornerRadius="6"
+                            Margin="4,4,4,2"
+                            Grid.Row="0">
+                        <!-- IsDragArea and Background must be inline, not Style-derived. -->
+                        <Grid x:Name="PART_Grip"
+                              DockProperties.IsDragArea="True"
+                              DockProperties.IsDragEnabled="True"
+                              Background="Transparent"
+                              ColumnDefinitions="Auto,*"
+                              MinHeight="30">
+                            <!-- 2x3 dot grip handle -->
+                            <Grid x:Name="PART_Grid"
+                                  RowDefinitions="Auto,Auto,Auto"
+                                  ColumnDefinitions="Auto,Auto"
+                                  VerticalAlignment="Center"
+                                  Margin="8,0,6,0">
+                                <Ellipse Grid.Row="0" Grid.Column="0" Width="3" Height="3" Margin="1" />
+                                <Ellipse Grid.Row="0" Grid.Column="1" Width="3" Height="3" Margin="1" />
+                                <Ellipse Grid.Row="1" Grid.Column="0" Width="3" Height="3" Margin="1" />
+                                <Ellipse Grid.Row="1" Grid.Column="1" Width="3" Height="3" Margin="1" />
+                                <Ellipse Grid.Row="2" Grid.Column="0" Width="3" Height="3" Margin="1" />
+                                <Ellipse Grid.Row="2" Grid.Column="1" Width="3" Height="3" Margin="1" />
+                            </Grid>
+                            <!-- Title -->
+                            <TextBlock x:Name="PART_Title"
+                                       Grid.Column="1"
+                                       Text="{ReflectionBinding ActiveDockable.Title, FallbackValue=''}" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Tool content (Row 1) -->
+                    <ContentPresenter
+                        x:Name="PART_ContentPresenter"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Content="{TemplateBinding Content}"
+                        Padding="{TemplateBinding Padding}"
+                        Grid.Row="1" />
+
+                    <!-- PART_Panel kept hidden — required name for Dock.Avalonia compat -->
+                    <Panel x:Name="PART_Panel" IsVisible="False" Height="0" Grid.Row="0" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^/template/ Border#PART_Border">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <Style Selector="^:active /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{DynamicResource SukiPrimaryColor25}" />
+        </Style>
+
+        <Style Selector="^:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{DynamicResource SukiPrimaryColor10}" />
+        </Style>
+
+        <Style Selector="^:active:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{DynamicResource SukiPrimaryColor25}" />
+        </Style>
+
+        <Style Selector="^/template/ TextBlock#PART_Title">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="Foreground" Value="{DynamicResource SukiLowText}" />
+            <Setter Property="(TextElement.FontSize)" Value="{DynamicResource DockFontSizeNormal}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+
+        <Style Selector="^:active /template/ TextBlock#PART_Title">
+            <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundColor}" />
+        </Style>
+
+        <Style Selector="^/template/ Grid#PART_Grid Ellipse">
+            <Setter Property="Fill" Value="{DynamicResource SukiLowText}" />
+            <Setter Property="Opacity" Value="0.4" />
+        </Style>
+
+        <Style Selector="^:active /template/ Grid#PART_Grid Ellipse">
+            <Setter Property="Fill" Value="{DynamicResource SukiPrimaryColor}" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+
+        <Style Selector="^:pointerover /template/ Grid#PART_Grid Ellipse">
+            <Setter Property="Opacity" Value="0.7" />
+        </Style>
+
+    </ControlTheme>
+</ResourceDictionary>

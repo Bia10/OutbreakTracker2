@@ -1,0 +1,39 @@
+<!--
+    Vendored ToolPinnedControl ControlTheme.
+
+    Vendored because the NuGet's compiled ControlTheme key does not resolve
+    for dynamically-created pinned controls.
+    See doc/SukiUI_Dock_Integration_Issues.md, Issue 3.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:dmc="using:Dock.Model.Controls"
+                    xmlns:core="using:Dock.Model.Core">
+
+    <ControlTheme x:Key="{x:Type ToolPinnedControl}" TargetType="ToolPinnedControl">
+
+        <Setter Property="Orientation" Value="Vertical" />
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ItemsControl
+                    x:DataType="dmc:IRootDock"
+                    x:CompileBindings="True">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="{Binding $parent[ToolPinnedControl].Orientation}"
+                                        DockProperties.IsDropArea="True" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.DataTemplates>
+                        <DataTemplate DataType="core:IDockable">
+                            <ToolPinItemControl Orientation="{Binding $parent[ToolPinnedControl].Orientation}" />
+                        </DataTemplate>
+                    </ItemsControl.DataTemplates>
+                </ItemsControl>
+            </ControlTemplate>
+        </Setter>
+
+    </ControlTheme>
+
+</ResourceDictionary>

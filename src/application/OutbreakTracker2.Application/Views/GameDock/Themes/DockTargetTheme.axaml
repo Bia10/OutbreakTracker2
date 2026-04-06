@@ -1,0 +1,156 @@
+<!--
+    Vendored DockTarget ControlTheme — SukiUI-styled drag indicators.
+
+    DockFluentTheme's compiled template references deleted PNG assets
+    (avares://Dock.Avalonia/Assets/DockAnchorable*.png), crashing on drag.
+    SukiUI.Dock's NuGet override does not win for adorner-layer controls.
+    See doc/SukiUI_Dock_Integration_Issues.md, Issues 2, 3, and 6.
+
+    Each indicator and selector element must carry DockProperties.IndicatorDockOperation
+    as an inline attribute. Selector children set IsHitTestVisible="False" so that
+    InputHitTest returns the selector Border itself (required by DockTargetBase internals).
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:dock="clr-namespace:Dock.Settings;assembly=Dock.Settings">
+
+    <ControlTheme TargetType="DockTarget" x:Key="{x:Type DockTarget}">
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid
+                    ColumnDefinitions="*,*"
+                    RowDefinitions="*,*"
+                    x:Name="PART_IndicatorGrid">
+                    <Grid.Resources>
+                        <SolidColorBrush x:Key="SelectorFill" Color="{DynamicResource SukiPrimaryColor}" />
+                        <SolidColorBrush x:Key="IndicatorFill" Color="{DynamicResource SukiPrimaryColor25}" />
+                    </Grid.Resources>
+                    <Border ClipToBounds="True" CornerRadius="16"
+                            Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0">
+                        <Panel x:Name="PART_TopIndicator"
+                               dock:DockProperties.IndicatorDockOperation="Top" />
+                    </Border>
+                    <Border ClipToBounds="True" CornerRadius="16"
+                            Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1">
+                        <Panel x:Name="PART_BottomIndicator"
+                               dock:DockProperties.IndicatorDockOperation="Bottom" />
+                    </Border>
+                    <Border ClipToBounds="True" CornerRadius="16"
+                            Grid.Column="0" Grid.Row="0" Grid.RowSpan="2">
+                        <Panel x:Name="PART_LeftIndicator"
+                               dock:DockProperties.IndicatorDockOperation="Left" />
+                    </Border>
+                    <Border ClipToBounds="True" CornerRadius="16"
+                            Grid.Column="1" Grid.Row="0" Grid.RowSpan="2">
+                        <Panel x:Name="PART_RightIndicator"
+                               dock:DockProperties.IndicatorDockOperation="Right" />
+                    </Border>
+                    <Border ClipToBounds="True" CornerRadius="16"
+                            Grid.Column="0" Grid.ColumnSpan="2"
+                            Grid.Row="0" Grid.RowSpan="2">
+                        <Panel x:Name="PART_CenterIndicator"
+                               dock:DockProperties.IndicatorDockOperation="Fill" />
+                    </Border>
+                    <Border ClipToBounds="True" CornerRadius="16"
+                            Grid.Column="0" Grid.ColumnSpan="2"
+                            Grid.Row="0" Grid.RowSpan="2">
+                        <Panel x:Name="PART_SelectorPanel">
+                            <Grid ColumnDefinitions="*,*,*"
+                                  RowDefinitions="*,*,*"
+                                  x:Name="PART_SelectorGrid">
+                                <Border Grid.Column="1" Grid.Row="0"
+                                        x:Name="PART_TopSelector"
+                                        dock:DockProperties.IndicatorDockOperation="Top"
+                                        Width="40" Height="40"
+                                        Background="#66000000"
+                                        CornerRadius="6">
+                                    <Path Data="M 5,35 L 20,5 L 35,35 Z"
+                                          Fill="{DynamicResource SelectorFill}"
+                                          Stretch="Uniform" Margin="6"
+                                          IsHitTestVisible="False" />
+                                </Border>
+                                <Border Grid.Column="1" Grid.Row="2"
+                                        x:Name="PART_BottomSelector"
+                                        dock:DockProperties.IndicatorDockOperation="Bottom"
+                                        Width="40" Height="40"
+                                        Background="#66000000"
+                                        CornerRadius="6">
+                                    <Path Data="M 5,5 L 20,35 L 35,5 Z"
+                                          Fill="{DynamicResource SelectorFill}"
+                                          Stretch="Uniform" Margin="6"
+                                          IsHitTestVisible="False" />
+                                </Border>
+                                <Border Grid.Column="0" Grid.Row="1"
+                                        x:Name="PART_LeftSelector"
+                                        dock:DockProperties.IndicatorDockOperation="Left"
+                                        Width="40" Height="40"
+                                        Background="#66000000"
+                                        CornerRadius="6">
+                                    <Path Data="M 35,5 L 5,20 L 35,35 Z"
+                                          Fill="{DynamicResource SelectorFill}"
+                                          Stretch="Uniform" Margin="6"
+                                          IsHitTestVisible="False" />
+                                </Border>
+                                <Border Grid.Column="2" Grid.Row="1"
+                                        x:Name="PART_RightSelector"
+                                        dock:DockProperties.IndicatorDockOperation="Right"
+                                        Width="40" Height="40"
+                                        Background="#66000000"
+                                        CornerRadius="6">
+                                    <Path Data="M 5,5 L 35,20 L 5,35 Z"
+                                          Fill="{DynamicResource SelectorFill}"
+                                          Stretch="Uniform" Margin="6"
+                                          IsHitTestVisible="False" />
+                                </Border>
+                                <Border Grid.Column="1" Grid.Row="1"
+                                        x:Name="PART_CenterSelector"
+                                        dock:DockProperties.IndicatorDockOperation="Fill"
+                                        Width="40" Height="40"
+                                        Background="#66000000"
+                                        CornerRadius="6">
+                                    <Path Data="M 5,5 L 35,5 L 35,35 L 5,35 Z"
+                                          Fill="{DynamicResource SelectorFill}"
+                                          Stretch="Uniform" Margin="6"
+                                          IsHitTestVisible="False" />
+                                </Border>
+                            </Grid>
+                        </Panel>
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^/template/ Grid#PART_SelectorGrid">
+            <Setter Property="MaxWidth" Value="125" />
+            <Setter Property="MaxHeight" Value="125" />
+        </Style>
+
+        <Style Selector="^/template/ Panel#PART_TopIndicator">
+            <Setter Property="Background" Value="{DynamicResource IndicatorFill}" />
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+
+        <Style Selector="^/template/ Panel#PART_BottomIndicator">
+            <Setter Property="Background" Value="{DynamicResource IndicatorFill}" />
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+
+        <Style Selector="^/template/ Panel#PART_LeftIndicator">
+            <Setter Property="Background" Value="{DynamicResource IndicatorFill}" />
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+
+        <Style Selector="^/template/ Panel#PART_RightIndicator">
+            <Setter Property="Background" Value="{DynamicResource IndicatorFill}" />
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+
+        <Style Selector="^/template/ Panel#PART_CenterIndicator">
+            <Setter Property="Background" Value="{DynamicResource IndicatorFill}" />
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+
+    </ControlTheme>
+
+</ResourceDictionary>

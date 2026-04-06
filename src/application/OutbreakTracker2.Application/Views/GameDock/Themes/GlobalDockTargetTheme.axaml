@@ -1,0 +1,154 @@
+<!--
+    Vendored GlobalDockTarget ControlTheme — SukiUI-styled edge dock indicators.
+
+    DockFluentTheme's compiled template references deleted PNG assets,
+    crashing on drag. The NuGet override does not win for adorner-layer controls.
+    See doc/SukiUI_Dock_Integration_Issues.md, Issues 2, 3, and 6.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:dock="clr-namespace:Dock.Settings;assembly=Dock.Settings">
+
+    <ControlTheme TargetType="GlobalDockTarget" x:Key="{x:Type GlobalDockTarget}">
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel>
+                    <Panel.Resources>
+                        <SolidColorBrush x:Key="SelectorFill" Color="{DynamicResource SukiPrimaryColor}" />
+                        <SolidColorBrush x:Key="IndicatorFill" Color="{DynamicResource SukiPrimaryColor25}" />
+                    </Panel.Resources>
+                    <!-- Horizontal edge indicators (Left / Right) -->
+                    <ProportionalStackPanel Orientation="Horizontal">
+                        <Panel x:Name="PART_LeftIndicator"
+                               ProportionalStackPanel.Proportion="{x:Static DockSettings.GlobalDockingProportion}"
+                               dock:DockProperties.IndicatorDockOperation="Left" />
+                        <Border />
+                        <Panel x:Name="PART_RightIndicator"
+                               ProportionalStackPanel.Proportion="{x:Static DockSettings.GlobalDockingProportion}"
+                               dock:DockProperties.IndicatorDockOperation="Right" />
+                    </ProportionalStackPanel>
+                    <!-- Vertical edge indicators (Top / Bottom) -->
+                    <ProportionalStackPanel Orientation="Vertical">
+                        <Panel x:Name="PART_TopIndicator"
+                               ProportionalStackPanel.Proportion="{x:Static DockSettings.GlobalDockingProportion}"
+                               dock:DockProperties.IndicatorDockOperation="Top" />
+                        <Border />
+                        <Panel x:Name="PART_BottomIndicator"
+                               ProportionalStackPanel.Proportion="{x:Static DockSettings.GlobalDockingProportion}"
+                               dock:DockProperties.IndicatorDockOperation="Bottom" />
+                    </ProportionalStackPanel>
+                    <!-- Selector buttons at edges -->
+                    <Panel x:Name="PART_SelectorPanel">
+                        <Border x:Name="PART_TopSelector"
+                                dock:DockProperties.IndicatorDockOperation="Top"
+                                HorizontalAlignment="Center" VerticalAlignment="Top"
+                                Margin="0,12,0,0"
+                                Width="40" Height="40"
+                                Background="#66000000"
+                                CornerRadius="6">
+                            <Path Data="M 5,35 L 20,5 L 35,35 Z"
+                                  Fill="{DynamicResource SelectorFill}"
+                                  Stretch="Uniform" Margin="6"
+                                  IsHitTestVisible="False" />
+                        </Border>
+                        <Border x:Name="PART_BottomSelector"
+                                dock:DockProperties.IndicatorDockOperation="Bottom"
+                                HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                                Margin="0,0,0,12"
+                                Width="40" Height="40"
+                                Background="#66000000"
+                                CornerRadius="6">
+                            <Path Data="M 5,5 L 20,35 L 35,5 Z"
+                                  Fill="{DynamicResource SelectorFill}"
+                                  Stretch="Uniform" Margin="6"
+                                  IsHitTestVisible="False" />
+                        </Border>
+                        <Border x:Name="PART_LeftSelector"
+                                dock:DockProperties.IndicatorDockOperation="Left"
+                                HorizontalAlignment="Left" VerticalAlignment="Center"
+                                Margin="12,0,0,0"
+                                Width="40" Height="40"
+                                Background="#66000000"
+                                CornerRadius="6">
+                            <Path Data="M 35,5 L 5,20 L 35,35 Z"
+                                  Fill="{DynamicResource SelectorFill}"
+                                  Stretch="Uniform" Margin="6"
+                                  IsHitTestVisible="False" />
+                        </Border>
+                        <Border x:Name="PART_RightSelector"
+                                dock:DockProperties.IndicatorDockOperation="Right"
+                                HorizontalAlignment="Right" VerticalAlignment="Center"
+                                Margin="0,0,12,0"
+                                Width="40" Height="40"
+                                Background="#66000000"
+                                CornerRadius="6">
+                            <Path Data="M 5,5 L 35,20 L 5,35 Z"
+                                  Fill="{DynamicResource SelectorFill}"
+                                  Stretch="Uniform" Margin="6"
+                                  IsHitTestVisible="False" />
+                        </Border>
+                    </Panel>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- Indicator backgrounds — hidden by default, shown by DockTargetBase -->
+        <Style Selector="^/template/ Panel#PART_TopIndicator">
+            <Setter Property="Background" Value="{DynamicResource IndicatorFill}" />
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+        <Style Selector="^/template/ Panel#PART_BottomIndicator">
+            <Setter Property="Background" Value="{DynamicResource IndicatorFill}" />
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+        <Style Selector="^/template/ Panel#PART_LeftIndicator">
+            <Setter Property="Background" Value="{DynamicResource IndicatorFill}" />
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+        <Style Selector="^/template/ Panel#PART_RightIndicator">
+            <Setter Property="Background" Value="{DynamicResource IndicatorFill}" />
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+
+        <!-- Selectors hidden by default, shown selectively by pseudo-class -->
+        <Style Selector="^/template/ Panel#PART_SelectorPanel">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="^[ShowIndicatorsOnly=True] /template/ Panel#PART_SelectorPanel">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <!-- All selectors hidden by default -->
+        <Style Selector="^/template/ Border#PART_TopSelector">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="^/template/ Border#PART_BottomSelector">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="^/template/ Border#PART_LeftSelector">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="^/template/ Border#PART_RightSelector">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <!-- :vertical → show Top + Bottom selectors -->
+        <Style Selector="^:vertical /template/ Border#PART_TopSelector">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="^:vertical /template/ Border#PART_BottomSelector">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+
+        <!-- :horizontal → show Left + Right selectors -->
+        <Style Selector="^:horizontal /template/ Border#PART_LeftSelector">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="^:horizontal /template/ Border#PART_RightSelector">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+
+    </ControlTheme>
+
+</ResourceDictionary>

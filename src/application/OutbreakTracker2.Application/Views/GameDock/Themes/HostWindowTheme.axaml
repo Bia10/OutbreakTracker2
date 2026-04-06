@@ -1,0 +1,100 @@
+<!--
+    Vendored HostWindow ControlTheme — SukiUI-styled floating dock windows.
+
+    Vendored because the NuGet's compiled ControlTheme key does not resolve
+    for dynamically-created HostWindows (adorner/overlay scope).
+    See doc/SukiUI_Dock_Integration_Issues.md, Issues 3 and 12.
+
+    IsDragEnabled/IsDropEnabled are hardcoded True; binding to CanDrag/CanDrop
+    on a floating IRootDock (which defaults to false) silently prevents drag.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="clr-namespace:Dock.Model.Controls;assembly=Dock.Model">
+
+    <IntLessThanConverter x:Key="LessThan2" TrueIfLessThan="2" />
+
+    <ControlTheme x:Key="{x:Type HostWindow}" TargetType="HostWindow" x:DataType="controls:IRootDock">
+
+        <Setter Property="(AutomationProperties.AutomationId)" Value="{Binding Id}" />
+        <Setter Property="(AutomationProperties.Name)" Value="{Binding Title}" />
+        <Setter Property="(DockProperties.IsDragEnabled)" Value="True" />
+        <Setter Property="(DockProperties.IsDropEnabled)" Value="True" />
+        <Setter Property="(DockProperties.DockGroup)" Value="{Binding DockGroup}" />
+
+        <Setter Property="Background" Value="{DynamicResource SukiCardBackground}" />
+        <Setter Property="(TextElement.FontSize)" Value="{DynamicResource DockFontSizeNormal}" />
+        <Setter Property="TextBlock.Foreground" Value="{DynamicResource DockThemeForegroundBrush}" />
+        <Setter Property="WindowState" Value="Normal" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Title" Value="{Binding ActiveDockable.Title}" />
+        <Setter Property="Topmost" Value="{Binding Window.Topmost}" />
+        <Setter Property="SystemDecorations" Value="Full" />
+        <Setter Property="ToolChromeControlsWholeWindow"
+                Value="{Binding OpenedDockablesCount,
+                        Converter={StaticResource LessThan2}}" />
+        <Setter Property="ExtendClientAreaToDecorationsHint" Value="False" />
+        <Setter Property="ExtendClientAreaChromeHints" Value="PreferSystemChrome" />
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel>
+                    <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
+                    <Border Background="{TemplateBinding Background}" IsHitTestVisible="False" />
+                    <Panel Background="Transparent" Margin="{TemplateBinding WindowDecorationMargin}" />
+                    <VisualLayerManager>
+                        <VisualLayerManager.ChromeOverlayLayer>
+                            <HostWindowTitleBar Name="PART_TitleBar" />
+                        </VisualLayerManager.ChromeOverlayLayer>
+                        <ContentPresenter
+                            Name="PART_ContentPresenter"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </VisualLayerManager>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+
+        <Setter Property="Content" Value="{Binding}" />
+        <Setter Property="ContentTemplate">
+            <DataTemplate DataType="controls:IRootDock">
+                <Panel Margin="{Binding $parent[HostWindow].OffScreenMargin}">
+                    <Panel Margin="{Binding $parent[HostWindow].WindowDecorationMargin}">
+                        <OverlayHost VisualTreeLifecycleBehavior.IsEnabled="True">
+                            <DockControl Layout="{Binding}" />
+                        </OverlayHost>
+                    </Panel>
+                </Panel>
+            </DataTemplate>
+        </Setter>
+
+        <!--
+            Do NOT override Template or ContentTemplate in :toolwindow.
+            Doing so causes a destructive template oscillation loop between
+            ToolChromeControl.AttachGrip and DetachGrip, destroying the
+            DockControl on each cycle and leaving zero chrome grips.
+        -->
+        <Style Selector="^:toolwindow">
+            <Setter Property="Background" Value="{DynamicResource SukiCardBackground}" />
+            <Setter Property="TransparencyLevelHint" Value="None" />
+            <Setter Property="Opacity" Value="1.0" />
+            <Setter Property="ExtendClientAreaTitleBarHeightHint" Value="0" />
+
+            <Style Selector="^:toolchromecontrolswindow">
+                <Setter Property="ExtendClientAreaToDecorationsHint" Value="True" />
+                <Setter Property="ExtendClientAreaChromeHints" Value="NoChrome" />
+            </Style>
+        </Style>
+
+        <Style Selector="^:toolwindow:dragging">
+            <Setter Property="Background" Value="{x:Null}" />
+            <Setter Property="TransparencyLevelHint" Value="Transparent" />
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+
+    </ControlTheme>
+
+</ResourceDictionary>
