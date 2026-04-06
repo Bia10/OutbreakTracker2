@@ -1,7 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Dock.Model.Controls;
+using Dock.Model.Core;
 using Material.Icons;
 using OutbreakTracker2.Application.Pages;
+using OutbreakTracker2.Application.Views.GameDock.Dockables;
 
 namespace OutbreakTracker2.Application.Views.GameDock;
 
@@ -16,10 +19,51 @@ public sealed partial class GameDockViewModel : PageBase
     [ObservableProperty]
     private IRootDock? _layout;
 
-    public GameDockViewModel(GameDockFactory factory)
+    public GameDockViewModel(
+        GameDockFactory factory,
+        ScenarioInfoDockTool scenarioInfoTool,
+        ScenarioItemsDockTool scenarioItemsTool,
+        ScenarioEnemiesDockTool scenarioEnemiesDockTool,
+        ScenarioDoorsDockTool scenarioDoorsDockTool,
+        ScenarioEntityCommands entityCommands
+    )
         : base("Game Dock", MaterialIconKind.Gamepad, 300)
     {
         Layout = factory.CreateLayout();
         factory.InitLayout(Layout);
+
+        // After InitLayout, Owner is set on every dockable.
+        // Use the scenario info tool's parent dock as the home for entity tools
+        // when they need to be re-added after the user closes their floating window.
+        IDock homeDock = (IDock)scenarioInfoTool.Owner!;
+
+        entityCommands.ShowItems = new RelayCommand(() =>
+        {
+            EnsureOriginalOwner(scenarioItemsTool, homeDock);
+            if (scenarioItemsTool.Owner is null)
+                factory.AddDockable(homeDock, scenarioItemsTool);
+            factory.FloatDockable(scenarioItemsTool);
+        });
+
+        entityCommands.ShowEnemies = new RelayCommand(() =>
+        {
+            EnsureOriginalOwner(scenarioEnemiesDockTool, homeDock);
+            if (scenarioEnemiesDockTool.Owner is null)
+                factory.AddDockable(homeDock, scenarioEnemiesDockTool);
+            factory.FloatDockable(scenarioEnemiesDockTool);
+        });
+
+        entityCommands.ShowDoors = new RelayCommand(() =>
+        {
+            EnsureOriginalOwner(scenarioDoorsDockTool, homeDock);
+            if (scenarioDoorsDockTool.Owner is null)
+                factory.AddDockable(homeDock, scenarioDoorsDockTool);
+            factory.FloatDockable(scenarioDoorsDockTool);
+        });
+    }
+
+    private static void EnsureOriginalOwner(IDockable dockable, IDock owner)
+    {
+        dockable.OriginalOwner ??= owner;
     }
 }

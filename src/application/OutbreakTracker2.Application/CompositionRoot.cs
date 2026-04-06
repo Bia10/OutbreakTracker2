@@ -32,6 +32,7 @@ using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer.Factory;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoom;
@@ -161,11 +162,16 @@ internal static class CompositionRoot
         services.AddSingleton<EmbeddedGameViewModel>();
 
         // Game Dock: dockable instances and the factory that wires them into a layout
-        services.AddSingleton<GameScreenDocument>();
+        services.AddSingleton<GameScreenTool>();
         services.AddSingleton<EnemyListDockTool>();
         services.AddSingleton<MapDockTool>();
         services.AddSingleton<PlayersDockTool>();
         services.AddSingleton<ScenarioInfoDockTool>();
+        services.AddSingleton<ScenarioEntitiesViewModel>();
+        services.AddSingleton<ScenarioItemsDockTool>();
+        services.AddSingleton<ScenarioEnemiesDockTool>();
+        services.AddSingleton<ScenarioDoorsDockTool>();
+        services.AddSingleton<ScenarioEntityCommands>();
         services.AddSingleton<GameDockFactory>();
 
         services.AddSingleton<IEEmemMemory, EEmemMemory>();
