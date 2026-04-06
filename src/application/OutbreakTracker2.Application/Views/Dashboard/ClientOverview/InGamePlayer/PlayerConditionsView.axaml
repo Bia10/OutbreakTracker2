@@ -17,38 +17,76 @@
         <converters:StatusToIconConverter x:Key="StatusToIconConverter" />
     </UserControl.Resources>
 
-    <StackPanel Orientation="Horizontal" Spacing="8">
-        <StackPanel Orientation="Horizontal" Spacing="5">
-            <avalonia:MaterialIcon
-                Width="16"
-                Height="16"
-                Kind="{Binding ConditionMessage, Converter={StaticResource ConditionToIconConverter}}" />
-            <TextBlock
-                VerticalAlignment="Center"
-                FontSize="11"
-                FontWeight="SemiBold"
-                Text="{Binding ConditionTitle}" />
-            <TextBlock
-                VerticalAlignment="Center"
-                FontSize="11"
-                Foreground="{DynamicResource SukiLowText}"
-                Text="{Binding ConditionMessage}" />
+    <Panel>
+        <!--  Horizontal player layout (narrow cards): condition and status stacked vertically  -->
+        <StackPanel IsVisible="{DynamicResource IsConditionsVertical}" Orientation="Vertical" Spacing="3">
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <avalonia:MaterialIcon
+                    Width="14"
+                    Height="14"
+                    Kind="{Binding ConditionMessage, Converter={StaticResource ConditionToIconConverter}}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="10"
+                    FontWeight="SemiBold"
+                    Text="{Binding ConditionTitle}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="10"
+                    Foreground="{DynamicResource SukiLowText}"
+                    Text="{Binding ConditionMessage}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <avalonia:MaterialIcon
+                    Width="14"
+                    Height="14"
+                    Kind="{Binding StatusMessage, Converter={StaticResource StatusToIconConverter}}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="10"
+                    FontWeight="SemiBold"
+                    Text="{Binding StatusTitle}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="10"
+                    Foreground="{DynamicResource SukiLowText}"
+                    Text="{Binding StatusMessage}" />
+            </StackPanel>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="5">
-            <avalonia:MaterialIcon
-                Width="16"
-                Height="16"
-                Kind="{Binding StatusMessage, Converter={StaticResource StatusToIconConverter}}" />
-            <TextBlock
-                VerticalAlignment="Center"
-                FontSize="11"
-                FontWeight="SemiBold"
-                Text="{Binding StatusTitle}" />
-            <TextBlock
-                VerticalAlignment="Center"
-                FontSize="11"
-                Foreground="{DynamicResource SukiLowText}"
-                Text="{Binding StatusMessage}" />
+        <!--  Vertical player layout (wide cards): condition and status side by side  -->
+        <StackPanel IsVisible="{DynamicResource IsConditionsHorizontal}" Orientation="Horizontal" Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <avalonia:MaterialIcon
+                    Width="16"
+                    Height="16"
+                    Kind="{Binding ConditionMessage, Converter={StaticResource ConditionToIconConverter}}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    FontWeight="SemiBold"
+                    Text="{Binding ConditionTitle}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    Foreground="{DynamicResource SukiLowText}"
+                    Text="{Binding ConditionMessage}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <avalonia:MaterialIcon
+                    Width="16"
+                    Height="16"
+                    Kind="{Binding StatusMessage, Converter={StaticResource StatusToIconConverter}}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    FontWeight="SemiBold"
+                    Text="{Binding StatusTitle}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    Foreground="{DynamicResource SukiLowText}"
+                    Text="{Binding StatusMessage}" />
+            </StackPanel>
         </StackPanel>
-    </StackPanel>
+    </Panel>
 </UserControl>

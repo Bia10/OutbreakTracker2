@@ -49,6 +49,12 @@
                     <!--  2 slots per row; equip+special side-by-side in horizontal player cards  -->
                     <x:Int32 x:Key="InventorySlotColumns">2</x:Int32>
                     <x:Int32 x:Key="EquippedSpecialColumns">2</x:Int32>
+                    <!--  ~56% smaller slots for narrow horizontal cards  -->
+                    <x:Double x:Key="ItemSlotWidth">34</x:Double>
+                    <x:Double x:Key="ItemSlotHeight">28</x:Double>
+                    <!--  Narrow cards: condition and status stacked vertically  -->
+                    <x:Boolean x:Key="IsConditionsVertical">True</x:Boolean>
+                    <x:Boolean x:Key="IsConditionsHorizontal">False</x:Boolean>
                 </ScrollViewer.Resources>
                 <ItemsControl ItemsSource="{Binding PlayersView}">
                     <ItemsControl.ItemsPanel>
@@ -74,6 +80,9 @@
                     <!--  4 slots per row; equip+special side-by-side across full-width vertical cards  -->
                     <x:Int32 x:Key="InventorySlotColumns">4</x:Int32>
                     <x:Int32 x:Key="EquippedSpecialColumns">2</x:Int32>
+                    <!--  Full-width cards: condition and status side by side  -->
+                    <x:Boolean x:Key="IsConditionsVertical">False</x:Boolean>
+                    <x:Boolean x:Key="IsConditionsHorizontal">True</x:Boolean>
                 </ScrollViewer.Resources>
                 <ItemsControl ItemsSource="{Binding PlayersView}">
                     <ItemsControl.ItemsPanel>

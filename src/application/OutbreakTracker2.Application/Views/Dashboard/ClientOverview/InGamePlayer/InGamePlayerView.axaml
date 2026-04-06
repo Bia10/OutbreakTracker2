@@ -34,19 +34,22 @@
     </UserControl.DataTemplates>
 
     <suki:GlassCard
-        Margin="2,2"
-        Padding="5,4"
+        Margin="1"
+        Padding="3,2"
         CornerRadius="6">
-        <StackPanel Spacing="5">
-            <TextBlock
-                FontSize="13"
-                FontWeight="Bold"
-                Text="{Binding CharacterName}"
-                TextTrimming="CharacterEllipsis" />
+        <StackPanel Spacing="4">
+            <WrapPanel ItemSpacing="5" VerticalAlignment="Center">
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="13"
+                    FontWeight="Bold"
+                    Text="{Binding CharacterName}"
+                    TextTrimming="CharacterEllipsis" />
+                <ContentControl VerticalAlignment="Center" Content="{Binding StatusEffects}" />
+            </WrapPanel>
             <ContentControl Content="{Binding Gauges}" />
             <ContentControl Content="{Binding Conditions}" />
             <ContentControl Content="{Binding Inventory}" />
-            <ContentControl Content="{Binding StatusEffects}" />
             <ContentControl Content="{Binding Attributes}" />
             <ContentControl Content="{Binding Position}" />
         </StackPanel>
