@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Dock.Model.Controls;
 using Dock.Model.Core;
@@ -21,6 +21,7 @@ public sealed partial class GameDockViewModel : PageBase
 
     public GameDockViewModel(
         GameDockFactory factory,
+        MapDockTool mapDockTool,
         ScenarioInfoDockTool scenarioInfoTool,
         ScenarioItemsDockTool scenarioItemsTool,
         ScenarioEnemiesDockTool scenarioEnemiesDockTool,
@@ -59,6 +60,14 @@ public sealed partial class GameDockViewModel : PageBase
             if (scenarioDoorsDockTool.Owner is null)
                 factory.AddDockable(homeDock, scenarioDoorsDockTool);
             factory.FloatDockable(scenarioDoorsDockTool);
+        });
+
+        entityCommands.ShowMap = new RelayCommand(() =>
+        {
+            EnsureOriginalOwner(mapDockTool, homeDock);
+            if (mapDockTool.Owner is null)
+                factory.AddDockable(homeDock, mapDockTool);
+            factory.FloatDockable(mapDockTool);
         });
     }
 

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Views.Common.ScenarioImg;
 using OutbreakTracker2.Outbreak.Common;
@@ -11,6 +12,9 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlot;
 public partial class LobbySlotViewModel : ObservableObject
 {
     private readonly ILogger<LobbySlotViewModel> _logger;
+
+    private static readonly IBrush LockedBrush = new SolidColorBrush(Colors.Red);
+    private static readonly IBrush UnlockedBrush = new SolidColorBrush(Colors.LimeGreen);
 
     [ObservableProperty]
     private Ulid _id = Ulid.NewUlid();
@@ -48,6 +52,8 @@ public partial class LobbySlotViewModel : ObservableObject
 
     public string PlayersDisplay => $"{CurPlayers}/{MaxPlayers}";
 
+    public IBrush LockForeground => IsPasswordProtectedBool ? LockedBrush : UnlockedBrush;
+
     public Ulid UniqueSlotId => Id;
 
     public ScenarioImageViewModel ScenarioImageViewModel { get; }
@@ -80,6 +86,7 @@ public partial class LobbySlotViewModel : ObservableObject
 
         OnPropertyChanged(nameof(IsPasswordProtectedBool));
         OnPropertyChanged(nameof(PlayersDisplay));
+        OnPropertyChanged(nameof(LockForeground));
 
         if (EnumUtility.TryParseByValueOrMember(ScenarioId, out Scenario scenarioType))
         {

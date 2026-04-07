@@ -14,4 +14,5 @@ public sealed class ScenarioEntityCommands
     public ICommand ShowItems { get; set; } = new RelayCommand(static () => { });
     public ICommand ShowEnemies { get; set; } = new RelayCommand(static () => { });
     public ICommand ShowDoors { get; set; } = new RelayCommand(static () => { });
+    public ICommand ShowMap { get; set; } = new RelayCommand(static () => { });
 }

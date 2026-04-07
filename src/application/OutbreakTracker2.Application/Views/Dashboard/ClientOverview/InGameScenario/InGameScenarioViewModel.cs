@@ -25,6 +25,7 @@ public partial class InGameScenarioViewModel : ObservableObject
     public ICommand ShowItemsCommand => _entityCommands.ShowItems;
     public ICommand ShowEnemiesCommand => _entityCommands.ShowEnemies;
     public ICommand ShowDoorsCommand => _entityCommands.ShowDoors;
+    public ICommand ShowMapCommand => _entityCommands.ShowMap;
 
     [ObservableProperty]
     private byte _currentFile;
