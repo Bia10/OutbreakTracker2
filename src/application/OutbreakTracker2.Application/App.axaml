@@ -7,6 +7,7 @@
     xmlns:dockables="clr-namespace:OutbreakTracker2.Application.Views.GameDock.Dockables"
     xmlns:entitites="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites"
     xmlns:embeddedGame="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGame"
+    xmlns:inGameDoors="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoors"
     xmlns:inGameEnemies="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies"
     xmlns:inGamePlayers="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers"
     xmlns:inGameScenario="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario"
@@ -35,7 +36,7 @@
             <entitites:ScenarioEnemiesView DataContext="{Binding ScenarioEntitiesViewModel}" />
         </DataTemplate>
         <DataTemplate DataType="{x:Type dockables:ScenarioDoorsDockTool}">
-            <entitites:ScenarioDoorsView DataContext="{Binding ScenarioEntitiesViewModel}" />
+            <inGameDoors:InGameDoorsView DataContext="{Binding InGameDoorsViewModel}" />
         </DataTemplate>
     </Application.DataTemplates>
     <Application.Resources>

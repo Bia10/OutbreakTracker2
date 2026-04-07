@@ -7,31 +7,78 @@
     xmlns:common="clr-namespace:OutbreakTracker2.Application.Views.Common"
     xmlns:inGameDoors="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoors"
     xmlns:inGameDoor="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor"
+    xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="inGameDoors:InGameDoorsViewModel"
     mc:Ignorable="d">
 
-    <Grid>
-        <ScrollViewer
-            HorizontalScrollBarVisibility="Disabled"
+    <Grid RowDefinitions="Auto,*">
+        <!--  Layout toggle  -->
+        <ToggleButton
+            Grid.Row="0"
+            Margin="4,2"
+            Padding="4,2"
+            HorizontalAlignment="Right"
+            IsChecked="{Binding IsHorizontalLayout}"
             IsVisible="{Binding HasDoors}"
-            VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding DoorsView}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="inGameDoor:InGameDoorViewModel">
-                        <inGameDoor:InGameDoorView />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+            ToolTip.Tip="Toggle horizontal / vertical layout">
+            <Panel>
+                <material:MaterialIcon
+                    Width="14"
+                    Height="14"
+                    IsVisible="{Binding !IsHorizontalLayout}"
+                    Kind="FormatListBulleted" />
+                <material:MaterialIcon
+                    Width="14"
+                    Height="14"
+                    IsVisible="{Binding IsHorizontalLayout}"
+                    Kind="ViewColumn" />
+            </Panel>
+        </ToggleButton>
+
+        <Panel Grid.Row="1" IsVisible="{Binding HasDoors}">
+            <!--  Horizontal mode: WrapPanel arranges door cards side by side  -->
+            <ScrollViewer
+                HorizontalScrollBarVisibility="Disabled"
+                IsVisible="{Binding IsHorizontalLayout}"
+                VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding DoorsView}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="inGameDoor:InGameDoorViewModel">
+                            <inGameDoor:InGameDoorView />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!--  Vertical mode: full-width cards stacked vertically  -->
+            <ScrollViewer
+                HorizontalScrollBarVisibility="Disabled"
+                IsVisible="{Binding !IsHorizontalLayout}"
+                VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding DoorsView}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="inGameDoor:InGameDoorViewModel">
+                            <inGameDoor:InGameDoorView />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Panel>
 
         <common:NotInGameWatermark
+            Grid.Row="1"
             IsVisible="{Binding !HasDoors}"
             Message="No active doors — not in-game" />
     </Grid>
