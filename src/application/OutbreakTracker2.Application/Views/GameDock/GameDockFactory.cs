@@ -18,7 +18,8 @@ namespace OutbreakTracker2.Application.Views.GameDock;
 /// │  (left     │        [22%  ←  fill  →    │  ─────────────  │
 /// │   22%,top) │           56%)             │ Scenario (bot) │
 /// ├────────────┤                            │     (22%)      │
-/// │    Map     │                            │                │
+/// │  Lobby     │                            │                │
+/// │  Slots     │                            │                │
 /// │  (left,bot)│                            │                │
 /// └────────────┴────────────────────────────┴────────────────┘
 /// </code>
@@ -33,6 +34,7 @@ public sealed class GameDockFactory(
     GameScreenTool gameScreenTool,
     EnemyListDockTool enemyListTool,
     MapDockTool mapDockTool,
+    LobbySlotsDockTool lobbySlotsDockTool,
     PlayersDockTool playersTool,
     ScenarioInfoDockTool scenarioInfoTool,
     ScenarioItemsDockTool scenarioItemsTool,
@@ -60,11 +62,19 @@ public sealed class GameDockFactory(
 
         mapDockTool.Id = "Map";
         mapDockTool.Title = "Map";
-        mapDockTool.CanClose = false;
+        mapDockTool.CanClose = true;
         mapDockTool.CanFloat = false;
         mapDockTool.CanDrag = true;
         mapDockTool.CanDrop = true;
         mapDockTool.CanPin = true;
+
+        lobbySlotsDockTool.Id = "LobbySlots";
+        lobbySlotsDockTool.Title = "Lobby Slots";
+        lobbySlotsDockTool.CanClose = false;
+        lobbySlotsDockTool.CanFloat = false;
+        lobbySlotsDockTool.CanDrag = true;
+        lobbySlotsDockTool.CanDrop = true;
+        lobbySlotsDockTool.CanPin = true;
 
         playersTool.Id = "Players";
         playersTool.Title = "Players";
@@ -116,7 +126,7 @@ public sealed class GameDockFactory(
             VisibleDockables = CreateList<IDockable>(
                 CreateGameToolDock("EnemyListToolDock", 0.6, Alignment.Left, enemyListTool),
                 new ProportionalDockSplitter(),
-                CreateGameToolDock("MapToolDock", 0.4, Alignment.Left, mapDockTool)
+                CreateGameToolDock("LobbySlotsToolDock", 0.4, Alignment.Left, lobbySlotsDockTool)
             ),
         };
 

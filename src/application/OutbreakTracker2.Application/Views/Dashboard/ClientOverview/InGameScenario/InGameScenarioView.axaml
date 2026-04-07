@@ -347,6 +347,13 @@
                 Command="{Binding ShowDoorsCommand}"
                 Content="Doors"
                 ToolTip.Tip="Open the scenario door list in a dockable window" />
+            <Button
+                Margin="0,0,6,6"
+                Padding="10,4"
+                FontSize="12"
+                Command="{Binding ShowMapCommand}"
+                Content="Map"
+                ToolTip.Tip="Open the scenario map in a dockable window" />
         </WrapPanel>
 
         <common:NotInGameWatermark
