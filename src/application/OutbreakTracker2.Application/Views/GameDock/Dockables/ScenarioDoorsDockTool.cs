@@ -1,5 +1,5 @@
 ﻿using Dock.Model.Mvvm.Controls;
-using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoors;
 
 namespace OutbreakTracker2.Application.Views.GameDock.Dockables;
 
@@ -7,7 +7,7 @@ namespace OutbreakTracker2.Application.Views.GameDock.Dockables;
 /// Floating dock tool that shows the in-game door list for the active scenario.
 /// Opened on demand via the "Doors" button in the scenario info panel.
 /// </summary>
-public sealed class ScenarioDoorsDockTool(ScenarioEntitiesViewModel scenarioEntitiesViewModel) : Tool
+public sealed class ScenarioDoorsDockTool(InGameDoorsViewModel inGameDoorsViewModel) : Tool
 {
-    public ScenarioEntitiesViewModel ScenarioEntitiesViewModel { get; } = scenarioEntitiesViewModel;
+    public InGameDoorsViewModel InGameDoorsViewModel { get; } = inGameDoorsViewModel;
 }

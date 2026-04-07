@@ -20,6 +20,9 @@ public partial class InGameDoorsViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _hasDoors;
 
+    [ObservableProperty]
+    private bool _isHorizontalLayout;
+
     private ObservableList<InGameDoorViewModel> Doors { get; } = [];
     public NotifyCollectionChangedSynchronizedViewList<InGameDoorViewModel> DoorsView { get; }
 
