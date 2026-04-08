@@ -1,15 +1,13 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
-using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.PCSX2.Client;
 using OutbreakTracker2.PCSX2.EEmem;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
-public sealed class DoorReader : ReaderBase
+public sealed class DoorReader : ReaderBase, IDoorReader
 {
     public DecodedDoor[] DecodedDoors { get; private set; }
 
@@ -25,8 +23,8 @@ public sealed class DoorReader : ReaderBase
     private readonly IReadOnlyDictionary<GameFile, IDoorAddressProvider> _addressProviders;
 
     public DoorReader(
-        GameClient gameClient,
-        IEEmemMemory eememMemory,
+        IGameClient gameClient,
+        IEEmemAddressReader eememMemory,
         ILogger logger,
         IEnumerable<IDoorAddressProvider> addressProviders
     )
@@ -52,9 +50,7 @@ public sealed class DoorReader : ReaderBase
             _ => nint.Zero,
         };
 
-        return doorPropertyAddress == nint.Zero
-            ? errorValue
-            : ReadValue([doorPropertyAddress], [doorPropertyAddress], errorValue);
+        return doorPropertyAddress <= nint.Zero ? errorValue : ReadValue<T>(doorPropertyAddress);
     }
 
     private ushort GetHealthPoints(int doorId) =>
@@ -79,7 +75,7 @@ public sealed class DoorReader : ReaderBase
             10 => "unlocked",
             12 => "unlocked",
             13 => "unknownState13", // Wild things
-            18 => "unknownState14", // Flashback
+            18 => "unknownState18", // Flashback
             44 => "unlocked",
             130 => "unlocked",
             2000 => "unlocked",
@@ -87,18 +83,13 @@ public sealed class DoorReader : ReaderBase
         };
     }
 
-    public void UpdateDoors(bool debug = false)
+    public void UpdateDoors()
     {
         if (CurrentFile is GameFile.Unknown)
             return;
 
         if (!_addressProviders.TryGetValue(CurrentFile, out IDoorAddressProvider? provider))
             return;
-
-        long start = Environment.TickCount64;
-
-        if (debug)
-            Logger.LogDebug("Decoding doors");
 
         DecodedDoor[] newDecodedDoors = new DecodedDoor[GameConstants.MaxDoors];
 
@@ -118,19 +109,6 @@ public sealed class DoorReader : ReaderBase
         }
 
         DecodedDoors = newDecodedDoors;
-
-        long duration = Environment.TickCount64 - start;
-
-        if (!debug)
-            return;
-
-        Logger.LogDebug("Decoded doors in {Duration}ms", duration);
-        foreach (
-            string jsonObject in DecodedDoors.Select(door =>
-                JsonSerializer.Serialize(door, DecodedDoorJsonContext.Default.DecodedDoor)
-            )
-        )
-            Logger.LogDebug("Decoded door: {JsonObject}", jsonObject);
     }
 
     private readonly Dictionary<int, Ulid> _doorSlotUlids = [];

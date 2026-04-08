@@ -1,22 +1,20 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Character;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Offsets;
-using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2.Client;
 using OutbreakTracker2.PCSX2.EEmem;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
-public sealed class InGamePlayerReader : ReaderBase
+public sealed class InGamePlayerReader : ReaderBase, IInGamePlayerReader
 {
     public DecodedInGamePlayer[] DecodedInGamePlayers { get; private set; }
 
-    public InGamePlayerReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
+    public InGamePlayerReader(IGameClient gameClient, IEEmemAddressReader eememMemory, ILogger logger)
         : base(gameClient, eememMemory, logger)
     {
         DecodedInGamePlayers = new DecodedInGamePlayer[GameConstants.MaxPlayers];
@@ -76,18 +74,20 @@ public sealed class InGamePlayerReader : ReaderBase
         return ReadValue<byte>(basePlayerAddress, offsets);
     }
 
+    private nint GetInventoryBaseOffset() =>
+        CurrentFile switch
+        {
+            GameFile.FileOne => InGamePlayerOffsets.InventoryOffset.File1[0],
+            GameFile.FileTwo => InGamePlayerOffsets.InventoryOffset.File2[0],
+            _ => nint.Zero,
+        };
+
     private byte[] GetInventory(nint basePlayerAddress)
     {
         byte[] inventory = new byte[4];
+        nint baseInventoryOffset = GetInventoryBaseOffset();
         for (int i = 0; i < 4; i++)
         {
-            nint baseInventoryOffset = CurrentFile switch
-            {
-                GameFile.FileOne => InGamePlayerOffsets.InventoryOffset.File1[0],
-                GameFile.FileTwo => InGamePlayerOffsets.InventoryOffset.File2[0],
-                _ => nint.Zero,
-            };
-
             ReadOnlySpan<nint> offsets = [baseInventoryOffset + i];
             inventory[i] = ReadValue<byte>(basePlayerAddress, offsets);
         }
@@ -97,13 +97,7 @@ public sealed class InGamePlayerReader : ReaderBase
 
     private byte GetSpecialItem(nint basePlayerAddress)
     {
-        nint baseInventoryOffset = CurrentFile switch
-        {
-            GameFile.FileOne => InGamePlayerOffsets.InventoryOffset.File1[0],
-            GameFile.FileTwo => InGamePlayerOffsets.InventoryOffset.File2[0],
-            _ => nint.Zero,
-        };
-
+        nint baseInventoryOffset = GetInventoryBaseOffset();
         ReadOnlySpan<nint> offsets = [baseInventoryOffset + 4];
         return ReadValue<byte>(basePlayerAddress, offsets);
     }
@@ -111,15 +105,9 @@ public sealed class InGamePlayerReader : ReaderBase
     private byte[] GetSpecialInventory(nint basePlayerAddress)
     {
         byte[] specialInventory = new byte[4];
+        nint baseInventoryOffset = GetInventoryBaseOffset();
         for (int i = 0; i < 4; i++)
         {
-            nint baseInventoryOffset = CurrentFile switch
-            {
-                GameFile.FileOne => InGamePlayerOffsets.InventoryOffset.File1[0],
-                GameFile.FileTwo => InGamePlayerOffsets.InventoryOffset.File2[0],
-                _ => nint.Zero,
-            };
-
             ReadOnlySpan<nint> offsets = [baseInventoryOffset + 5 + i];
             specialInventory[i] = ReadValue<byte>(basePlayerAddress, offsets);
         }
@@ -295,15 +283,10 @@ public sealed class InGamePlayerReader : ReaderBase
         };
     }
 
-    public void UpdateInGamePlayers(bool debug = false)
+    public void UpdateInGamePlayers()
     {
         if (CurrentFile is GameFile.Unknown)
             return;
-
-        long start = Environment.TickCount64;
-
-        if (debug)
-            Logger.LogDebug("Decoding in-game players");
 
         DecodedInGamePlayer[] newDecodedInGamePlayers = new DecodedInGamePlayer[GameConstants.MaxPlayers];
         for (int i = 0; i < GameConstants.MaxPlayers; i++)
@@ -361,19 +344,6 @@ public sealed class InGamePlayerReader : ReaderBase
         }
 
         DecodedInGamePlayers = newDecodedInGamePlayers;
-
-        long duration = Environment.TickCount64 - start;
-
-        if (!debug)
-            return;
-
-        Logger.LogDebug("Decoded in-game players in {Duration}ms", duration);
-        foreach (
-            string jsonObject in DecodedInGamePlayers.Select(player =>
-                JsonSerializer.Serialize(player, DecodedInGamePlayersJsonContext.Default.DecodedInGamePlayer)
-            )
-        )
-            Logger.LogDebug("Decoded in-game player: {JsonObject}", jsonObject);
     }
 
     private readonly Dictionary<int, Ulid> _playerSlotUlids = [];

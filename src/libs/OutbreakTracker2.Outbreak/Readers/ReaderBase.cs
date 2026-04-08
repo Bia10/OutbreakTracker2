@@ -17,8 +17,8 @@ namespace OutbreakTracker2.Outbreak.Readers;
 public abstract class ReaderBase : IDisposable
 {
     protected readonly ILogger Logger;
-    private readonly GameClient _gameClient;
-    private readonly IEEmemMemory _eememMemory;
+    private readonly IGameClient _gameClient;
+    private readonly IEEmemAddressReader _eememMemory;
     private readonly ISafeMemoryReader _memoryReader;
     private readonly IStringReader _stringReader;
 
@@ -37,7 +37,7 @@ public abstract class ReaderBase : IDisposable
 
     private bool _disposed;
 
-    protected ReaderBase(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
+    protected ReaderBase(IGameClient gameClient, IEEmemAddressReader eememMemory, ILogger logger)
     {
         _gameClient = gameClient ?? throw new ArgumentNullException(nameof(gameClient));
         _eememMemory = eememMemory ?? throw new ArgumentNullException(nameof(eememMemory));
@@ -256,7 +256,7 @@ public abstract class ReaderBase : IDisposable
         {
             GameFile.FileOne => offsetTuple.File1,
             GameFile.FileTwo => offsetTuple.File2,
-            _ => null!,
+            _ => [],
         };
 
         if (CurrentFile is GameFile.Unknown)
@@ -333,38 +333,6 @@ public abstract class ReaderBase : IDisposable
                 slotIndex,
                 CurrentFile
             );
-
-        return basePointer;
-    }
-
-    protected nint GetLobbyRoomPlayerBasePointer(int characterId, [CallerMemberName] string methodName = "")
-    {
-        nint basePointer = CurrentFile switch
-        {
-            GameFile.FileOne => FileOnePtrs.GetLobbyRoomPlayerAddress(characterId),
-            GameFile.FileTwo => FileTwoPtrs.GetLobbyRoomPlayerAddress(characterId),
-            _ => nint.Zero,
-        };
-
-        if (basePointer == nint.Zero)
-        {
-            Logger.LogWarning(
-                "[{MethodName}] Failed to obtain a valid lobby room player base pointer for character ID {CharacterId}. Current game file: {CurrentFile}",
-                methodName,
-                characterId,
-                CurrentFile
-            );
-        }
-        else
-        {
-            Logger.LogTrace(
-                "[{MethodName}] Determined lobby room player base pointer 0x{BasePointer:X} for character ID {CharacterId} with game file {GameFile}",
-                methodName,
-                basePointer,
-                characterId,
-                CurrentFile
-            );
-        }
 
         return basePointer;
     }
@@ -680,20 +648,14 @@ public abstract class ReaderBase : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private void Dispose(bool disposing)
+    protected virtual void Dispose(bool disposing)
     {
         if (_disposed)
             return;
 
-        if (disposing)
-        {
-            if (_gameClient is IDisposable disposableGameClient)
-            {
-                disposableGameClient.Dispose();
-                Logger.LogDebug("Disposed GameClient.");
-            }
-        }
-
+        // GameClient is owned by DataManager and shared across all readers;
+        // disposing it here would close the process handle while other readers
+        // are still active. Ownership remains with the creator.
         _disposed = true;
         Logger.LogTrace("ReaderBase disposed.");
     }

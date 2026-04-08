@@ -1,19 +1,18 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.LobbyRoom;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Offsets;
-using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2.Client;
 using OutbreakTracker2.PCSX2.EEmem;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
-public sealed class InGameScenarioReader(GameClient gameClient, IEEmemMemory memory, ILogger logger)
-    : ReaderBase(gameClient, memory, logger)
+public sealed class InGameScenarioReader(IGameClient gameClient, IEEmemAddressReader memory, ILogger logger)
+    : ReaderBase(gameClient, memory, logger),
+        IInGameScenarioReader
 {
     public DecodedInGameScenario DecodedScenario { get; private set; } = new DecodedInGameScenario();
 
@@ -197,15 +196,10 @@ public sealed class InGameScenarioReader(GameClient gameClient, IEEmemMemory mem
 
     public bool IsInScenario() => GetFrameCount() > 0 && GetScenarioStatus() > 0;
 
-    public void UpdateScenario(bool debug = false)
+    public void UpdateScenario()
     {
         if (CurrentFile is GameFile.Unknown)
             return;
-
-        long start = Environment.TickCount64;
-
-        if (debug)
-            Logger.LogDebug("Decoding scenario");
 
         DecodedScenario = new DecodedInGameScenario
         {
@@ -243,17 +237,5 @@ public sealed class InGameScenarioReader(GameClient gameClient, IEEmemMemory mem
             Difficulty = GetDifficultyName(GetDifficulty()),
             Items = GetItems(),
         };
-
-        long duration = Environment.TickCount64 - start;
-
-        if (!debug)
-            return;
-
-        Logger.LogDebug("Decoded scenario in {Duration}ms", duration);
-        string jsonObject = JsonSerializer.Serialize(
-            DecodedScenario,
-            DecodedScenarioJsonContext.Default.DecodedInGameScenario
-        );
-        Logger.LogDebug("Decoded scenario: {JsonObject}", jsonObject);
     }
 }

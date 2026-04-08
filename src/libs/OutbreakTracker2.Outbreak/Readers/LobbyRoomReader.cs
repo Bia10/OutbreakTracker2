@@ -1,20 +1,18 @@
-﻿using System.Globalization;
-using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.LobbyRoom;
 using OutbreakTracker2.Outbreak.Enums.LobbySlot;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Offsets;
-using OutbreakTracker2.Outbreak.Serialization;
 using OutbreakTracker2.Outbreak.Utility;
 using OutbreakTracker2.PCSX2.Client;
 using OutbreakTracker2.PCSX2.EEmem;
 
 namespace OutbreakTracker2.Outbreak.Readers;
 
-public sealed class LobbyRoomReader(GameClient gameClient, IEEmemMemory eememMemory, ILogger logger)
-    : ReaderBase(gameClient, eememMemory, logger)
+public sealed class LobbyRoomReader(IGameClient gameClient, IEEmemAddressReader eememMemory, ILogger logger)
+    : ReaderBase(gameClient, eememMemory, logger),
+        ILobbyRoomReader
 {
     public DecodedLobbyRoom DecodedLobbyRoom { get; private set; } = new DecodedLobbyRoom();
 
@@ -33,9 +31,6 @@ public sealed class LobbyRoomReader(GameClient gameClient, IEEmemMemory eememMem
         ReadValue(LobbyRoomOffsets.ScenarioId.File1, LobbyRoomOffsets.ScenarioId.File2, (short)-1);
 
     private short GetTime() => ReadValue(LobbyRoomOffsets.Time.File1, LobbyRoomOffsets.Time.File2, (short)-1);
-
-    private static string GetMaxPlayersString(short maxPlayers) =>
-        EnumUtility.GetEnumString(maxPlayers, RoomMaxPlayers.Two);
 
     private static string GetDifficultyName(short difficulty) =>
         EnumUtility.GetEnumString(difficulty, RoomDifficulty.Unknown);
@@ -63,39 +58,28 @@ public sealed class LobbyRoomReader(GameClient gameClient, IEEmemMemory eememMem
         }
     }
 
-    public void UpdateLobbyRoom(bool debug = false)
+    public void UpdateLobbyRoom()
     {
         if (CurrentFile is GameFile.Unknown)
             return;
 
-        long start = Environment.TickCount64;
-
-        if (debug)
-            Logger.LogDebug("Decoding lobby room");
-
-        short maxPlayers = GetMaxPlayers();
-        string maxPlayersString = GetMaxPlayersString(maxPlayers);
-
         DecodedLobbyRoom = new DecodedLobbyRoom
         {
             CurPlayer = GetCurPlayers(),
-            MaxPlayer = short.Parse(maxPlayersString, CultureInfo.InvariantCulture),
+            MaxPlayer = GetMaxPlayersCount(GetMaxPlayers()),
             Difficulty = GetDifficultyName(GetDifficulty()),
             Status = GetStatusName(GetStatus()),
             ScenarioName = GetScenarioName(GetScenarioId()),
             TimeLeft = GetFormattedTimeString(),
         };
-
-        long duration = Environment.TickCount64 - start;
-
-        if (!debug)
-            return;
-
-        Logger.LogDebug("Decoded lobby room in {Duration}ms", duration);
-        string jsonObject = JsonSerializer.Serialize(
-            DecodedLobbyRoom,
-            DecodedLobbyRoomJsonContext.Default.DecodedLobbyRoom
-        );
-        Logger.LogDebug("Decoded lobby room: {JsonObject}", jsonObject);
     }
+
+    private static short GetMaxPlayersCount(short rawValue) =>
+        (RoomMaxPlayers)rawValue switch
+        {
+            RoomMaxPlayers.Two => 2,
+            RoomMaxPlayers.Three => 3,
+            RoomMaxPlayers.Four => 4,
+            _ => 4,
+        };
 }
