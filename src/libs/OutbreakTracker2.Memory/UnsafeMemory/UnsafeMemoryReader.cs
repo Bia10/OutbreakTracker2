@@ -18,74 +18,51 @@ public unsafe class UnsafeMemoryReader : IUnsafeMemoryReader
         where T : unmanaged
     {
         int size = Unsafe.SizeOf<T>();
-        switch (size)
+        if (size == 0)
+            return default;
+
+        byte[]? arrayPoolBuffer = null;
+
+        try
         {
-            case < 0:
-                throw new InvalidOperationException($"Size of T cannot be negative. Size: {size}");
-            case 0:
-                return default;
-            default:
+            byte* bufferPtr;
+            if (size <= StackAllocThreshold)
             {
-                byte[]? arrayPoolBuffer = null;
+                byte* stackAllocatedBuffer = stackalloc byte[size];
+                bufferPtr = stackAllocatedBuffer;
 
-                try
+                if (!UnsafeNativeMethods.ReadProcessMemory(hProcess, address, bufferPtr, size, out int bytesRead))
+                    throw new Win32Exception(Marshal.GetLastPInvokeError());
+                if (bytesRead != size)
+                    throw new InvalidOperationException(
+                        $"Failed to read the expected number of bytes. Read: {bytesRead}, Expected: {size}"
+                    );
+
+                return *(T*)bufferPtr;
+            }
+            else
+            {
+                arrayPoolBuffer = ArrayPool<byte>.Shared.Rent(size);
+
+                fixed (byte* pinnedPtr = arrayPoolBuffer)
                 {
-                    byte* bufferPtr;
-                    if (size <= StackAllocThreshold)
-                    {
-                        byte* stackAllocatedBuffer = stackalloc byte[size];
-                        bufferPtr = stackAllocatedBuffer;
+                    bufferPtr = pinnedPtr;
 
-                        if (
-                            !UnsafeNativeMethods.ReadProcessMemory(
-                                hProcess,
-                                address,
-                                bufferPtr,
-                                size,
-                                out int bytesRead
-                            )
-                        )
-                            throw new Win32Exception(Marshal.GetLastPInvokeError());
-                        if (bytesRead != size)
-                            throw new InvalidOperationException(
-                                $"Failed to read the expected number of bytes. Read: {bytesRead}, Expected: {size}"
-                            );
+                    if (!UnsafeNativeMethods.ReadProcessMemory(hProcess, address, bufferPtr, size, out int bytesRead))
+                        throw new Win32Exception(Marshal.GetLastPInvokeError());
+                    if (bytesRead != size)
+                        throw new InvalidOperationException(
+                            $"Failed to read the expected number of bytes. Read: {bytesRead}, Expected: {size}"
+                        );
 
-                        return *(T*)bufferPtr;
-                    }
-                    else
-                    {
-                        arrayPoolBuffer = ArrayPool<byte>.Shared.Rent(size);
-
-                        fixed (byte* pinnedPtr = arrayPoolBuffer)
-                        {
-                            bufferPtr = pinnedPtr;
-
-                            if (
-                                !UnsafeNativeMethods.ReadProcessMemory(
-                                    hProcess,
-                                    address,
-                                    bufferPtr,
-                                    size,
-                                    out int bytesRead
-                                )
-                            )
-                                throw new Win32Exception(Marshal.GetLastPInvokeError());
-                            if (bytesRead != size)
-                                throw new InvalidOperationException(
-                                    $"Failed to read the expected number of bytes. Read: {bytesRead}, Expected: {size}"
-                                );
-
-                            return *(T*)bufferPtr;
-                        }
-                    }
-                }
-                finally
-                {
-                    if (arrayPoolBuffer is not null)
-                        ArrayPool<byte>.Shared.Return(arrayPoolBuffer);
+                    return *(T*)bufferPtr;
                 }
             }
+        }
+        finally
+        {
+            if (arrayPoolBuffer is not null)
+                ArrayPool<byte>.Shared.Return(arrayPoolBuffer);
         }
     }
 }

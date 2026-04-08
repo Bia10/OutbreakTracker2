@@ -20,10 +20,14 @@ public sealed class LinuxStringReader : IStringReader
 
     private readonly ILogger<LinuxStringReader> _logger;
 
+    static LinuxStringReader()
+    {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+    }
+
     public LinuxStringReader(ILogger<LinuxStringReader> logger)
     {
         _logger = logger;
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     }
 
     public string Read(nint hProcess, nint address, Encoding? encoding = null)
@@ -42,7 +46,8 @@ public sealed class LinuxStringReader : IStringReader
 
         try
         {
-            while (bytes.Count < MaxSafeLength)
+            bool nullFound = false;
+            while (bytes.Count < MaxSafeLength && !nullFound)
             {
                 int remaining = MaxSafeLength - bytes.Count;
                 int readSize = Math.Min(ChunkSize, remaining);
@@ -56,13 +61,12 @@ public sealed class LinuxStringReader : IStringReader
                     if (chunk[i] == 0)
                     {
                         _logger.LogDebug("Null terminator found at offset {Offset}", bytes.Count + i);
-                        goto done;
+                        nullFound = true;
+                        break;
                     }
                     bytes.Add(chunk[i]);
                 }
             }
-
-            done:
             if (bytes.Count == 0)
                 return string.Empty;
 

@@ -11,10 +11,14 @@ public sealed class StringReader : IStringReader
 {
     private readonly ILogger<StringReader> _logger;
 
+    static StringReader()
+    {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+    }
+
     public StringReader(ILogger<StringReader> logger)
     {
         _logger = logger;
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     }
 
     // This has to be a bit overcomplicated as Outbreak supports multiple char widths like halfwidth and fullwidth character forms
@@ -22,6 +26,8 @@ public sealed class StringReader : IStringReader
     {
         // Under some bizzare scenario, if the null terminator is not found, we can read up to MAX of 1MB of data
         const int maxSafeLength = 1048576;
+        // Read this many bytes per ReadProcessMemory call to amortise syscall overhead.
+        const int chunkSize = 256;
         _logger.LogDebug("Starting ReadString at address 0x{Address:X8}", address);
 
         if (address == nint.Zero)
@@ -32,8 +38,8 @@ public sealed class StringReader : IStringReader
 
         // Default to Shift-JIS for Japanese games with fullwidth Latin
         encoding ??= Encoding.GetEncoding(932);
-        List<byte> bytes = new(256);
-        byte[] buffer = new byte[1];
+        List<byte> bytes = new(chunkSize);
+        byte[] chunk = new byte[chunkSize];
         int consecutiveFails = 0;
         string result;
 
@@ -41,35 +47,54 @@ public sealed class StringReader : IStringReader
         {
             while (bytes.Count < maxSafeLength)
             {
+                int toRead = Math.Min(chunkSize, maxSafeLength - bytes.Count);
                 bool success = SafeNativeMethods.ReadProcessMemory(
                     hProcess,
                     address + bytes.Count,
-                    buffer,
-                    1,
+                    chunk,
+                    toRead,
                     out int bytesRead
                 );
 
-                if (
-                    !HandleReadResult(
-                        ref consecutiveFails,
-                        success,
-                        bytes.Count,
-                        bytesRead,
-                        address,
-                        out bool shouldBreak
-                    )
-                )
-                    if (shouldBreak)
-                        break;
-
-                if (buffer[0] is 0)
+                if (!success || bytesRead == 0)
                 {
-                    _logger.LogDebug("Null terminator found at offset {BytesCount}", bytes.Count);
-                    break;
+                    consecutiveFails++;
+                    int lastError = Marshal.GetLastPInvokeError();
+                    _logger.LogWarning(
+                        "ReadProcessMemory failed at offset {Offset} (Address: 0x{Address:X8}) Error: 0x{LastError:X8} ({Message})",
+                        bytes.Count,
+                        address + bytes.Count,
+                        lastError,
+                        new System.ComponentModel.Win32Exception(lastError).Message
+                    );
+
+                    if (consecutiveFails >= 3)
+                    {
+                        _logger.LogError("Aborting read after 3 consecutive failures");
+                        break;
+                    }
+
+                    continue;
                 }
 
-                bytes.Add(buffer[0]);
-                LogByteDetails(buffer[0], bytes.Count - 1, bytes, encoding);
+                consecutiveFails = 0;
+
+                bool nullFound = false;
+                for (int i = 0; i < bytesRead; i++)
+                {
+                    if (chunk[i] is 0)
+                    {
+                        _logger.LogDebug("Null terminator found at offset {Offset}", bytes.Count + i);
+                        nullFound = true;
+                        break;
+                    }
+
+                    bytes.Add(chunk[i]);
+                    LogByteDetails(chunk[i], bytes.Count - 1, bytes, encoding);
+                }
+
+                if (nullFound)
+                    break;
             }
 
             result = ProcessFinalBytes(bytes, encoding);
@@ -157,48 +182,6 @@ public sealed class StringReader : IStringReader
                     ex.Message
                 );
             }
-    }
-
-    private bool HandleReadResult(
-        ref int consecutiveFails,
-        bool success,
-        int offset,
-        int bytesRead,
-        nint address,
-        out bool shouldBreak
-    )
-    {
-        shouldBreak = false;
-        if (!success)
-        {
-            int lastError = Marshal.GetLastPInvokeError();
-            _logger.LogWarning(
-                "ReadProcessMemory failed at offset {Offset} (Address: 0x{Address:X8}) Error: 0x{LastError:X8} ({Message})",
-                offset,
-                address + offset,
-                lastError,
-                new System.ComponentModel.Win32Exception(lastError).Message
-            );
-            consecutiveFails++;
-
-            if (consecutiveFails >= 3)
-            {
-                _logger.LogError("Aborting read after 3 consecutive failures");
-                shouldBreak = true;
-            }
-
-            return false;
-        }
-
-        consecutiveFails = 0;
-
-        if (bytesRead != 1)
-        {
-            _logger.LogWarning("Partial read at offset {Offset} Requested: 1, Got: {BytesRead}", offset, bytesRead);
-            return false;
-        }
-
-        return true;
     }
 
     private string GetByteInterpretations(byte @byte)
