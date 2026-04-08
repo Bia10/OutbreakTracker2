@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 
 namespace OutbreakTracker2.Outbreak.Utility;
 
@@ -12,8 +13,8 @@ public static class PercentageUtility
 
         if (IsZero(denominator))
         {
-            Console.WriteLine(
-                $"Division by zero detected by denominator of type: {typeof(T).Name}), numerator: {numerator}, denominator: {denominator}. Returning default value."
+            Trace.TraceWarning(
+                $"Division by zero: denominator of type {typeof(T).Name} is zero (numerator: {numerator}). Returning default."
             );
             return default;
         }

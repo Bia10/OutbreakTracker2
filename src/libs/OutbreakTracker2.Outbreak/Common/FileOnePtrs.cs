@@ -8,24 +8,23 @@ public static class FileOnePtrs
     public const nint DiscStart = 0x02321B3;
 
     public const nint BaseLobbySlot = 0x629600; // The slot at index 0
-    public const int LobbySlotStructSize = 0x15C; // Same 348-byte structure size calculated from address differences
 
     public static nint GetLobbyAddress(int slotIndex)
     {
         if (!slotIndex.IsSlotIndexValid())
             throw new InvalidOperationException($"Invalid Slot Index: {slotIndex}");
 
-        return BaseLobbySlot + (slotIndex * LobbySlotStructSize);
+        return BaseLobbySlot + (slotIndex * LobbySlotStructOffsets.StructSize);
     }
 
-    public const nint LobbySlotIndex = 0x0;
-    public const nint LobbySlotPlayer = 0x2;
-    public const nint LobbySlotMaxPlayer = 0x4;
-    public const nint LobbySlotStatus = 0xE;
-    public const nint LobbySlotPass = 0xF;
-    public const nint LobbySlotScenarioId = 0x14;
-    public const nint LobbySlotVersion = 0x16;
-    public const nint LobbySlotTitle = 0x18;
+    public const nint LobbySlotIndex = LobbySlotStructOffsets.Index;
+    public const nint LobbySlotPlayer = LobbySlotStructOffsets.Player;
+    public const nint LobbySlotMaxPlayer = LobbySlotStructOffsets.MaxPlayer;
+    public const nint LobbySlotStatus = LobbySlotStructOffsets.Status;
+    public const nint LobbySlotPass = LobbySlotStructOffsets.Pass;
+    public const nint LobbySlotScenarioId = LobbySlotStructOffsets.ScenarioId;
+    public const nint LobbySlotVersion = LobbySlotStructOffsets.Version;
+    public const nint LobbySlotTitle = LobbySlotStructOffsets.Title;
 
     public const nint LobbyRoomMaxPlayer = 0x5FFFDA;
     public const nint LobbyRoomDifficulty = 0x60292A;

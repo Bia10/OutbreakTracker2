@@ -4,11 +4,6 @@ namespace OutbreakTracker2.Outbreak.Offsets;
 
 internal static class EnemyOffsets
 {
-    public static readonly (nint[] File1, nint[] File2) Enabled = (
-        [FileOnePtrs.EnemyEnabled],
-        [FileTwoPtrs.EnemyEnabled]
-    );
-    public static readonly (nint[] File1, nint[] File2) InGame = ([FileOnePtrs.EnemyInGame], [FileTwoPtrs.EnemyInGame]);
     public static readonly (nint[] File1, nint[] File2) NameId = (
         [FileOnePtrs.EnemyNameIdOffset],
         [FileTwoPtrs.EnemyNameIdOffset]
@@ -33,6 +28,7 @@ internal static class EnemyOffsets
         FileOnePtrs.EnemyListEntrySize,
         FileTwoPtrs.EnemyListEntrySize
     );
+    public static readonly (nint File1, nint File2) EnemyListEnabled = (0x0, 0x0);
     public static readonly (nint File1, nint File2) EnemyListSlotId = (0x1, 0x1);
     public static readonly (nint File1, nint File2) EnemyListNameId = (0x2, 0x2);
     public static readonly (nint File1, nint File2) EnemyListTypeId = (0x3, 0x3);
