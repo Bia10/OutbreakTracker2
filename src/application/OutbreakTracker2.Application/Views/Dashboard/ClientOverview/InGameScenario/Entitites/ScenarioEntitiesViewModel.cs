@@ -1,60 +1,81 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using OutbreakTracker2.Application.Services.Toasts;
+using OutbreakTracker2.Application.Views.Common.Item;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor;
 using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
 
 public partial class ScenarioEntitiesViewModel : ObservableObject
 {
+    private readonly IToastService _toastService;
+    private readonly IItemImageViewModelFactory _itemImageViewModelFactory;
+    private readonly Dictionary<byte, short> _previousPickedUpStates = [];
+
     [ObservableProperty]
-    private ObservableCollection<DecodedItem> _items = [];
+    private ObservableCollection<ScenarioItemSlotViewModel> _items = [];
 
     [ObservableProperty]
     private ObservableCollection<DecodedEnemy> _enemies = [];
 
     [ObservableProperty]
-    private ObservableCollection<DecodedDoor> _doors = [];
+    private ObservableCollection<InGameDoorViewModel> _doors = [];
 
-    public void UpdateItems(DecodedItem[] newItems)
+    public ScenarioEntitiesViewModel(IToastService toastService, IItemImageViewModelFactory itemImageViewModelFactory)
     {
-        List<DecodedItem> newItemsList = [.. newItems];
+        _toastService = toastService;
+        _itemImageViewModelFactory = itemImageViewModelFactory;
+    }
+
+    private static bool IsUnoccupiedSlot(DecodedItem item) =>
+        item.SlotIndex == 0 && item.Quantity == 0 && item.PickedUp == 0 && item.Present == 0;
+
+    public void UpdateItems(DecodedItem[] newItems, int frameCounter)
+    {
+        List<DecodedItem> newItemsList = [.. newItems.Where(item => !IsUnoccupiedSlot(item))];
 
         for (int i = Items.Count - 1; i >= 0; i--)
         {
-            DecodedItem existingItem = Items[i];
-            if (
-                !newItemsList.Exists(newItem =>
-                    newItem.SlotIndex == existingItem.SlotIndex && newItem.Id == existingItem.Id
-                )
-            )
+            ScenarioItemSlotViewModel existingSlotVm = Items[i];
+            if (!newItemsList.Exists(newItem => newItem.SlotIndex == existingSlotVm.SlotIndex))
+            {
+                _previousPickedUpStates.Remove(existingSlotVm.SlotIndex);
                 Items.RemoveAt(i);
+            }
         }
 
         foreach (DecodedItem newItem in newItemsList)
         {
-            DecodedItem? existingItem = Items.FirstOrDefault(existingItem =>
-                existingItem.SlotIndex == newItem.SlotIndex && existingItem.Id == newItem.Id
-            );
-            if (existingItem == null)
-                Items.Add(newItem);
+            ScenarioItemSlotViewModel? existingSlotVm = Items.FirstOrDefault(vm => vm.SlotIndex == newItem.SlotIndex);
+
+            if (existingSlotVm is null)
+            {
+                ItemImageViewModel imageVm = _itemImageViewModelFactory.Create();
+                Items.Add(new ScenarioItemSlotViewModel(newItem, imageVm));
+                _previousPickedUpStates[newItem.SlotIndex] = newItem.PickedUp;
+            }
             else
             {
-                int index = Items.IndexOf(existingItem);
-                if (index is -1)
-                    continue;
-
-                if (
-                    existingItem.En != newItem.En
-                    || !string.Equals(existingItem.TypeName, newItem.TypeName, System.StringComparison.Ordinal)
-                    || existingItem.Quantity != newItem.Quantity
-                    || existingItem.PickedUp != newItem.PickedUp
-                    || existingItem.Present != newItem.Present
-                    || existingItem.Mix != newItem.Mix
-                    || existingItem.RoomId != newItem.RoomId
-                )
+                if (existingSlotVm.IsPickupTracked)
                 {
-                    Items[index] = newItem;
+                    short previousPickedUp = _previousPickedUpStates.GetValueOrDefault(newItem.SlotIndex, (short)0);
+                    if (previousPickedUp == 0 && newItem.PickedUp > 0)
+                    {
+                        string holder =
+                            string.IsNullOrEmpty(newItem.PickedUpByName)
+                            || string.Equals(newItem.PickedUpByName, "None", StringComparison.Ordinal)
+                                ? $"P{newItem.PickedUp}"
+                                : newItem.PickedUpByName;
+                        _ = _toastService.InvokeInfoToastAsync(
+                            $"{holder} picked up {newItem.TypeName}",
+                            "Item Picked Up"
+                        );
+                    }
                 }
+
+                _previousPickedUpStates[newItem.SlotIndex] = newItem.PickedUp;
+                existingSlotVm.UpdateItem(newItem, frameCounter);
             }
         }
     }
@@ -114,32 +135,19 @@ public partial class ScenarioEntitiesViewModel : ObservableObject
 
         for (int i = Doors.Count - 1; i >= 0; i--)
         {
-            DecodedDoor existingDoor = Doors[i];
-            if (newDoorsList.TrueForAll(newDoor => newDoor.Id != existingDoor.Id))
+            InGameDoorViewModel existingVm = Doors[i];
+            if (newDoorsList.TrueForAll(newDoor => newDoor.Id != existingVm.UniqueId))
                 Doors.RemoveAt(i);
         }
 
         foreach (DecodedDoor newDoor in newDoorsList)
         {
-            DecodedDoor? existingDoor = Doors.FirstOrDefault(d => d.Id == newDoor.Id);
+            InGameDoorViewModel? existingVm = Doors.FirstOrDefault(vm => vm.UniqueId == newDoor.Id);
 
-            if (existingDoor is null)
-                Doors.Add(newDoor);
+            if (existingVm is null)
+                Doors.Add(new InGameDoorViewModel(newDoor));
             else
-            {
-                int index = Doors.IndexOf(existingDoor);
-                if (index is -1)
-                    continue;
-
-                if (
-                    existingDoor.Hp != newDoor.Hp
-                    || existingDoor.Flag != newDoor.Flag
-                    || !string.Equals(existingDoor.Status, newDoor.Status, System.StringComparison.Ordinal)
-                )
-                {
-                    Doors[index] = newDoor;
-                }
-            }
+                existingVm.Update(newDoor);
         }
     }
 }

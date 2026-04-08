@@ -333,7 +333,7 @@ public partial class InGameScenarioViewModel : ObservableObject
         IsCleared = GetClearedDisplay();
 
         ResolveItemDisplayFields(scenario);
-        ScenarioEntitiesVm.UpdateItems(scenario.Items);
+        ScenarioEntitiesVm.UpdateItems(scenario.Items, scenario.FrameCounter);
 
         UpdateScenarioSpecificViewModel(scenario);
     }

@@ -8,9 +8,19 @@ public partial class InGameDoorViewModel : ObservableObject
 {
     private static readonly IBrush LockedBrush = new SolidColorBrush(Colors.Red);
     private static readonly IBrush UnlockedBrush = new SolidColorBrush(Colors.LimeGreen);
+    private static readonly IBrush DestroyedBrush = new SolidColorBrush(Color.FromArgb(255, 180, 60, 60));
 
     [ObservableProperty]
     private ushort _hp;
+
+    [ObservableProperty]
+    private ushort _maxHp;
+
+    [ObservableProperty]
+    private double _healthPercentage;
+
+    [ObservableProperty]
+    private string _hpStatus = string.Empty;
 
     [ObservableProperty]
     private ushort _flag;
@@ -23,10 +33,15 @@ public partial class InGameDoorViewModel : ObservableObject
     private bool _isLocked;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DestroyedForeground))]
+    private bool _isDestroyed;
+
+    [ObservableProperty]
     private Color _calculatedBorderColor;
 
     public IBrush BorderBrush => new SolidColorBrush(CalculatedBorderColor);
     public IBrush LockForeground => IsLocked ? LockedBrush : UnlockedBrush;
+    public IBrush DestroyedForeground => IsDestroyed ? DestroyedBrush : UnlockedBrush;
 
     public Ulid UniqueId { get; private set; }
 
@@ -62,6 +77,11 @@ public partial class InGameDoorViewModel : ObservableObject
         _isFirstUpdate = false;
 
         Hp = doorData.Hp;
+        if (MaxHp == 0 || doorData.Hp > MaxHp)
+            MaxHp = doorData.Hp;
+        IsDestroyed = doorData.Hp == 0;
+        HealthPercentage = IsDestroyed || MaxHp == 0 ? 0.0 : Math.Clamp(doorData.Hp * 100.0 / MaxHp, 0.0, 100.0);
+        HpStatus = IsDestroyed ? "Destroyed" : $"{doorData.Hp}/{MaxHp}";
         Flag = doorData.Flag;
         Status = doorData.Status;
         IsLocked = string.Equals(doorData.Status, "locked", StringComparison.OrdinalIgnoreCase);

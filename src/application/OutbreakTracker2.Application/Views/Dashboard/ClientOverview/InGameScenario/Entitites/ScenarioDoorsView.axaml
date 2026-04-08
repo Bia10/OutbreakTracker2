@@ -5,19 +5,21 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:entitites="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites"
+    xmlns:inGameDoor="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor"
     x:DataType="entitites:ScenarioEntitiesViewModel"
     mc:Ignorable="d">
-    <DataGrid
-        AutoGenerateColumns="False"
-        CanUserReorderColumns="True"
-        CanUserResizeColumns="True"
-        CanUserSortColumns="True"
-        IsReadOnly="True"
-        ItemsSource="{Binding Doors}">
-        <DataGrid.Columns>
-            <DataGridTextColumn Header="HP" Binding="{Binding Hp}" Width="70" />
-            <DataGridTextColumn Header="Flag" Binding="{Binding Flag}" Width="70" />
-            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*" />
-        </DataGrid.Columns>
-    </DataGrid>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Doors}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="inGameDoor:InGameDoorViewModel">
+                    <inGameDoor:InGameDoorView />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
 </UserControl>
