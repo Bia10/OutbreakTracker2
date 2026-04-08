@@ -32,8 +32,14 @@ public class CharacterBustViewModel : ObservableObject
         _ = UpdateBustAsync(CharacterBaseType.Kevin);
     }
 
+    private CharacterBaseType? _currentCharacterType;
+
     public ValueTask UpdateBustAsync(CharacterBaseType characterType)
     {
+        if (_currentCharacterType == characterType)
+            return ValueTask.CompletedTask;
+
+        _currentCharacterType = characterType;
         string spriteName = _spriteNameResolver.GetSpriteNameFromCharacterType(characterType);
         _logger.LogDebug("Requesting bust update for character: {CharacterType}", characterType);
 

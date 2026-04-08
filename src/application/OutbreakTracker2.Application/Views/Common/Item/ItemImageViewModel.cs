@@ -23,10 +23,20 @@ public class ItemImageViewModel : ObservableObject
         _logger.LogInformation("ItemImageViewModel initialized");
     }
 
-    public ValueTask ClearImageAsync() => ImageViewModel.ClearImageAsync();
+    private string _currentSpriteName = string.Empty;
+
+    public ValueTask ClearImageAsync()
+    {
+        _currentSpriteName = string.Empty;
+        return ImageViewModel.ClearImageAsync();
+    }
 
     public ValueTask UpdateImageAsync(string itemName)
     {
+        if (itemName.Equals(_currentSpriteName, StringComparison.Ordinal))
+            return ValueTask.CompletedTask;
+
+        _currentSpriteName = itemName;
         _logger.LogDebug("Requesting item image update for item: {SpriteName}", itemName);
 
         return ImageViewModel.UpdateImageAsync(itemName, $"Item Image for {itemName}");

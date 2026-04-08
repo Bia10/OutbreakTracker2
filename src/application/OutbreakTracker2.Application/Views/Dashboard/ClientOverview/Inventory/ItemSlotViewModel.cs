@@ -48,7 +48,14 @@ public partial class ItemSlotViewModel(
                 GlowTriggered?.Invoke(this, new GlowEventArgs(glowColor.Value));
         }
 
+        bool nameChanged = !name.Equals(_previousItemName, StringComparison.Ordinal);
+        bool countChanged = !count.Equals(_previousItemCount, StringComparison.Ordinal);
+
         _isFirstUpdate = false;
+
+        if (!nameChanged && !countChanged)
+            return;
+
         _previousItemName = name;
         _previousItemCount = count;
 
