@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Outbreak.Models;
 
-public sealed record DecodedInGamePlayer
+public sealed record DecodedInGamePlayer : IHasId
 {
     [JsonInclude]
     [JsonPropertyName(nameof(Id))]

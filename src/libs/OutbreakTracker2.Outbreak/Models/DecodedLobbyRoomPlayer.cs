@@ -2,8 +2,12 @@
 
 namespace OutbreakTracker2.Outbreak.Models;
 
-public sealed record DecodedLobbyRoomPlayer
+public sealed record DecodedLobbyRoomPlayer : IHasId
 {
+    [JsonInclude]
+    [JsonPropertyName(nameof(Id))]
+    public Ulid Id { get; init; }
+
     [JsonInclude]
     [JsonPropertyName(nameof(IsEnabled))]
     public bool IsEnabled { get; init; }

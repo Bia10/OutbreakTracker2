@@ -83,7 +83,10 @@ public sealed class LobbyRoomPlayerReader : ReaderBase, ILobbyRoomPlayerReader
             nint basePlayerAddress = GetLobbyRoomPlayerBaseAddress(i);
             if (basePlayerAddress == nint.Zero || !GetPlayerCharEnabled(basePlayerAddress))
             {
-                newDecodedLobbyRoomPlayers[i] = new DecodedLobbyRoomPlayer();
+                newDecodedLobbyRoomPlayers[i] = new DecodedLobbyRoomPlayer
+                {
+                    Id = GetPersistentUlidForRoomPlayerSlot(i),
+                };
                 continue;
             }
 
@@ -122,6 +125,7 @@ public sealed class LobbyRoomPlayerReader : ReaderBase, ILobbyRoomPlayerReader
 
             newDecodedLobbyRoomPlayers[i] = new DecodedLobbyRoomPlayer
             {
+                Id = GetPersistentUlidForRoomPlayerSlot(i),
                 IsEnabled = true,
                 NameId = nameId,
                 NpcType = npcType,
@@ -135,5 +139,18 @@ public sealed class LobbyRoomPlayerReader : ReaderBase, ILobbyRoomPlayerReader
         }
 
         DecodedLobbyRoomPlayers = newDecodedLobbyRoomPlayers;
+    }
+
+    private readonly Dictionary<int, Ulid> _roomPlayerSlotUlids = [];
+
+    private Ulid GetPersistentUlidForRoomPlayerSlot(int playerSlotIndex)
+    {
+        if (_roomPlayerSlotUlids.TryGetValue(playerSlotIndex, out Ulid ulid))
+            return ulid;
+
+        ulid = Ulid.NewUlid();
+        _roomPlayerSlotUlids.Add(playerSlotIndex, ulid);
+
+        return ulid;
     }
 }

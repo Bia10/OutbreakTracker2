@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Outbreak.Models;
 
-public sealed record DecodedDoor
+public sealed record DecodedDoor : IHasId
 {
     [JsonInclude]
     [JsonPropertyName(nameof(Id))]

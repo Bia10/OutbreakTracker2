@@ -76,6 +76,7 @@ public sealed class LobbySlotReader : ReaderBase, ILobbySlotReader
             {
                 newLobbySlotsData[i] = new DecodedLobbySlot
                 {
+                    Id = GetPersistentUlidForLobbySlot(i),
                     SlotNumber = GetIndex(i),
                     CurPlayers = GetCurPlayers(i),
                     MaxPlayers = GetMaxPlayers(i),
@@ -93,5 +94,18 @@ public sealed class LobbySlotReader : ReaderBase, ILobbySlotReader
         }
 
         DecodedLobbySlots = newLobbySlotsData;
+    }
+
+    private readonly Dictionary<int, Ulid> _lobbySlotUlids = [];
+
+    private Ulid GetPersistentUlidForLobbySlot(int slotIndex)
+    {
+        if (_lobbySlotUlids.TryGetValue(slotIndex, out Ulid ulid))
+            return ulid;
+
+        ulid = Ulid.NewUlid();
+        _lobbySlotUlids.Add(slotIndex, ulid);
+
+        return ulid;
     }
 }
