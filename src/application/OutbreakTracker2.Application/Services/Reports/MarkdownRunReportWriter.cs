@@ -15,6 +15,7 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
         _logger = logger;
         _outputDirectory = Path.Combine(AppContext.BaseDirectory, "reports");
         Directory.CreateDirectory(_outputDirectory);
+        _logger.LogInformation("Run reports will be saved to: {ReportsDirectory}", _outputDirectory);
     }
 
     public async Task WriteAsync(RunReport report, CancellationToken cancellationToken = default)
@@ -25,7 +26,13 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
 
         await File.WriteAllTextAsync(filePath, content, Encoding.UTF8, cancellationToken).ConfigureAwait(false);
 
-        _logger.LogInformation("Run report written to {FilePath}", filePath);
+        _logger.LogInformation(
+            "Run report written: {FileName} ({EventCount} events, duration {Duration}) → {FilePath}",
+            fileName,
+            report.Events.Count,
+            report.Duration,
+            filePath
+        );
     }
 
     private static string BuildMarkdown(RunReport report)

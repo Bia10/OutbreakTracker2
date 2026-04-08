@@ -2,6 +2,7 @@
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Reports.Events;
 using OutbreakTracker2.Application.Services.Tracking;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
 
@@ -19,6 +20,8 @@ public sealed class RunReportService : IRunReportService
     // Modified only on the polling thread — no lock needed.
     private readonly Dictionary<Ulid, DecodedInGamePlayer> _activePlayers = [];
     private string _lastScenarioId = string.Empty;
+    private DecodedInGameScenario _lastScenario = new();
+    private ScenarioStatus _lastScenarioStatus = ScenarioStatus.None;
     private DecodedItem[]? _prevItems;
 
     // Protected by _sessionLock — may be read from external threads via IsRunning.
@@ -83,7 +86,38 @@ public sealed class RunReportService : IRunReportService
             _sessionEvents = [];
         }
 
-        _logger.LogInformation("Run report session auto-started for scenario: {ScenarioId}", _currentScenarioId);
+        string playerSummary;
+        if (_activePlayers.Count == 0)
+        {
+            playerSummary = "(none)";
+        }
+        else
+        {
+            System.Text.StringBuilder sb = new();
+            bool first = true;
+            foreach (DecodedInGamePlayer p in _activePlayers.Values)
+            {
+                if (!first)
+                    sb.Append(", ");
+                sb.Append(p.Name)
+                    .Append(" HP:")
+                    .Append(p.CurHealth)
+                    .Append('/')
+                    .Append(p.MaxHealth)
+                    .Append(System.Globalization.CultureInfo.InvariantCulture, $" Virus:{p.VirusPercentage:F1}%");
+                first = false;
+            }
+
+            playerSummary = sb.ToString();
+        }
+
+        _logger.LogInformation(
+            "Scenario tracking started. Scenario: {ScenarioName} | Difficulty: {Difficulty} | Players ({PlayerCount}): {Players}",
+            string.IsNullOrEmpty(_lastScenario.ScenarioName) ? _currentScenarioId : _lastScenario.ScenarioName,
+            string.IsNullOrEmpty(_lastScenario.Difficulty) ? "unknown" : _lastScenario.Difficulty,
+            _activePlayers.Count,
+            playerSummary
+        );
     }
 
     private void AutoStopSession()
@@ -106,16 +140,34 @@ public sealed class RunReportService : IRunReportService
 
         RunReport report = new(Ulid.NewUlid(), scenarioId, startedAt, endedAt, events);
 
+        RunReportStats stats = report.ComputeStats();
         _logger.LogInformation(
-            "Run report session auto-stopped. {EventCount} events captured over {Duration}",
+            "Scenario tracking ended. Scenario: {ScenarioId} | Duration: {Duration} | Events: {EventCount} | "
+                + "Kills: {Kills} | DamageTaken: {DamageTaken} | PeakVirus: {PeakVirus:F1}%",
+            scenarioId,
+            report.Duration,
             events.Count,
-            report.Duration
+            stats.TotalEnemyKills,
+            stats.TotalDamageTaken,
+            stats.PeakVirusPercentage
         );
 
         _completedReports.OnNext(report);
 
         // Fire-and-forget — do not block the polling thread.
-        _ = _writer.WriteAsync(report);
+        _ = _writer
+            .WriteAsync(report)
+            .ContinueWith(
+                t =>
+                    _logger.LogError(
+                        t.Exception,
+                        "Failed to persist run report for session {SessionId}",
+                        report.SessionId
+                    ),
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnFaulted,
+                TaskScheduler.Default
+            );
     }
 
     private void Emit(RunEvent evt)
@@ -226,6 +278,9 @@ public sealed class RunReportService : IRunReportService
 
     private void ProcessEnemyDiff(CollectionDiff<DecodedEnemy> diff)
     {
+        if (_lastScenarioStatus != ScenarioStatus.InGame)
+            return;
+
         DateTimeOffset now = _timeProvider.GetUtcNow();
 
         foreach (DecodedEnemy enemy in diff.Added)
@@ -291,13 +346,29 @@ public sealed class RunReportService : IRunReportService
         }
     }
 
+    private static readonly IReadOnlySet<ScenarioStatus> _monitoredStatuses = new HashSet<ScenarioStatus>
+    {
+        ScenarioStatus.Unknown8,
+        ScenarioStatus.Unknown9,
+        ScenarioStatus.Unknown10,
+        ScenarioStatus.Unknown11,
+    };
+
     private void ProcessScenarioDiff(DecodedInGameScenario scenario)
     {
+        _lastScenario = scenario;
+
+        ScenarioStatus previousStatus = _lastScenarioStatus;
+        _lastScenarioStatus = scenario.Status;
+
+        if (previousStatus != _lastScenarioStatus && _monitoredStatuses.Contains(_lastScenarioStatus))
+            Emit(new ScenarioStatusChangedEvent(_timeProvider.GetUtcNow(), previousStatus, _lastScenarioStatus));
+
         DecodedItem[] curr = scenario.Items;
         DecodedItem[]? prev = _prevItems;
         _prevItems = curr;
 
-        if (prev is null)
+        if (prev is null || _lastScenarioStatus != ScenarioStatus.InGame)
             return;
 
         DateTimeOffset now = _timeProvider.GetUtcNow();
@@ -317,6 +388,9 @@ public sealed class RunReportService : IRunReportService
 
     private void ProcessDoorDiff(CollectionDiff<DecodedDoor> diff)
     {
+        if (_lastScenarioStatus != ScenarioStatus.InGame)
+            return;
+
         DateTimeOffset now = _timeProvider.GetUtcNow();
 
         foreach (EntityChange<DecodedDoor> change in diff.Changed)
