@@ -3,7 +3,7 @@ using Bia.LogViewer.Core;
 
 namespace OutbreakTracker2.Application.Services;
 
-public class ClipboardService(IClassicDesktopStyleApplicationLifetime lifeTime) : IClipboardService
+public sealed class ClipboardService(IClassicDesktopStyleApplicationLifetime lifeTime) : IClipboardService
 {
     public async Task CopyToClipboardAsync(string? text)
     {

@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Application.Services;
 
-public class PageNavigationService
+public sealed class PageNavigationService
 {
     public Action<Type>? NavigationRequested { get; set; }
 

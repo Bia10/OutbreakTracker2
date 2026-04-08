@@ -11,7 +11,7 @@
 /// The implementation is registered as a singleton and holds any OS-level resources (e.g. an
 /// <c>X11 Display</c> connection) for its lifetime.
 /// </summary>
-public interface IWindowEmbedder : IDisposable
+public interface IWindowEmbedder : IDisposable, IWindowEmbedderDiagnostics
 {
     /// <summary>
     /// <see langword="true"/> when window embedding is available on the current platform.
@@ -59,11 +59,4 @@ public interface IWindowEmbedder : IDisposable
     /// clearing its parent (Windows). Call before destroying the container.
     /// </summary>
     void ReleaseWindow(nint targetHandle);
-
-    /// <summary>
-    /// Returns a human-readable summary of all top-level windows currently owned by
-    /// <paramref name="pid"/>. Intended for debugging embedding failures.
-    /// Safe to call from a background thread. Returns an empty string when not supported.
-    /// </summary>
-    string GetDiagnosticInfo(int pid);
 }

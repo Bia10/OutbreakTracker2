@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace OutbreakTracker2.Application.Services.FileLocators;
 
-public class Pcsx2Locator(ILogger<Pcsx2Locator> logger) : IPcsx2Locator
+public sealed class Pcsx2Locator(ILogger<Pcsx2Locator> logger) : IPcsx2Locator
 {
     private readonly ILogger<Pcsx2Locator> _logger = logger;
     private const string Pcsx2FolderName = "PCSX2";

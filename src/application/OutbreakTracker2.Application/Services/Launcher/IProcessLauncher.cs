@@ -12,11 +12,11 @@ public interface IProcessLauncher
 
     Process? ClientMonitoredProcess { get; }
 
-    GameClient? AttachedGameClient { get; }
+    IGameClient? AttachedGameClient { get; }
 
-    Task<GameClient> LaunchAsync(string fileName, string? arguments, CancellationToken cancellationToken = default);
+    Task<IGameClient> LaunchAsync(string fileName, string? arguments, CancellationToken cancellationToken = default);
 
-    Task<GameClient> AttachAsync(int processId);
+    Task<IGameClient> AttachAsync(int processId);
 
     Task TerminateAsync(int? processId = null);
 
@@ -26,5 +26,5 @@ public interface IProcessLauncher
 
     int GetExitCode(int processId);
 
-    GameClient? GetActiveGameClient();
+    IGameClient? GetActiveGameClient();
 }

@@ -7,7 +7,7 @@ using System.Management;
 
 namespace OutbreakTracker2.Application.Services.Locator;
 
-public class ProcessLocator : IProcessLocator
+public sealed class ProcessLocator : IProcessLocator
 {
     // Polling-based implementation
     public Observable<bool> IsProcessRunningPolling(string processName, TimeSpan? checkInterval = null)

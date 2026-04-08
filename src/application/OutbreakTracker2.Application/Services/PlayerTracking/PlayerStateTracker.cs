@@ -1,4 +1,5 @@
-﻿using OutbreakTracker2.Outbreak.Models;
+﻿using System.Collections.Concurrent;
+using OutbreakTracker2.Outbreak.Models;
 using R3;
 
 namespace OutbreakTracker2.Application.Services.PlayerTracking;
@@ -6,7 +7,7 @@ namespace OutbreakTracker2.Application.Services.PlayerTracking;
 public sealed class PlayerStateTracker : IPlayerStateTracker
 {
     private readonly Subject<DecodedInGamePlayer> _playerUpdateSubject = new();
-    private readonly Dictionary<Ulid, DecodedInGamePlayer> _lastKnownPlayerStates = [];
+    private readonly ConcurrentDictionary<Ulid, DecodedInGamePlayer> _lastKnownPlayerStates = new();
 
     public Observable<PlayerStateChangeEventArgs> PlayerStateChanges { get; }
 
@@ -49,7 +50,6 @@ public sealed class PlayerStateTracker : IPlayerStateTracker
     {
         IReadOnlyList<PlayerStateTrackingRule> playerTrackingRules = new PlayerStateTrackerBuilder()
             .TrackCondition("danger", (_, charName) => ($"{charName} is now in DANGER!", ToastType.Error))
-            //.TrackCondition("down", (_, charName) => ($"{charName} is DOWN!", ToastType.Error))
             .TrackCondition("gas", (_, charName) => ($"{charName} is gassed!", ToastType.Warning))
             .TrackStatus("Dead", (_, charName) => ($"{charName} has DIED!", ToastType.Error))
             .TrackStatus("Zombie", (_, charName) => ($"{charName} turned into a ZOMBIE!", ToastType.Error))

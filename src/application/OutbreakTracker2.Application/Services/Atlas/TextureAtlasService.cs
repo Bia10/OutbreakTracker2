@@ -4,7 +4,7 @@ using OutbreakTracker2.Application.Services.Atlas.Models;
 
 namespace OutbreakTracker2.Application.Services.Atlas;
 
-public class TextureAtlasService(
+public sealed class TextureAtlasService(
     ILogger<TextureAtlasService> logger,
     Func<Stream, SpriteSheet, ITextureAtlas> textureAtlasFactory
 ) : ITextureAtlasService
@@ -30,7 +30,7 @@ public class TextureAtlasService(
 
     public IReadOnlyDictionary<string, ITextureAtlas> GetAllAtlases() => _loadedAtlases;
 
-    private async Task LoadAtlasesInternalAsync()
+    private async Task LoadAtlasesCore()
     {
         if (_loadedAtlases.Count is not 0)
         {
@@ -56,14 +56,17 @@ public class TextureAtlasService(
 
                 SpriteSheet sheet = await TextureAtlasLoader.LoadFromJsonAsync(fullJsonPath).ConfigureAwait(false);
 
-                Stream imageStream;
-                if (File.Exists(fullImagePath))
-                    imageStream = new FileStream(fullImagePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                else
+                if (!File.Exists(fullImagePath))
                     throw new FileNotFoundException(
                         $"Image file not found at '{fullImagePath}' for TextureAtlas '{name}'. Ensure '{imagePath}' is copied to output directory."
                     );
 
+                using Stream imageStream = new FileStream(
+                    fullImagePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read
+                );
                 _loadedAtlases.Add(name, _textureAtlasFactory(imageStream, sheet));
                 _logger.LogInformation("TextureAtlas '{AtlasName}' loaded successfully", name);
             }
@@ -88,5 +91,5 @@ public class TextureAtlasService(
         }
     }
 
-    public Task LoadAtlasesAsync() => LoadAtlasesInternalAsync();
+    public Task LoadAtlasesAsync() => LoadAtlasesCore();
 }

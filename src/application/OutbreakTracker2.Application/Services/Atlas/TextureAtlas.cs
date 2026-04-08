@@ -5,7 +5,7 @@ using OutbreakTracker2.Application.Services.Atlas.Models;
 
 namespace OutbreakTracker2.Application.Services.Atlas;
 
-public class TextureAtlas : ITextureAtlas, IDisposable
+public sealed class TextureAtlas : ITextureAtlas, IDisposable
 {
     private readonly ILogger<TextureAtlas> _logger;
     private SpriteSheet? _spriteSheet;

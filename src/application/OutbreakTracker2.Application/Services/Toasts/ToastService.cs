@@ -4,59 +4,32 @@ using SukiUI.Toasts;
 
 namespace OutbreakTracker2.Application.Services.Toasts;
 
-public class ToastService(ISukiToastManager toastManager, IDispatcherService dispatcher) : IToastService
+public sealed class ToastService(ISukiToastManager toastManager, IDispatcherService dispatcher) : IToastService
 {
-    public Task InvokeInfoToastAsync(string content, string? title = "")
+    private Task InvokeToastAsync(NotificationType type, string content, string? title, string defaultTitle)
     {
         return dispatcher.InvokeOnUIAsync(() =>
         {
             toastManager
                 .CreateSimpleInfoToast()
-                .OfType(NotificationType.Information)
-                .WithTitle(string.IsNullOrEmpty(title) ? "Info" : title)
+                .OfType(type)
+                .WithTitle(string.IsNullOrEmpty(title) ? defaultTitle : title)
                 .WithContent(content)
                 .Queue();
         });
     }
 
-    public Task InvokeSuccessToastAsync(string content, string? title = "")
-    {
-        return dispatcher.InvokeOnUIAsync(() =>
-        {
-            toastManager
-                .CreateSimpleInfoToast()
-                .OfType(NotificationType.Success)
-                .WithTitle(string.IsNullOrEmpty(title) ? "Success" : title)
-                .WithContent(content)
-                .Queue();
-        });
-    }
+    public Task InvokeInfoToastAsync(string content, string? title = "") =>
+        InvokeToastAsync(NotificationType.Information, content, title, "Info");
 
-    public Task InvokeWarningToastAsync(string content, string? title = "")
-    {
-        return dispatcher.InvokeOnUIAsync(() =>
-        {
-            toastManager
-                .CreateSimpleInfoToast()
-                .OfType(NotificationType.Warning)
-                .WithTitle(string.IsNullOrEmpty(title) ? "Warning" : title)
-                .WithContent(content)
-                .Queue();
-        });
-    }
+    public Task InvokeSuccessToastAsync(string content, string? title = "") =>
+        InvokeToastAsync(NotificationType.Success, content, title, "Success");
 
-    public Task InvokeErrorToastAsync(string content, string? title = "")
-    {
-        return dispatcher.InvokeOnUIAsync(() =>
-        {
-            toastManager
-                .CreateSimpleInfoToast()
-                .OfType(NotificationType.Error)
-                .WithTitle(string.IsNullOrEmpty(title) ? "Error" : title)
-                .WithContent(content)
-                .Queue();
-        });
-    }
+    public Task InvokeWarningToastAsync(string content, string? title = "") =>
+        InvokeToastAsync(NotificationType.Warning, content, title, "Warning");
+
+    public Task InvokeErrorToastAsync(string content, string? title = "") =>
+        InvokeToastAsync(NotificationType.Error, content, title, "Error");
 
     public ISukiToast CreateToast(string title, object content)
     {

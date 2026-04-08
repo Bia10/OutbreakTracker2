@@ -7,7 +7,7 @@ using Serilog.Events;
 
 namespace OutbreakTracker2.Application.SerilogSinks;
 
-public class DataStoreLoggerSink : ILogEventSink, IDisposable
+public sealed class DataStoreLoggerSink : ILogEventSink, IDisposable
 {
     private readonly ILogDataStorageService _dataStore;
     private readonly DataStoreLoggerConfiguration _config;
