@@ -388,7 +388,7 @@ public partial class InGameScenarioViewModel : ObservableObject
         if (_scenarioUpdateActions.TryGetValue(scenarioType, out Action<DecodedInGameScenario>? updateAction))
             updateAction(scenario);
         else
-            _logger.LogDebug("No specific view configured for scenario: {ScenarioName}", scenario.ScenarioName);
+            _logger.LogTrace("No specific view configured for scenario: {ScenarioName}", scenario.ScenarioName);
     }
 
     private string GetClearedDisplay() => Status is 12 or 13 or 15 ? "Yes" : "No";
@@ -399,12 +399,14 @@ public partial class InGameScenarioViewModel : ObservableObject
     {
         switch (GasRandom)
         {
+            case 0:
+                return -1;
             case > 0 and < 240:
                 return (GasRandom / 10) + 1;
             case >= 240 and < 255:
                 return 25;
             default:
-                _logger.LogDebug("Unrecognized GasRandom value: {GasRandom}", GasRandom);
+                _logger.LogTrace("Unrecognized GasRandom value: {GasRandom}", GasRandom);
                 return -1;
         }
     }
