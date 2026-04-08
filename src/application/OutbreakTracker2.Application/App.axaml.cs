@@ -9,6 +9,7 @@ using OutbreakTracker2.Application.Common;
 using OutbreakTracker2.Application.Services.Atlas;
 using OutbreakTracker2.Application.Services.Launcher;
 using OutbreakTracker2.Application.Services.Notifications;
+using OutbreakTracker2.Application.Services.Reports;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGame;
 using R3;
 using Serilog;
@@ -72,6 +73,7 @@ public sealed partial class App : Avalonia.Application
 
             _serviceProvider = CompositionRoot.ConfigureServicesAndLogging(services, configuration);
             _serviceProvider.GetRequiredService<INotificationService>();
+            _serviceProvider.GetRequiredService<IRunReportService>();
 
             ITextureAtlasService textureAtlasService = _serviceProvider.GetRequiredService<ITextureAtlasService>();
             try

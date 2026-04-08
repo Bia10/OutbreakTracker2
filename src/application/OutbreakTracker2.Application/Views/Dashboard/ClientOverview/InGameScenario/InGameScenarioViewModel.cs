@@ -41,19 +41,22 @@ public sealed partial class InGameScenarioViewModel : ObservableObject
     [ObservableProperty]
     private string _gameTimeDisplay = string.Empty;
 
-    // TODO: unknown statuses
     // 0 = scenario not in progress
     // 1 = loading after intro cinematic sequence
-    // 2 = scenario in progress
-    // 3 = scenario in progress - doors/scene loading
-    // 4 = scenario in progress - cinematic sequence playing
-    // 7 = loading scenario
-    // 12 = finished (died)
-    // 13 = after game stats
+    // 2 = in game
+    // 3 = loading screen (between room transitions)
+    // 4 = cinematic sequence playing
+    // 7 = generic loading
+    // 8 = unknown
+    // 9 = unknown
+    // 10 = unknown
+    // 11 = unknown
+    // 12 = scenario finished (failed/success)
+    // 13 = after game stats / scenario clear rank
     // 14 = intro scenario cinematic sequence
     // 15 = after save to memory card
     [ObservableProperty]
-    private byte _status;
+    private ScenarioStatus _status;
 
     [ObservableProperty]
     private string _isCleared = string.Empty;
@@ -402,7 +405,10 @@ public sealed partial class InGameScenarioViewModel : ObservableObject
             _logger.LogTrace("No specific view configured for scenario: {ScenarioName}", scenario.ScenarioName);
     }
 
-    private string GetClearedDisplay() => Status is 12 or 13 or 15 ? "Yes" : "No";
+    private string GetClearedDisplay() =>
+        Status is ScenarioStatus.GameFinished or ScenarioStatus.RankScreen or ScenarioStatus.AfterSaveToMemoryCard
+            ? "Yes"
+            : "No";
 
     private string GetGameTime() => TimeUtility.GetTimeFromFrames(FrameCounter);
 

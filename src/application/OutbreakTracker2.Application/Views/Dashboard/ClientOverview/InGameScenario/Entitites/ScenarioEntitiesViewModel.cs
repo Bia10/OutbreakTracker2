@@ -71,6 +71,7 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject
                             $"{holder} picked up {newItem.TypeName}",
                             "Item Picked Up"
                         );
+                        existingSlotVm.IsPickupTracked = false;
                     }
                 }
 
