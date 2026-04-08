@@ -4,7 +4,7 @@ namespace OutbreakTracker2.PCSX2.Client;
 
 public sealed class GameClientFactory : IGameClientFactory
 {
-    public async Task<GameClient> CreateAndAttachGameClientAsync(Process process, CancellationToken cancellationToken)
+    public async Task<IGameClient> CreateAndAttachGameClientAsync(Process process, CancellationToken cancellationToken)
     {
         GameClient gameClient = new();
         try

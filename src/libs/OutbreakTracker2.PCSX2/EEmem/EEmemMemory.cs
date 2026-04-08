@@ -12,7 +12,7 @@ public sealed class EEmemMemory(ISafeMemoryReader memoryReader, IStringReader st
     : IEEmemMemory
 {
     private readonly ILogger<EEmemMemory> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private GameClient? _gameClient;
+    private IGameClient? _gameClient;
 
     public nint BaseAddress { get; private set; }
 
@@ -21,7 +21,7 @@ public sealed class EEmemMemory(ISafeMemoryReader memoryReader, IStringReader st
 
     public IStringReader StringReader { get; } = stringReader ?? throw new ArgumentNullException(nameof(stringReader));
 
-    public async ValueTask<bool> InitializeAsync(GameClient gameClient, CancellationToken cancellationToken)
+    public async ValueTask<bool> InitializeAsync(IGameClient gameClient, CancellationToken cancellationToken)
     {
         _gameClient = gameClient ?? throw new ArgumentNullException(nameof(gameClient));
 
@@ -65,7 +65,7 @@ public sealed class EEmemMemory(ISafeMemoryReader memoryReader, IStringReader st
         return false;
     }
 
-    private nint GetEEmemBaseAddress(GameClient gameClient)
+    private nint GetEEmemBaseAddress(IGameClient gameClient)
     {
         if (OperatingSystem.IsWindows())
             return GetEEmemBaseAddressWindows(gameClient);
@@ -77,7 +77,7 @@ public sealed class EEmemMemory(ISafeMemoryReader memoryReader, IStringReader st
     }
 
     [SupportedOSPlatform("windows")]
-    private nint GetEEmemBaseAddressWindows(GameClient gameClient)
+    private nint GetEEmemBaseAddressWindows(IGameClient gameClient)
     {
         nint baseAddress = gameClient.MainModuleBase;
         _logger.LogDebug("Scanning for EEmem base address. GameClient MainModuleBase: 0x{BaseAddress:X}", baseAddress);
@@ -183,7 +183,7 @@ public sealed class EEmemMemory(ISafeMemoryReader memoryReader, IStringReader st
     /// runtime load base read from <c>/proc/&lt;pid&gt;/maps</c>.
     /// </summary>
     [SupportedOSPlatform("linux")]
-    private nint GetEEmemBaseAddressLinux(GameClient gameClient)
+    private nint GetEEmemBaseAddressLinux(IGameClient gameClient)
     {
         int pid = (int)gameClient.Handle;
         _logger.LogDebug("Scanning for EEmem base address on Linux (PID {Pid}).", pid);

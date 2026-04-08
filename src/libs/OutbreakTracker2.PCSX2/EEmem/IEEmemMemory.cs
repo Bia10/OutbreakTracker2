@@ -1,20 +1,10 @@
-﻿using OutbreakTracker2.Memory.SafeMemory;
-using OutbreakTracker2.Memory.String;
-using OutbreakTracker2.PCSX2.Client;
+﻿using OutbreakTracker2.PCSX2.Client;
 
 namespace OutbreakTracker2.PCSX2.EEmem;
 
-public interface IEEmemMemory
+public interface IEEmemMemory : IEEmemAddressReader
 {
-    public ValueTask<bool> InitializeAsync(GameClient gameClient, CancellationToken cancellationToken);
+    public ValueTask<bool> InitializeAsync(IGameClient gameClient, CancellationToken cancellationToken);
 
     public nint BaseAddress { get; }
-
-    public ISafeMemoryReader MemoryReader { get; }
-
-    public IStringReader StringReader { get; }
-
-    public nint GetAddressFromPtr(nint ptrOffset);
-
-    public nint GetAddressFromPtrChain(nint ptrOffset, params ReadOnlySpan<nint> offsets);
 }

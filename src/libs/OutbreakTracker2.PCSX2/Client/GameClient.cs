@@ -6,7 +6,7 @@ using OutbreakTracker2.WinInterop.Enums;
 
 namespace OutbreakTracker2.PCSX2.Client;
 
-public sealed class GameClient : IDisposable
+public sealed class GameClient : IGameClient
 {
     private bool _disposed;
 
