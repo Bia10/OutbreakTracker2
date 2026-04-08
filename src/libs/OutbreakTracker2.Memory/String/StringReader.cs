@@ -28,7 +28,6 @@ public sealed class StringReader : IStringReader
         const int maxSafeLength = 1048576;
         // Read this many bytes per ReadProcessMemory call to amortise syscall overhead.
         const int chunkSize = 256;
-        _logger.LogDebug("Starting ReadString at address 0x{Address:X8}", address);
 
         if (address == nint.Zero)
         {
@@ -84,7 +83,6 @@ public sealed class StringReader : IStringReader
                 {
                     if (chunk[i] is 0)
                     {
-                        _logger.LogDebug("Null terminator found at offset {Offset}", bytes.Count + i);
                         nullFound = true;
                         break;
                     }
@@ -151,7 +149,6 @@ public sealed class StringReader : IStringReader
             TryFallbackEncodings(bytes);
         }
 
-        _logger.LogDebug("Read {BytesCount} bytes: \"{Result}\"", bytes.Count, result);
         return result;
     }
 
