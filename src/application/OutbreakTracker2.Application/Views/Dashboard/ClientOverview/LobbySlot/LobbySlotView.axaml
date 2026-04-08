@@ -19,145 +19,145 @@
     </UserControl.Resources>
 
     <suki:GlassCard
-        MinWidth="180"
-        MaxWidth="260"
-        Margin="3">
-        <StackPanel Margin="5" Spacing="4">
+        MinWidth="150"
+        MaxWidth="200"
+        Margin="1">
+        <StackPanel Margin="2" Spacing="2">
 
             <!--  Header: slot number (top-left) + lock/unlock icon (top-right)  -->
             <Grid ColumnDefinitions="*, Auto">
                 <TextBlock
                     Grid.Column="0"
-                    FontSize="12"
+                    FontSize="11"
                     FontWeight="SemiBold"
                     Text="{Binding SlotNumber, StringFormat='Slot: {0}'}" />
                 <avalonia:MaterialIcon
                     Grid.Column="1"
-                    Width="18"
-                    Height="18"
+                    Width="14"
+                    Height="14"
                     Foreground="{Binding LockForeground}"
                     Kind="{Binding IsPasswordProtectedBool, Converter={x:Static converters:BoolToIconConverters.Password}}"
                     ToolTip.Tip="Password Protected Status" />
             </Grid>
 
-            <!--  Scenario image (30% smaller: 140×140)  -->
+            <!--  Scenario image  -->
             <Image
-                Width="140"
-                Height="140"
+                Width="92"
+                Height="92"
                 HorizontalAlignment="Center"
                 Source="{Binding ScenarioImageViewModel.ScenarioImage}"
                 Stretch="Uniform" />
 
             <!--  Title  -->
-            <DockPanel Margin="0,2">
+            <DockPanel Margin="0,1">
                 <avalonia:MaterialIcon
                     DockPanel.Dock="Left"
-                    Width="15"
-                    Height="15"
+                    Width="12"
+                    Height="12"
                     Kind="FormatTitle"
                     ToolTip.Tip="Room Title" />
                 <TextBlock
                     DockPanel.Dock="Left"
-                    Margin="3,0,0,0"
+                    Margin="2,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="13"
+                    FontSize="11"
                     FontWeight="SemiBold"
                     Text="Title:" />
                 <TextBlock
-                    Margin="3,0,0,0"
+                    Margin="2,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="13"
+                    FontSize="11"
                     Text="{Binding Title}"
                     TextTrimming="CharacterEllipsis" />
             </DockPanel>
 
             <!--  Status  -->
-            <DockPanel Margin="0,2">
+            <DockPanel Margin="0,1">
                 <avalonia:MaterialIcon
                     DockPanel.Dock="Left"
-                    Width="15"
-                    Height="15"
+                    Width="12"
+                    Height="12"
                     Kind="{Binding Status, Converter={StaticResource LobbySlotStatusToIconConverter}}"
                     ToolTip.Tip="Room Status" />
                 <TextBlock
                     DockPanel.Dock="Left"
-                    Margin="3,0,0,0"
+                    Margin="2,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="13"
+                    FontSize="11"
                     FontWeight="SemiBold"
                     Text="Status:" />
                 <TextBlock
-                    Margin="3,0,0,0"
+                    Margin="2,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="13"
+                    FontSize="11"
                     Text="{Binding Status}"
                     TextTrimming="CharacterEllipsis" />
             </DockPanel>
 
             <!--  Players  -->
-            <DockPanel Margin="0,2">
+            <DockPanel Margin="0,1">
                 <avalonia:MaterialIcon
                     DockPanel.Dock="Left"
-                    Width="15"
-                    Height="15"
+                    Width="12"
+                    Height="12"
                     Kind="AccountGroup"
                     ToolTip.Tip="Number of Players" />
                 <TextBlock
                     DockPanel.Dock="Left"
-                    Margin="3,0,0,0"
+                    Margin="2,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="13"
+                    FontSize="11"
                     FontWeight="SemiBold"
                     Text="Players:" />
                 <TextBlock
-                    Margin="3,0,0,0"
+                    Margin="2,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="13"
+                    FontSize="11"
                     Text="{Binding PlayersDisplay}" />
             </DockPanel>
 
             <!--  Scenario  -->
-            <DockPanel Margin="0,2">
+            <DockPanel Margin="0,1">
                 <avalonia:MaterialIcon
                     DockPanel.Dock="Left"
-                    Width="15"
-                    Height="15"
+                    Width="12"
+                    Height="12"
                     Kind="GamepadVariantOutline"
                     ToolTip.Tip="Scenario Name" />
                 <TextBlock
                     DockPanel.Dock="Left"
-                    Margin="3,0,0,0"
+                    Margin="2,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="13"
+                    FontSize="11"
                     FontWeight="SemiBold"
                     Text="Scenario:" />
                 <TextBlock
-                    Margin="3,0,0,0"
+                    Margin="2,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="13"
+                    FontSize="11"
                     Text="{Binding ScenarioId}"
                     TextTrimming="CharacterEllipsis" />
             </DockPanel>
 
             <!--  Version  -->
-            <DockPanel Margin="0,2">
+            <DockPanel Margin="0,1">
                 <avalonia:MaterialIcon
                     DockPanel.Dock="Left"
-                    Width="15"
-                    Height="15"
+                    Width="12"
+                    Height="12"
                     Kind="{Binding Version, Converter={StaticResource LobbyVersionToIconConverter}}"
                     ToolTip.Tip="Game Version" />
                 <TextBlock
                     DockPanel.Dock="Left"
-                    Margin="3,0,0,0"
+                    Margin="2,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="13"
+                    FontSize="11"
                     FontWeight="SemiBold"
                     Text="Version:" />
                 <TextBlock
-                    Margin="3,0,0,0"
+                    Margin="2,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="13"
+                    FontSize="11"
                     Text="{Binding Version}"
                     TextTrimming="CharacterEllipsis" />
             </DockPanel>

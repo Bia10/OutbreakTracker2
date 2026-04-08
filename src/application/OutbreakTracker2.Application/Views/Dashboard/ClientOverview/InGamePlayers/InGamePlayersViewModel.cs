@@ -26,7 +26,7 @@ public partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
     private int _playerColumnCount = 1;
 
     [ObservableProperty]
-    private bool _isHorizontalLayout;
+    private bool _isHorizontalLayout = true;
 
     public InGamePlayersViewModel(
         IDataManager dataManager,
