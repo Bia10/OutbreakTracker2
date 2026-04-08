@@ -3,7 +3,7 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 
-public partial class EndOfTheRoadViewModel : ObservableObject
+public sealed partial class EndOfTheRoadViewModel : ObservableObject
 {
     [ObservableProperty]
     private string _endOfRoadDisplay = string.Empty;

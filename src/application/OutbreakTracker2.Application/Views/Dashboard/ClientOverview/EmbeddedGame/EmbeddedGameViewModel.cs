@@ -12,7 +12,7 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGa
 /// ViewModel for the embedded PCSX2 game surface tab.
 /// Tracks embedding state and exposes the <see cref="IWindowEmbedder"/> to the paired view.
 /// </summary>
-public partial class EmbeddedGameViewModel : ObservableObject, IDisposable
+public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposable
 {
     private readonly ILogger<EmbeddedGameViewModel> _logger;
     private readonly IDisposable _processSubscription;

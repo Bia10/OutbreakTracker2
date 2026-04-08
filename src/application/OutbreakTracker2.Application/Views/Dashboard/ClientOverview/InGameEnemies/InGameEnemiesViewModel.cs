@@ -10,7 +10,7 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies;
 
-public partial class InGameEnemiesViewModel : ObservableObject, IDisposable
+public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposable
 {
     private static readonly TimeSpan DeadEnemyDisplayDuration = TimeSpan.FromSeconds(5);
 

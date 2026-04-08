@@ -3,7 +3,7 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
 
-public partial class BelowFreezingPointViewModel : ObservableObject
+public sealed partial class BelowFreezingPointViewModel : ObservableObject
 {
     [ObservableProperty]
     private string _pass1BelowFreezingPoint = string.Empty;

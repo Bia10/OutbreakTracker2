@@ -68,6 +68,6 @@ public class OutbreakTracker2Views
         if (TryCreateView(provider, viewModelType, out Control? view))
             return view;
 
-        throw new InvalidOperationException();
+        throw new InvalidOperationException($"No view registered for ViewModel type '{viewModelType.FullName}'.");
     }
 }

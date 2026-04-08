@@ -9,7 +9,7 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy;
 
-public partial class InGameEnemyViewModel : ObservableObject
+public sealed partial class InGameEnemyViewModel : ObservableObject
 {
     [ObservableProperty]
     private DecodedEnemy _enemy = null!;

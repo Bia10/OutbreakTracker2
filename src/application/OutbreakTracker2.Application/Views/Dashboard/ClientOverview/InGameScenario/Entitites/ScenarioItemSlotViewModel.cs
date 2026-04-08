@@ -7,7 +7,7 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
 
-public partial class ScenarioItemSlotViewModel : ObservableObject
+public sealed partial class ScenarioItemSlotViewModel : ObservableObject
 {
     public ItemImageViewModel ItemImageViewModel { get; }
 

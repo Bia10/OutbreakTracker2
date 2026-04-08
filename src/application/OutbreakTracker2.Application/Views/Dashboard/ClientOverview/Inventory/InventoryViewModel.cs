@@ -7,7 +7,7 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
 
-public partial class InventoryViewModel : ObservableObject
+public sealed partial class InventoryViewModel : ObservableObject
 {
     private readonly IDataManager _dataManager;
     private readonly IItemSlotViewModelFactory _itemSlotViewModelFactory;

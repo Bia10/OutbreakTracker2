@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace OutbreakTracker2.Application.Views.Common.Item;
 
-public class ItemImageViewModel : ObservableObject
+public sealed class ItemImageViewModel : ObservableObject
 {
     private readonly ILogger<ItemImageViewModel> _logger;
 

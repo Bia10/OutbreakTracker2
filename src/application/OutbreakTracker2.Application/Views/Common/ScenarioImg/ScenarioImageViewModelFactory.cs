@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace OutbreakTracker2.Application.Views.Common.ScenarioImg;
 
-public class ScenarioImageViewModelFactory(
+public sealed class ScenarioImageViewModelFactory(
     ILogger<ScenarioImageViewModelFactory> logger,
     IServiceProvider serviceProvider
 ) : IScenarioImageViewModelFactory

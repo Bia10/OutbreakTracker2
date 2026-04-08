@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer;
 
-public partial class PlayerAttributesViewModel : ObservableObject
+public sealed partial class PlayerAttributesViewModel : ObservableObject
 {
     [ObservableProperty]
     private float _criticalBonus;

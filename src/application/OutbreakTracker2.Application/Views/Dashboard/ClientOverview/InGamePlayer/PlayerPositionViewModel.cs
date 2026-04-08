@@ -5,7 +5,7 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer;
 
-public partial class PlayerPositionViewModel(IDataManager dataManager) : ObservableObject
+public sealed partial class PlayerPositionViewModel(IDataManager dataManager) : ObservableObject
 {
     [ObservableProperty]
     private float _positionX;

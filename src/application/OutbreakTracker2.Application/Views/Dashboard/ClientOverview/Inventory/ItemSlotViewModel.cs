@@ -8,7 +8,7 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
 
-public partial class ItemSlotViewModel(
+public sealed partial class ItemSlotViewModel(
     ILogger<ItemSlotViewModel> logger,
     IItemImageViewModelFactory itemImageViewModelFactory
 ) : ObservableObject

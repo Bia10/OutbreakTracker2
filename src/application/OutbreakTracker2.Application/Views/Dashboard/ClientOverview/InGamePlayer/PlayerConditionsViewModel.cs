@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer;
 
-public partial class PlayerConditionsViewModel : ObservableObject
+public sealed partial class PlayerConditionsViewModel : ObservableObject
 {
     [ObservableProperty]
     private string _conditionTitle = "Condition:";

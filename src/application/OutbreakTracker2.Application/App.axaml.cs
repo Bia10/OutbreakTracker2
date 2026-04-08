@@ -71,7 +71,7 @@ public sealed partial class App : Avalonia.Application
             OutbreakTracker2Views views = CompositionRoot.ConfigureViews(services);
 
             _serviceProvider = CompositionRoot.ConfigureServicesAndLogging(services, configuration);
-            _serviceProvider.GetRequiredService<NotificationService>();
+            _serviceProvider.GetRequiredService<INotificationService>();
 
             ITextureAtlasService textureAtlasService = _serviceProvider.GetRequiredService<ITextureAtlasService>();
             try

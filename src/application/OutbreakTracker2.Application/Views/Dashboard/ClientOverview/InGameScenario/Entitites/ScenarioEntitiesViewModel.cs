@@ -7,7 +7,7 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
 
-public partial class ScenarioEntitiesViewModel : ObservableObject
+public sealed partial class ScenarioEntitiesViewModel : ObservableObject
 {
     private readonly IToastService _toastService;
     private readonly IItemImageViewModelFactory _itemImageViewModelFactory;

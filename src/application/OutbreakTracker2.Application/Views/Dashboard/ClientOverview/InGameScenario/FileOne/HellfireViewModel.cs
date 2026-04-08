@@ -3,7 +3,7 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
 
-public partial class HellfireViewModel : ObservableObject
+public sealed partial class HellfireViewModel : ObservableObject
 {
     [ObservableProperty]
     private string _hellfirePassDisplay = string.Empty;

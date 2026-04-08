@@ -5,7 +5,7 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 
-public partial class DesperateTimesViewModel : ObservableObject
+public sealed partial class DesperateTimesViewModel : ObservableObject
 {
     // Used in "Desperate Times"
     [ObservableProperty]

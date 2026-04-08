@@ -4,7 +4,7 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 
-public partial class WildThingsViewModel : ObservableObject
+public sealed partial class WildThingsViewModel : ObservableObject
 {
     // Used in "Wild Things"
     [ObservableProperty]

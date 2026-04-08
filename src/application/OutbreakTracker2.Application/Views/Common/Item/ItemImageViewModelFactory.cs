@@ -3,8 +3,10 @@ using Microsoft.Extensions.Logging;
 
 namespace OutbreakTracker2.Application.Views.Common.Item;
 
-public class ItemImageViewModelFactory(ILogger<ItemImageViewModelFactory> logger, IServiceProvider serviceProvider)
-    : IItemImageViewModelFactory
+public sealed class ItemImageViewModelFactory(
+    ILogger<ItemImageViewModelFactory> logger,
+    IServiceProvider serviceProvider
+) : IItemImageViewModelFactory
 {
     private readonly ILogger<ItemImageViewModelFactory> _logger = logger;
     private readonly IServiceProvider _serviceProvider = serviceProvider;

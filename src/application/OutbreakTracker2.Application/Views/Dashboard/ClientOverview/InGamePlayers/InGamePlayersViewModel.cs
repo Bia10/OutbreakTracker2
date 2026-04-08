@@ -10,7 +10,7 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers;
 
-public partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
+public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
 {
     private readonly IDisposable _subscription;
     private readonly ILogger<InGamePlayersViewModel> _logger;

@@ -5,8 +5,10 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlot.Factory;
 
-public class LobbySlotViewModelFactory(ILogger<LobbySlotViewModelFactory> logger, IServiceProvider serviceProvider)
-    : ILobbySlotViewModelFactory
+public sealed class LobbySlotViewModelFactory(
+    ILogger<LobbySlotViewModelFactory> logger,
+    IServiceProvider serviceProvider
+) : ILobbySlotViewModelFactory
 {
     private readonly ILogger<LobbySlotViewModelFactory> _logger = logger;
     private readonly IServiceProvider _serviceProvider = serviceProvider;

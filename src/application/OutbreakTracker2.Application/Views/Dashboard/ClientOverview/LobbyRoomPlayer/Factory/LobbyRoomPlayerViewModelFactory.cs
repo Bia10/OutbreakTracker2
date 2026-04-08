@@ -4,7 +4,7 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoomPlayer.Factory;
 
-public class LobbyRoomPlayerViewModelFactory(
+public sealed class LobbyRoomPlayerViewModelFactory(
     ILogger<LobbyRoomPlayerViewModelFactory> logger,
     ICharacterBustViewModelFactory characterBustViewModelFactory
 ) : ILobbyRoomPlayerViewModelFactory

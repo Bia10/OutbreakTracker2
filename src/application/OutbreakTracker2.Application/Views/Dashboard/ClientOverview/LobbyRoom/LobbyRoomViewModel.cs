@@ -14,7 +14,7 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoom;
 
-public partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
+public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposable
 {
     private readonly ILogger<LobbyRoomViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;

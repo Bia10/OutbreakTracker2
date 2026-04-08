@@ -10,7 +10,7 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoors;
 
-public partial class InGameDoorsViewModel : ObservableObject, IDisposable
+public sealed partial class InGameDoorsViewModel : ObservableObject, IDisposable
 {
     private readonly IDisposable _subscription;
     private readonly ILogger<InGameDoorsViewModel> _logger;

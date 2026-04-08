@@ -6,7 +6,7 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer.Factory;
 
-public class InGamePlayerViewModelFactory(
+public sealed class InGamePlayerViewModelFactory(
     ILogger<InGamePlayerViewModelFactory> logger,
     IDataManager dataManager,
     ICharacterBustViewModelFactory characterBustViewModelFactory,

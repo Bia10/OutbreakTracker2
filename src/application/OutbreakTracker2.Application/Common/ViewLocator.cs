@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace OutbreakTracker2.Application.Common;
 
-public class ViewLocator(OutbreakTracker2Views views) : IDataTemplate
+public sealed class ViewLocator(OutbreakTracker2Views views) : IDataTemplate
 {
     // ConditionalWeakTable lets the GC collect both the ViewModel key and the Control value
     // when the ViewModel is no longer referenced — prevents leaks for transient VMs.

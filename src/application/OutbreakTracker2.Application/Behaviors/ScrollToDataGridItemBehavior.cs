@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.Diagnostics;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Threading;
@@ -6,7 +7,7 @@ using Avalonia.Xaml.Interactivity;
 
 namespace OutbreakTracker2.Application.Behaviors;
 
-public class ScrollToDataGridItemBehavior : Behavior<DataGrid>
+public sealed class ScrollToDataGridItemBehavior : Behavior<DataGrid>
 {
     public static readonly StyledProperty<object?> ItemToScrollToProperty = AvaloniaProperty.Register<
         ScrollToDataGridItemBehavior,
@@ -46,7 +47,7 @@ public class ScrollToDataGridItemBehavior : Behavior<DataGrid>
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error scrolling DataGrid: {ex}");
+                        Trace.TraceWarning($"Error scrolling DataGrid: {ex}");
                     }
                 },
                 DispatcherPriority.Render

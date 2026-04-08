@@ -14,7 +14,7 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlots
 // The array index of incoming data is used to pair with ULID of existing VMs.
 // This is not ideal, but it works for now.
 // The assumption is that the incoming data is in the same order as the VMs in the cache.
-public class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
+public sealed class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
 {
     private readonly IDisposable _subscription;
     private readonly ILogger<LobbySlotsViewModel> _logger;

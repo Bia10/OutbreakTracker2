@@ -11,7 +11,7 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard;
 
-public partial class DashboardViewModel : PageBase
+public sealed partial class DashboardViewModel : PageBase
 {
     private readonly ILogger<DashboardViewModel> _logger;
 

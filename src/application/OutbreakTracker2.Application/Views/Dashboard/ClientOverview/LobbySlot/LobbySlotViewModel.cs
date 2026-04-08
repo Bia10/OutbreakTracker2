@@ -9,7 +9,7 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlot;
 
-public partial class LobbySlotViewModel : ObservableObject
+public sealed partial class LobbySlotViewModel : ObservableObject
 {
     private readonly ILogger<LobbySlotViewModel> _logger;
 
@@ -26,7 +26,7 @@ public partial class LobbySlotViewModel : ObservableObject
     private string _status = string.Empty;
 
     [ObservableProperty]
-    private string _isPassProtected = string.Empty;
+    private bool _isPassProtected;
 
     [ObservableProperty]
     private short _curPlayers;
@@ -43,12 +43,7 @@ public partial class LobbySlotViewModel : ObservableObject
     [ObservableProperty]
     private string _title = string.Empty;
 
-    public bool IsPasswordProtectedBool =>
-        !string.IsNullOrEmpty(IsPassProtected)
-        && (
-            IsPassProtected.Equals("true", StringComparison.Ordinal)
-            || IsPassProtected.Equals("1", StringComparison.Ordinal)
-        );
+    public bool IsPasswordProtectedBool => IsPassProtected;
 
     public string PlayersDisplay => $"{CurPlayers}/{MaxPlayers}";
 

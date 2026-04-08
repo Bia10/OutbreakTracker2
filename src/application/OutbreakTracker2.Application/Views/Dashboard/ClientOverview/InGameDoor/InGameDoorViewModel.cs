@@ -4,7 +4,7 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor;
 
-public partial class InGameDoorViewModel : ObservableObject
+public sealed partial class InGameDoorViewModel : ObservableObject
 {
     private static readonly IBrush LockedBrush = new SolidColorBrush(Colors.Red);
     private static readonly IBrush UnlockedBrush = new SolidColorBrush(Colors.LimeGreen);

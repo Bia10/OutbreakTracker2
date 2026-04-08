@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer;
 
-public partial class PlayerGaugesViewModel : ObservableObject
+public sealed partial class PlayerGaugesViewModel : ObservableObject
 {
     [ObservableProperty]
     private short _currentHealth;

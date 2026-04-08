@@ -11,7 +11,7 @@ using SukiUI.Toasts;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientNotRunning;
 
-public partial class ClientNotRunningViewModel(
+public sealed partial class ClientNotRunningViewModel(
     ILogger<ClientNotRunningViewModel> logger,
     IToastService toastService,
     IProcessLauncher processLauncher,
@@ -122,7 +122,7 @@ public partial class ClientNotRunningViewModel(
                     await _processLauncher.LaunchAsync(pcsx2ExePath, arguments, cts.Token).ConfigureAwait(false);
                     _logger.LogInformation("PCSX2 process launched successfully");
 
-                    GameClient gameClient =
+                    IGameClient gameClient =
                         _processLauncher.GetActiveGameClient()
                         ?? throw new InvalidOperationException("GameClient not available after launch.");
                     _logger.LogInformation("GameClient acquired successfully.");

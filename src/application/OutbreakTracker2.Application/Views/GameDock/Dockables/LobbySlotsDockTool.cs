@@ -1,4 +1,4 @@
-using Dock.Model.Mvvm.Controls;
+﻿using Dock.Model.Mvvm.Controls;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlots;
 
 namespace OutbreakTracker2.Application.Views.GameDock.Dockables;

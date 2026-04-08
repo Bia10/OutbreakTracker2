@@ -8,7 +8,7 @@ using OutbreakTracker2.Application.Utilities;
 
 namespace OutbreakTracker2.Application.Views.Common;
 
-public partial class ImageViewModel : ObservableObject
+public sealed partial class ImageViewModel : ObservableObject
 {
     private readonly ILogger<ImageViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;

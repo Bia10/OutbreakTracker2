@@ -7,7 +7,7 @@ using OutbreakTracker2.Outbreak.Enums.Character;
 
 namespace OutbreakTracker2.Application.Views.Common.Character;
 
-public class CharacterBustViewModel : ObservableObject
+public sealed class CharacterBustViewModel : ObservableObject
 {
     private readonly ILogger<CharacterBustViewModel> _logger;
     private readonly ISpriteNameResolver _spriteNameResolver;

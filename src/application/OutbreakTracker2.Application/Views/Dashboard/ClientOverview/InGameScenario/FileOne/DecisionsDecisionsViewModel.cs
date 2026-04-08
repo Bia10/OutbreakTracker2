@@ -3,7 +3,7 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
 
-public partial class DecisionsDecisionsViewModel : ObservableObject
+public sealed partial class DecisionsDecisionsViewModel : ObservableObject
 {
     [ObservableProperty]
     private string _decisionsDecisionsPassDisplay = string.Empty;

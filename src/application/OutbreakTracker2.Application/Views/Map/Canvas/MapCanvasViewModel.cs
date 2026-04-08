@@ -6,7 +6,7 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Map.Canvas;
 
-public partial class MapCanvasViewModel : ObservableObject, IDisposable
+public sealed partial class MapCanvasViewModel : ObservableObject, IDisposable
 {
     private readonly IDisposable _playersIsInGameSubscription;
 

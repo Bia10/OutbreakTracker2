@@ -9,7 +9,7 @@ using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlots;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview;
 
-public class ClientOverviewViewModel(
+public sealed class ClientOverviewViewModel(
     LobbySlotsViewModel lobbySlotsViewModel,
     LobbyRoomViewModel lobbyRoomViewModel,
     InGameScenarioViewModel inGameScenarioViewModel,

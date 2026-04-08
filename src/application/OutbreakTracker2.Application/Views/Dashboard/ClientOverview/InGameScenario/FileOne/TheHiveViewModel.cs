@@ -3,7 +3,7 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
 
-public partial class TheHiveViewModel : ObservableObject
+public sealed partial class TheHiveViewModel : ObservableObject
 {
     [ObservableProperty]
     private string _passHiveDisplay = string.Empty;

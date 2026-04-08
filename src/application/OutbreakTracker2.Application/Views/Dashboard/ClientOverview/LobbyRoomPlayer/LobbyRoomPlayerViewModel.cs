@@ -6,7 +6,7 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoomPlayer;
 
-public partial class LobbyRoomPlayerViewModel : ObservableObject
+public sealed partial class LobbyRoomPlayerViewModel : ObservableObject
 {
     [ObservableProperty]
     private Ulid _id = Ulid.NewUlid();
@@ -64,7 +64,7 @@ public partial class LobbyRoomPlayerViewModel : ObservableObject
         CharacterHp = model.CharacterHp;
         CharacterPower = model.CharacterPower;
         NpcName = model.NpcName;
-        NpcHp = model.Npchp;
+        NpcHp = model.NpcHp;
         NpcPower = model.NpcPower;
 
         DisplayName = string.Equals(NpcType, "Main Characters", StringComparison.Ordinal) ? CharacterName : NpcName;

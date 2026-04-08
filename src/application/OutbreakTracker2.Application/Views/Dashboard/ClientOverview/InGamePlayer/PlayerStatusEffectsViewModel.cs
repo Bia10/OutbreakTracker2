@@ -3,7 +3,7 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer;
 
-public partial class PlayerStatusEffectsViewModel : ObservableObject
+public sealed partial class PlayerStatusEffectsViewModel : ObservableObject
 {
     [ObservableProperty]
     private string _bleedTime = string.Empty;

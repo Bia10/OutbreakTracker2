@@ -3,7 +3,7 @@ using OutbreakTracker2.Application.Views.Common.Item;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
 
-public class ItemSlotViewModelFactory(
+public sealed class ItemSlotViewModelFactory(
     ILogger<ItemSlotViewModel> logger,
     IItemImageViewModelFactory itemImageViewModelFactory
 ) : IItemSlotViewModelFactory

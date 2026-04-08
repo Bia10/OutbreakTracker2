@@ -14,7 +14,7 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario;
 
-public partial class InGameScenarioViewModel : ObservableObject
+public sealed partial class InGameScenarioViewModel : ObservableObject
 {
     private readonly ILogger<InGameScenarioViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
@@ -262,10 +262,13 @@ public partial class InGameScenarioViewModel : ObservableObject
                             )
                             .ConfigureAwait(false);
                     }
-                    catch (Exception e)
+                    catch (OperationCanceledException)
                     {
-                        Console.WriteLine(e);
-                        throw;
+                        _logger.LogInformation("Enemies data processing cancelled");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error during enemies data processing cycle");
                     }
                 },
                 AwaitOperation.Drop
@@ -289,10 +292,13 @@ public partial class InGameScenarioViewModel : ObservableObject
                             )
                             .ConfigureAwait(false);
                     }
-                    catch (Exception e)
+                    catch (OperationCanceledException)
                     {
-                        Console.WriteLine(e);
-                        throw;
+                        _logger.LogInformation("Doors data processing cancelled");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error during doors data processing cycle");
                     }
                 },
                 AwaitOperation.Drop
@@ -343,13 +349,16 @@ public partial class InGameScenarioViewModel : ObservableObject
         bool scenarioParsed = EnumUtility.TryParseByValueOrMember(ScenarioName, out Scenario scenarioEnum);
         DecodedInGamePlayer[] players = _dataManager.InGamePlayers;
 
-        foreach (DecodedItem item in scenario.Items)
+        for (int i = 0; i < scenario.Items.Length; i++)
         {
-            item.RoomName = scenarioParsed ? scenarioEnum.GetRoomName(item.RoomId) : $"Room {item.RoomId}";
+            DecodedItem item = scenario.Items[i];
 
+            string roomName = scenarioParsed ? scenarioEnum.GetRoomName(item.RoomId) : $"Room {item.RoomId}";
+
+            string pickedUpByName;
             if (item.PickedUp == 0)
             {
-                item.PickedUpByName = "None";
+                pickedUpByName = "None";
             }
             else
             {
@@ -357,14 +366,16 @@ public partial class InGameScenarioViewModel : ObservableObject
                 if (slotIndex >= 0 && slotIndex < players.Length)
                 {
                     DecodedInGamePlayer player = players[slotIndex];
-                    item.PickedUpByName =
+                    pickedUpByName =
                         player.IsEnabled && !string.IsNullOrEmpty(player.Name) ? player.Name : $"P{item.PickedUp}";
                 }
                 else
                 {
-                    item.PickedUpByName = $"P{item.PickedUp}";
+                    pickedUpByName = $"P{item.PickedUp}";
                 }
             }
+
+            scenario.Items[i] = item with { RoomName = roomName, PickedUpByName = pickedUpByName };
         }
     }
 
