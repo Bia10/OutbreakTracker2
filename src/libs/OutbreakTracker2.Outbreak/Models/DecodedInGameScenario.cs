@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using OutbreakTracker2.Outbreak.Common;
+using OutbreakTracker2.Outbreak.Enums;
 
 namespace OutbreakTracker2.Outbreak.Models;
 
@@ -19,7 +20,7 @@ public sealed record DecodedInGameScenario
 
     [JsonInclude]
     [JsonPropertyName(nameof(Status))]
-    public byte Status { get; init; }
+    public ScenarioStatus Status { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(WildThingsTime))]

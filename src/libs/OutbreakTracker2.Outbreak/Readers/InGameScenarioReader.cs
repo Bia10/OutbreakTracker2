@@ -29,8 +29,12 @@ public sealed class InGameScenarioReader(IGameClient gameClient, IEEmemAddressRe
     private int GetFrameCount() =>
         ReadValue(InGameScenarioOffsets.FrameCounter.File1, InGameScenarioOffsets.FrameCounter.File2, -1);
 
-    private byte GetScenarioStatus() =>
-        ReadValue(InGameScenarioOffsets.ScenarioStatus.File1, InGameScenarioOffsets.ScenarioStatus.File2, (byte)0xFF);
+    private ScenarioStatus GetScenarioStatus() =>
+        (ScenarioStatus)ReadValue(
+            InGameScenarioOffsets.ScenarioStatus.File1,
+            InGameScenarioOffsets.ScenarioStatus.File2,
+            (byte)0xFF
+        );
 
     private byte GetPlayerCount() =>
         ReadValue(InGameScenarioOffsets.PlayerNumber.File1, InGameScenarioOffsets.PlayerNumber.File2, (byte)0xFF);
@@ -194,7 +198,7 @@ public sealed class InGameScenarioReader(IGameClient gameClient, IEEmemAddressRe
         return items;
     }
 
-    public bool IsInScenario() => GetFrameCount() > 0 && GetScenarioStatus() > 0;
+    public bool IsInScenario() => GetFrameCount() > 0 && GetScenarioStatus() != ScenarioStatus.None;
 
     public void UpdateScenario()
     {
