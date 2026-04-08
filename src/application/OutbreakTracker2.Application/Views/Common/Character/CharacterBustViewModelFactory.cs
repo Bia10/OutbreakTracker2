@@ -13,12 +13,11 @@ public sealed class CharacterBustViewModelFactory(
 
     public CharacterBustViewModel Create()
     {
-        _logger.LogDebug("Creating a new CharacterBustViewModel instance");
+        _logger.LogTrace("Creating a new CharacterBustViewModel instance");
 
         CharacterBustViewModel newCharacterBustViewModel =
             _serviceProvider.GetRequiredService<CharacterBustViewModel>();
 
-        _logger.LogDebug("CharacterBustViewModel created successfully");
         return newCharacterBustViewModel;
     }
 }

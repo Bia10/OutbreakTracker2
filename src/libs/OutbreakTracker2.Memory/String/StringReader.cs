@@ -137,7 +137,7 @@ public sealed class StringReader : IStringReader
     {
         if (bytes.Count is 0)
         {
-            _logger.LogDebug("Empty string read from memory");
+            _logger.LogTrace("Empty string read from memory");
             return string.Empty;
         }
 

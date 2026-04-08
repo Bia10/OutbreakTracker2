@@ -144,7 +144,7 @@ public abstract class ReaderBase : IDisposable
 
         if (f1Byte is 0x53)
         {
-            Logger.LogInformation(
+            Logger.LogDebug(
                 "Game file detected: {GameFile}. Signature byte: 0x{SignatureByte:X2}",
                 GameFile.FileOne,
                 f1Byte
@@ -154,7 +154,7 @@ public abstract class ReaderBase : IDisposable
 
         if (f2Byte is 0x53)
         {
-            Logger.LogInformation(
+            Logger.LogDebug(
                 "Game file detected: {GameFile}. Signature byte: 0x{SignatureByte:X2}",
                 GameFile.FileTwo,
                 f2Byte

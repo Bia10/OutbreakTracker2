@@ -65,7 +65,7 @@ public sealed partial class LobbySlotViewModel : ObservableObject
 
         Update(initialData);
 
-        _logger.LogInformation("LobbySlotViewModel initialized for ULID: {Ulid}", _id);
+        _logger.LogDebug("LobbySlotViewModel initialized for ULID: {Ulid}", _id);
     }
 
     public void Update(DecodedLobbySlot model)

@@ -13,11 +13,10 @@ public sealed class ItemImageViewModelFactory(
 
     public ItemImageViewModel Create()
     {
-        _logger.LogDebug("Creating a new ItemImageViewModel instance");
+        _logger.LogTrace("Creating a new ItemImageViewModel instance");
 
         ItemImageViewModel newItemImageViewModel = _serviceProvider.GetRequiredService<ItemImageViewModel>();
 
-        _logger.LogDebug("ItemImageViewModel created successfully");
         return newItemImageViewModel;
     }
 }

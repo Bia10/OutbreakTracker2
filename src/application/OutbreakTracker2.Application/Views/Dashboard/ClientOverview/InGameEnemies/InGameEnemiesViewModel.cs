@@ -38,7 +38,7 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
         _logger = logger;
         _dispatcherService = dispatcherService;
         _dataManager = dataManager;
-        _logger.LogInformation("Initializing InGameEnemiesViewModel");
+        _logger.LogDebug("Initializing InGameEnemiesViewModel");
 
         EnemiesView = _enemies.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 

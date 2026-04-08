@@ -28,7 +28,7 @@ public sealed class ScenarioImageViewModel : ObservableObject
 
         ImageViewModel.PropertyChanged += OnImageViewModelSourceImageChanged;
 
-        _logger.LogInformation("ScenarioImageViewModel initialized");
+        _logger.LogDebug("ScenarioImageViewModel initialized");
         _ = UpdateImageAsync(Scenario.Unknown);
     }
 
@@ -38,7 +38,7 @@ public sealed class ScenarioImageViewModel : ObservableObject
         if (spriteName.StartsWith("unknown", StringComparison.Ordinal))
             return ValueTask.CompletedTask;
 
-        _logger.LogDebug("Requesting scenario image update for scenario: {ScenarioType}", scenarioType);
+        _logger.LogTrace("Requesting scenario image update for scenario: {ScenarioType}", scenarioType);
 
         return ImageViewModel.UpdateImageAsync(spriteName, $"Scenario Image for {scenarioType}");
     }
@@ -46,7 +46,7 @@ public sealed class ScenarioImageViewModel : ObservableObject
     public ValueTask UpdateToDefaultImageAsync()
     {
         string spriteName = _spriteNameResolver.GetSpriteNameFromScenarioName(Scenario.TrainingGround);
-        _logger.LogDebug("Requesting scenario image update for scenario: {ScenarioType}", Scenario.TrainingGround);
+        _logger.LogTrace("Requesting scenario image update for scenario: {ScenarioType}", Scenario.TrainingGround);
 
         return ImageViewModel.UpdateImageAsync(spriteName, $"Scenario Image for {nameof(Scenario.TrainingGround)}");
     }

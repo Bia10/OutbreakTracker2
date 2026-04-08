@@ -41,7 +41,7 @@ public sealed class CharacterBustViewModel : ObservableObject
 
         _currentCharacterType = characterType;
         string spriteName = _spriteNameResolver.GetSpriteNameFromCharacterType(characterType);
-        _logger.LogDebug("Requesting bust update for character: {CharacterType}", characterType);
+        _logger.LogTrace("Requesting bust update for character: {CharacterType}", characterType);
 
         return ImageViewModel.UpdateImageAsync(spriteName, $"Character Bust for {characterType}");
     }

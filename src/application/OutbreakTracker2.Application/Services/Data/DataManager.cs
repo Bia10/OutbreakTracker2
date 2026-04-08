@@ -103,12 +103,12 @@ public sealed class DataManager : IDataManager, IDisposable
             InGameScenarioObservable
                 .Select(scenario => scenario.Status)
                 .DistinctUntilChanged()
-                .Do(status => _logger.LogWarning("InGameScenario STATUS CHANGED: {Status}", status))
+                .Do(status => _logger.LogInformation("InGameScenario STATUS CHANGED: {Status}", status))
                 .Subscribe(),
             LobbyRoomObservable
                 .Select(lobbyRoom => lobbyRoom.Status)
                 .DistinctUntilChanged()
-                .Do(status => _logger.LogWarning("LobbyRoom STATUS CHANGED: {Status}", status))
+                .Do(status => _logger.LogInformation("LobbyRoom STATUS CHANGED: {Status}", status))
                 .Subscribe(),
         ];
 

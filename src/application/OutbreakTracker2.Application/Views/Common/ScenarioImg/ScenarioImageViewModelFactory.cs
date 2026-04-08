@@ -13,12 +13,11 @@ public sealed class ScenarioImageViewModelFactory(
 
     public ScenarioImageViewModel Create()
     {
-        _logger.LogDebug("Creating a new ScenarioImageViewModel instance");
+        _logger.LogTrace("Creating a new ScenarioImageViewModel instance");
 
         ScenarioImageViewModel newScenarioImageViewModel =
             _serviceProvider.GetRequiredService<ScenarioImageViewModel>();
 
-        _logger.LogDebug("ScenarioImageViewModel created successfully");
         return newScenarioImageViewModel;
     }
 }

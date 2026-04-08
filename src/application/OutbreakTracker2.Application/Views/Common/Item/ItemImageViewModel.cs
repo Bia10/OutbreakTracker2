@@ -20,7 +20,7 @@ public sealed class ItemImageViewModel : ObservableObject
 
         ImageViewModel.PropertyChanged += OnImageViewModelSourceImageChanged;
 
-        _logger.LogInformation("ItemImageViewModel initialized");
+        _logger.LogDebug("ItemImageViewModel initialized");
     }
 
     private string _currentSpriteName = string.Empty;

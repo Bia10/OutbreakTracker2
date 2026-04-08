@@ -33,7 +33,7 @@ public sealed partial class InGameDoorsViewModel : ObservableObject, IDisposable
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
-        _logger.LogInformation("Initializing InGameDoorsViewModel");
+        _logger.LogDebug("Initializing InGameDoorsViewModel");
 
         DoorsView = Doors.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 

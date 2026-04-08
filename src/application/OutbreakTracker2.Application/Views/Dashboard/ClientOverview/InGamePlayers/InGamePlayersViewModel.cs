@@ -37,7 +37,7 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
-        _logger.LogInformation("Initializing InGamePlayersViewModel");
+        _logger.LogDebug("Initializing InGamePlayersViewModel");
 
         PlayersView = _players.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 

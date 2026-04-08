@@ -11,11 +11,10 @@ public sealed class ImageViewModelFactory(ILogger<ImageViewModelFactory> logger,
 
     public ImageViewModel Create()
     {
-        _logger.LogDebug("Creating a new ImageViewModel instance");
+        _logger.LogTrace("Creating a new ImageViewModel instance");
 
         ImageViewModel instance = _serviceProvider.GetRequiredService<ImageViewModel>();
 
-        _logger.LogDebug("Created a new ImageViewModel instance successfully");
         return instance;
     }
 }
