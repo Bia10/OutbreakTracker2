@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
+using OutbreakTracker2.Application.Services.Tracking;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Models;
@@ -16,10 +17,12 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
 
     private readonly ILogger<InGameEnemiesViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
+    private readonly IDataManager _dataManager;
     private readonly IDisposable _subscription;
     private readonly Dictionary<Ulid, InGameEnemyViewModel> _viewModelCache = [];
     private readonly ObservableList<InGameEnemyViewModel> _enemies = [];
     private readonly Dictionary<Ulid, DateTimeOffset> _enemyDeathTimes = [];
+    private DecodedEnemy[] _previousFilteredEnemies = [];
 
     public NotifyCollectionChangedSynchronizedViewList<InGameEnemyViewModel> EnemiesView { get; }
 
@@ -34,6 +37,7 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
+        _dataManager = dataManager;
         _logger.LogInformation("Initializing InGameEnemiesViewModel");
 
         EnemiesView = _enemies.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
@@ -41,210 +45,71 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
         _subscription = dataManager
             .EnemiesObservable.ObserveOnThreadPool()
             .SubscribeAwait(
-                async (incomingEnemiesSnapshot, ct) =>
+                async (snapshot, ct) =>
                 {
-                    switch (incomingEnemiesSnapshot.Length)
+                    if (snapshot.Length > GameConstants.MaxEnemies2)
                     {
-                        case 0:
-                            _logger.LogInformation(
-                                "Received empty enemies snapshot. Clearing enemy list. Entries {Length}",
-                                incomingEnemiesSnapshot.Length
-                            );
-                            await _dispatcherService
-                                .InvokeOnUIAsync(
-                                    () =>
-                                    {
-                                        _enemies.Clear();
-                                        _viewModelCache.Clear();
-                                        _enemyDeathTimes.Clear();
-                                        HasEnemies = false;
-                                    },
-                                    ct
-                                )
-                                .ConfigureAwait(false);
-                            return;
-                        case > GameConstants.MaxEnemies2:
-                            _logger.LogWarning(
-                                "Received more enemies than the in-game limit. Entries {Length}",
-                                incomingEnemiesSnapshot.Length
-                            );
-                            return;
-                        default:
-                            _logger.LogInformation(
-                                "Processing enemies snapshot on thread pool with {Length} entries",
-                                incomingEnemiesSnapshot.Length
-                            );
-                            try
+                        _logger.LogWarning(
+                            "Received {Length} enemies \u2014 exceeds in-game limit, skipping",
+                            snapshot.Length
+                        );
+                        return;
+                    }
+
+                    // Apply stateful death-timer filter on the thread pool
+                    List<DecodedEnemy> filteredList = FilterEnemiesWithDeathTimer(snapshot, DateTimeOffset.UtcNow);
+                    DecodedEnemy[] filtered = [.. filteredList];
+
+                    CollectionDiff<DecodedEnemy> diff = CollectionDiffer.Diff(_previousFilteredEnemies, filtered);
+                    _previousFilteredEnemies = filtered;
+
+                    if (diff.Added.Count == 0 && diff.Removed.Count == 0 && diff.Changed.Count == 0)
+                        return;
+
+                    _logger.LogDebug(
+                        "Enemy diff: +{Added} -{Removed} ~{Changed}",
+                        diff.Added.Count,
+                        diff.Removed.Count,
+                        diff.Changed.Count
+                    );
+
+                    // Create VMs for new entities on thread pool
+                    List<InGameEnemyViewModel>? newVms = null;
+                    if (diff.Added.Count > 0)
+                    {
+                        newVms = new(diff.Added.Count);
+                        foreach (DecodedEnemy enemy in diff.Added)
+                            newVms.Add(new InGameEnemyViewModel(enemy, _dataManager));
+                    }
+
+                    await _dispatcherService
+                        .InvokeOnUIAsync(
+                            () =>
                             {
-                                List<DecodedEnemy> filteredIncomingEnemies = FilterEnemiesWithDeathTimer(
-                                    incomingEnemiesSnapshot,
-                                    DateTimeOffset.UtcNow
-                                );
+                                // Remove stale VMs
+                                foreach (DecodedEnemy removed in diff.Removed)
+                                    if (_viewModelCache.Remove(removed.Id, out InGameEnemyViewModel? vm))
+                                        _enemies.Remove(vm);
 
-                                _logger.LogInformation(
-                                    "Processed {Count} filtered enemy entries on thread pool",
-                                    filteredIncomingEnemies.Count
-                                );
+                                // In-place property updates — no ObservableList mutation
+                                foreach (EntityChange<DecodedEnemy> change in diff.Changed)
+                                    if (_viewModelCache.TryGetValue(change.Current.Id, out InGameEnemyViewModel? vm))
+                                        vm.Update(change.Current);
 
-                                Dictionary<Ulid, DecodedEnemy> incomingEnemyDataMap = filteredIncomingEnemies
-                                    .AsValueEnumerable()
-                                    .ToDictionary(enemy => enemy.Id);
-
-                                List<InGameEnemyViewModel> desiredViewModels = new(filteredIncomingEnemies.Count);
-
-                                foreach (DecodedEnemy incomingEnemy in filteredIncomingEnemies.AsValueEnumerable())
+                                // Batch add — single CollectionChanged for all new enemies
+                                if (newVms is { Count: > 0 })
                                 {
-                                    if (
-                                        _viewModelCache.TryGetValue(
-                                            incomingEnemy.Id,
-                                            out InGameEnemyViewModel? existingVm
-                                        )
-                                    )
-                                    {
-                                        desiredViewModels.Add(existingVm);
-                                        _logger.LogTrace(
-                                            "Found existing ViewModel in cache on TP for {UniqueId}",
-                                            incomingEnemy.Id
-                                        );
-                                    }
-                                    else
-                                    {
-                                        _logger.LogDebug(
-                                            "Creating new ViewModel on TP for {UniqueId}",
-                                            incomingEnemy.Id
-                                        );
-                                        InGameEnemyViewModel newVm = new(incomingEnemy, dataManager);
-                                        desiredViewModels.Add(newVm);
-                                    }
+                                    foreach (InGameEnemyViewModel vm in newVms)
+                                        _viewModelCache[vm.UniqueId] = vm;
+                                    _enemies.AddRange(newVms);
                                 }
 
-                                _logger.LogInformation(
-                                    "ViewModel preparation complete on thread pool. {DesiredCount} desired VMs",
-                                    desiredViewModels.Count
-                                );
-
-                                await _dispatcherService
-                                    .InvokeOnUIAsync(
-                                        () =>
-                                        {
-                                            _logger.LogInformation("Applying enemy updates on UI thread");
-
-                                            foreach (InGameEnemyViewModel vm in desiredViewModels)
-                                                if (
-                                                    incomingEnemyDataMap.TryGetValue(
-                                                        vm.UniqueId,
-                                                        out DecodedEnemy? enemyData
-                                                    )
-                                                )
-                                                {
-                                                    vm.Update(enemyData);
-                                                    _viewModelCache[vm.UniqueId] = vm;
-                                                    _logger.LogTrace(
-                                                        "Updating ViewModel properties and ensuring in cache on UI thread for {UniqueId}",
-                                                        vm.UniqueId
-                                                    );
-                                                }
-                                                else
-                                                {
-                                                    _logger.LogWarning(
-                                                        "Enemy data not found in map for VM {UniqueId} during UI update. This should not happen",
-                                                        vm.UniqueId
-                                                    );
-                                                }
-
-                                            HashSet<Ulid> desiredUniqueIdsLookup =
-                                            [
-                                                .. desiredViewModels.Select(vm => vm.UniqueId),
-                                            ];
-                                            for (int i = _enemies.Count - 1; i >= 0; i--)
-                                            {
-                                                InGameEnemyViewModel currentVmInList = _enemies[i];
-                                                if (desiredUniqueIdsLookup.Contains(currentVmInList.UniqueId))
-                                                    continue;
-
-                                                _logger.LogDebug(
-                                                    "Removing ViewModel from Enemies list & Cache on UI thread for UniqueId: {UniqueId}",
-                                                    currentVmInList.UniqueId
-                                                );
-                                                _enemies.RemoveAt(i);
-                                                _viewModelCache.Remove(currentVmInList.UniqueId);
-                                            }
-
-                                            for (int i = 0; i < desiredViewModels.Count; i++)
-                                            {
-                                                InGameEnemyViewModel desiredVm = desiredViewModels[i];
-
-                                                int currentIndexInEnemies;
-                                                if (
-                                                    i < _enemies.Count
-                                                    && _enemies[i].UniqueId.Equals(desiredVm.UniqueId)
-                                                )
-                                                {
-                                                    currentIndexInEnemies = i;
-                                                    _logger.LogTrace(
-                                                        "ViewModel {UniqueId} already in correct position",
-                                                        desiredVm.UniqueId
-                                                    );
-                                                }
-                                                else
-                                                {
-                                                    currentIndexInEnemies = _enemies.IndexOf(desiredVm);
-                                                }
-
-                                                if (currentIndexInEnemies is -1)
-                                                {
-                                                    _logger.LogDebug(
-                                                        "Inserting ViewModel into ObservableList on UI thread: {UniqueId} at index {Index}",
-                                                        desiredVm.UniqueId,
-                                                        i
-                                                    );
-                                                    _enemies.Insert(i, desiredVm);
-                                                }
-                                                else if (currentIndexInEnemies != i)
-                                                {
-                                                    _logger.LogDebug(
-                                                        "Moving ViewModel in ObservableList on UI thread: {UniqueId} from index {FromIndex} to index {ToIndex}",
-                                                        desiredVm.UniqueId,
-                                                        currentIndexInEnemies,
-                                                        i
-                                                    );
-                                                    _enemies.Move(currentIndexInEnemies, i);
-                                                }
-                                            }
-
-                                            if (_enemies.Count != desiredViewModels.Count)
-                                            {
-                                                _logger.LogWarning(
-                                                    "_enemies count ({ECount}) differs from desiredViewModels count ({DesCount}) after sync. This indicates an issue in logic",
-                                                    _enemies.Count,
-                                                    desiredViewModels.Count
-                                                );
-                                            }
-
-                                            HasEnemies = _enemies.Count > 0;
-
-                                            _logger.LogInformation(
-                                                "UI update complete. Enemies ObservableList count: {Count}",
-                                                _enemies.Count
-                                            );
-                                        },
-                                        ct
-                                    )
-                                    .ConfigureAwait(false);
-
-                                _logger.LogInformation("Finished processing enemy snapshot cycle");
-                            }
-                            catch (OperationCanceledException)
-                            {
-                                _logger.LogTrace("Enemy snapshot processing cancelled");
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Error during enemy snapshot processing cycle");
-                            }
-
-                            break;
-                    }
+                                HasEnemies = _enemies.Count > 0;
+                                _logger.LogDebug("Enemies updated: {Count}", _enemies.Count);
+                            },
+                            ct
+                        )
+                        .ConfigureAwait(false);
                 },
                 AwaitOperation.Drop
             );

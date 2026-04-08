@@ -16,8 +16,9 @@ using OutbreakTracker2.Application.Services.Launcher;
 using OutbreakTracker2.Application.Services.Locator;
 using OutbreakTracker2.Application.Services.LogStorage;
 using OutbreakTracker2.Application.Services.Notifications;
-using OutbreakTracker2.Application.Services.PlayerTracking;
+using OutbreakTracker2.Application.Services.Reports;
 using OutbreakTracker2.Application.Services.Toasts;
+using OutbreakTracker2.Application.Services.Tracking;
 using OutbreakTracker2.Application.Views.Common;
 using OutbreakTracker2.Application.Views.Common.Character;
 using OutbreakTracker2.Application.Views.Common.Item;
@@ -115,8 +116,11 @@ internal static class CompositionRoot
 
         services.AddSingleton<IDispatcherService, DispatcherService>();
         services.AddSingleton<IToastService, ToastService>();
-        services.AddSingleton<IPlayerStateTracker, PlayerStateTracker>();
+        services.AddSingleton<ITrackerRegistry, TrackerRegistry>();
         services.AddSingleton<INotificationService, NotificationService>();
+        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<IRunReportService, RunReportService>();
+        services.AddSingleton<IRunReportWriter, MarkdownRunReportWriter>();
 
         services.AddSingleton<ILogDataStorageService, LogDataStorageService>();
         services.AddSingleton<ILogEntrySource>(sp => sp.GetRequiredService<ILogDataStorageService>());
