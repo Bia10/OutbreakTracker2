@@ -2,6 +2,7 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Reports.Events;
+using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Services.Reports;
 
@@ -42,7 +43,11 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
 
         sb.AppendLine("# Outbreak Tracker 2 — Scenario Run Report");
         sb.AppendLine();
-        sb.Append(CultureInfo.InvariantCulture, $"**Scenario:** {report.ScenarioId}  ").AppendLine();
+        sb.Append(
+                CultureInfo.InvariantCulture,
+                $"**Scenario:** {(string.IsNullOrEmpty(report.ScenarioName) ? report.ScenarioId : report.ScenarioName)}  "
+            )
+            .AppendLine();
         sb.Append(CultureInfo.InvariantCulture, $"**Session:** `{report.SessionId}`  ").AppendLine();
         sb.Append(CultureInfo.InvariantCulture, $"**Started:** {report.StartedAt:yyyy-MM-dd HH:mm:ss} UTC  ")
             .AppendLine();
@@ -96,14 +101,14 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
         AppendMonsterLog(sb, report);
         sb.AppendLine("## Event Timeline");
         sb.AppendLine();
-        sb.AppendLine("| Elapsed | Event |");
-        sb.AppendLine("|---------|-------|");
+        sb.AppendLine("| Scenario Time | Event |");
+        sb.AppendLine("|--------------|-------|");
 
         foreach (RunEvent evt in report.Events)
         {
-            TimeSpan elapsed = evt.OccurredAt - report.StartedAt;
+            string scenarioTime = TimeUtility.GetTimeFromFrames(evt.ScenarioFrame);
             string description = DescribeEvent(evt);
-            sb.Append(CultureInfo.InvariantCulture, $"| `{FormatElapsed(elapsed)}` | {description} |").AppendLine();
+            sb.Append(CultureInfo.InvariantCulture, $"| `{scenarioTime}` | {description} |").AppendLine();
         }
 
         sb.AppendLine();

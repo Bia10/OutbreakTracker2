@@ -5,6 +5,7 @@ namespace OutbreakTracker2.Application.Services.Reports;
 public sealed record RunReport(
     Ulid SessionId,
     string ScenarioId,
+    string ScenarioName,
     DateTimeOffset StartedAt,
     DateTimeOffset EndedAt,
     IReadOnlyList<RunEvent> Events

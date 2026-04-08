@@ -124,6 +124,7 @@ public sealed class RunReportService : IRunReportService
     {
         List<RunEvent> events;
         string scenarioId;
+        string scenarioName = _lastScenario.ScenarioName;
         DateTimeOffset startedAt;
         DateTimeOffset endedAt = _timeProvider.GetUtcNow();
 
@@ -138,7 +139,7 @@ public sealed class RunReportService : IRunReportService
             _sessionEvents = null;
         }
 
-        RunReport report = new(Ulid.NewUlid(), scenarioId, startedAt, endedAt, events);
+        RunReport report = new(Ulid.NewUlid(), scenarioId, scenarioName, startedAt, endedAt, events);
 
         RunReportStats stats = report.ComputeStats();
         _logger.LogInformation(
@@ -172,10 +173,11 @@ public sealed class RunReportService : IRunReportService
 
     private void Emit(RunEvent evt)
     {
+        RunEvent annotated = evt with { ScenarioFrame = _lastScenario.FrameCounter };
         lock (_sessionLock)
-            _sessionEvents?.Add(evt);
+            _sessionEvents?.Add(annotated);
 
-        _eventSubject.OnNext(evt);
+        _eventSubject.OnNext(annotated);
     }
 
     // Returns all active in-game players currently in the same room as the given enemy room ID,
@@ -218,8 +220,15 @@ public sealed class RunReportService : IRunReportService
                 _activePlayers.Remove(change.Current.Id);
         }
 
+        HashSet<Ulid>? removedActiveIds = null;
         foreach (DecodedInGamePlayer player in diff.Removed)
-            _activePlayers.Remove(player.Id);
+        {
+            if (_activePlayers.Remove(player.Id))
+            {
+                removedActiveIds ??= [];
+                removedActiveIds.Add(player.Id);
+            }
+        }
 
         bool hasActivePlayers = _activePlayers.Count > 0;
 
@@ -268,8 +277,10 @@ public sealed class RunReportService : IRunReportService
                 Emit(new PlayerVirusChangedEvent(now, curr.Id, curr.Name, prev.VirusPercentage, curr.VirusPercentage));
         }
 
-        foreach (DecodedInGamePlayer player in diff.Removed)
-            Emit(new PlayerLeftEvent(now, player.Id, player.Name, player.CurHealth, player.VirusPercentage));
+        if (removedActiveIds is not null)
+            foreach (DecodedInGamePlayer player in diff.Removed)
+                if (removedActiveIds.Contains(player.Id))
+                    Emit(new PlayerLeftEvent(now, player.Id, player.Name, player.CurHealth, player.VirusPercentage));
 
         // Auto-stop after leave events so they are captured inside the session.
         if (hadActivePlayers && !hasActivePlayers)
@@ -361,8 +372,28 @@ public sealed class RunReportService : IRunReportService
         ScenarioStatus previousStatus = _lastScenarioStatus;
         _lastScenarioStatus = scenario.Status;
 
-        if (previousStatus != _lastScenarioStatus && _monitoredStatuses.Contains(_lastScenarioStatus))
-            Emit(new ScenarioStatusChangedEvent(_timeProvider.GetUtcNow(), previousStatus, _lastScenarioStatus));
+        if (previousStatus != _lastScenarioStatus)
+        {
+            if (_monitoredStatuses.Contains(_lastScenarioStatus))
+                Emit(new ScenarioStatusChangedEvent(_timeProvider.GetUtcNow(), previousStatus, _lastScenarioStatus));
+
+            if (_lastScenarioStatus == ScenarioStatus.GameFinished)
+            {
+                DateTimeOffset finishTime = _timeProvider.GetUtcNow();
+                foreach (DecodedInGamePlayer player in _activePlayers.Values)
+                    Emit(
+                        new PlayerLeftEvent(
+                            finishTime,
+                            player.Id,
+                            player.Name,
+                            player.CurHealth,
+                            player.VirusPercentage
+                        )
+                    );
+                _activePlayers.Clear();
+                AutoStopSession();
+            }
+        }
 
         DecodedItem[] curr = scenario.Items;
         DecodedItem[]? prev = _prevItems;
