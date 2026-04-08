@@ -6,17 +6,17 @@ namespace OutbreakTracker2.Application.Services.Data;
 
 public interface IGameReaderFactory
 {
-    DoorReader CreateDoorReader(GameClient gameClient, IEEmemMemory eememMemory);
+    IDoorReader CreateDoorReader(IGameClient gameClient, IEEmemAddressReader eememMemory);
 
-    EnemiesReader CreateEnemiesReader(GameClient gameClient, IEEmemMemory eememMemory);
+    IEnemiesReader CreateEnemiesReader(IGameClient gameClient, IEEmemAddressReader eememMemory);
 
-    InGamePlayerReader CreateInGamePlayerReader(GameClient gameClient, IEEmemMemory eememMemory);
+    IInGamePlayerReader CreateInGamePlayerReader(IGameClient gameClient, IEEmemAddressReader eememMemory);
 
-    InGameScenarioReader CreateInGameScenarioReader(GameClient gameClient, IEEmemMemory eememMemory);
+    IInGameScenarioReader CreateInGameScenarioReader(IGameClient gameClient, IEEmemAddressReader eememMemory);
 
-    LobbyRoomPlayerReader CreateLobbyRoomPlayerReader(GameClient gameClient, IEEmemMemory eememMemory);
+    ILobbyRoomPlayerReader CreateLobbyRoomPlayerReader(IGameClient gameClient, IEEmemAddressReader eememMemory);
 
-    LobbyRoomReader CreateLobbyRoomReader(GameClient gameClient, IEEmemMemory eememMemory);
+    ILobbyRoomReader CreateLobbyRoomReader(IGameClient gameClient, IEEmemAddressReader eememMemory);
 
-    LobbySlotReader CreateLobbySlotReader(GameClient gameClient, IEEmemMemory eememMemory);
+    ILobbySlotReader CreateLobbySlotReader(IGameClient gameClient, IEEmemAddressReader eememMemory);
 }

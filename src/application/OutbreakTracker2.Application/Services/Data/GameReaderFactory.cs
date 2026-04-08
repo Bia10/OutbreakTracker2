@@ -13,24 +13,26 @@ public sealed class GameReaderFactory(
     private readonly ILoggerFactory _loggerFactory = loggerFactory;
     private readonly IEnumerable<IDoorAddressProvider> _doorAddressProviders = doorAddressProviders;
 
-    public DoorReader CreateDoorReader(GameClient gameClient, IEEmemMemory eememMemory) =>
-        new(gameClient, eememMemory, _loggerFactory.CreateLogger<DoorReader>(), _doorAddressProviders);
+    public IDoorReader CreateDoorReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
+        new DoorReader(gameClient, eememMemory, _loggerFactory.CreateLogger<DoorReader>(), _doorAddressProviders);
 
-    public EnemiesReader CreateEnemiesReader(GameClient gameClient, IEEmemMemory eememMemory) =>
-        new(gameClient, eememMemory, _loggerFactory.CreateLogger<EnemiesReader>());
+    public IEnemiesReader CreateEnemiesReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
+        new EnemiesReader(gameClient, eememMemory, _loggerFactory.CreateLogger<EnemiesReader>());
 
-    public InGamePlayerReader CreateInGamePlayerReader(GameClient gameClient, IEEmemMemory eememMemory) =>
-        new(gameClient, eememMemory, _loggerFactory.CreateLogger<InGamePlayerReader>());
+    public IInGamePlayerReader CreateInGamePlayerReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
+        new InGamePlayerReader(gameClient, eememMemory, _loggerFactory.CreateLogger<InGamePlayerReader>());
 
-    public InGameScenarioReader CreateInGameScenarioReader(GameClient gameClient, IEEmemMemory eememMemory) =>
-        new(gameClient, eememMemory, _loggerFactory.CreateLogger<InGameScenarioReader>());
+    public IInGameScenarioReader CreateInGameScenarioReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
+        new InGameScenarioReader(gameClient, eememMemory, _loggerFactory.CreateLogger<InGameScenarioReader>());
 
-    public LobbyRoomPlayerReader CreateLobbyRoomPlayerReader(GameClient gameClient, IEEmemMemory eememMemory) =>
-        new(gameClient, eememMemory, _loggerFactory.CreateLogger<LobbyRoomPlayerReader>());
+    public ILobbyRoomPlayerReader CreateLobbyRoomPlayerReader(
+        IGameClient gameClient,
+        IEEmemAddressReader eememMemory
+    ) => new LobbyRoomPlayerReader(gameClient, eememMemory, _loggerFactory.CreateLogger<LobbyRoomPlayerReader>());
 
-    public LobbyRoomReader CreateLobbyRoomReader(GameClient gameClient, IEEmemMemory eememMemory) =>
-        new(gameClient, eememMemory, _loggerFactory.CreateLogger<LobbyRoomReader>());
+    public ILobbyRoomReader CreateLobbyRoomReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
+        new LobbyRoomReader(gameClient, eememMemory, _loggerFactory.CreateLogger<LobbyRoomReader>());
 
-    public LobbySlotReader CreateLobbySlotReader(GameClient gameClient, IEEmemMemory eememMemory) =>
-        new(gameClient, eememMemory, _loggerFactory.CreateLogger<LobbySlotReader>());
+    public ILobbySlotReader CreateLobbySlotReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
+        new LobbySlotReader(gameClient, eememMemory, _loggerFactory.CreateLogger<LobbySlotReader>());
 }

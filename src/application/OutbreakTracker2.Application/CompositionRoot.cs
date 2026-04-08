@@ -116,7 +116,7 @@ internal static class CompositionRoot
         services.AddSingleton<IDispatcherService, DispatcherService>();
         services.AddSingleton<IToastService, ToastService>();
         services.AddSingleton<IPlayerStateTracker, PlayerStateTracker>();
-        services.AddSingleton<NotificationService>();
+        services.AddSingleton<INotificationService, NotificationService>();
 
         services.AddSingleton<ILogDataStorageService, LogDataStorageService>();
         services.AddSingleton<ILogEntrySource>(sp => sp.GetRequiredService<ILogDataStorageService>());

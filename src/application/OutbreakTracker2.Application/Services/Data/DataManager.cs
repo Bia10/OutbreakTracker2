@@ -14,19 +14,18 @@ public sealed class DataManager : IDataManager, IDisposable
     private readonly ILogger<IDataManager> _logger;
     private readonly IEEmemMemory _eememMemory;
     private readonly IGameReaderFactory _readerFactory;
-    private GameClient? _gameClient;
     private IDisposable? _updateSubscription;
     private IDisposable? _loggingSubscriptions;
     private IDisposable? _processSubscription;
     private CancellationTokenSource? _updateCts;
 
-    private DoorReader? _doorReader;
-    private EnemiesReader? _enemiesReader;
-    private InGamePlayerReader? _inGamePlayerReader;
-    private InGameScenarioReader? _inGameScenarioReader;
-    private LobbyRoomPlayerReader? _lobbyRoomPlayerReader;
-    private LobbyRoomReader? _lobbyRoomReader;
-    private LobbySlotReader? _lobbySlotReader;
+    private IDoorReader? _doorReader;
+    private IEnemiesReader? _enemiesReader;
+    private IInGamePlayerReader? _inGamePlayerReader;
+    private IInGameScenarioReader? _inGameScenarioReader;
+    private ILobbyRoomPlayerReader? _lobbyRoomPlayerReader;
+    private ILobbyRoomReader? _lobbyRoomReader;
+    private ILobbySlotReader? _lobbySlotReader;
 
     private readonly ReactiveProperty<DecodedDoor[]> _doorsState = new([]);
     private readonly ReactiveProperty<DecodedEnemy[]> _enemiesState = new([]);
@@ -36,7 +35,7 @@ public sealed class DataManager : IDataManager, IDisposable
     private readonly ReactiveProperty<DecodedLobbyRoomPlayer[]> _lobbyRoomPlayersState = new([]);
     private readonly ReactiveProperty<DecodedLobbySlot[]> _lobbySlotsState = new([]);
 
-    private bool IsInitialized { get; set; }
+    private volatile bool _isInitialized;
     private bool _wasInScenario;
 
     public Observable<DecodedDoor[]> DoorsObservable { get; }
@@ -116,11 +115,11 @@ public sealed class DataManager : IDataManager, IDisposable
         _loggingSubscriptions = Disposable.Combine(subscriptions);
     }
 
-    public async ValueTask InitializeAsync(GameClient gameClient, CancellationToken cancellationToken)
+    public async ValueTask InitializeAsync(IGameClient gameClient, CancellationToken cancellationToken)
     {
-        _gameClient = gameClient ?? throw new ArgumentNullException(nameof(gameClient));
+        ArgumentNullException.ThrowIfNull(gameClient);
 
-        if (IsInitialized)
+        if (_isInitialized)
         {
             _logger.LogWarning("DataManager is already initialized. Skipping re-initialization.");
             return;
@@ -128,21 +127,21 @@ public sealed class DataManager : IDataManager, IDisposable
 
         _logger.LogInformation("Attempting to initialize DataManager and EEmemory connection");
 
-        bool eememInitialized = await _eememMemory
-            .InitializeAsync(_gameClient, cancellationToken)
-            .ConfigureAwait(false);
+        bool eememInitialized = await _eememMemory.InitializeAsync(gameClient, cancellationToken).ConfigureAwait(false);
         if (!eememInitialized)
         {
-            throw new InvalidOperationException("Failed to initialize EEmemory.");
+            throw new InvalidOperationException(
+                $"Failed to initialize EEmemory for process '{gameClient.Process?.ProcessName}' (PID: {gameClient.Process?.Id})."
+            );
         }
 
-        _doorReader = _readerFactory.CreateDoorReader(_gameClient, _eememMemory);
-        _enemiesReader = _readerFactory.CreateEnemiesReader(_gameClient, _eememMemory);
-        _inGamePlayerReader = _readerFactory.CreateInGamePlayerReader(_gameClient, _eememMemory);
-        _inGameScenarioReader = _readerFactory.CreateInGameScenarioReader(_gameClient, _eememMemory);
-        _lobbyRoomPlayerReader = _readerFactory.CreateLobbyRoomPlayerReader(_gameClient, _eememMemory);
-        _lobbyRoomReader = _readerFactory.CreateLobbyRoomReader(_gameClient, _eememMemory);
-        _lobbySlotReader = _readerFactory.CreateLobbySlotReader(_gameClient, _eememMemory);
+        _doorReader = _readerFactory.CreateDoorReader(gameClient, _eememMemory);
+        _enemiesReader = _readerFactory.CreateEnemiesReader(gameClient, _eememMemory);
+        _inGamePlayerReader = _readerFactory.CreateInGamePlayerReader(gameClient, _eememMemory);
+        _inGameScenarioReader = _readerFactory.CreateInGameScenarioReader(gameClient, _eememMemory);
+        _lobbyRoomPlayerReader = _readerFactory.CreateLobbyRoomPlayerReader(gameClient, _eememMemory);
+        _lobbyRoomReader = _readerFactory.CreateLobbyRoomReader(gameClient, _eememMemory);
+        _lobbySlotReader = _readerFactory.CreateLobbySlotReader(gameClient, _eememMemory);
 
         _updateCts?.Cancel();
         _updateCts?.Dispose();
@@ -197,7 +196,7 @@ public sealed class DataManager : IDataManager, IDisposable
 
         _updateSubscription = Disposable.Combine(fastSubscription, slowSubscription);
 
-        IsInitialized = true;
+        _isInitialized = true;
         _logger.LogInformation("Data manager has been initialized and update loop started");
     }
 
@@ -330,8 +329,7 @@ public sealed class DataManager : IDataManager, IDisposable
         _wasInScenario = false;
         ResetInGameData();
 
-        _gameClient = null;
-        IsInitialized = false;
+        _isInitialized = false;
         _logger.LogInformation("DataManager update loops stopped; ready for re-initialization.");
     }
 

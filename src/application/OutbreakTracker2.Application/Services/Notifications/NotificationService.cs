@@ -9,7 +9,7 @@ public sealed class NotificationService(
     IToastService toastService,
     IPlayerStateTracker playerStateTracker,
     IDataManager dataManager
-) : IDisposable
+) : INotificationService
 {
     private readonly IDisposable _playerStateChangeSubscription = playerStateTracker.PlayerStateChanges.Subscribe(
         playerStateChangedEvent =>

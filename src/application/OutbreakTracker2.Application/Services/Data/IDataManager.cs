@@ -34,5 +34,5 @@ public interface IDataManager
 
     public Observable<DecodedLobbySlot[]> LobbySlotsObservable { get; }
 
-    public ValueTask InitializeAsync(GameClient gameClient, CancellationToken cancellationToken);
+    public ValueTask InitializeAsync(IGameClient gameClient, CancellationToken cancellationToken);
 }
