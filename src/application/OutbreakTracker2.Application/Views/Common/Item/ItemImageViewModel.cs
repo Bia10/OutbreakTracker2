@@ -37,7 +37,7 @@ public class ItemImageViewModel : ObservableObject
             return ValueTask.CompletedTask;
 
         _currentSpriteName = itemName;
-        _logger.LogDebug("Requesting item image update for item: {SpriteName}", itemName);
+        _logger.LogTrace("Requesting item image update for item: {SpriteName}", itemName);
 
         return ImageViewModel.UpdateImageAsync(itemName, $"Item Image for {itemName}");
     }
