@@ -7,33 +7,33 @@ public sealed record DecodedLobbySlot
 {
     [JsonInclude]
     [JsonPropertyName(nameof(SlotNumber))]
-    public short SlotNumber { get; set; }
+    public short SlotNumber { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Status))]
-    public string Status { get; set; } = string.Empty;
+    public string Status { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(IsPassProtected))]
-    public string IsPassProtected { get; set; } = string.Empty;
+    public bool IsPassProtected { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(CurPlayers))]
-    public short CurPlayers { get; set; }
+    public short CurPlayers { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(MaxPlayers))]
-    public short MaxPlayers { get; set; } = GameConstants.MaxPlayers;
+    public short MaxPlayers { get; init; } = GameConstants.MaxPlayers;
 
     [JsonInclude]
     [JsonPropertyName(nameof(ScenarioId))]
-    public string ScenarioId { get; set; } = string.Empty;
+    public string ScenarioId { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(Version))]
-    public string Version { get; set; } = string.Empty;
+    public string Version { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(Title))]
-    public string Title { get; set; } = string.Empty;
+    public string Title { get; init; } = string.Empty;
 }

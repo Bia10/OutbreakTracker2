@@ -6,61 +6,61 @@ public sealed record DecodedEnemy
 {
     [JsonInclude]
     [JsonPropertyName(nameof(Id))]
-    public Ulid Id { get; set; }
+    public Ulid Id { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Enabled))]
-    public byte Enabled;
+    public byte Enabled { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(InGame))]
-    public byte InGame;
+    public byte InGame { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(SlotId))]
-    public short SlotId { get; set; }
+    public short SlotId { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(RoomId))]
-    public byte RoomId { get; set; }
+    public byte RoomId { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(TypeId))]
-    public byte TypeId { get; set; }
+    public byte TypeId { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(NameId))]
-    public byte NameId { get; set; }
+    public byte NameId { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Name))]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(CurHp))]
-    public ushort CurHp { get; set; }
+    public ushort CurHp { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(MaxHp))]
-    public ushort MaxHp { get; set; }
+    public ushort MaxHp { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(BossType))]
-    public byte BossType { get; set; }
+    public byte BossType { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Status))]
-    public byte Status { get; set; }
+    public byte Status { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(RoomName))]
-    public string RoomName { get; set; } = string.Empty;
+    public string RoomName { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(PositionX))]
-    public float PositionX { get; set; }
+    public float PositionX { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(PositionY))]
-    public float PositionY { get; set; }
+    public float PositionY { get; init; }
 }

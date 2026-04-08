@@ -7,25 +7,25 @@ public sealed record DecodedLobbyRoom
 {
     [JsonInclude]
     [JsonPropertyName(nameof(Status))]
-    public string Status { get; set; } = string.Empty;
+    public string Status { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(TimeLeft))]
-    public string TimeLeft { get; set; } = string.Empty;
+    public string TimeLeft { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(MaxPlayer))]
-    public short MaxPlayer { get; set; } = GameConstants.MaxPlayers;
+    public short MaxPlayer { get; init; } = GameConstants.MaxPlayers;
 
     [JsonInclude]
     [JsonPropertyName(nameof(CurPlayer))]
-    public short CurPlayer { get; set; }
+    public short CurPlayer { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Difficulty))]
-    public string Difficulty { get; set; } = string.Empty;
+    public string Difficulty { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(ScenarioName))]
-    public string ScenarioName { get; set; } = string.Empty;
+    public string ScenarioName { get; init; } = string.Empty;
 }

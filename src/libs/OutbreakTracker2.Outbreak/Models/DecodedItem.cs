@@ -6,45 +6,45 @@ public sealed record DecodedItem
 {
     [JsonInclude]
     [JsonPropertyName(nameof(SlotIndex))]
-    public byte SlotIndex { get; set; }
+    public byte SlotIndex { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Id))]
-    public short Id { get; set; }
+    public short Id { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(En))]
-    public short En { get; set; }
+    public short En { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(TypeName))]
-    public string TypeName { get; set; } = string.Empty;
+    public string TypeName { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(Quantity))]
-    public short Quantity { get; set; }
+    public short Quantity { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(PickedUp))]
-    public short PickedUp { get; set; }
+    public short PickedUp { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Present))]
-    public int Present { get; set; }
+    public int Present { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Mix))]
-    public byte Mix { get; set; }
+    public byte Mix { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(RoomId))]
-    public byte RoomId { get; set; }
+    public byte RoomId { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(RoomName))]
-    public string RoomName { get; set; } = string.Empty;
+    public string RoomName { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(PickedUpByName))]
-    public string PickedUpByName { get; set; } = string.Empty;
+    public string PickedUpByName { get; init; } = string.Empty;
 }

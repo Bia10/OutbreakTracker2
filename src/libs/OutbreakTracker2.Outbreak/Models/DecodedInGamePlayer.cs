@@ -6,129 +6,129 @@ public sealed record DecodedInGamePlayer
 {
     [JsonInclude]
     [JsonPropertyName(nameof(Id))]
-    public Ulid Id { get; set; }
+    public Ulid Id { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(IsEnabled))]
-    public bool IsEnabled { get; set; }
+    public bool IsEnabled { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(IsInGame))]
-    public bool IsInGame { get; set; }
+    public bool IsInGame { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Type))]
-    public string Type { get; set; } = string.Empty;
+    public string Type { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(NameId))]
-    public byte NameId { get; set; }
+    public byte NameId { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Name))]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(CurHealth))]
-    public short CurHealth { get; set; }
+    public short CurHealth { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(MaxHealth))]
-    public short MaxHealth { get; set; }
+    public short MaxHealth { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(HealthPercentage))]
-    public double HealthPercentage { get; set; }
+    public double HealthPercentage { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Condition))]
-    public string Condition { get; set; } = string.Empty;
+    public string Condition { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(BleedTime))]
-    public ushort BleedTime { get; set; }
+    public ushort BleedTime { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(AntiVirusTime))]
-    public ushort AntiVirusTime { get; set; }
+    public ushort AntiVirusTime { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(AntiVirusGTime))]
-    public ushort AntiVirusGTime { get; set; }
+    public ushort AntiVirusGTime { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(HerbTime))]
-    public ushort HerbTime { get; set; }
+    public ushort HerbTime { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(CurVirus))]
-    public int CurVirus { get; set; }
+    public int CurVirus { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(MaxVirus))]
-    public int MaxVirus { get; set; }
+    public int MaxVirus { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(VirusPercentage))]
-    public double VirusPercentage { get; set; }
+    public double VirusPercentage { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(CritBonus))]
-    public float CritBonus { get; set; }
+    public float CritBonus { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Size))]
-    public float Size { get; set; }
+    public float Size { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Power))]
-    public float Power { get; set; }
+    public float Power { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Speed))]
-    public float Speed { get; set; }
+    public float Speed { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(PositionX))]
-    public float PositionX { get; set; }
+    public float PositionX { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(PositionY))]
-    public float PositionY { get; set; }
+    public float PositionY { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(RoomId))]
-    public short RoomId { get; set; }
+    public short RoomId { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(RoomName))]
-    public string RoomName { get; set; } = string.Empty;
+    public string RoomName { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(Status))]
-    public string Status { get; set; } = string.Empty;
+    public string Status { get; init; } = string.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(Inventory))]
-    public byte[] Inventory { get; set; } = new byte[4];
+    public byte[] Inventory { get; init; } = new byte[4];
 
     [JsonInclude]
     [JsonPropertyName(nameof(SpecialItem))]
-    public byte SpecialItem { get; set; }
+    public byte SpecialItem { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(SpecialInventory))]
-    public byte[] SpecialInventory { get; set; } = new byte[4];
+    public byte[] SpecialInventory { get; init; } = new byte[4];
 
     [JsonInclude]
     [JsonPropertyName(nameof(DeadInventory))]
-    public byte[] DeadInventory { get; set; } = new byte[4];
+    public byte[] DeadInventory { get; init; } = new byte[4];
 
     [JsonInclude]
     [JsonPropertyName(nameof(SpecialDeadInventory))]
-    public byte[] SpecialDeadInventory { get; set; } = new byte[4];
+    public byte[] SpecialDeadInventory { get; init; } = new byte[4];
 
     [JsonInclude]
     [JsonPropertyName(nameof(EquippedItem))]
-    public byte EquippedItem { get; set; }
+    public byte EquippedItem { get; init; }
 }
