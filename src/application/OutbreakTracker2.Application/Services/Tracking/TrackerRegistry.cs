@@ -29,6 +29,7 @@ public sealed class TrackerRegistry : ITrackerRegistry, IDisposable
         );
 
         RegisterDefaultPlayerRules(Players);
+        RegisterDefaultEnemyRules(Enemies);
 
         AllAlerts = Observable.Merge(
             Enemies.Alerts,
@@ -36,6 +37,20 @@ public sealed class TrackerRegistry : ITrackerRegistry, IDisposable
             Players.Alerts,
             LobbyPlayers.Alerts,
             LobbySlots.Alerts
+        );
+    }
+
+    private static void RegisterDefaultEnemyRules(IEntityTracker<DecodedEnemy> enemies)
+    {
+        enemies.AddRule(
+            new PredicateAlertRule<DecodedEnemy>(
+                (cur, prev) => cur.Enabled != 0 && cur.MaxHp > 0 && cur.SlotId > 0 && (prev?.Enabled == 0),
+                cur => new AlertNotification(
+                    "Mob Spawned",
+                    $"{cur.Name} spawned in room {cur.RoomId}!",
+                    AlertLevel.Info
+                )
+            )
         );
     }
 
