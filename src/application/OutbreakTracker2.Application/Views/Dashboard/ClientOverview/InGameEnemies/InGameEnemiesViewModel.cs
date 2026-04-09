@@ -5,7 +5,6 @@ using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Services.Tracking;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy;
-using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
 
@@ -22,7 +21,10 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
     private readonly Dictionary<Ulid, InGameEnemyViewModel> _viewModelCache = [];
     private readonly ObservableList<InGameEnemyViewModel> _enemies = [];
     private readonly Dictionary<Ulid, DateTimeOffset> _enemyDeathTimes = [];
-    private DecodedEnemy[] _previousFilteredEnemies = [];
+
+    // Enemies removed from the raw stream before their death-display grace period expired.
+    // Key = entity Ulid, Value = absolute expiry time.
+    private readonly Dictionary<Ulid, DateTimeOffset> _pendingRemovals = [];
 
     public NotifyCollectionChangedSynchronizedViewList<InGameEnemyViewModel> EnemiesView { get; }
 
@@ -32,7 +34,8 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
     public InGameEnemiesViewModel(
         ILogger<InGameEnemiesViewModel> logger,
         IDispatcherService dispatcherService,
-        IDataManager dataManager
+        IDataManager dataManager,
+        ITrackerRegistry trackerRegistry
     )
     {
         _logger = logger;
@@ -41,54 +44,133 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
 
         EnemiesView = _enemies.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
-        _subscription = dataManager
-            .EnemiesObservable.ObserveOnThreadPool()
+        _subscription = trackerRegistry
+            .Enemies.Changes.Diffs.ObserveOnThreadPool()
             .SubscribeAwait(
-                async (snapshot, ct) =>
+                async (diff, ct) =>
                 {
-                    if (snapshot.Length > GameConstants.MaxEnemies2)
+                    DateTimeOffset now = DateTimeOffset.UtcNow;
+
+                    // Detect death transitions in the Changed stream, keep alive entries up to date
+                    foreach (EntityChange<DecodedEnemy> change in diff.Changed)
                     {
-                        _logger.LogWarning(
-                            "Received {Length} enemies \u2014 exceeds in-game limit, skipping",
-                            snapshot.Length
+                        string curHs = InGameEnemyViewModel.GetEnemiesHealthStatusStringForFileTwo(
+                            change.Current.SlotId,
+                            change.Current.NameId,
+                            change.Current.CurHp,
+                            change.Current.MaxHp
                         );
-                        return;
+                        string prevHs = InGameEnemyViewModel.GetEnemiesHealthStatusStringForFileTwo(
+                            change.Previous.SlotId,
+                            change.Previous.NameId,
+                            change.Previous.CurHp,
+                            change.Previous.MaxHp
+                        );
+
+                        bool isDead = InGameEnemyViewModel.IsDeadStatus(curHs);
+                        bool wasDead = InGameEnemyViewModel.IsDeadStatus(prevHs);
+
+                        if (isDead && !wasDead)
+                        {
+                            _enemyDeathTimes.TryAdd(change.Current.Id, now);
+                            _logger.LogDebug("Enemy {Id} died at {Time}", change.Current.Id, now);
+                        }
+                        else if (!isDead)
+                        {
+                            _enemyDeathTimes.Remove(change.Current.Id);
+                        }
                     }
 
-                    // Apply stateful death-timer filter on the thread pool
-                    List<DecodedEnemy> filteredList = FilterEnemiesWithDeathTimer(snapshot, DateTimeOffset.UtcNow);
-                    DecodedEnemy[] filtered = [.. filteredList];
-
-                    CollectionDiff<DecodedEnemy> diff = CollectionDiffer.Diff(_previousFilteredEnemies, filtered);
-                    _previousFilteredEnemies = filtered;
-
-                    if (diff.Added.Count == 0 && diff.Removed.Count == 0 && diff.Changed.Count == 0)
-                        return;
-
-                    _logger.LogDebug(
-                        "Enemy diff: +{Added} -{Removed} ~{Changed}",
-                        diff.Added.Count,
-                        diff.Removed.Count,
-                        diff.Changed.Count
-                    );
-
-                    // Create VMs for new entities on thread pool
+                    // Prepare VMs for newly-added enemies
                     List<InGameEnemyViewModel>? newVms = null;
                     if (diff.Added.Count > 0)
                     {
                         newVms = new(diff.Added.Count);
                         foreach (DecodedEnemy enemy in diff.Added)
+                        {
+                            if (!IsEnemyBasicallyValid(enemy))
+                                continue;
+
+                            string hs = InGameEnemyViewModel.GetEnemiesHealthStatusStringForFileTwo(
+                                enemy.SlotId,
+                                enemy.NameId,
+                                enemy.CurHp,
+                                enemy.MaxHp
+                            );
+                            if (InGameEnemyViewModel.IsDeadStatus(hs))
+                                _enemyDeathTimes.TryAdd(enemy.Id, now);
+
                             newVms.Add(new InGameEnemyViewModel(enemy, _dataManager));
+                        }
                     }
+
+                    // Classify removals: immediate vs. within the grace period
+                    List<Ulid>? immediateRemovals = null;
+                    foreach (DecodedEnemy removed in diff.Removed)
+                    {
+                        if (
+                            _enemyDeathTimes.TryGetValue(removed.Id, out DateTimeOffset deathTime)
+                            && (now - deathTime) < DeadEnemyDisplayDuration
+                        )
+                        {
+                            _pendingRemovals[removed.Id] = deathTime + DeadEnemyDisplayDuration;
+                        }
+                        else
+                        {
+                            immediateRemovals ??= [];
+                            immediateRemovals.Add(removed.Id);
+                        }
+
+                        _enemyDeathTimes.Remove(removed.Id);
+                    }
+
+                    // Sweep pending removals whose grace period has now elapsed
+                    List<Ulid>? expiredRemovals = null;
+                    foreach ((Ulid id, DateTimeOffset expiryTime) in _pendingRemovals)
+                    {
+                        if (now >= expiryTime)
+                        {
+                            expiredRemovals ??= [];
+                            expiredRemovals.Add(id);
+                        }
+                    }
+
+                    if (expiredRemovals is not null)
+                        foreach (Ulid id in expiredRemovals)
+                            _pendingRemovals.Remove(id);
+
+                    bool hasChanges =
+                        immediateRemovals is not null
+                        || expiredRemovals is not null
+                        || (newVms is { Count: > 0 })
+                        || diff.Changed.Count > 0;
+
+                    if (!hasChanges)
+                        return;
+
+                    _logger.LogDebug(
+                        "Enemy diff: +{Added} -{Removed} ~{Changed} expired:{Expired}",
+                        newVms?.Count ?? 0,
+                        (immediateRemovals?.Count ?? 0) + (expiredRemovals?.Count ?? 0),
+                        diff.Changed.Count,
+                        expiredRemovals?.Count ?? 0
+                    );
 
                     await _dispatcherService
                         .InvokeOnUIAsync(
                             () =>
                             {
-                                // Remove stale VMs
-                                foreach (DecodedEnemy removed in diff.Removed)
-                                    if (_viewModelCache.Remove(removed.Id, out InGameEnemyViewModel? vm))
-                                        _enemies.Remove(vm);
+                                // Immediate removals — entity left stream with no active grace period
+                                if (immediateRemovals is not null)
+                                    foreach (Ulid id in immediateRemovals)
+                                        if (_viewModelCache.Remove(id, out InGameEnemyViewModel? vm))
+                                            _enemies.Remove(vm);
+
+                                // Expired grace-period removals
+                                if (expiredRemovals is not null)
+                                    foreach (Ulid id in expiredRemovals)
+                                        if (_viewModelCache.Remove(id, out InGameEnemyViewModel? vm))
+                                            _enemies.Remove(vm);
 
                                 // In-place property updates — no ObservableList mutation
                                 foreach (EntityChange<DecodedEnemy> change in diff.Changed)
@@ -115,69 +197,13 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
     }
 
     /// <summary>
-    /// Determines if a DecodedEnemy passes basic validity checks (has a name, valid slot, not in spawn room).
-    /// Does not filter on HP — death timer logic handles that separately.
+    /// Determines if a <see cref="DecodedEnemy"/> passes basic validity checks (has a name,
+    /// valid slot, not in spawn room). Death-timer logic is handled separately.
     /// </summary>
     private static bool IsEnemyBasicallyValid(DecodedEnemy enemy) =>
         !string.IsNullOrEmpty(enemy.Name)
         && !enemy.RoomName.Equals("Spawning/Scenario Cleared", StringComparison.Ordinal)
         && enemy is { SlotId: > 0, MaxHp: > 0 };
-
-    /// <summary>
-    /// Filters the snapshot to include alive enemies and recently-dead enemies (within the 5-second grace period).
-    /// Dead enemies are tracked by time-of-death so they remain visible briefly before removal.
-    /// </summary>
-    private List<DecodedEnemy> FilterEnemiesWithDeathTimer(DecodedEnemy[] snapshot, DateTimeOffset now)
-    {
-        List<DecodedEnemy> result = new(snapshot.Length);
-
-        foreach (DecodedEnemy enemy in snapshot)
-        {
-            if (!IsEnemyBasicallyValid(enemy))
-                continue;
-
-            string healthStatus = InGameEnemyViewModel.GetEnemiesHealthStatusStringForFileTwo(
-                enemy.SlotId,
-                enemy.NameId,
-                enemy.CurHp,
-                enemy.MaxHp
-            );
-            bool isDead = InGameEnemyViewModel.IsDeadStatus(healthStatus);
-
-            if (!isDead)
-            {
-                _enemyDeathTimes.Remove(enemy.Id);
-                result.Add(enemy);
-                continue;
-            }
-
-            // Enemy is dead: record first time of death and include within the grace period
-            if (!_enemyDeathTimes.TryGetValue(enemy.Id, out DateTimeOffset deathTime))
-            {
-                deathTime = now;
-                _enemyDeathTimes[enemy.Id] = deathTime;
-                _logger.LogDebug("Enemy {UniqueId} died at {DeathTime}", enemy.Id, deathTime);
-            }
-
-            if ((now - deathTime) < DeadEnemyDisplayDuration)
-                result.Add(enemy);
-            else
-            {
-                _logger.LogDebug("Enemy {UniqueId} death grace period elapsed, removing from list", enemy.Id);
-                _enemyDeathTimes.Remove(enemy.Id);
-            }
-        }
-
-        // Clean up death-time entries for enemies no longer present in the snapshot
-        if (_enemyDeathTimes.Count > 0)
-        {
-            HashSet<Ulid> snapshotIds = snapshot.Select(e => e.Id).ToHashSet();
-            foreach (Ulid staleId in _enemyDeathTimes.Keys.Except(snapshotIds).ToList())
-                _enemyDeathTimes.Remove(staleId);
-        }
-
-        return result;
-    }
 
     public void Dispose()
     {
@@ -189,6 +215,7 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
             _enemies.Clear();
             _viewModelCache.Clear();
             _enemyDeathTimes.Clear();
+            _pendingRemovals.Clear();
             _logger.LogDebug("InGameEnemiesViewModel collections cleared on UI thread during dispose");
         });
 
