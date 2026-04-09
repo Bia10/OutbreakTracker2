@@ -32,9 +32,11 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
     private string _timeLeft = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PlayersDisplay))]
     private short _maxPlayer = GameConstants.MaxPlayers;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PlayersDisplay))]
     private short _curPlayer;
 
     [ObservableProperty]
@@ -82,7 +84,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
                     }
                     catch (OperationCanceledException)
                     {
-                        _logger.LogInformation("Lobby room data processing cancelled");
+                        _logger.LogTrace("Lobby room data processing cancelled");
                     }
                     catch (Exception ex)
                     {
@@ -97,7 +99,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
             .SubscribeAwait(
                 async (incomingPlayersSnapshot, cancellationToken) =>
                 {
-                    _logger.LogInformation(
+                    _logger.LogTrace(
                         "Processing lobby room players snapshot on thread pool with {Length} entries",
                         incomingPlayersSnapshot.Length
                     );
@@ -107,7 +109,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
                         .Where(IsPlayerActive)
                         .ToList();
 
-                    _logger.LogInformation(
+                    _logger.LogTrace(
                         "Processed {Count} filtered player entries on thread pool",
                         filteredIncomingPlayers.Count
                     );
@@ -171,7 +173,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
 
                         List<Ulid> vmUlidsToRemoveFromCache = [.. _viewModelCache.Keys.Except(desiredVmUlids)];
 
-                        _logger.LogInformation(
+                        _logger.LogTrace(
                             "Player ViewModel preparation complete on thread pool. {DesiredCount} desired VMs. {RemovedCount} VMs to potentially remove from cache",
                             desiredViewModels.Count,
                             vmUlidsToRemoveFromCache.Count
@@ -181,9 +183,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
                             .InvokeOnUIAsync(
                                 () =>
                                 {
-                                    _logger.LogInformation(
-                                        "Applying player updates and list synchronization on UI thread"
-                                    );
+                                    _logger.LogTrace("Applying player updates and list synchronization on UI thread");
 
                                     foreach (Ulid ulidToRemove in vmUlidsToRemoveFromCache)
                                     {
@@ -342,7 +342,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
                                             desiredViewModels.Count
                                         );
 
-                                    _logger.LogInformation(
+                                    _logger.LogTrace(
                                         "UI update complete. Players UI list count: {Count}",
                                         _playersInternal.Count
                                     );
@@ -351,11 +351,11 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
                             )
                             .ConfigureAwait(false);
 
-                        _logger.LogInformation("Finished processing lobby room players snapshot cycle");
+                        _logger.LogTrace("Finished processing lobby room players snapshot cycle");
                     }
                     catch (OperationCanceledException)
                     {
-                        _logger.LogInformation("Lobby room players snapshot processing cancelled");
+                        _logger.LogTrace("Lobby room players snapshot processing cancelled");
                     }
                     catch (Exception ex)
                     {
@@ -399,8 +399,6 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
                 _ = ScenarioImageViewModel.UpdateToDefaultImageAsync();
             }
         }
-
-        OnPropertyChanged(nameof(PlayersDisplay));
     }
 
     public async ValueTask DisposeAsync()
@@ -408,6 +406,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
         _logger.LogDebug("Disposing LobbyRoomViewModel asynchronously");
 
         _subscription.Dispose();
+        PlayersView.Dispose();
 
         await _dispatcherService
             .InvokeOnUIAsync(() =>

@@ -26,12 +26,16 @@ public sealed partial class LobbySlotViewModel : ObservableObject
     private string _status = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PlayersDisplay))]
+    [NotifyPropertyChangedFor(nameof(LockForeground))]
     private bool _isPassProtected;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PlayersDisplay))]
     private short _curPlayers;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PlayersDisplay))]
     private short _maxPlayers = GameConstants.MaxPlayers;
 
     [ObservableProperty]
@@ -43,11 +47,9 @@ public sealed partial class LobbySlotViewModel : ObservableObject
     [ObservableProperty]
     private string _title = string.Empty;
 
-    public bool IsPasswordProtectedBool => IsPassProtected;
-
     public string PlayersDisplay => $"{CurPlayers}/{MaxPlayers}";
 
-    public IBrush LockForeground => IsPasswordProtectedBool ? LockedBrush : UnlockedBrush;
+    public IBrush LockForeground => IsPassProtected ? LockedBrush : UnlockedBrush;
 
     public Ulid UniqueSlotId => Id;
 
@@ -76,10 +78,6 @@ public sealed partial class LobbySlotViewModel : ObservableObject
         ScenarioId = model.ScenarioId;
         Version = model.Version;
         Title = model.Title;
-
-        OnPropertyChanged(nameof(IsPasswordProtectedBool));
-        OnPropertyChanged(nameof(PlayersDisplay));
-        OnPropertyChanged(nameof(LockForeground));
 
         if (EnumUtility.TryParseByValueOrMember(ScenarioId, out Scenario scenarioType))
         {
