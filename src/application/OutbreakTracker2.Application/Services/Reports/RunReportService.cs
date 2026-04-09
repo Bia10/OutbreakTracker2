@@ -2,8 +2,10 @@
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Reports.Events;
 using OutbreakTracker2.Application.Services.Tracking;
+using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Utility;
 using R3;
 
 namespace OutbreakTracker2.Application.Services.Reports;
@@ -19,6 +21,7 @@ public sealed class RunReportService : IRunReportService
 
     // Modified only on the polling thread — no lock needed.
     private readonly Dictionary<Ulid, DecodedInGamePlayer> _activePlayers = [];
+    private readonly DecodedInGamePlayer?[] _activePlayersBySlot = new DecodedInGamePlayer?[GameConstants.MaxPlayers];
     private string _lastScenarioId = string.Empty;
     private DecodedInGameScenario _lastScenario = new();
     private ScenarioStatus _lastScenarioStatus = ScenarioStatus.None;
@@ -143,9 +146,9 @@ public sealed class RunReportService : IRunReportService
 
         RunReportStats stats = report.ComputeStats();
         _logger.LogInformation(
-            "Scenario tracking ended. Scenario: {ScenarioId} | Duration: {Duration} | Events: {EventCount} | "
+            "Scenario tracking ended. Scenario: {ScenarioName} | Duration: {Duration} | Events: {EventCount} | "
                 + "Kills: {Kills} | DamageTaken: {DamageTaken} | PeakVirus: {PeakVirus:F1}%",
-            scenarioId,
+            string.IsNullOrEmpty(scenarioName) ? scenarioId : scenarioName,
             report.Duration,
             events.Count,
             stats.TotalEnemyKills,
@@ -210,30 +213,48 @@ public sealed class RunReportService : IRunReportService
         // sees the current room positions and lifecycle checks see the new counts.
         foreach (DecodedInGamePlayer player in diff.Added)
             if (player.IsInGame)
+            {
                 _activePlayers[player.Id] = player;
+                _activePlayersBySlot[player.SlotIndex] = player;
+            }
 
         foreach (EntityChange<DecodedInGamePlayer> change in diff.Changed)
         {
             if (change.Current.IsInGame)
-                _activePlayers[change.Current.Id] = change.Current;
-            else
-                _activePlayers.Remove(change.Current.Id);
-        }
-
-        HashSet<Ulid>? removedActiveIds = null;
-        foreach (DecodedInGamePlayer player in diff.Removed)
-        {
-            if (_activePlayers.Remove(player.Id))
             {
-                removedActiveIds ??= [];
-                removedActiveIds.Add(player.Id);
+                _activePlayers[change.Current.Id] = change.Current;
+                _activePlayersBySlot[change.Current.SlotIndex] = change.Current;
+            }
+            else
+            {
+                _activePlayers.Remove(change.Current.Id);
+                _activePlayersBySlot[change.Current.SlotIndex] = null;
             }
         }
+
+        // During room transitions the game clears player memory temporarily.
+        // Keep stale player data rather than evicting and restarting the session.
+        bool isTransitional = IsTransitionalStatus(_lastScenarioStatus);
+
+        HashSet<Ulid>? removedActiveIds = null;
+        if (!isTransitional)
+            foreach (DecodedInGamePlayer player in diff.Removed)
+            {
+                if (_activePlayers.Remove(player.Id))
+                {
+                    _activePlayersBySlot[player.SlotIndex] = null;
+                    removedActiveIds ??= [];
+                    removedActiveIds.Add(player.Id);
+                }
+            }
 
         bool hasActivePlayers = _activePlayers.Count > 0;
 
         // Auto-start before join events so they are captured inside the session.
-        if (!hadActivePlayers && hasActivePlayers)
+        // Only start when actually in-game — this prevents a ghost session firing
+        // immediately after GameFinished clears _activePlayers and ProcessPlayerDiff
+        // re-adds them from the same diff tick.
+        if (!hadActivePlayers && hasActivePlayers && _lastScenarioStatus == ScenarioStatus.InGame)
             AutoStartSession();
 
         foreach (DecodedInGamePlayer player in diff.Added)
@@ -275,6 +296,25 @@ public sealed class RunReportService : IRunReportService
 
             if (prev.VirusPercentage != curr.VirusPercentage)
                 Emit(new PlayerVirusChangedEvent(now, curr.Id, curr.Name, prev.VirusPercentage, curr.VirusPercentage));
+
+            if (!string.Equals(prev.Status, curr.Status, StringComparison.Ordinal))
+                Emit(new PlayerStatusChangedEvent(now, curr.Id, curr.Name, prev.Status, curr.Status));
+
+            EmitEffectChange(now, curr, "Bleed", prev.BleedTime, curr.BleedTime);
+            EmitEffectChange(now, curr, "Herb", prev.HerbTime, curr.HerbTime);
+            EmitEffectChange(now, curr, "AntiVirus", prev.AntiVirusTime, curr.AntiVirusTime);
+            EmitEffectChange(now, curr, "AntiVirusG", prev.AntiVirusGTime, curr.AntiVirusGTime);
+
+            EmitInventoryChanges(now, curr, prev.Inventory, curr.Inventory, InventoryKind.Main);
+            EmitInventoryChanges(now, curr, prev.SpecialInventory, curr.SpecialInventory, InventoryKind.Special);
+            EmitInventoryChanges(now, curr, prev.DeadInventory, curr.DeadInventory, InventoryKind.Dead);
+            EmitInventoryChanges(
+                now,
+                curr,
+                prev.SpecialDeadInventory,
+                curr.SpecialDeadInventory,
+                InventoryKind.SpecialDead
+            );
         }
 
         if (removedActiveIds is not null)
@@ -283,8 +323,58 @@ public sealed class RunReportService : IRunReportService
                     Emit(new PlayerLeftEvent(now, player.Id, player.Name, player.CurHealth, player.VirusPercentage));
 
         // Auto-stop after leave events so they are captured inside the session.
-        if (hadActivePlayers && !hasActivePlayers)
+        // Do NOT stop during transient loading states — player data is temporarily absent.
+        if (hadActivePlayers && !hasActivePlayers && !isTransitional)
             AutoStopSession();
+    }
+
+    // PickedUp encodes the player slot as a 1-based index (1 = slot 0, 2 = slot 1, …).
+    // Returns the player's name if the slot is known, otherwise a fallback label.
+    private string ResolvePickupHolderName(short pickedUp)
+    {
+        int slotIndex = pickedUp - 1;
+        if (slotIndex >= 0 && slotIndex < _activePlayersBySlot.Length)
+        {
+            DecodedInGamePlayer? player = _activePlayersBySlot[slotIndex];
+            if (player is not null && !string.IsNullOrEmpty(player.Name))
+                return player.Name;
+        }
+
+        return $"P{pickedUp}";
+    }
+
+    private void EmitEffectChange(
+        DateTimeOffset now,
+        DecodedInGamePlayer player,
+        string effectName,
+        ushort prevTime,
+        ushort currTime
+    )
+    {
+        if (prevTime == 0 && currTime > 0)
+            Emit(new PlayerEffectChangedEvent(now, player.Id, player.Name, effectName, IsApplied: true));
+        else if (prevTime > 0 && currTime == 0)
+            Emit(new PlayerEffectChangedEvent(now, player.Id, player.Name, effectName, IsApplied: false));
+    }
+
+    private void EmitInventoryChanges(
+        DateTimeOffset now,
+        DecodedInGamePlayer player,
+        byte[] prev,
+        byte[] curr,
+        InventoryKind kind
+    )
+    {
+        int count = Math.Min(prev.Length, curr.Length);
+        for (int i = 0; i < count; i++)
+        {
+            if (prev[i] == curr[i])
+                continue;
+
+            string oldName = EnumUtility.GetEnumString(prev[i], ItemType.Unknown);
+            string newName = EnumUtility.GetEnumString(curr[i], ItemType.Unknown);
+            Emit(new PlayerInventoryChangedEvent(now, player.Id, player.Name, kind, i, oldName, newName));
+        }
     }
 
     private void ProcessEnemyDiff(CollectionDiff<DecodedEnemy> diff)
@@ -299,7 +389,7 @@ public sealed class RunReportService : IRunReportService
 
         foreach (DecodedEnemy enemy in diff.Removed)
         {
-            if (enemy.CurHp == 0)
+            if (enemy.CurHp <= 1)
                 Emit(
                     new EnemyKilledEvent(
                         now,
@@ -365,6 +455,15 @@ public sealed class RunReportService : IRunReportService
         ScenarioStatus.Unknown11,
     };
 
+    // Statuses where player memory is being reloaded and data reads are unreliable.
+    // During these states we preserve the last known player snapshot instead of evicting.
+    private static bool IsTransitionalStatus(ScenarioStatus status) =>
+        status
+            is ScenarioStatus.TransitionLoading
+                or ScenarioStatus.CinematicPlaying
+                or ScenarioStatus.GenericLoading
+                or ScenarioStatus.PostIntroLoading;
+
     private void ProcessScenarioDiff(DecodedInGameScenario scenario)
     {
         _lastScenario = scenario;
@@ -377,7 +476,12 @@ public sealed class RunReportService : IRunReportService
             if (_monitoredStatuses.Contains(_lastScenarioStatus))
                 Emit(new ScenarioStatusChangedEvent(_timeProvider.GetUtcNow(), previousStatus, _lastScenarioStatus));
 
-            if (_lastScenarioStatus == ScenarioStatus.GameFinished)
+            // Also trigger auto-start here so it fires even if ProcessPlayerDiff already
+            // populated _activePlayers before the InGame status was observed.
+            if (_lastScenarioStatus == ScenarioStatus.InGame && _activePlayers.Count > 0)
+                AutoStartSession();
+
+            if (_lastScenarioStatus is ScenarioStatus.GameFinished or ScenarioStatus.RankScreen)
             {
                 DateTimeOffset finishTime = _timeProvider.GetUtcNow();
                 foreach (DecodedInGamePlayer player in _activePlayers.Values)
@@ -390,6 +494,13 @@ public sealed class RunReportService : IRunReportService
                             player.VirusPercentage
                         )
                     );
+                _activePlayers.Clear();
+                AutoStopSession();
+            }
+
+            // Unexpected termination: game returned to None without going through GameFinished.
+            if (_lastScenarioStatus == ScenarioStatus.None && IsRunning)
+            {
                 _activePlayers.Clear();
                 AutoStopSession();
             }
@@ -410,10 +521,21 @@ public sealed class RunReportService : IRunReportService
             DecodedItem p = prev[i];
             DecodedItem c = curr[i];
 
+            // GetItems() may return a pre-allocated array with null elements if memory
+            // is not yet mapped (early in the PCSX2 startup sequence).
+            if (p is null || c is null)
+                continue;
+
             if (p.PickedUp == 0 && c.PickedUp > 0)
-                Emit(new ItemPickedUpEvent(now, c.TypeName, c.RoomId, c.PickedUpByName));
+            {
+                string holderName = ResolvePickupHolderName(c.PickedUp);
+                Emit(new ItemPickedUpEvent(now, c.TypeName, c.RoomId, holderName));
+            }
             else if (p.PickedUp > 0 && c.PickedUp == 0)
-                Emit(new ItemDroppedEvent(now, c.TypeName, c.RoomId, p.PickedUpByName));
+            {
+                string prevHolderName = ResolvePickupHolderName(p.PickedUp);
+                Emit(new ItemDroppedEvent(now, c.TypeName, c.RoomId, prevHolderName));
+            }
         }
     }
 

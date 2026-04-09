@@ -64,7 +64,7 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
         sb.Append(CultureInfo.InvariantCulture, $"| Enemy Kills | {stats.TotalEnemyKills} |").AppendLine();
         sb.Append(CultureInfo.InvariantCulture, $"| Enemy Despawns (scripted) | {stats.TotalDespawns} |").AppendLine();
         sb.Append(CultureInfo.InvariantCulture, $"| Total Damage Taken | {stats.TotalDamageTaken} HP |").AppendLine();
-        sb.Append(CultureInfo.InvariantCulture, $"| Peak Virus (any player) | {stats.PeakVirusPercentage:F1}% |")
+        sb.Append(CultureInfo.InvariantCulture, $"| Peak Virus (any player) | {stats.PeakVirusPercentage:F3}% |")
             .AppendLine();
         sb.Append(CultureInfo.InvariantCulture, $"| Door State Changes | {stats.TotalDoorStateChanges} |").AppendLine();
         sb.Append(CultureInfo.InvariantCulture, $"| Items Picked Up | {stats.TotalItemPickups} |").AppendLine();
@@ -119,10 +119,10 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
         evt switch
         {
             PlayerJoinedEvent e =>
-                $"Player **{e.PlayerName}** joined (HP: {e.InitialHealth}/{e.MaxHealth}, Virus: {e.InitialVirusPercentage:F1}%)",
+                $"Player **{e.PlayerName}** joined (HP: {e.InitialHealth}/{e.MaxHealth}, Virus: {e.InitialVirusPercentage:F3}%)",
 
             PlayerLeftEvent e =>
-                $"Player **{e.PlayerName}** left (HP: {e.FinalHealth}, Virus: {e.FinalVirusPercentage:F1}%)",
+                $"Player **{e.PlayerName}** left (HP: {e.FinalHealth}, Virus: {e.FinalVirusPercentage:F3}%)",
 
             PlayerHealthChangedEvent { IsDamage: true } e =>
                 $"Player **{e.PlayerName}** took **{e.OldHealth - e.NewHealth} damage** ({e.OldHealth} → {e.NewHealth}/{e.MaxHealth})",
@@ -134,10 +134,10 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
                 $"Player **{e.PlayerName}** condition: {e.OldCondition} → **{e.NewCondition}**",
 
             PlayerVirusChangedEvent { Delta: > 0 } e =>
-                $"Player **{e.PlayerName}** virus: {e.OldVirusPercentage:F1}% → **{e.NewVirusPercentage:F1}%** (+{e.Delta:F1}%)",
+                $"Player **{e.PlayerName}** virus: {e.OldVirusPercentage:F3}% → **{e.NewVirusPercentage:F3}%** (+{e.Delta:F3}%)",
 
             PlayerVirusChangedEvent e =>
-                $"Player **{e.PlayerName}** virus: {e.OldVirusPercentage:F1}% → **{e.NewVirusPercentage:F1}%** ({e.Delta:F1}%)",
+                $"Player **{e.PlayerName}** virus: {e.OldVirusPercentage:F3}% → **{e.NewVirusPercentage:F3}%** ({e.Delta:F3}%)",
 
             EnemySpawnedEvent e => $"Enemy **{e.EnemyName}** spawned (Room {e.RoomId}, Slot {e.SlotId}, HP: {e.MaxHp})",
 
@@ -160,9 +160,24 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
 
             DoorDamagedEvent e => $"Door damaged: {e.OldHp} → {e.NewHp} HP (-{e.Damage})",
 
-            ItemPickedUpEvent e => $"**{e.PickedUpByName}** picked up **{e.TypeName}** (Room {e.RoomId})",
+            ItemPickedUpEvent e when string.IsNullOrEmpty(e.PickedUpByName) =>
+                $"**{e.TypeName}** looted from scenario slot (Room {e.RoomId})",
+            ItemPickedUpEvent e =>
+                $"**{e.PickedUpByName}** looted **{e.TypeName}** from scenario slot (Room {e.RoomId})",
 
-            ItemDroppedEvent e => $"**{e.PreviousHolder}** dropped **{e.TypeName}** (Room {e.RoomId})",
+            ItemDroppedEvent e when string.IsNullOrEmpty(e.PreviousHolder) =>
+                $"**{e.TypeName}** returned to scenario slot (Room {e.RoomId})",
+            ItemDroppedEvent e =>
+                $"**{e.PreviousHolder}** returned **{e.TypeName}** to scenario slot (Room {e.RoomId})",
+
+            PlayerStatusChangedEvent e => $"Player **{e.PlayerName}** status: {e.OldStatus} → **{e.NewStatus}**",
+
+            PlayerEffectChangedEvent { IsApplied: true } e =>
+                $"Player **{e.PlayerName}** effect **{e.EffectName}** applied",
+            PlayerEffectChangedEvent e => $"Player **{e.PlayerName}** effect **{e.EffectName}** expired",
+
+            PlayerInventoryChangedEvent e =>
+                $"Player **{e.PlayerName}** {e.Kind} slot {e.SlotIndex}: {e.OldItemName} → **{e.NewItemName}**",
 
             _ => evt.GetType().Name,
         };
