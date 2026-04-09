@@ -1,37 +1,21 @@
 ﻿using System.Diagnostics;
-using System.Globalization;
 
 namespace OutbreakTracker2.Outbreak.Utility;
 
 public static class PercentageUtility
 {
-    public static T GetPercentage<T>(T numerator, T denominator, int? decimalPlaces = 2)
-        where T : struct
+    public static double GetPercentage(double numerator, double denominator, int decimalPlaces = 2)
     {
-        if (IsZero(numerator) && IsZero(denominator))
-            return default;
+        if (numerator == 0.0 && denominator == 0.0)
+            return 0.0;
 
-        if (IsZero(denominator))
+        if (denominator == 0.0)
         {
-            Trace.TraceWarning(
-                $"Division by zero: denominator of type {typeof(T).Name} is zero (numerator: {numerator}). Returning default."
-            );
-            return default;
+            Trace.TraceWarning($"Division by zero: denominator is zero (numerator: {numerator}). Returning 0.");
+            return 0.0;
         }
 
-        double num = Convert.ToDouble(numerator, CultureInfo.InvariantCulture);
-        double den = Convert.ToDouble(denominator, CultureInfo.InvariantCulture);
-        double ratio = num / den;
-        double percentage = ratio * 100;
-
-        if (decimalPlaces.HasValue)
-            percentage = Math.Round(percentage, decimalPlaces.Value);
-
-        T convertedResult = (T)Convert.ChangeType(percentage, typeof(T), CultureInfo.InvariantCulture);
-
-        return convertedResult;
+        double percentage = numerator / denominator * 100.0;
+        return Math.Round(percentage, decimalPlaces);
     }
-
-    private static bool IsZero<T>(T value)
-        where T : struct => EqualityComparer<T>.Default.Equals(value, default);
 }
