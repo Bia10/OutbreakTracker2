@@ -64,8 +64,6 @@ public sealed partial class LobbySlotViewModel : ObservableObject
         ScenarioImageViewModel = scenarioImageViewModelFactory.Create();
 
         Update(initialData);
-
-        _logger.LogDebug("LobbySlotViewModel initialized for ULID: {Ulid}", _id);
     }
 
     public void Update(DecodedLobbySlot model)

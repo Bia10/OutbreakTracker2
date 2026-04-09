@@ -128,7 +128,6 @@ public sealed partial class ClientNotRunningViewModel(
                     _logger.LogInformation("GameClient acquired successfully.");
 
                     await _dataManager.InitializeAsync(gameClient, cts.Token).ConfigureAwait(false);
-                    _logger.LogInformation("DataManager initialized successfully");
 
                     return Unit.Default;
                 })
@@ -140,7 +139,6 @@ public sealed partial class ClientNotRunningViewModel(
                     onNextAsync: async ValueTask (_, _) =>
                     {
                         await _toastService.DismissToastAsync(launchToast).ConfigureAwait(false);
-                        _logger.LogInformation("Client launched and data manager initialized successfully");
                         IsClientLaunching = false;
                     },
                     onErrorResume: async void (innerEx) =>

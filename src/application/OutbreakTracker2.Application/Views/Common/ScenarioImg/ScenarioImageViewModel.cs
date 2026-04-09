@@ -28,7 +28,6 @@ public sealed class ScenarioImageViewModel : ObservableObject
 
         ImageViewModel.PropertyChanged += OnImageViewModelSourceImageChanged;
 
-        _logger.LogDebug("ScenarioImageViewModel initialized");
         _ = UpdateImageAsync(Scenario.Unknown);
     }
 

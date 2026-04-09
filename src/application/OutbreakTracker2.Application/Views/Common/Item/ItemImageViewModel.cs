@@ -19,8 +19,6 @@ public sealed class ItemImageViewModel : ObservableObject
         ImageViewModel = imageViewModelFactory.Create();
 
         ImageViewModel.PropertyChanged += OnImageViewModelSourceImageChanged;
-
-        _logger.LogDebug("ItemImageViewModel initialized");
     }
 
     private string _currentSpriteName = string.Empty;

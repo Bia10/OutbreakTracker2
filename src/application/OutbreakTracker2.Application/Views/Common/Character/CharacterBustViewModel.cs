@@ -28,7 +28,6 @@ public sealed class CharacterBustViewModel : ObservableObject
 
         ImageViewModel.PropertyChanged += OnImageViewModelSourceImageChanged;
 
-        _logger.LogDebug("CharacterBustViewModel initialized");
         _ = UpdateBustAsync(CharacterBaseType.Kevin);
     }
 

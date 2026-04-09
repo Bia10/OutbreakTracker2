@@ -55,7 +55,6 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
-        _logger.LogInformation("Initializing LobbyRoomViewModel");
         ScenarioImageViewModel = scenarioImageVmFactory.Create();
 
         PlayersView = _playersInternal.ToNotifyCollectionChanged(

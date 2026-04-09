@@ -62,7 +62,6 @@ public sealed partial class ClientAlreadyRunningViewModel(
             if (activeGameClient is not null)
             {
                 await _dataManager.InitializeAsync(activeGameClient, CancellationToken.None).ConfigureAwait(false);
-                _logger.LogInformation("DataManager initialized successfully");
             }
         }
         catch (Exception ex)

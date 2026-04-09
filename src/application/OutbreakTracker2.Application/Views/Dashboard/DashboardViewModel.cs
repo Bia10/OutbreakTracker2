@@ -41,7 +41,6 @@ public sealed partial class DashboardViewModel : PageBase
         ClientOverviewViewModel = clientOverviewViewModel;
         ClientAlreadyRunningViewModel = clientAlreadyRunningViewModel;
         _logger = logger;
-        _logger.LogInformation("Initializing DashboardViewModel");
 
         processLauncher.ProcessUpdate.Subscribe(processModel =>
         {
