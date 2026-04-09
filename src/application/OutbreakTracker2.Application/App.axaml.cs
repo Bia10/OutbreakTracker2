@@ -51,6 +51,11 @@ public sealed partial class App : Avalonia.Application
             _bootstrapLogger?.LogError(ex, "Unhandled R3 exception")
         );
 
+#if DEBUG
+        ObservableTracker.EnableTracking = true;
+        ObservableTracker.EnableStackTrace = true;
+#endif
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             _ = InitializeApplicationAsync(desktop)
                 .ContinueWith(

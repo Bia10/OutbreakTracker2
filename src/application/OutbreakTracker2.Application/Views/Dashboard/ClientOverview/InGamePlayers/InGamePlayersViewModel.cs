@@ -18,9 +18,6 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
     private readonly IDispatcherService _dispatcherService;
     private readonly Dictionary<string, InGamePlayerViewModel> _viewModelCache = [];
 
-    // Updated by a lightweight scenario subscription. Volatile so the player pipeline
-    // thread sees writes without a lock.
-    private volatile ScenarioStatus _lastScenarioStatus = ScenarioStatus.None;
     private readonly ObservableList<InGamePlayerViewModel> _players = [];
     public NotifyCollectionChangedSynchronizedViewList<InGamePlayerViewModel> PlayersView { get; }
 
@@ -45,15 +42,18 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
 
         PlayersView = _players.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
-        IDisposable scenarioSub = dataManager
-            .InGameScenarioObservable.ObserveOnThreadPool()
-            .Subscribe(scenario => _lastScenarioStatus = scenario.Status);
-
-        IDisposable playersSub = dataManager
-            .InGamePlayersObservable.ObserveOnThreadPool()
+        _subscription = dataManager
+            .InGamePlayersObservable.WithLatestFrom(
+                dataManager.InGameScenarioObservable,
+                (players, scenario) => (Players: players, ScenarioStatus: scenario.Status)
+            )
+            .ObserveOnThreadPool()
             .SubscribeAwait(
-                async (incomingPlayersSnapshot, ct) =>
+                async (data, ct) =>
                 {
+                    DecodedInGamePlayer[] incomingPlayersSnapshot = data.Players;
+                    ScenarioStatus lastScenarioStatus = data.ScenarioStatus;
+
                     _logger.LogTrace(
                         "Processing players snapshot on thread pool with {Length} entries",
                         incomingPlayersSnapshot.Length
@@ -146,7 +146,7 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
                                     // During room transitions the game momentarily clears player
                                     // memory, so the incoming snapshot is empty. Skip removals to
                                     // keep the last-known player state on screen.
-                                    if (!IsTransitionalStatus(_lastScenarioStatus))
+                                    if (!IsTransitionalStatus(lastScenarioStatus))
                                         for (int i = _players.Count - 1; i >= 0; i--)
                                         {
                                             InGamePlayerViewModel currentVmInList = _players[i];
@@ -242,8 +242,6 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
                 },
                 AwaitOperation.Drop
             );
-
-        _subscription = Disposable.Combine(scenarioSub, playersSub);
     }
 
     // Statuses where player memory is temporarily unreliable.
@@ -267,6 +265,7 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
     {
         _logger.LogDebug("Disposing InGamePlayersViewModel");
         _subscription.Dispose();
+        PlayersView.Dispose();
 
         await _dispatcherService
             .InvokeOnUIAsync(() =>

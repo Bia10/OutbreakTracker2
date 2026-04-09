@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Outbreak.Models;
 
@@ -6,9 +7,9 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor
 
 public sealed partial class InGameDoorViewModel : ObservableObject
 {
-    private static readonly IBrush LockedBrush = new SolidColorBrush(Colors.Red);
-    private static readonly IBrush UnlockedBrush = new SolidColorBrush(Colors.LimeGreen);
-    private static readonly IBrush DestroyedBrush = new SolidColorBrush(Color.FromArgb(255, 180, 60, 60));
+    private static readonly IBrush LockedBrush = new ImmutableSolidColorBrush(Colors.Red);
+    private static readonly IBrush UnlockedBrush = new ImmutableSolidColorBrush(Colors.LimeGreen);
+    private static readonly IBrush DestroyedBrush = new ImmutableSolidColorBrush(Color.FromArgb(255, 180, 60, 60));
 
     [ObservableProperty]
     private ushort _hp;
@@ -37,9 +38,10 @@ public sealed partial class InGameDoorViewModel : ObservableObject
     private bool _isDestroyed;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BorderBrush))]
     private Color _calculatedBorderColor;
 
-    public IBrush BorderBrush => new SolidColorBrush(CalculatedBorderColor);
+    public IBrush BorderBrush => new ImmutableSolidColorBrush(CalculatedBorderColor);
     public IBrush LockForeground => IsLocked ? LockedBrush : UnlockedBrush;
     public IBrush DestroyedForeground => IsDestroyed ? DestroyedBrush : UnlockedBrush;
 
@@ -86,8 +88,6 @@ public sealed partial class InGameDoorViewModel : ObservableObject
         Status = doorData.Status;
         IsLocked = string.Equals(doorData.Status, "locked", StringComparison.OrdinalIgnoreCase);
         CalculatedBorderColor = GetBorderColor();
-
-        OnPropertyChanged(nameof(BorderBrush));
     }
 
     private Color? DetermineGlowColor(ushort newHp, ushort newFlag, string newStatus)

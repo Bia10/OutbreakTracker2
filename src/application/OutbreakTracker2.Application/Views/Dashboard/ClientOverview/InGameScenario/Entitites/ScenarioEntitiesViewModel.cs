@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using ObservableCollections;
 using OutbreakTracker2.Application.Services.Toasts;
 using OutbreakTracker2.Application.Views.Common.Item;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor;
@@ -7,25 +6,35 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
 
-public sealed partial class ScenarioEntitiesViewModel : ObservableObject
+public sealed class ScenarioEntitiesViewModel : IDisposable
 {
     private readonly IToastService _toastService;
     private readonly IItemImageViewModelFactory _itemImageViewModelFactory;
     private readonly Dictionary<byte, short> _previousPickedUpStates = [];
 
-    [ObservableProperty]
-    private ObservableCollection<ScenarioItemSlotViewModel> _items = [];
+    private readonly ObservableList<ScenarioItemSlotViewModel> _items = new();
+    private readonly ObservableList<DecodedEnemy> _enemies = new();
+    private readonly ObservableList<InGameDoorViewModel> _doors = new();
 
-    [ObservableProperty]
-    private ObservableCollection<DecodedEnemy> _enemies = [];
-
-    [ObservableProperty]
-    private ObservableCollection<InGameDoorViewModel> _doors = [];
+    public NotifyCollectionChangedSynchronizedViewList<ScenarioItemSlotViewModel> Items { get; }
+    public NotifyCollectionChangedSynchronizedViewList<DecodedEnemy> Enemies { get; }
+    public NotifyCollectionChangedSynchronizedViewList<InGameDoorViewModel> Doors { get; }
 
     public ScenarioEntitiesViewModel(IToastService toastService, IItemImageViewModelFactory itemImageViewModelFactory)
     {
         _toastService = toastService;
         _itemImageViewModelFactory = itemImageViewModelFactory;
+
+        Items = _items.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
+        Enemies = _enemies.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
+        Doors = _doors.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
+    }
+
+    public void Dispose()
+    {
+        Items.Dispose();
+        Enemies.Dispose();
+        Doors.Dispose();
     }
 
     private static bool IsUnoccupiedSlot(DecodedItem item) =>
@@ -35,24 +44,24 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject
     {
         List<DecodedItem> newItemsList = [.. newItems.Where(item => !IsUnoccupiedSlot(item))];
 
-        for (int i = Items.Count - 1; i >= 0; i--)
+        for (int i = _items.Count - 1; i >= 0; i--)
         {
-            ScenarioItemSlotViewModel existingSlotVm = Items[i];
+            ScenarioItemSlotViewModel existingSlotVm = _items[i];
             if (!newItemsList.Exists(newItem => newItem.SlotIndex == existingSlotVm.SlotIndex))
             {
                 _previousPickedUpStates.Remove(existingSlotVm.SlotIndex);
-                Items.RemoveAt(i);
+                _items.RemoveAt(i);
             }
         }
 
         foreach (DecodedItem newItem in newItemsList)
         {
-            ScenarioItemSlotViewModel? existingSlotVm = Items.FirstOrDefault(vm => vm.SlotIndex == newItem.SlotIndex);
+            ScenarioItemSlotViewModel? existingSlotVm = _items.FirstOrDefault(vm => vm.SlotIndex == newItem.SlotIndex);
 
             if (existingSlotVm is null)
             {
                 ItemImageViewModel imageVm = _itemImageViewModelFactory.Create();
-                Items.Add(new ScenarioItemSlotViewModel(newItem, imageVm));
+                _items.Add(new ScenarioItemSlotViewModel(newItem, imageVm));
                 _previousPickedUpStates[newItem.SlotIndex] = newItem.PickedUp;
             }
             else
@@ -85,28 +94,28 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject
     {
         List<DecodedEnemy> newEnemiesList = [.. newEnemies];
 
-        for (int i = Enemies.Count - 1; i >= 0; i--)
+        for (int i = _enemies.Count - 1; i >= 0; i--)
         {
-            DecodedEnemy existingEnemy = Enemies[i];
+            DecodedEnemy existingEnemy = _enemies[i];
             if (
                 !newEnemiesList.Exists(newEnemy =>
                     newEnemy.SlotId == existingEnemy.SlotId && newEnemy.Id == existingEnemy.Id
                 )
             )
-                Enemies.RemoveAt(i);
+                _enemies.RemoveAt(i);
         }
 
         foreach (DecodedEnemy newEnemy in newEnemiesList)
         {
-            DecodedEnemy? existingEnemy = Enemies.FirstOrDefault(e =>
+            DecodedEnemy? existingEnemy = _enemies.FirstOrDefault(e =>
                 e.SlotId == newEnemy.SlotId && e.Id == newEnemy.Id
             );
 
             if (existingEnemy is null)
-                Enemies.Add(newEnemy);
+                _enemies.Add(newEnemy);
             else
             {
-                int index = Enemies.IndexOf(existingEnemy);
+                int index = _enemies.IndexOf(existingEnemy);
                 if (index is -1)
                     continue;
 
@@ -124,7 +133,7 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject
                     || !string.Equals(existingEnemy.RoomName, newEnemy.RoomName, System.StringComparison.Ordinal)
                 )
                 {
-                    Enemies[index] = newEnemy;
+                    _enemies[index] = newEnemy;
                 }
             }
         }
@@ -134,19 +143,19 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject
     {
         List<DecodedDoor> newDoorsList = [.. newDoors];
 
-        for (int i = Doors.Count - 1; i >= 0; i--)
+        for (int i = _doors.Count - 1; i >= 0; i--)
         {
-            InGameDoorViewModel existingVm = Doors[i];
+            InGameDoorViewModel existingVm = _doors[i];
             if (newDoorsList.TrueForAll(newDoor => newDoor.Id != existingVm.UniqueId))
-                Doors.RemoveAt(i);
+                _doors.RemoveAt(i);
         }
 
         foreach (DecodedDoor newDoor in newDoorsList)
         {
-            InGameDoorViewModel? existingVm = Doors.FirstOrDefault(vm => vm.UniqueId == newDoor.Id);
+            InGameDoorViewModel? existingVm = _doors.FirstOrDefault(vm => vm.UniqueId == newDoor.Id);
 
             if (existingVm is null)
-                Doors.Add(new InGameDoorViewModel(newDoor));
+                _doors.Add(new InGameDoorViewModel(newDoor));
             else
                 existingVm.Update(newDoor);
         }

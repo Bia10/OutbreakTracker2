@@ -11,9 +11,10 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard;
 
-public sealed partial class DashboardViewModel : PageBase
+public sealed partial class DashboardViewModel : PageBase, IDisposable
 {
     private readonly ILogger<DashboardViewModel> _logger;
+    private DisposableBag _disposables;
 
     [ObservableProperty]
     private bool _isClientRunning;
@@ -42,45 +43,54 @@ public sealed partial class DashboardViewModel : PageBase
         ClientAlreadyRunningViewModel = clientAlreadyRunningViewModel;
         _logger = logger;
 
-        processLauncher.ProcessUpdate.Subscribe(processModel =>
-        {
-            if (processModel.IsRunning)
-                CurrentView = ClientOverviewViewModel;
-        });
-
-        processLocator
-            .IsProcessRunningPolling("pcsx2-qt")
-            .Subscribe(
-                onNext: isRunning =>
+        _disposables.Add(
+            processLauncher
+                .ProcessUpdate.ObserveOnCurrentSynchronizationContext()
+                .Subscribe(processModel =>
                 {
-                    if (isRunning)
+                    if (processModel.IsRunning)
+                        CurrentView = ClientOverviewViewModel;
+                })
+        );
+
+        _disposables.Add(
+            processLocator
+                .IsProcessRunningPolling("pcsx2-qt")
+                .ObserveOnCurrentSynchronizationContext()
+                .Subscribe(
+                    onNext: isRunning =>
                     {
-                        int? clientProcessId = null;
-                        try
+                        if (isRunning)
                         {
-                            clientProcessId = processLauncher.ClientMonitoredProcess?.Id;
-                        }
-                        catch (InvalidOperationException)
-                        {
-                            // Process handle invalidated between null check and Id access (race with exit)
-                        }
+                            int? clientProcessId = null;
+                            try
+                            {
+                                clientProcessId = processLauncher.ClientMonitoredProcess?.Id;
+                            }
+                            catch (InvalidOperationException)
+                            {
+                                // Process handle invalidated between null check and Id access (race with exit)
+                            }
 
-                        IReadOnlyList<int> processIds = processLocator.GetProcessIds("pcsx2-qt");
+                            IReadOnlyList<int> processIds = processLocator.GetProcessIds("pcsx2-qt");
 
-                        if (clientProcessId.HasValue && processIds.Contains(clientProcessId.Value))
-                            HandleMonitoredProcess();
+                            if (clientProcessId.HasValue && processIds.Contains(clientProcessId.Value))
+                                HandleMonitoredProcess();
+                            else
+                                HandleUnmonitoredProcess(processIds);
+                        }
                         else
-                            HandleUnmonitoredProcess(processIds);
-                    }
-                    else
-                    {
-                        HandleNoRunningProcess();
-                    }
-                },
-                onErrorResume: ex => _logger.LogError(ex, "Error in process polling"),
-                onCompleted: _ => _logger.LogInformation("Process polling completed")
-            );
+                        {
+                            HandleNoRunningProcess();
+                        }
+                    },
+                    onErrorResume: ex => _logger.LogError(ex, "Error in process polling"),
+                    onCompleted: _ => _logger.LogInformation("Process polling completed")
+                )
+        );
     }
+
+    public void Dispose() => _disposables.Dispose();
 
     private void HandleMonitoredProcess()
     {

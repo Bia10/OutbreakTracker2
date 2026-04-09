@@ -14,13 +14,14 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario;
 
-public sealed partial class InGameScenarioViewModel : ObservableObject
+public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposable
 {
     private readonly ILogger<InGameScenarioViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
     private readonly IDataManager _dataManager;
     private readonly ScenarioEntityCommands _entityCommands;
     private readonly Dictionary<Scenario, Action<DecodedInGameScenario>> _scenarioUpdateActions;
+    private DisposableBag _disposables;
 
     public ICommand ShowItemsCommand => _entityCommands.ShowItems;
     public ICommand ShowEnemiesCommand => _entityCommands.ShowEnemies;
@@ -216,97 +217,105 @@ public sealed partial class InGameScenarioViewModel : ObservableObject
             },
         };
 
-        dataManager
-            .InGameScenarioObservable.ObserveOnThreadPool()
-            .SubscribeAwait(
-                async (inGameScenario, cancellationToken) =>
-                {
-                    _logger.LogTrace("Processing inGame scenario data on thread pool");
-                    try
+        _disposables.Add(
+            dataManager
+                .InGameScenarioObservable.ObserveOnThreadPool()
+                .SubscribeAwait(
+                    async (inGameScenario, cancellationToken) =>
                     {
-                        await dispatcherService
-                            .InvokeOnUIAsync(
-                                () =>
-                                {
-                                    _logger.LogTrace("Updating InGameScenarioViewModel properties on UI thread");
-                                    Update(inGameScenario);
-                                },
-                                cancellationToken
-                            )
-                            .ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        _logger.LogInformation("InGame scenario data processing cancelled");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error during inGame scenario data processing cycle");
-                    }
-                },
-                AwaitOperation.Drop
-            );
+                        _logger.LogTrace("Processing inGame scenario data on thread pool");
+                        try
+                        {
+                            await dispatcherService
+                                .InvokeOnUIAsync(
+                                    () =>
+                                    {
+                                        _logger.LogTrace("Updating InGameScenarioViewModel properties on UI thread");
+                                        Update(inGameScenario);
+                                    },
+                                    cancellationToken
+                                )
+                                .ConfigureAwait(false);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            _logger.LogInformation("InGame scenario data processing cancelled");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error during inGame scenario data processing cycle");
+                        }
+                    },
+                    AwaitOperation.Drop
+                )
+        );
 
-        dataManager
-            .EnemiesObservable.ObserveOnThreadPool()
-            .SubscribeAwait(
-                async (enemies, cancellationToken) =>
-                {
-                    _logger.LogTrace("Processing enemies data on thread pool");
-                    try
+        _disposables.Add(
+            dataManager
+                .EnemiesObservable.ObserveOnThreadPool()
+                .SubscribeAwait(
+                    async (enemies, cancellationToken) =>
                     {
-                        await dispatcherService
-                            .InvokeOnUIAsync(
-                                () =>
-                                {
-                                    ScenarioEntitiesVm.UpdateEnemies(enemies);
-                                },
-                                cancellationToken
-                            )
-                            .ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        _logger.LogInformation("Enemies data processing cancelled");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error during enemies data processing cycle");
-                    }
-                },
-                AwaitOperation.Drop
-            );
+                        _logger.LogTrace("Processing enemies data on thread pool");
+                        try
+                        {
+                            await dispatcherService
+                                .InvokeOnUIAsync(
+                                    () =>
+                                    {
+                                        ScenarioEntitiesVm.UpdateEnemies(enemies);
+                                    },
+                                    cancellationToken
+                                )
+                                .ConfigureAwait(false);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            _logger.LogInformation("Enemies data processing cancelled");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error during enemies data processing cycle");
+                        }
+                    },
+                    AwaitOperation.Drop
+                )
+        );
 
-        dataManager
-            .DoorsObservable.ObserveOnThreadPool()
-            .SubscribeAwait(
-                async (doors, cancellationToken) =>
-                {
-                    _logger.LogTrace("Processing doors data on thread pool");
-                    try
+        _disposables.Add(
+            dataManager
+                .DoorsObservable.ObserveOnThreadPool()
+                .SubscribeAwait(
+                    async (doors, cancellationToken) =>
                     {
-                        await dispatcherService
-                            .InvokeOnUIAsync(
-                                () =>
-                                {
-                                    ScenarioEntitiesVm.UpdateDoors(doors);
-                                },
-                                cancellationToken
-                            )
-                            .ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        _logger.LogInformation("Doors data processing cancelled");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error during doors data processing cycle");
-                    }
-                },
-                AwaitOperation.Drop
-            );
+                        _logger.LogTrace("Processing doors data on thread pool");
+                        try
+                        {
+                            await dispatcherService
+                                .InvokeOnUIAsync(
+                                    () =>
+                                    {
+                                        ScenarioEntitiesVm.UpdateDoors(doors);
+                                    },
+                                    cancellationToken
+                                )
+                                .ConfigureAwait(false);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            _logger.LogInformation("Doors data processing cancelled");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error during doors data processing cycle");
+                        }
+                    },
+                    AwaitOperation.Drop
+                )
+        );
     }
+
+    public void Dispose() => _disposables.Dispose();
 
     public void Update(DecodedInGameScenario scenario)
     {

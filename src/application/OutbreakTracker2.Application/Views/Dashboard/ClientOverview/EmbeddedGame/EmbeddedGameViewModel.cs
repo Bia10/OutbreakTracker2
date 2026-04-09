@@ -1,7 +1,7 @@
-﻿using Avalonia.Threading;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Services.Embedding;
 using OutbreakTracker2.Application.Services.Launcher;
 using R3;
@@ -15,6 +15,7 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGa
 public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposable
 {
     private readonly ILogger<EmbeddedGameViewModel> _logger;
+    private readonly IDispatcherService _dispatcherService;
     private readonly IDisposable _processSubscription;
     private bool _disposed;
 
@@ -29,6 +30,8 @@ public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposabl
     /// <see langword="true"/> when the PCSX2 window has been successfully reparented into the host.
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(EmbedButtonContent))]
+    [NotifyPropertyChangedFor(nameof(EmbedButtonCommand))]
     private bool _isEmbedded;
 
     /// <summary><see langword="true"/> while polling for the PCSX2 window to appear.</summary>
@@ -42,6 +45,9 @@ public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposabl
     /// Reset to <see langword="false"/> when the process exits or embedding times out.
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsPreEmbedState))]
+    [NotifyPropertyChangedFor(nameof(EmbedButtonContent))]
+    [NotifyPropertyChangedFor(nameof(EmbedButtonCommand))]
     private bool _isEmbedRequested;
 
     /// <summary>
@@ -76,11 +82,13 @@ public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposabl
     public EmbeddedGameViewModel(
         IWindowEmbedder embedder,
         IProcessLauncher processLauncher,
-        ILogger<EmbeddedGameViewModel> logger
+        ILogger<EmbeddedGameViewModel> logger,
+        IDispatcherService dispatcherService
     )
     {
         Embedder = embedder ?? throw new ArgumentNullException(nameof(embedder));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _dispatcherService = dispatcherService ?? throw new ArgumentNullException(nameof(dispatcherService));
 
         IsSupported = embedder.IsSupported;
 
@@ -98,7 +106,7 @@ public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposabl
         // Subscribe to process lifecycle so we know which PID to look for
         _processSubscription = processLauncher.ProcessUpdate.Subscribe(model =>
         {
-            Dispatcher.UIThread.Post(() =>
+            _dispatcherService.PostOnUI(() =>
             {
                 _logger.LogInformation(
                     "ProcessUpdate received — IsRunning={IsRunning}, PID={Pid}",
@@ -197,18 +205,13 @@ public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposabl
 
     partial void OnIsEmbedRequestedChanged(bool value)
     {
-        OnPropertyChanged(nameof(IsPreEmbedState));
         RequestEmbedCommand.NotifyCanExecuteChanged();
         RequestUnembedCommand.NotifyCanExecuteChanged();
-        OnPropertyChanged(nameof(EmbedButtonContent));
-        OnPropertyChanged(nameof(EmbedButtonCommand));
     }
 
     partial void OnIsEmbeddedChanged(bool value)
     {
         RequestUnembedCommand.NotifyCanExecuteChanged();
-        OnPropertyChanged(nameof(EmbedButtonContent));
-        OnPropertyChanged(nameof(EmbedButtonCommand));
     }
 
     public void Dispose()

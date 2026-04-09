@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Outbreak.Common;
@@ -11,9 +12,6 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnem
 
 public sealed partial class InGameEnemyViewModel : ObservableObject
 {
-    [ObservableProperty]
-    private DecodedEnemy _enemy = null!;
-
     [ObservableProperty]
     private string _name = string.Empty;
 
@@ -45,9 +43,10 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
     private string _roomName = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BorderBrush))]
     private Color _rawBorderColor;
 
-    public IBrush BorderBrush => new SolidColorBrush(RawBorderColor);
+    public IBrush BorderBrush => new ImmutableSolidColorBrush(RawBorderColor);
 
     public Ulid UniqueId { get; }
 
@@ -65,7 +64,6 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
         if (UniqueId != enemy.Id)
             return;
 
-        Enemy = enemy;
         Name = $"{enemy.Name}({enemy.SlotId})";
         CurrentHp = enemy.CurHp;
         MaxHp = enemy.MaxHp;
@@ -77,8 +75,6 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
         Status = ConvertStatus(enemy.Status);
         RoomName = UpdateRoomName(enemy.RoomId);
         RawBorderColor = GetEnemyColorForFileTwo(enemy.SlotId, enemy.NameId);
-
-        OnPropertyChanged(nameof(BorderBrush));
     }
 
     private string UpdateRoomName(byte enemyRoomId)

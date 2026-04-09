@@ -218,6 +218,7 @@ public sealed partial class ClientNotRunningViewModel(
         }
         finally
         {
+            cts.Dispose();
             IsClientLaunching = false;
         }
     }

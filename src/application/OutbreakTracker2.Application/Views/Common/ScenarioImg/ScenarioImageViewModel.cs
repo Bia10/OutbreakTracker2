@@ -7,7 +7,7 @@ using OutbreakTracker2.Outbreak.Enums;
 
 namespace OutbreakTracker2.Application.Views.Common.ScenarioImg;
 
-public sealed class ScenarioImageViewModel : ObservableObject
+public sealed class ScenarioImageViewModel : ObservableObject, IDisposable
 {
     private readonly ILogger<ScenarioImageViewModel> _logger;
     private readonly ISpriteNameResolver _spriteNameResolver;
@@ -30,6 +30,8 @@ public sealed class ScenarioImageViewModel : ObservableObject
 
         _ = UpdateImageAsync(Scenario.Unknown);
     }
+
+    public void Dispose() => ImageViewModel.PropertyChanged -= OnImageViewModelSourceImageChanged;
 
     public ValueTask UpdateImageAsync(Scenario scenarioType)
     {

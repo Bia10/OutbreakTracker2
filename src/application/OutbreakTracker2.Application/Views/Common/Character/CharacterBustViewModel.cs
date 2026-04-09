@@ -7,7 +7,7 @@ using OutbreakTracker2.Outbreak.Enums.Character;
 
 namespace OutbreakTracker2.Application.Views.Common.Character;
 
-public sealed class CharacterBustViewModel : ObservableObject
+public sealed class CharacterBustViewModel : ObservableObject, IDisposable
 {
     private readonly ILogger<CharacterBustViewModel> _logger;
     private readonly ISpriteNameResolver _spriteNameResolver;
@@ -30,6 +30,8 @@ public sealed class CharacterBustViewModel : ObservableObject
 
         _ = UpdateBustAsync(CharacterBaseType.Kevin);
     }
+
+    public void Dispose() => ImageViewModel.PropertyChanged -= OnImageViewModelSourceImageChanged;
 
     private CharacterBaseType? _currentCharacterType;
 
