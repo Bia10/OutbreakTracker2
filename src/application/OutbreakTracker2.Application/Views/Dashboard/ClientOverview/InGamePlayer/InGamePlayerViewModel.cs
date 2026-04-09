@@ -107,6 +107,7 @@ public sealed partial class InGamePlayerViewModel : ObservableObject
         Position.Update(player.PositionX, player.PositionY, player.RoomId);
 
         Inventory.UpdateFromPlayerData(
+            player.Status,
             player.EquippedItem,
             player.Inventory,
             player.SpecialItem,

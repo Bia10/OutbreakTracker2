@@ -31,6 +31,7 @@ public sealed partial class InventoryViewModel : ObservableObject
     private ObservableCollection<ItemSlotViewModel> _specialDeadSlots = [];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDeadOrZombie))]
     [NotifyPropertyChangedFor(nameof(IsSpecialInventoryVisible))]
     [NotifyPropertyChangedFor(nameof(IsSpecialDeadInventoryVisible))]
     private string _playerStatus;
@@ -68,6 +69,7 @@ public sealed partial class InventoryViewModel : ObservableObject
     }
 
     public void UpdateFromPlayerData(
+        string playerStatus,
         byte equippedItem,
         byte[] mainInventory,
         byte specialItem,
@@ -76,6 +78,7 @@ public sealed partial class InventoryViewModel : ObservableObject
         byte[] specialDeadInventory
     )
     {
+        PlayerStatus = playerStatus;
         UpdateSlot(EquippedItems[0], equippedItem);
         UpdateSlots(MainSlots, mainInventory);
         UpdateSlot(SpecialItems[0], specialItem);
