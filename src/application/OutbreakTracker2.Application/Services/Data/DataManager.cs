@@ -36,7 +36,7 @@ public sealed class DataManager : IDataManager, IDisposable
     private readonly ReactiveProperty<DecodedLobbySlot[]> _lobbySlotsState = new([]);
 
     private volatile bool _isInitialized;
-    private bool _wasInScenario;
+    private volatile bool _wasInScenario;
 
     public Observable<DecodedDoor[]> DoorsObservable { get; }
     public Observable<DecodedEnemy[]> EnemiesObservable { get; }
@@ -304,10 +304,11 @@ public sealed class DataManager : IDataManager, IDisposable
 
     private void StopUpdateLoops()
     {
+        _updateCts?.Cancel();
+
         _updateSubscription?.Dispose();
         _updateSubscription = null;
 
-        _updateCts?.Cancel();
         _updateCts?.Dispose();
         _updateCts = null;
 

@@ -35,5 +35,6 @@ public sealed class EntityTracker<T> : IEntityTracker<T>, IDisposable
     {
         _subscription.Dispose();
         _alertSubject.Dispose();
+        (Changes as IDisposable)?.Dispose();
     }
 }
