@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
@@ -58,7 +59,7 @@ public sealed class DoorReader : ReaderBase, IDoorReader
 
     private ushort GetFlag(int doorId) => ReadDoorProperty(doorId, DoorPropertyType.Flag, DefaultFlagErrorValue);
 
-    private static string DecodeFlag(ushort doorHp, ushort flag)
+    private string DecodeFlag(ushort doorHp, ushort flag)
     {
         if (doorHp is 500)
             return "unlocked";
@@ -79,8 +80,14 @@ public sealed class DoorReader : ReaderBase, IDoorReader
             44 => "unlocked",
             130 => "unlocked",
             2000 => "unlocked",
-            _ => flag.ToString(),
+            _ => LogUnknownFlag(flag),
         };
+    }
+
+    private string LogUnknownFlag(ushort flag)
+    {
+        Logger.LogTrace("Unknown door flag value {Value}", flag);
+        return flag.ToString();
     }
 
     public void UpdateDoors()
@@ -111,16 +118,8 @@ public sealed class DoorReader : ReaderBase, IDoorReader
         DecodedDoors = newDecodedDoors;
     }
 
-    private readonly Dictionary<int, Ulid> _doorSlotUlids = [];
+    private readonly ConcurrentDictionary<int, Ulid> _doorSlotUlids = [];
 
-    private Ulid GetPersistentUlidForDoorSlot(int doorSlotIndex)
-    {
-        if (_doorSlotUlids.TryGetValue(doorSlotIndex, out Ulid ulid))
-            return ulid;
-
-        ulid = Ulid.NewUlid();
-        _doorSlotUlids.Add(doorSlotIndex, ulid);
-
-        return ulid;
-    }
+    private Ulid GetPersistentUlidForDoorSlot(int doorSlotIndex) =>
+        _doorSlotUlids.GetOrAdd(doorSlotIndex, static _ => Ulid.NewUlid());
 }

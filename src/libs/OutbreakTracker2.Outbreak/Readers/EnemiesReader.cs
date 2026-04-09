@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Enemy;
@@ -151,16 +152,8 @@ public sealed class EnemiesReader : ReaderBase, IEnemiesReader
         };
     }
 
-    private readonly Dictionary<int, Ulid> _enemies2SlotUlids = [];
+    private readonly ConcurrentDictionary<int, Ulid> _enemies2SlotUlids = [];
 
-    private Ulid GetPersistentUlidForEnemies2Slot(int enemies2SlotIndex)
-    {
-        if (_enemies2SlotUlids.TryGetValue(enemies2SlotIndex, out Ulid ulid))
-            return ulid;
-
-        ulid = Ulid.NewUlid();
-        _enemies2SlotUlids.Add(enemies2SlotIndex, ulid);
-
-        return ulid;
-    }
+    private Ulid GetPersistentUlidForEnemies2Slot(int enemies2SlotIndex) =>
+        _enemies2SlotUlids.GetOrAdd(enemies2SlotIndex, static _ => Ulid.NewUlid());
 }

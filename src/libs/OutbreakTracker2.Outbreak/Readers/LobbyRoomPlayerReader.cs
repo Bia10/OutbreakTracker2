@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Character;
@@ -141,16 +142,8 @@ public sealed class LobbyRoomPlayerReader : ReaderBase, ILobbyRoomPlayerReader
         DecodedLobbyRoomPlayers = newDecodedLobbyRoomPlayers;
     }
 
-    private readonly Dictionary<int, Ulid> _roomPlayerSlotUlids = [];
+    private readonly ConcurrentDictionary<int, Ulid> _roomPlayerSlotUlids = [];
 
-    private Ulid GetPersistentUlidForRoomPlayerSlot(int playerSlotIndex)
-    {
-        if (_roomPlayerSlotUlids.TryGetValue(playerSlotIndex, out Ulid ulid))
-            return ulid;
-
-        ulid = Ulid.NewUlid();
-        _roomPlayerSlotUlids.Add(playerSlotIndex, ulid);
-
-        return ulid;
-    }
+    private Ulid GetPersistentUlidForRoomPlayerSlot(int playerSlotIndex) =>
+        _roomPlayerSlotUlids.GetOrAdd(playerSlotIndex, static _ => Ulid.NewUlid());
 }
