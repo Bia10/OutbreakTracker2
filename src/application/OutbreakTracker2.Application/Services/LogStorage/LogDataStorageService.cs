@@ -14,17 +14,19 @@ public sealed class LogDataStorageService : ILogDataStorageService, IAsyncDispos
     private readonly CancellationTokenSource _cts = new();
     private volatile bool _isDisposed;
 
-    private readonly ObservableList<LogModel> _entries = new();
+    private readonly ObservableFixedSizeRingBuffer<LogModel> _entries = new(1000);
+    private readonly ReadOnlyObservableFixedSizeRingBuffer<LogModel> _entriesView;
 
-    public IReadOnlyObservableList<LogModel> Entries => _entries;
+    public IReadOnlyObservableList<LogModel> Entries => _entriesView;
 
-    IReadOnlyObservableList<LogModel>? ILogEntrySource.Entries => _entries;
+    IReadOnlyObservableList<LogModel>? ILogEntrySource.Entries => _entriesView;
 
     public int MaxCapacity => 1000;
 
     public LogDataStorageService(IDispatcherService dispatcher)
     {
         _dispatcher = dispatcher;
+        _entriesView = new(_entries);
         _processingTask = Task.Run(() => ProcessLogChannelAsync(_cts.Token), _cts.Token);
     }
 
@@ -44,12 +46,7 @@ public sealed class LogDataStorageService : ILogDataStorageService, IAsyncDispos
             )
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                _dispatcher.PostOnUI(() =>
-                {
-                    if (_entries.Count >= MaxCapacity)
-                        _entries.RemoveAt(0);
-                    _entries.Add(logModel);
-                });
+                _dispatcher.PostOnUI(() => _entries.AddLast(logModel));
             }
         }
         catch (OperationCanceledException)
