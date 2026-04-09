@@ -102,13 +102,13 @@ public sealed class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
         _logger.LogDebug("Disposing LobbySlotsViewModel asynchronously");
 
         _subscription.Dispose();
-        LobbySlotsView.Dispose();
 
         await _dispatcherService
             .InvokeOnUIAsync(() =>
             {
                 _lobbySlotsInternal.Clear();
                 _viewModelCache.Clear();
+                LobbySlotsView.Dispose();
                 _logger.LogDebug("LobbySlotsViewModel collections cleared on UI thread during async dispose");
             })
             .ConfigureAwait(false);

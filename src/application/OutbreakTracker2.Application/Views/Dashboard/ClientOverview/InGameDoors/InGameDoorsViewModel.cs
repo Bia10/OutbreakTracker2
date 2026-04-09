@@ -97,12 +97,12 @@ public sealed partial class InGameDoorsViewModel : ObservableObject, IDisposable
     {
         _logger.LogDebug("Disposing InGameDoorsViewModel");
         _subscription.Dispose();
-        DoorsView.Dispose();
 
         _dispatcherService.PostOnUI(() =>
         {
             Doors.Clear();
             _viewModelCache.Clear();
+            DoorsView.Dispose();
             _logger.LogDebug("InGameDoorsViewModel collections cleared on UI thread during dispose");
         });
 

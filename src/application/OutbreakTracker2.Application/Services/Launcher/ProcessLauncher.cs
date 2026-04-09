@@ -240,6 +240,7 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessL
 
             GameClient reAttached = new();
             reAttached.Attach(Process.GetProcessById(processId));
+            AttachedGameClient?.Dispose();
             AttachedGameClient = reAttached;
 
             _processUpdate.OnNext(

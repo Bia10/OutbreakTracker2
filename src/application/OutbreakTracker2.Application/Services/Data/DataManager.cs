@@ -153,46 +153,32 @@ public sealed class DataManager : IDataManager, IDisposable
         IDisposable fastSubscription = fastUpdateTrigger
             .Where(_ => IsInScenario())
             .ObserveOnThreadPool()
-            .SubscribeAwait(
-                async ValueTask (_, ct) =>
+            .Subscribe(_ =>
+            {
+                try
                 {
-                    try
-                    {
-                        await UpdateCoreGameDataAsync(ct).ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        _logger.LogTrace("Fast update cancelled");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error during fast update cycle");
-                    }
-                },
-                AwaitOperation.Drop
-            );
+                    UpdateCoreGameData();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during fast update cycle");
+                }
+            });
 
         IDisposable slowSubscription = slowUpdateTrigger
             .Where(_ => !IsInScenario())
             .ObserveOnThreadPool()
-            .SubscribeAwait(
-                async ValueTask (_, ct) =>
+            .Subscribe(_ =>
+            {
+                try
                 {
-                    try
-                    {
-                        await UpdateLobbyDataAsync(ct).ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        _logger.LogTrace("Slow update cancelled");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error during slow update cycle");
-                    }
-                },
-                AwaitOperation.Drop
-            );
+                    UpdateLobbyData();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during slow update cycle");
+                }
+            });
 
         _updateSubscription = Disposable.Combine(fastSubscription, slowSubscription);
 
@@ -251,53 +237,26 @@ public sealed class DataManager : IDataManager, IDisposable
         _inGameScenarioState.Value = new DecodedInGameScenario();
     }
 
-    private ValueTask UpdateCoreGameDataAsync(CancellationToken cancellationToken)
+    private void UpdateCoreGameData()
     {
-        try
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            _wasInScenario = true;
-            UpdateInGameScenario();
-            UpdateDoors();
-            UpdateEnemies();
-            UpdateInGamePlayer();
-            return ValueTask.CompletedTask;
-        }
-        catch (OperationCanceledException ex)
-        {
-            return ValueTask.FromCanceled(ex.CancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred during core game data update.");
-            return ValueTask.FromException(ex);
-        }
+        _wasInScenario = true;
+        UpdateInGameScenario();
+        UpdateDoors();
+        UpdateEnemies();
+        UpdateInGamePlayer();
     }
 
-    private ValueTask UpdateLobbyDataAsync(CancellationToken cancellationToken)
+    private void UpdateLobbyData()
     {
-        try
+        if (_wasInScenario)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (_wasInScenario)
-            {
-                _wasInScenario = false;
-                ResetInGameData();
-            }
-            UpdateLobbyRoom();
-            UpdateLobbyRoomPlayers();
-            UpdateLobbySlots();
-            return ValueTask.CompletedTask;
+            _wasInScenario = false;
+            ResetInGameData();
         }
-        catch (OperationCanceledException ex)
-        {
-            return ValueTask.FromCanceled(ex.CancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred during lobby data update.");
-            return ValueTask.FromException(ex);
-        }
+
+        UpdateLobbyRoom();
+        UpdateLobbyRoomPlayers();
+        UpdateLobbySlots();
     }
 
     private bool IsInScenario() => _inGameScenarioReader is not null && _inGameScenarioReader.IsInScenario();

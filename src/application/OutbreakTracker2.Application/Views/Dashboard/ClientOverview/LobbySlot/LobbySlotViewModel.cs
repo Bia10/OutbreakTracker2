@@ -81,7 +81,7 @@ public sealed partial class LobbySlotViewModel : ObservableObject
 
         if (EnumUtility.TryParseByValueOrMember(ScenarioId, out Scenario scenarioType))
         {
-            _ = ScenarioImageViewModel.UpdateImageAsync(scenarioType);
+            TrackScenarioImageUpdate(ScenarioImageViewModel.UpdateImageAsync(scenarioType), ScenarioId);
         }
         else
         {
@@ -89,8 +89,25 @@ public sealed partial class LobbySlotViewModel : ObservableObject
                 "ScenarioName '{ScenarioName}' could not be parsed to a ScenarioType. Displaying default image",
                 ScenarioId
             );
-            _ = ScenarioImageViewModel.UpdateToDefaultImageAsync();
+            TrackScenarioImageUpdate(ScenarioImageViewModel.UpdateToDefaultImageAsync(), ScenarioId);
         }
+    }
+
+    private void TrackScenarioImageUpdate(ValueTask updateTask, string scenarioId)
+    {
+        _ = updateTask
+            .AsTask()
+            .ContinueWith(
+                task =>
+                    _logger.LogError(
+                        task.Exception,
+                        "Failed to update scenario image for lobby slot {ScenarioId}",
+                        scenarioId
+                    ),
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnFaulted,
+                TaskScheduler.Default
+            );
     }
 
     public override bool Equals(object? obj) => obj is LobbySlotViewModel viewModel && Id == viewModel.Id;

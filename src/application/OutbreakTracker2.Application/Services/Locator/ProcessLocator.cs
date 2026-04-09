@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.Versioning;
+using Microsoft.Extensions.Logging;
 using R3;
 #if WINDOWS
 using System.Management;
@@ -7,8 +8,10 @@ using System.Management;
 
 namespace OutbreakTracker2.Application.Services.Locator;
 
-public sealed class ProcessLocator : IProcessLocator
+public sealed class ProcessLocator(ILogger<ProcessLocator> logger) : IProcessLocator
 {
+    private readonly ILogger<ProcessLocator> _logger = logger;
+
     // Polling-based implementation
     public Observable<bool> IsProcessRunningPolling(string processName, TimeSpan? checkInterval = null)
     {
@@ -22,7 +25,7 @@ public sealed class ProcessLocator : IProcessLocator
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Polling error: {ex}");
+                    _logger.LogWarning(ex, "Failed to poll process state for {ProcessName}", processName);
                     return false;
                 }
             })
@@ -90,7 +93,7 @@ public sealed class ProcessLocator : IProcessLocator
             .DistinctUntilChanged()
             .Catch<bool, Exception>(ex =>
             {
-                Debug.WriteLine($"WMI error: {ex.Message}");
+                _logger.LogWarning(ex, "WMI process monitoring failed for {ProcessName}", processName);
                 return Observable.Return(value: false);
             });
 #else
@@ -107,7 +110,7 @@ public sealed class ProcessLocator : IProcessLocator
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"GetProcessIds error: {ex}");
+            _logger.LogWarning(ex, "Failed to enumerate process ids for {ProcessName}", processName);
             return [];
         }
     }

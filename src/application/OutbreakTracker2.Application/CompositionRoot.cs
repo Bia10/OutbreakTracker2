@@ -198,7 +198,6 @@ internal static class CompositionRoot
         services.AddTransient<ImageViewModel>();
         services.AddTransient<CharacterBustViewModel>();
         services.AddTransient<ScenarioImageViewModel>();
-        services.AddTransient<LobbyRoomViewModel>();
         services.AddTransient<ItemImageViewModel>();
         services.AddSingleton<MapCanvasViewModel>();
 

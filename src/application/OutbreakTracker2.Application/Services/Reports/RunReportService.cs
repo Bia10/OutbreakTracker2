@@ -19,12 +19,13 @@ public sealed class RunReportService : IRunReportService
     private readonly Subject<RunReport> _completedReports = new();
     private readonly IDisposable _subscription;
 
-    // Modified only on the polling thread — no lock needed.
+    // Player state remains polling-thread owned, but scenario status is read across two
+    // ObserveOnThreadPool subscriptions, so the enum field below is volatile.
     private readonly Dictionary<Ulid, DecodedInGamePlayer> _activePlayers = [];
     private readonly DecodedInGamePlayer?[] _activePlayersBySlot = new DecodedInGamePlayer?[GameConstants.MaxPlayers];
     private string _lastScenarioId = string.Empty;
     private DecodedInGameScenario _lastScenario = new();
-    private ScenarioStatus _lastScenarioStatus = ScenarioStatus.None;
+    private volatile ScenarioStatus _lastScenarioStatus = ScenarioStatus.None;
     private DecodedItem[]? _prevItems;
 
     // Protected by _sessionLock — may be read from external threads via IsRunning.

@@ -121,6 +121,8 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
                         List<LobbyRoomPlayerViewModel> currentListSnapshot;
                         try
                         {
+                            // AwaitOperation.Drop guarantees this callback does not overlap with the previous
+                            // callback, so the thread-pool snapshot is taken after the previous UI mutation completed.
                             currentListSnapshot = [.. _playersInternal];
                             _logger.LogTrace(
                                 "Created snapshot of current UI list with {Count} items on ThreadPool",
@@ -388,7 +390,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
         {
             if (EnumUtility.TryParseByValueOrMember(ScenarioName, out Scenario scenarioType))
             {
-                _ = ScenarioImageViewModel.UpdateImageAsync(scenarioType);
+                TrackScenarioImageUpdate(ScenarioImageViewModel.UpdateImageAsync(scenarioType), ScenarioName);
             }
             else
             {
@@ -396,9 +398,26 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
                     "ScenarioName '{ScenarioName}' could not be parsed to a ScenarioType. Displaying default image",
                     ScenarioName
                 );
-                _ = ScenarioImageViewModel.UpdateToDefaultImageAsync();
+                TrackScenarioImageUpdate(ScenarioImageViewModel.UpdateToDefaultImageAsync(), ScenarioName);
             }
         }
+    }
+
+    private void TrackScenarioImageUpdate(ValueTask updateTask, string scenarioName)
+    {
+        _ = updateTask
+            .AsTask()
+            .ContinueWith(
+                task =>
+                    _logger.LogError(
+                        task.Exception,
+                        "Failed to update scenario image for lobby room {ScenarioName}",
+                        scenarioName
+                    ),
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnFaulted,
+                TaskScheduler.Default
+            );
     }
 
     public async ValueTask DisposeAsync()
@@ -406,13 +425,13 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
         _logger.LogDebug("Disposing LobbyRoomViewModel asynchronously");
 
         _subscription.Dispose();
-        PlayersView.Dispose();
 
         await _dispatcherService
             .InvokeOnUIAsync(() =>
             {
                 _playersInternal.Clear();
                 _viewModelCache.Clear();
+                PlayersView.Dispose();
                 _logger.LogDebug("LobbyRoomViewModel collections cleared on UI thread during async dispose");
             })
             .ConfigureAwait(false);
