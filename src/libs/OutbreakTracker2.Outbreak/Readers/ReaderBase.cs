@@ -197,6 +197,15 @@ public abstract class ReaderBase : IDisposable
                 offsets.Length
             );
         }
+        else if (computedAddress != nint.Zero && !_eememMemory.IsAddressInBounds(computedAddress))
+        {
+            Logger.LogWarning(
+                "[{MethodName}] Computed address 0x{ComputedAddress:X} is outside EEmem bounds. Returning zero.",
+                methodName,
+                computedAddress
+            );
+            return nint.Zero;
+        }
         else
         {
             Logger.LogTrace(
@@ -232,6 +241,15 @@ public abstract class ReaderBase : IDisposable
                 offsets.Length,
                 offsets[0]
             );
+        }
+        else if (!_eememMemory.IsAddressInBounds(computedAddress))
+        {
+            Logger.LogWarning(
+                "[{MethodName}] Computed address 0x{ComputedAddress:X} is outside EEmem bounds. Returning zero.",
+                methodName,
+                computedAddress
+            );
+            return nint.Zero;
         }
         else
         {

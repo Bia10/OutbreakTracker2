@@ -628,4 +628,15 @@ public sealed class EEmemMemory(ISafeMemoryReader memoryReader, IStringReader st
 
         return addrNew;
     }
+
+    /// <inheritdoc />
+    public bool IsAddressInBounds(nint address)
+    {
+        if (BaseAddress == nint.Zero)
+            return false;
+
+        // PS2 EEmem is always exactly 32 MiB.
+        const nint eememSize = 32 * 1024 * 1024;
+        return address >= BaseAddress && address < BaseAddress + eememSize;
+    }
 }

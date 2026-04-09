@@ -12,4 +12,11 @@ public interface IEEmemAddressReader
     public nint GetAddressFromPtr(nint ptrOffset);
 
     public nint GetAddressFromPtrChain(nint ptrOffset, params ReadOnlySpan<nint> offsets);
+
+    /// <summary>
+    /// Returns <see langword="true"/> when <paramref name="address"/> falls within the
+    /// PS2 EEmem buffer (32 MiB window starting at <see cref="IEEmemMemory.BaseAddress"/>).
+    /// Always returns <see langword="false"/> when the base address has not been resolved yet.
+    /// </summary>
+    public bool IsAddressInBounds(nint address);
 }
