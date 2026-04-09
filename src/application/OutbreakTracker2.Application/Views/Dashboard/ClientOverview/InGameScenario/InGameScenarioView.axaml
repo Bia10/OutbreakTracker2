@@ -1,17 +1,18 @@
 <UserControl
-    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.InGameScenarioView"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:icons="using:Material.Icons.Avalonia"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:common="clr-namespace:OutbreakTracker2.Application.Views.Common"
-    xmlns:inGameScenario="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario"
-    xmlns:fileTwo="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo"
-    d:DesignHeight="800"
-    d:DesignWidth="400"
-    x:DataType="inGameScenario:InGameScenarioViewModel"
-    mc:Ignorable="d">
+x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.InGameScenarioView"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:icons="using:Material.Icons.Avalonia"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:common="clr-namespace:OutbreakTracker2.Application.Views.Common"
+xmlns:inGameScenario="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario"
+xmlns:fileTwo="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo"
+xmlns:fileOne="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne"
+d:DesignHeight="800"
+d:DesignWidth="400"
+x:DataType="inGameScenario:InGameScenarioViewModel"
+mc:Ignorable="d">
 
     <UserControl.DataTemplates>
         <DataTemplate DataType="{x:Type fileTwo:DesperateTimesViewModel}">
@@ -26,340 +27,352 @@
         <DataTemplate DataType="{x:Type fileTwo:WildThingsViewModel}">
             <fileTwo:WildThingsView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type fileOne:BelowFreezingPointViewModel}">
+            <fileOne:BelowFreezingPointView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type fileOne:DecisionsDecisionsViewModel}">
+            <fileOne:DecisionsDecisionsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type fileOne:HellfireViewModel}">
+            <fileOne:HellfireView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type fileOne:TheHiveViewModel}">
+            <fileOne:TheHiveView />
+        </DataTemplate>
     </UserControl.DataTemplates>
 
     <Grid RowDefinitions="Auto,*">
 
         <ScrollViewer
-            Grid.Row="0"
-            AllowAutoHide="True"
-            HorizontalScrollBarVisibility="Disabled"
-            IsVisible="{Binding IsScenarioActive}"
-            VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="6" Spacing="6">
+        Grid.Row="0"
+        AllowAutoHide="True"
+        HorizontalScrollBarVisibility="Disabled"
+        IsVisible="{Binding IsScenarioActive}"
+        VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="6" Spacing="6">
 
-            <!-- Scenario name header -->
-            <TextBlock
+                <!-- Scenario name header -->
+                <TextBlock
                 FontSize="16"
                 FontWeight="Bold"
                 Text="{Binding ScenarioName}"
                 TextTrimming="CharacterEllipsis" />
 
-            <!-- Stats grid: *,* columns with DockPanel cells so TextTrimming works in each half -->
-            <Grid
+                <!-- Stats grid: *,* columns with DockPanel cells so TextTrimming works in each half -->
+                <Grid
                 ColumnDefinitions="*,*"
                 RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
 
-                <!-- Row 0: Difficulty / Cleared -->
-                <DockPanel Grid.Row="0" Grid.Column="0" Margin="0,2">
-                    <icons:MaterialIcon
+                    <!-- Row 0: Difficulty / Cleared -->
+                    <DockPanel Grid.Row="0" Grid.Column="0" Margin="0,2">
+                        <icons:MaterialIcon
                         DockPanel.Dock="Left"
                         Width="15"
                         Height="15"
                         Kind="StarOutline"
                         ToolTip.Tip="Game Difficulty" />
-                    <TextBlock
+                        <TextBlock
                         DockPanel.Dock="Left"
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         FontWeight="SemiBold"
                         Text="Diff:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         Text="{Binding Difficulty}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
-                <DockPanel Grid.Row="0" Grid.Column="1" Margin="4,2,0,2">
-                    <icons:MaterialIcon
+                    </DockPanel>
+                    <DockPanel Grid.Row="0" Grid.Column="1" Margin="4,2,0,2">
+                        <icons:MaterialIcon
                         DockPanel.Dock="Left"
                         Width="15"
                         Height="15"
                         Kind="CheckCircleOutline"
                         ToolTip.Tip="Scenario Cleared Status" />
-                    <TextBlock
+                        <TextBlock
                         DockPanel.Dock="Left"
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         FontWeight="SemiBold"
                         Text="Clear:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         Text="{Binding IsCleared}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
+                    </DockPanel>
 
-                <!-- Row 1: Status / Current File -->
-                <DockPanel Grid.Row="1" Grid.Column="0" Margin="0,2">
-                    <icons:MaterialIcon
+                    <!-- Row 1: Status / Current File -->
+                    <DockPanel Grid.Row="1" Grid.Column="0" Margin="0,2">
+                        <icons:MaterialIcon
                         DockPanel.Dock="Left"
                         Width="15"
                         Height="15"
                         Kind="InformationOutline"
                         ToolTip.Tip="Current Game Status" />
-                    <TextBlock
+                        <TextBlock
                         DockPanel.Dock="Left"
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         FontWeight="SemiBold"
                         Text="Status:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         Text="{Binding Status}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
-                <DockPanel Grid.Row="1" Grid.Column="1" Margin="4,2,0,2">
-                    <icons:MaterialIcon
+                    </DockPanel>
+                    <DockPanel Grid.Row="1" Grid.Column="1" Margin="4,2,0,2">
+                        <icons:MaterialIcon
                         DockPanel.Dock="Left"
                         Width="15"
                         Height="15"
                         Kind="FileOutline"
                         ToolTip.Tip="Current File Index" />
-                    <TextBlock
+                        <TextBlock
                         DockPanel.Dock="Left"
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         FontWeight="SemiBold"
                         Text="File:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         Text="{Binding CurrentFile}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
+                    </DockPanel>
 
-                <!-- Row 2: Game Time / Frame -->
-                <DockPanel Grid.Row="2" Grid.Column="0" Margin="0,2">
-                    <icons:MaterialIcon
+                    <!-- Row 2: Game Time / Frame -->
+                    <DockPanel Grid.Row="2" Grid.Column="0" Margin="0,2">
+                        <icons:MaterialIcon
                         DockPanel.Dock="Left"
                         Width="15"
                         Height="15"
                         Kind="ClockOutline"
                         ToolTip.Tip="In-Game Timer" />
-                    <TextBlock
+                        <TextBlock
                         DockPanel.Dock="Left"
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         FontWeight="SemiBold"
                         Text="Time:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         Text="{Binding GameTimeDisplay}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
-                <DockPanel Grid.Row="2" Grid.Column="1" Margin="4,2,0,2">
-                    <icons:MaterialIcon
+                    </DockPanel>
+                    <DockPanel Grid.Row="2" Grid.Column="1" Margin="4,2,0,2">
+                        <icons:MaterialIcon
                         DockPanel.Dock="Left"
                         Width="15"
                         Height="15"
                         Kind="Counter"
                         ToolTip.Tip="Frames since start of scenario" />
-                    <TextBlock
+                        <TextBlock
                         DockPanel.Dock="Left"
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         FontWeight="SemiBold"
                         Text="Frame:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         Text="{Binding FrameCounter}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
+                    </DockPanel>
 
-                <!-- Row 3: Players / Item Seed 1 -->
-                <DockPanel Grid.Row="3" Grid.Column="0" Margin="0,2">
-                    <icons:MaterialIcon
+                    <!-- Row 3: Players / Item Seed 1 -->
+                    <DockPanel Grid.Row="3" Grid.Column="0" Margin="0,2">
+                        <icons:MaterialIcon
                         DockPanel.Dock="Left"
                         Width="15"
                         Height="15"
                         Kind="AccountGroupOutline"
                         ToolTip.Tip="Number of Players" />
-                    <TextBlock
+                        <TextBlock
                         DockPanel.Dock="Left"
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         FontWeight="SemiBold"
                         Text="Players:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         Text="{Binding PlayerCount}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
-                <DockPanel Grid.Row="3" Grid.Column="1" Margin="4,2,0,2">
-                    <icons:MaterialIcon
+                    </DockPanel>
+                    <DockPanel Grid.Row="3" Grid.Column="1" Margin="4,2,0,2">
+                        <icons:MaterialIcon
                         DockPanel.Dock="Left"
                         Width="15"
                         Height="15"
                         Kind="DiceMultipleOutline"
                         ToolTip.Tip="Item Random Seed (Underbelly)" />
-                    <TextBlock
+                        <TextBlock
                         DockPanel.Dock="Left"
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         FontWeight="SemiBold"
                         Text="Seed 1:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         Text="{Binding ItemRandom}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
+                    </DockPanel>
 
-                <!-- Row 4: Item Seed 2 / Puzzle Random -->
-                <DockPanel Grid.Row="4" Grid.Column="0" Margin="0,2">
-                    <icons:MaterialIcon
+                    <!-- Row 4: Item Seed 2 / Puzzle Random -->
+                    <DockPanel Grid.Row="4" Grid.Column="0" Margin="0,2">
+                        <icons:MaterialIcon
                         DockPanel.Dock="Left"
                         Width="15"
                         Height="15"
                         Kind="DiceMultipleOutline"
                         ToolTip.Tip="Item Random Seed 2" />
-                    <TextBlock
+                        <TextBlock
                         DockPanel.Dock="Left"
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         FontWeight="SemiBold"
                         Text="Seed 2:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         Text="{Binding ItemRandom2}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
-                <DockPanel Grid.Row="4" Grid.Column="1" Margin="4,2,0,2">
-                    <icons:MaterialIcon
+                    </DockPanel>
+                    <DockPanel Grid.Row="4" Grid.Column="1" Margin="4,2,0,2">
+                        <icons:MaterialIcon
                         DockPanel.Dock="Left"
                         Width="15"
                         Height="15"
                         Kind="PuzzleOutline"
                         ToolTip.Tip="Puzzle Random Seed" />
-                    <TextBlock
+                        <TextBlock
                         DockPanel.Dock="Left"
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         FontWeight="SemiBold"
                         Text="Puzzle:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         Text="{Binding PuzzleRandom}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
+                    </DockPanel>
 
-                <!-- Row 5: Gas Random / Gas Order -->
-                <DockPanel Grid.Row="5" Grid.Column="0" Margin="0,2">
-                    <icons:MaterialIcon
+                    <!-- Row 5: Gas Random / Gas Order -->
+                    <DockPanel Grid.Row="5" Grid.Column="0" Margin="0,2">
+                        <icons:MaterialIcon
                         DockPanel.Dock="Left"
                         Width="15"
                         Height="15"
                         Kind="GasCylinder"
                         ToolTip.Tip="Gas Random Seed (also used for passwords/elements)" />
-                    <TextBlock
+                        <TextBlock
                         DockPanel.Dock="Left"
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         FontWeight="SemiBold"
                         Text="Gas:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         Text="{Binding GasRandom}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
-                <DockPanel Grid.Row="5" Grid.Column="1" Margin="4,2,0,2">
-                    <icons:MaterialIcon
+                    </DockPanel>
+                    <DockPanel Grid.Row="5" Grid.Column="1" Margin="4,2,0,2">
+                        <icons:MaterialIcon
                         DockPanel.Dock="Left"
                         Width="15"
                         Height="15"
                         Kind="OrderAlphabeticalAscending"
                         ToolTip.Tip="Order derived from Gas Random Seed" />
-                    <TextBlock
+                        <TextBlock
                         DockPanel.Dock="Left"
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         FontWeight="SemiBold"
                         Text="Order:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         Text="{Binding GasRandomOrderDisplay}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
-            </Grid>
+                    </DockPanel>
+                </Grid>
 
-            <ContentControl Content="{Binding CurrentScenarioSpecificViewModel}" />
+                <ContentControl Content="{Binding CurrentScenarioSpecificViewModel}" />
 
-        </StackPanel>
+            </StackPanel>
         </ScrollViewer>
 
         <!-- Buttons to open entity detail windows -->
         <WrapPanel
-            Grid.Row="1"
-            Margin="6,5"
-            IsVisible="{Binding IsScenarioActive}"
-            Orientation="Horizontal">
+        Grid.Row="1"
+        Margin="6,5"
+        IsVisible="{Binding IsScenarioActive}"
+        Orientation="Horizontal">
             <Button
-                Margin="0,0,6,6"
-                Padding="10,4"
-                FontSize="12"
-                Command="{Binding ShowItemsCommand}"
-                Content="Items"
-                ToolTip.Tip="Open the scenario item list in a dockable window" />
+            Margin="0,0,6,6"
+            Padding="10,4"
+            FontSize="12"
+            Command="{Binding ShowItemsCommand}"
+            Content="Items"
+            ToolTip.Tip="Open the scenario item list in a dockable window" />
             <Button
-                Margin="0,0,6,6"
-                Padding="10,4"
-                FontSize="12"
-                Command="{Binding ShowEnemiesCommand}"
-                Content="Enemies"
-                ToolTip.Tip="Open the scenario enemy list in a dockable window" />
+            Margin="0,0,6,6"
+            Padding="10,4"
+            FontSize="12"
+            Command="{Binding ShowEnemiesCommand}"
+            Content="Enemies"
+            ToolTip.Tip="Open the scenario enemy list in a dockable window" />
             <Button
-                Margin="0,0,6,6"
-                Padding="10,4"
-                FontSize="12"
-                Command="{Binding ShowDoorsCommand}"
-                Content="Doors"
-                ToolTip.Tip="Open the scenario door list in a dockable window" />
+            Margin="0,0,6,6"
+            Padding="10,4"
+            FontSize="12"
+            Command="{Binding ShowDoorsCommand}"
+            Content="Doors"
+            ToolTip.Tip="Open the scenario door list in a dockable window" />
             <Button
-                Margin="0,0,6,6"
-                Padding="10,4"
-                FontSize="12"
-                Command="{Binding ShowMapCommand}"
-                Content="Map"
-                ToolTip.Tip="Open the scenario map in a dockable window" />
+            Margin="0,0,6,6"
+            Padding="10,4"
+            FontSize="12"
+            Command="{Binding ShowMapCommand}"
+            Content="Map"
+            ToolTip.Tip="Open the scenario map in a dockable window" />
         </WrapPanel>
 
         <common:NotInGameWatermark
-            Grid.Row="0"
-            Grid.RowSpan="2"
-            IsVisible="{Binding IsScenarioNotActive}"
-            Message="No active scenario — not in-game" />
+        Grid.Row="0"
+        Grid.RowSpan="2"
+        IsVisible="{Binding IsScenarioNotActive}"
+        Message="No active scenario — not in-game" />
     </Grid>
 </UserControl>

@@ -15,7 +15,7 @@ public sealed class LobbySlotViewModelFactory(
 
     public LobbySlotViewModel Create(DecodedLobbySlot initialData)
     {
-        _logger.LogDebug("Creating new LobbySlotViewModel for initial data");
+        _logger.LogTrace("Creating new LobbySlotViewModel for initial data");
 
         ILogger<LobbySlotViewModel> lobbySlotVmLogger = _serviceProvider.GetRequiredService<
             ILogger<LobbySlotViewModel>

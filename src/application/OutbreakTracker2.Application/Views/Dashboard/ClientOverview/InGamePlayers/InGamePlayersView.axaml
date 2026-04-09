@@ -1,50 +1,50 @@
 <UserControl
-    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers.InGamePlayersView"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:common="clr-namespace:OutbreakTracker2.Application.Views.Common"
-    xmlns:inGamePlayers="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers"
-    xmlns:inGamePlayer="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer"
-    xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    x:Name="root"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    x:DataType="inGamePlayers:InGamePlayersViewModel"
-    mc:Ignorable="d">
+x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers.InGamePlayersView"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:common="clr-namespace:OutbreakTracker2.Application.Views.Common"
+xmlns:inGamePlayers="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers"
+xmlns:inGamePlayer="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer"
+xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+x:Name="root"
+d:DesignHeight="450"
+d:DesignWidth="800"
+x:DataType="inGamePlayers:InGamePlayersViewModel"
+mc:Ignorable="d">
 
     <Grid RowDefinitions="Auto,*">
         <!-- Layout toggle -->
         <ToggleButton
-            Grid.Row="0"
-            Margin="4,2"
-            Padding="4,2"
-            HorizontalAlignment="Right"
-            IsChecked="{Binding IsHorizontalLayout}"
-            IsVisible="{Binding HasPlayers}"
-            ToolTip.Tip="Toggle horizontal / vertical layout">
+        Grid.Row="0"
+        Margin="4,2"
+        Padding="4,2"
+        HorizontalAlignment="Right"
+        IsChecked="{Binding IsHorizontalLayout}"
+        IsVisible="{Binding HasPlayers}"
+        ToolTip.Tip="Toggle horizontal / vertical layout">
             <Panel>
                 <material:MaterialIcon
-                    Width="14"
-                    Height="14"
-                    IsVisible="{Binding !IsHorizontalLayout}"
-                    Kind="FormatListBulleted" />
+                Width="14"
+                Height="14"
+                IsVisible="{Binding !IsHorizontalLayout}"
+                Kind="FormatListBulleted" />
                 <material:MaterialIcon
-                    Width="14"
-                    Height="14"
-                    IsVisible="{Binding IsHorizontalLayout}"
-                    Kind="ViewColumn" />
+                Width="14"
+                Height="14"
+                IsVisible="{Binding IsHorizontalLayout}"
+                Kind="ViewColumn" />
             </Panel>
         </ToggleButton>
 
         <Panel Grid.Row="1" IsVisible="{Binding HasPlayers}">
             <!--  Horizontal mode: UniformGrid Rows=1 divides available width equally by player count  -->
             <ScrollViewer
-                AllowAutoHide="True"
-                HorizontalScrollBarVisibility="Disabled"
-                IsVisible="{Binding IsHorizontalLayout}"
-                VerticalScrollBarVisibility="Disabled">
+            AllowAutoHide="True"
+            HorizontalScrollBarVisibility="Disabled"
+            IsVisible="{Binding IsHorizontalLayout}"
+            VerticalScrollBarVisibility="Disabled">
                 <ScrollViewer.Resources>
                     <!--  2 slots per row; equip+special side-by-side in horizontal player cards  -->
                     <x:Int32 x:Key="InventorySlotColumns">2</x:Int32>
@@ -63,7 +63,7 @@
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate DataType="{x:Type inGamePlayer:InGamePlayerViewModel}">
                             <inGamePlayer:InGamePlayerView />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -72,10 +72,10 @@
 
             <!--  Vertical mode: full-width cards with vertical scroll  -->
             <ScrollViewer
-                AllowAutoHide="True"
-                HorizontalScrollBarVisibility="Disabled"
-                IsVisible="{Binding !IsHorizontalLayout}"
-                VerticalScrollBarVisibility="Auto">
+            AllowAutoHide="True"
+            HorizontalScrollBarVisibility="Disabled"
+            IsVisible="{Binding !IsHorizontalLayout}"
+            VerticalScrollBarVisibility="Auto">
                 <ScrollViewer.Resources>
                     <!--  4 slots per row; equip+special side-by-side across full-width vertical cards  -->
                     <x:Int32 x:Key="InventorySlotColumns">4</x:Int32>
@@ -91,7 +91,7 @@
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate DataType="{x:Type inGamePlayer:InGamePlayerViewModel}">
                             <inGamePlayer:InGamePlayerView />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -100,8 +100,8 @@
         </Panel>
 
         <common:NotInGameWatermark
-            Grid.Row="1"
-            IsVisible="{Binding !HasPlayers}"
-            Message="No active players — not in-game" />
+        Grid.Row="1"
+        IsVisible="{Binding !HasPlayers}"
+        Message="No active players — not in-game" />
     </Grid>
 </UserControl>
