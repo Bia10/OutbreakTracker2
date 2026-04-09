@@ -340,6 +340,7 @@ public sealed class InGamePlayerReader : ReaderBase, IInGamePlayerReader
                 Name = GetCharacterName(nameId, characterType),
                 Status = DecodeStatusText(status),
                 Condition = DecodeCondition(curHealth, maxHealth),
+                SlotIndex = i,
             };
         }
 

@@ -131,4 +131,8 @@ public sealed record DecodedInGamePlayer : IHasId
     [JsonInclude]
     [JsonPropertyName(nameof(EquippedItem))]
     public byte EquippedItem { get; init; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(SlotIndex))]
+    public int SlotIndex { get; init; }
 }
