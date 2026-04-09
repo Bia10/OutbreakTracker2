@@ -48,7 +48,10 @@ public sealed class LobbyRoomReader(IGameClient gameClient, IEEmemAddressReader 
     {
         try
         {
-            TimeSpan timeSpan = TimeSpan.FromSeconds(GetTime());
+            short timeSeconds = GetTime();
+            if (timeSeconds < 0)
+                return "N/A";
+            TimeSpan timeSpan = TimeSpan.FromSeconds(timeSeconds);
             return $"{timeSpan.Hours:D2}h:{timeSpan.Minutes:D2}m:{timeSpan.Seconds:D2}s";
         }
         catch (Exception ex)

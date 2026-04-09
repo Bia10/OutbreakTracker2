@@ -90,7 +90,7 @@ public static class EnumUtility
         foreach (TEnum enumValue in FastEnum.GetValues<TEnum>())
         {
             string? memberValue = enumValue.GetEnumMemberValue();
-            if (!string.Equals(value, memberValue, StringComparison.Ordinal))
+            if (!string.Equals(value, memberValue, StringComparison.OrdinalIgnoreCase))
                 continue;
 
             result = enumValue;
