@@ -18,6 +18,13 @@
     <PackageVersion Include="Bia.LogViewer.Avalonia" Version="0.1.0" />
   </ItemGroup>
   <!-- ═══════════════════════════════════════════════════════
+       SECURITY OVERRIDES (transitive dependency pinning)
+       ═══════════════════════════════════════════════════════ -->
+  <ItemGroup Label="SecurityOverrides">
+    <!-- GHSA-xrw6-gwf8-vvr9: Tmds.DBus.Protocol < 0.21.3 high severity vulnerability -->
+    <PackageVersion Include="Tmds.DBus.Protocol" Version="0.21.3" />
+  </ItemGroup>
+  <!-- ═══════════════════════════════════════════════════════
        UI / AVALONIA
        ═══════════════════════════════════════════════════════ -->
   <ItemGroup Label="Avalonia">
