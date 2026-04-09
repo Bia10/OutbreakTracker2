@@ -12,11 +12,13 @@ public sealed class LogDataStorageService : ILogDataStorageService, IAsyncDispos
     private readonly Channel<LogModel> _logChannel = Channel.CreateUnbounded<LogModel>();
     private readonly Task _processingTask;
     private readonly CancellationTokenSource _cts = new();
-    private bool _isDisposed;
+    private volatile bool _isDisposed;
 
-    public ObservableList<LogModel> Entries { get; } = [];
+    private readonly ObservableList<LogModel> _entries = new();
 
-    IReadOnlyObservableList<LogModel>? ILogEntrySource.Entries => Entries;
+    public IReadOnlyObservableList<LogModel> Entries => _entries;
+
+    IReadOnlyObservableList<LogModel>? ILogEntrySource.Entries => _entries;
 
     public int MaxCapacity => 1000;
 
@@ -44,9 +46,9 @@ public sealed class LogDataStorageService : ILogDataStorageService, IAsyncDispos
                 cancellationToken.ThrowIfCancellationRequested();
                 _dispatcher.PostOnUI(() =>
                 {
-                    if (Entries.Count >= MaxCapacity)
-                        Entries.RemoveAt(0);
-                    Entries.Add(logModel);
+                    if (_entries.Count >= MaxCapacity)
+                        _entries.RemoveAt(0);
+                    _entries.Add(logModel);
                 });
             }
         }

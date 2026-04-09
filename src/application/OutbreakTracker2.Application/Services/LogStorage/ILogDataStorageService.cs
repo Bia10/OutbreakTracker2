@@ -5,7 +5,7 @@ namespace OutbreakTracker2.Application.Services.LogStorage;
 
 public interface ILogDataStorageService : ILogEntrySource
 {
-    new ObservableList<LogModel> Entries { get; }
+    new IReadOnlyObservableList<LogModel> Entries { get; }
 
     ValueTask AddEntryAsync(LogModel logModel, CancellationToken cancellationToken);
 

@@ -78,9 +78,7 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessL
             process.Id
         );
 
-        CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-        _ = HandleProcessOutputAsync(process, stdOut, stdError, cts.Token);
+        _ = HandleProcessOutputAsync(process, stdOut, stdError, cancellationToken);
 
         return Task.FromResult(AttachedGameClient);
     }
@@ -284,10 +282,8 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessL
 
     public void Dispose()
     {
-        _processErrors.OnCompleted();
         _processErrors.Dispose();
 
-        _processUpdate.OnCompleted();
         _processUpdate.Dispose();
 
         foreach (Process process in _processes.Values)

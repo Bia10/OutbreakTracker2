@@ -39,7 +39,7 @@ public sealed class ProcessLocator : IProcessLocator
             {
                 if (Environment.OSVersion.Platform is not PlatformID.Win32NT)
                 {
-                    observer.OnCompleted(new NotSupportedException("WMI is only supported on Windows"));
+                    observer.OnCompleted(Result.Failure(new NotSupportedException("WMI is only supported on Windows")));
                     return Disposable.Empty;
                 }
 
@@ -83,7 +83,7 @@ public sealed class ProcessLocator : IProcessLocator
                 }
                 catch (Exception ex)
                 {
-                    observer.OnCompleted(ex);
+                    observer.OnCompleted(Result.Failure(ex));
                     return Disposable.Empty;
                 }
             })
