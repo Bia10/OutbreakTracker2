@@ -73,7 +73,7 @@ public sealed partial class ItemSlotViewModel(
             _ = ItemImageViewModel.UpdateImageAsync(itemSpriteLookupName);
         }
 
-        _logger.LogDebug("ItemSlotViewModel updated for item: {ItemName}", name);
+        _logger.LogTrace("ItemSlotViewModel updated for item: {ItemName}", name);
     }
 
     public void ClearDisplay()

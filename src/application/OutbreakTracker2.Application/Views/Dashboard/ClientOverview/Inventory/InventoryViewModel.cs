@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Globalization;
+﻿using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
@@ -12,23 +11,12 @@ public sealed partial class InventoryViewModel : ObservableObject
     private readonly IDataManager _dataManager;
     private readonly IItemSlotViewModelFactory _itemSlotViewModelFactory;
 
-    [ObservableProperty]
-    private ObservableCollection<ItemSlotViewModel> _equippedItems = [];
-
-    [ObservableProperty]
-    private ObservableCollection<ItemSlotViewModel> _mainSlots = [];
-
-    [ObservableProperty]
-    private ObservableCollection<ItemSlotViewModel> _specialItems = [];
-
-    [ObservableProperty]
-    private ObservableCollection<ItemSlotViewModel> _specialSlots = [];
-
-    [ObservableProperty]
-    private ObservableCollection<ItemSlotViewModel> _deadSlots = [];
-
-    [ObservableProperty]
-    private ObservableCollection<ItemSlotViewModel> _specialDeadSlots = [];
+    public ItemSlotViewModel[] EquippedItems { get; }
+    public ItemSlotViewModel[] MainSlots { get; }
+    public ItemSlotViewModel[] SpecialItems { get; }
+    public ItemSlotViewModel[] SpecialSlots { get; }
+    public ItemSlotViewModel[] DeadSlots { get; }
+    public ItemSlotViewModel[] SpecialDeadSlots { get; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDeadOrZombie))]
@@ -55,17 +43,20 @@ public sealed partial class InventoryViewModel : ObservableObject
         _dataManager = dataManager;
         _itemSlotViewModelFactory = itemSlotViewModelFactory;
 
-        InitializeCollections();
+        EquippedItems = CreateSection(1);
+        MainSlots = CreateSection(4);
+        SpecialItems = CreateSection(1);
+        SpecialSlots = CreateSection(4);
+        DeadSlots = CreateSection(4);
+        SpecialDeadSlots = CreateSection(4);
     }
 
-    private void InitializeCollections()
+    private ItemSlotViewModel[] CreateSection(int count)
     {
-        InitializeSection(EquippedItems, 1);
-        InitializeSection(MainSlots, 4);
-        InitializeSection(SpecialItems, 1);
-        InitializeSection(SpecialSlots, 4);
-        InitializeSection(DeadSlots, 4);
-        InitializeSection(SpecialDeadSlots, 4);
+        ItemSlotViewModel[] slots = new ItemSlotViewModel[count];
+        for (int i = 0; i < count; i++)
+            slots[i] = _itemSlotViewModelFactory.Create(i + 1);
+        return slots;
     }
 
     public void UpdateFromPlayerData(
@@ -87,9 +78,9 @@ public sealed partial class InventoryViewModel : ObservableObject
         UpdateSlots(SpecialDeadSlots, specialDeadInventory);
     }
 
-    private void UpdateSlots(ObservableCollection<ItemSlotViewModel> slots, byte[] inventory)
+    private void UpdateSlots(ItemSlotViewModel[] slots, byte[] inventory)
     {
-        for (int i = 0; i < slots.Count; i++)
+        for (int i = 0; i < slots.Length; i++)
             UpdateSlot(slots[i], inventory[i]);
     }
 
@@ -112,15 +103,6 @@ public sealed partial class InventoryViewModel : ObservableObject
         return item is not null
             ? (item.TypeName, item.Quantity.ToString(CultureInfo.InvariantCulture), $"0x{itemId:X2} | {itemId}")
             : ("Unknown", "0", $"0x{itemId:X2} | {itemId}");
-    }
-
-    private void InitializeSection(ObservableCollection<ItemSlotViewModel> collection, int count)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            ItemSlotViewModel slotItem = _itemSlotViewModelFactory.Create(i + 1);
-            collection.Add(slotItem);
-        }
     }
 
     private static bool IsValidItem(DecodedItem item) => item is not { SlotIndex: 0, PickedUp: 0 };
