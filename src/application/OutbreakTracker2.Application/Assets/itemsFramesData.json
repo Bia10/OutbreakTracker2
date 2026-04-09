@@ -2276,6 +2276,20 @@
       "height": 48
     },
     {
+      "name": "File Two/Film B",
+      "x": 288,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "File Two/Film C",
+      "x": 288,
+      "y": 336,
+      "width": 48,
+      "height": 48
+    },
+    {
       "name": "File Two/Used Gas Canister",
       "x": 336,
       "y": 336,
@@ -2290,527 +2304,233 @@
       "height": 48
     },
     {
-      "name": "File Two/Unknown(12000)",
+      "name": "File Two/Film D",
       "x": 432,
       "y": 336,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File Two/Unknown(12001)",
+      "name": "File Two/Secret File",
       "x": 480,
       "y": 336,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File Two/Unknown(12002)",
+      "name": "File Two/Unknown(12000)",
       "x": 528,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12003)",
-      "x": 576,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12004)",
-      "x": 624,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12005)",
-      "x": 672,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12006)",
-      "x": 720,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12007)",
-      "x": 768,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12008)",
-      "x": 816,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12009)",
-      "x": 864,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12010)",
-      "x": 912,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12011)",
-      "x": 960,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12012)",
-      "x": 1008,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12013)",
-      "x": 1056,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12014)",
-      "x": 1104,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12015)",
-      "x": 1152,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12016)",
-      "x": 1200,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12017)",
-      "x": 1248,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12018)",
-      "x": 1296,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12019)",
-      "x": 1344,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12020)",
-      "x": 1392,
       "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Auxiliary Building Key",
-      "x": 1440,
+      "x": 576,
       "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Administrator's Office Key",
-      "x": 1488,
+      "x": 624,
       "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Rusty Key",
-      "x": 1536,
+      "x": 672,
       "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Syringe (empty)",
-      "x": 1584,
+      "x": 720,
       "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Syringe (solvent)",
-      "x": 1632,
+      "x": 768,
       "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Pendant",
-      "x": 1680,
+      "x": 816,
       "y": 336,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File Two/Unknown(12506)",
-      "x": 1728,
+      "name": "File Two/Bolt Cutters",
+      "x": 864,
       "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12507)",
-      "x": 1776,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12508)",
-      "x": 1824,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12509)",
-      "x": 1872,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12510)",
-      "x": 1920,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(12511)",
-      "x": 1968,
-      "y": 336,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Auxiliary Building Key - NOTE: doesnt make sense as such name alrdy exists",
-      "x": 0,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Administrator's Office Key - NOTE: doesnt make sense as such name alrdy exists",
-      "x": 48,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Rusty Key - NOTE: doesnt make sense as such name alrdy exists",
-      "x": 96,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Syringe (empty) - NOTE: doesnt make sense as such name alrdy exists",
-      "x": 144,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Syringe (solvent) - NOTE: doesnt make sense as such name alrdy exists",
-      "x": 192,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Pendant - NOTE: doesnt make sense as such name alrdy exists",
-      "x": 240,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Bolt Cutters - NOTE: doesnt make sense as such name alrdy exists",
-      "x": 288,
-      "y": 384,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Elephant Key",
-      "x": 336,
-      "y": 384,
+      "x": 912,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Alligator Key",
-      "x": 384,
-      "y": 384,
+      "x": 960,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Lion Key",
-      "x": 432,
-      "y": 384,
+      "x": 1008,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Office Key",
-      "x": 480,
-      "y": 384,
+      "x": 1056,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Mr. Racoon Medal",
-      "x": 528,
-      "y": 384,
+      "x": 1104,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Lion Emblem (RED)",
-      "x": 576,
-      "y": 384,
+      "x": 1152,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Lion Emblem (BLUE)",
-      "x": 624,
-      "y": 384,
+      "x": 1200,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Blank Tape",
-      "x": 672,
-      "y": 384,
+      "x": 1248,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Parade BGM Tape",
-      "x": 720,
-      "y": 384,
+      "x": 1296,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File Two/Unknown(9)",
-      "x": 768,
-      "y": 384,
+      "name": "File Two/Unknown(Unused1)",
+      "x": 1344,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Unknown(Unused2)",
-      "x": 816,
-      "y": 384,
+      "x": 1392,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Unknown(Unused3)",
-      "x": 864,
-      "y": 384,
+      "x": 1440,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Unknown(Unused4)",
-      "x": 912,
-      "y": 384,
+      "x": 1488,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Unknown(Unused5)",
-      "x": 960,
-      "y": 384,
+      "x": 1536,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Unknown(Unused6)",
-      "x": 1008,
-      "y": 384,
+      "x": 1584,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Unknown(Unused7)",
-      "x": 1056,
-      "y": 384,
+      "x": 1632,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Unknown(Unused8)",
-      "x": 1104,
-      "y": 384,
+      "x": 1680,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Unknown(Unused9)",
-      "x": 1152,
-      "y": 384,
+      "x": 1728,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Unknown(Unused10)",
-      "x": 1200,
-      "y": 384,
+      "x": 1776,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Unknown(Unused11)",
-      "x": 1248,
-      "y": 384,
+      "x": 1824,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Unknown(Unused12)",
-      "x": 1296,
-      "y": 384,
+      "x": 1872,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Unknown(Unused13)",
-      "x": 1344,
-      "y": 384,
+      "x": 1920,
+      "y": 336,
       "width": 48,
       "height": 48
     },
     {
       "name": "File Two/Unknown(Unused14)",
-      "x": 1392,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(Unused15)",
-      "x": 1440,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(Unused16)",
-      "x": 1488,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(Unused17)",
-      "x": 1536,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(Unused18)",
-      "x": 1584,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(Unused19)",
-      "x": 1632,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(Unused20)",
-      "x": 1680,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(Unused21)",
-      "x": 1728,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(Unused22)",
-      "x": 1776,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(Unused23)",
-      "x": 1824,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(Unused24)",
-      "x": 1872,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(Unused25)",
-      "x": 1920,
-      "y": 384,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Unknown(Unused26)",
       "x": 1968,
-      "y": 384,
+      "y": 336,
       "width": 48,
       "height": 48
     }
