@@ -47,17 +47,17 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject
     public string PickedUpAtDisplay =>
         PickedUpAtFrame.HasValue ? TimeUtility.GetTimeFromFrames(PickedUpAtFrame.Value) : "--:--:--.–";
 
-    public ScenarioItemSlotViewModel(DecodedItem item, ItemImageViewModel itemImageViewModel)
+    public ScenarioItemSlotViewModel(DecodedItem item, ItemImageViewModel itemImageViewModel, GameFile gameFile)
     {
         _item = item;
         ItemImageViewModel = itemImageViewModel;
-        RefreshImage();
+        RefreshImage(gameFile);
     }
 
     [RelayCommand]
     private void TogglePickupTracking() => IsPickupTracked = !IsPickupTracked;
 
-    public void UpdateItem(DecodedItem newItem, int frameCounter)
+    public void UpdateItem(DecodedItem newItem, int frameCounter, GameFile gameFile)
     {
         if (Item.PickedUp == 0 && newItem.PickedUp > 0)
             PickedUpAtFrame = frameCounter;
@@ -65,10 +65,10 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject
             PickedUpAtFrame = null;
 
         Item = newItem;
-        RefreshImage();
+        RefreshImage(gameFile);
     }
 
-    private void RefreshImage()
+    private void RefreshImage(GameFile gameFile)
     {
         if (string.IsNullOrEmpty(Item.TypeName))
         {
@@ -76,7 +76,7 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject
             return;
         }
 
-        string currentFile = EnumUtility.GetEnumString(GameFile.FileTwo, GameFile.Unknown);
+        string currentFile = EnumUtility.GetEnumString(gameFile, GameFile.Unknown);
         string spriteLookupName = currentFile + "/" + Item.TypeName;
         _ = ItemImageViewModel.UpdateImageAsync(spriteLookupName);
     }

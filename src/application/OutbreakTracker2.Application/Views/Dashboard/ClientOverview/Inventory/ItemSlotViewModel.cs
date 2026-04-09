@@ -39,7 +39,7 @@ public sealed partial class ItemSlotViewModel(
     private string _previousItemCount = EmptySlotCount;
     private bool _isFirstUpdate = true;
 
-    public void UpdateDisplay(string name, string count, string debug)
+    public void UpdateDisplay(string name, string count, string debug, GameFile gameFile)
     {
         if (!_isFirstUpdate)
         {
@@ -67,7 +67,7 @@ public sealed partial class ItemSlotViewModel(
             _ = ItemImageViewModel.ClearImageAsync();
         else
         {
-            string currentFile = EnumUtility.GetEnumString(GameFile.FileTwo, GameFile.Unknown);
+            string currentFile = EnumUtility.GetEnumString(gameFile, GameFile.Unknown);
             string itemSpriteLookupName = currentFile + "/" + name;
 
             _ = ItemImageViewModel.UpdateImageAsync(itemSpriteLookupName);

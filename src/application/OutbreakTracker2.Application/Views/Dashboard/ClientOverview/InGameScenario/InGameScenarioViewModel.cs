@@ -351,7 +351,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         IsCleared = GetClearedDisplay();
 
         ResolveItemDisplayFields(scenario);
-        ScenarioEntitiesVm.UpdateItems(scenario.Items, scenario.FrameCounter);
+        ScenarioEntitiesVm.UpdateItems(scenario.Items, scenario.FrameCounter, (GameFile)scenario.CurrentFile);
 
         UpdateScenarioSpecificViewModel(scenario);
     }

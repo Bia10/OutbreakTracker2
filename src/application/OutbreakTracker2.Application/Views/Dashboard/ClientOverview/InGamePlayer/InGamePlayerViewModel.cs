@@ -3,6 +3,7 @@ using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Views.Common.Character;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Character;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
@@ -113,7 +114,8 @@ public sealed partial class InGamePlayerViewModel : ObservableObject
             player.SpecialItem,
             player.SpecialInventory,
             player.DeadInventory,
-            player.SpecialDeadInventory
+            player.SpecialDeadInventory,
+            (GameFile)_dataManager.InGameScenario.CurrentFile
         );
 
         if (EnumUtility.TryParseByValueOrMember(CharacterType, out CharacterBaseType charType))

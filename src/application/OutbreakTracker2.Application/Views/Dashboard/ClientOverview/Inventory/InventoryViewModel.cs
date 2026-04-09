@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
@@ -66,28 +67,29 @@ public sealed partial class InventoryViewModel : ObservableObject
         byte specialItem,
         byte[] specialInventory,
         byte[] deadInventory,
-        byte[] specialDeadInventory
+        byte[] specialDeadInventory,
+        GameFile gameFile
     )
     {
         PlayerStatus = playerStatus;
-        UpdateSlot(EquippedItems[0], equippedItem);
-        UpdateSlots(MainSlots, mainInventory);
-        UpdateSlot(SpecialItems[0], specialItem);
-        UpdateSlots(SpecialSlots, specialInventory);
-        UpdateSlots(DeadSlots, deadInventory);
-        UpdateSlots(SpecialDeadSlots, specialDeadInventory);
+        UpdateSlot(EquippedItems[0], equippedItem, gameFile);
+        UpdateSlots(MainSlots, mainInventory, gameFile);
+        UpdateSlot(SpecialItems[0], specialItem, gameFile);
+        UpdateSlots(SpecialSlots, specialInventory, gameFile);
+        UpdateSlots(DeadSlots, deadInventory, gameFile);
+        UpdateSlots(SpecialDeadSlots, specialDeadInventory, gameFile);
     }
 
-    private void UpdateSlots(ItemSlotViewModel[] slots, byte[] inventory)
+    private void UpdateSlots(ItemSlotViewModel[] slots, byte[] inventory, GameFile gameFile)
     {
         for (int i = 0; i < slots.Length; i++)
-            UpdateSlot(slots[i], inventory[i]);
+            UpdateSlot(slots[i], inventory[i], gameFile);
     }
 
-    private void UpdateSlot(ItemSlotViewModel slot, byte itemId)
+    private void UpdateSlot(ItemSlotViewModel slot, byte itemId, GameFile gameFile)
     {
         (string name, string count, string debug) = LookupItemDetails(itemId);
-        slot.UpdateDisplay(name, count, debug);
+        slot.UpdateDisplay(name, count, debug, gameFile);
     }
 
     private (string Name, string Count, string Debug) LookupItemDetails(byte itemId)

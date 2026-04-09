@@ -2,6 +2,7 @@
 using OutbreakTracker2.Application.Services.Toasts;
 using OutbreakTracker2.Application.Views.Common.Item;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
@@ -40,7 +41,7 @@ public sealed class ScenarioEntitiesViewModel : IDisposable
     private static bool IsUnoccupiedSlot(DecodedItem item) =>
         item.SlotIndex == 0 && item.Quantity == 0 && item.PickedUp == 0 && item.Present == 0;
 
-    public void UpdateItems(DecodedItem[] newItems, int frameCounter)
+    public void UpdateItems(DecodedItem[] newItems, int frameCounter, GameFile gameFile)
     {
         List<DecodedItem> newItemsList = [.. newItems.Where(item => !IsUnoccupiedSlot(item))];
 
@@ -61,7 +62,7 @@ public sealed class ScenarioEntitiesViewModel : IDisposable
             if (existingSlotVm is null)
             {
                 ItemImageViewModel imageVm = _itemImageViewModelFactory.Create();
-                _items.Add(new ScenarioItemSlotViewModel(newItem, imageVm));
+                _items.Add(new ScenarioItemSlotViewModel(newItem, imageVm, gameFile));
                 _previousPickedUpStates[newItem.SlotIndex] = newItem.PickedUp;
             }
             else
@@ -85,7 +86,7 @@ public sealed class ScenarioEntitiesViewModel : IDisposable
                 }
 
                 _previousPickedUpStates[newItem.SlotIndex] = newItem.PickedUp;
-                existingSlotVm.UpdateItem(newItem, frameCounter);
+                existingSlotVm.UpdateItem(newItem, frameCounter, gameFile);
             }
         }
     }
