@@ -5,6 +5,7 @@ using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer.Factory;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
 
@@ -16,6 +17,10 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
     private readonly ILogger<InGamePlayersViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
     private readonly Dictionary<string, InGamePlayerViewModel> _viewModelCache = [];
+
+    // Updated by a lightweight scenario subscription. Volatile so the player pipeline
+    // thread sees writes without a lock.
+    private volatile ScenarioStatus _lastScenarioStatus = ScenarioStatus.None;
     private readonly ObservableList<InGamePlayerViewModel> _players = [];
     public NotifyCollectionChangedSynchronizedViewList<InGamePlayerViewModel> PlayersView { get; }
 
@@ -37,11 +42,14 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
-        _logger.LogDebug("Initializing InGamePlayersViewModel");
 
         PlayersView = _players.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
-        _subscription = dataManager
+        IDisposable scenarioSub = dataManager
+            .InGameScenarioObservable.ObserveOnThreadPool()
+            .Subscribe(scenario => _lastScenarioStatus = scenario.Status);
+
+        IDisposable playersSub = dataManager
             .InGamePlayersObservable.ObserveOnThreadPool()
             .SubscribeAwait(
                 async (incomingPlayersSnapshot, ct) =>
@@ -134,19 +142,24 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
                                     );
                                     foreach (InGamePlayerViewModel vm2 in desiredViewModels)
                                         desiredUniqueIdsLookup.Add(vm2.UniqueNameId);
-                                    for (int i = _players.Count - 1; i >= 0; i--)
-                                    {
-                                        InGamePlayerViewModel currentVmInList = _players[i];
-                                        if (desiredUniqueIdsLookup.Contains(currentVmInList.UniqueNameId))
-                                            continue;
 
-                                        _logger.LogDebug(
-                                            "Removing ViewModel from Players list & Cache on UI thread for UniqueId: {UniqueId}",
-                                            currentVmInList.UniqueNameId
-                                        );
-                                        _players.RemoveAt(i);
-                                        _viewModelCache.Remove(currentVmInList.UniqueNameId);
-                                    }
+                                    // During room transitions the game momentarily clears player
+                                    // memory, so the incoming snapshot is empty. Skip removals to
+                                    // keep the last-known player state on screen.
+                                    if (!IsTransitionalStatus(_lastScenarioStatus))
+                                        for (int i = _players.Count - 1; i >= 0; i--)
+                                        {
+                                            InGamePlayerViewModel currentVmInList = _players[i];
+                                            if (desiredUniqueIdsLookup.Contains(currentVmInList.UniqueNameId))
+                                                continue;
+
+                                            _logger.LogDebug(
+                                                "Removing ViewModel from Players list & Cache on UI thread for UniqueId: {UniqueId}",
+                                                currentVmInList.UniqueNameId
+                                            );
+                                            _players.RemoveAt(i);
+                                            _viewModelCache.Remove(currentVmInList.UniqueNameId);
+                                        }
 
                                     for (int i = 0; i < desiredViewModels.Count; i++)
                                     {
@@ -229,7 +242,18 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
                 },
                 AwaitOperation.Drop
             );
+
+        _subscription = Disposable.Combine(scenarioSub, playersSub);
     }
+
+    // Statuses where player memory is temporarily unreliable.
+    // Keep stale VMs in the list rather than evicting and re-creating them.
+    private static bool IsTransitionalStatus(ScenarioStatus status) =>
+        status
+            is ScenarioStatus.TransitionLoading
+                or ScenarioStatus.CinematicPlaying
+                or ScenarioStatus.GenericLoading
+                or ScenarioStatus.PostIntroLoading;
 
     private static bool IsPlayerActive(DecodedInGamePlayer? player)
     {
