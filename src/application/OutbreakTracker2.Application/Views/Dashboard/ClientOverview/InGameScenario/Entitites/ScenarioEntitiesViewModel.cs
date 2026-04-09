@@ -41,28 +41,35 @@ public sealed class ScenarioEntitiesViewModel : IDisposable
     private static bool IsUnoccupiedSlot(DecodedItem item) =>
         item.SlotIndex == 0 && item.Quantity == 0 && item.PickedUp == 0 && item.Present == 0;
 
+    private static (int SlotId, Ulid Id) GetEnemyKey(DecodedEnemy enemy) => (enemy.SlotId, enemy.Id);
+
     public void UpdateItems(DecodedItem[] newItems, int frameCounter, GameFile gameFile)
     {
         List<DecodedItem> newItemsList = [.. newItems.Where(item => !IsUnoccupiedSlot(item))];
+        HashSet<byte> newSlotIndices = [.. newItemsList.Select(item => item.SlotIndex)];
+        Dictionary<byte, ScenarioItemSlotViewModel> existingBySlot = _items.ToDictionary(vm => vm.SlotIndex);
 
         for (int i = _items.Count - 1; i >= 0; i--)
         {
             ScenarioItemSlotViewModel existingSlotVm = _items[i];
-            if (!newItemsList.Exists(newItem => newItem.SlotIndex == existingSlotVm.SlotIndex))
+            if (!newSlotIndices.Contains(existingSlotVm.SlotIndex))
             {
                 _previousPickedUpStates.Remove(existingSlotVm.SlotIndex);
                 _items.RemoveAt(i);
+                existingBySlot.Remove(existingSlotVm.SlotIndex);
             }
         }
 
         foreach (DecodedItem newItem in newItemsList)
         {
-            ScenarioItemSlotViewModel? existingSlotVm = _items.FirstOrDefault(vm => vm.SlotIndex == newItem.SlotIndex);
+            existingBySlot.TryGetValue(newItem.SlotIndex, out ScenarioItemSlotViewModel? existingSlotVm);
 
             if (existingSlotVm is null)
             {
                 ItemImageViewModel imageVm = _itemImageViewModelFactory.Create();
-                _items.Add(new ScenarioItemSlotViewModel(newItem, imageVm, gameFile));
+                ScenarioItemSlotViewModel newSlotVm = new(newItem, imageVm, gameFile);
+                _items.Add(newSlotVm);
+                existingBySlot[newItem.SlotIndex] = newSlotVm;
                 _previousPickedUpStates[newItem.SlotIndex] = newItem.PickedUp;
             }
             else
@@ -94,31 +101,31 @@ public sealed class ScenarioEntitiesViewModel : IDisposable
     public void UpdateEnemies(DecodedEnemy[] newEnemies)
     {
         List<DecodedEnemy> newEnemiesList = [.. newEnemies];
+        HashSet<(int SlotId, Ulid Id)> newEnemyKeys = [.. newEnemiesList.Select(GetEnemyKey)];
 
         for (int i = _enemies.Count - 1; i >= 0; i--)
         {
             DecodedEnemy existingEnemy = _enemies[i];
-            if (
-                !newEnemiesList.Exists(newEnemy =>
-                    newEnemy.SlotId == existingEnemy.SlotId && newEnemy.Id == existingEnemy.Id
-                )
-            )
+            if (!newEnemyKeys.Contains(GetEnemyKey(existingEnemy)))
                 _enemies.RemoveAt(i);
         }
 
+        Dictionary<(int SlotId, Ulid Id), int> existingIndexByKey = _enemies
+            .Select((enemy, index) => (Key: GetEnemyKey(enemy), Index: index))
+            .ToDictionary(entry => entry.Key, entry => entry.Index);
+
         foreach (DecodedEnemy newEnemy in newEnemiesList)
         {
-            DecodedEnemy? existingEnemy = _enemies.FirstOrDefault(e =>
-                e.SlotId == newEnemy.SlotId && e.Id == newEnemy.Id
-            );
+            (int SlotId, Ulid Id) key = GetEnemyKey(newEnemy);
 
-            if (existingEnemy is null)
+            if (!existingIndexByKey.TryGetValue(key, out int existingIndex))
+            {
                 _enemies.Add(newEnemy);
+                existingIndexByKey[key] = _enemies.Count - 1;
+            }
             else
             {
-                int index = _enemies.IndexOf(existingEnemy);
-                if (index is -1)
-                    continue;
+                DecodedEnemy existingEnemy = _enemies[existingIndex];
 
                 if (
                     existingEnemy.Enabled != newEnemy.Enabled
@@ -133,9 +140,7 @@ public sealed class ScenarioEntitiesViewModel : IDisposable
                     || existingEnemy.Status != newEnemy.Status
                     || !string.Equals(existingEnemy.RoomName, newEnemy.RoomName, System.StringComparison.Ordinal)
                 )
-                {
-                    _enemies[index] = newEnemy;
-                }
+                    _enemies[existingIndex] = newEnemy;
             }
         }
     }
@@ -143,20 +148,29 @@ public sealed class ScenarioEntitiesViewModel : IDisposable
     public void UpdateDoors(DecodedDoor[] newDoors)
     {
         List<DecodedDoor> newDoorsList = [.. newDoors];
+        HashSet<Ulid> newDoorIds = [.. newDoorsList.Select(door => door.Id)];
+        Dictionary<Ulid, InGameDoorViewModel> existingById = _doors.ToDictionary(vm => vm.UniqueId);
 
         for (int i = _doors.Count - 1; i >= 0; i--)
         {
             InGameDoorViewModel existingVm = _doors[i];
-            if (newDoorsList.TrueForAll(newDoor => newDoor.Id != existingVm.UniqueId))
+            if (!newDoorIds.Contains(existingVm.UniqueId))
+            {
                 _doors.RemoveAt(i);
+                existingById.Remove(existingVm.UniqueId);
+            }
         }
 
         foreach (DecodedDoor newDoor in newDoorsList)
         {
-            InGameDoorViewModel? existingVm = _doors.FirstOrDefault(vm => vm.UniqueId == newDoor.Id);
+            existingById.TryGetValue(newDoor.Id, out InGameDoorViewModel? existingVm);
 
             if (existingVm is null)
-                _doors.Add(new InGameDoorViewModel(newDoor));
+            {
+                InGameDoorViewModel newVm = new(newDoor);
+                _doors.Add(newVm);
+                existingById[newDoor.Id] = newVm;
+            }
             else
                 existingVm.Update(newDoor);
         }

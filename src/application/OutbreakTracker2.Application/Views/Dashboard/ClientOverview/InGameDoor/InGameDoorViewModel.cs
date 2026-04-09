@@ -1,15 +1,21 @@
 ﻿using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using CommunityToolkit.Mvvm.ComponentModel;
+using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor;
 
 public sealed partial class InGameDoorViewModel : ObservableObject
 {
+    private static readonly Color BlueBorderColor = Color.FromArgb(255, 0, 100, 255);
+    private static readonly Color WhiteBorderColor = Color.FromArgb(255, 255, 255, 255);
+
     private static readonly IBrush LockedBrush = new ImmutableSolidColorBrush(Colors.Red);
     private static readonly IBrush UnlockedBrush = new ImmutableSolidColorBrush(Colors.LimeGreen);
     private static readonly IBrush DestroyedBrush = new ImmutableSolidColorBrush(Color.FromArgb(255, 180, 60, 60));
+    private static readonly IBrush BlueBorderBrush = new ImmutableSolidColorBrush(BlueBorderColor);
+    private static readonly IBrush WhiteBorderBrush = new ImmutableSolidColorBrush(WhiteBorderColor);
 
     [ObservableProperty]
     private ushort _hp;
@@ -41,7 +47,7 @@ public sealed partial class InGameDoorViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(BorderBrush))]
     private Color _calculatedBorderColor;
 
-    public IBrush BorderBrush => new ImmutableSolidColorBrush(CalculatedBorderColor);
+    public IBrush BorderBrush => CalculatedBorderColor == BlueBorderColor ? BlueBorderBrush : WhiteBorderBrush;
     public IBrush LockForeground => IsLocked ? LockedBrush : UnlockedBrush;
     public IBrush DestroyedForeground => IsDestroyed ? DestroyedBrush : UnlockedBrush;
 
@@ -111,9 +117,6 @@ public sealed partial class InGameDoorViewModel : ObservableObject
 
     private Color GetBorderColor()
     {
-        bool isBlueBorder =
-            Hp is 500 || Hp is 0 || Flag is 0x00 || Flag is 0x0A || Flag is 0x0C || Flag is 0x2C || Flag is 0x82;
-
-        return isBlueBorder ? Color.FromArgb(255, 0, 100, 255) : Color.FromArgb(0, 0, 0, 0);
+        return DoorConstants.IsPassable(Hp, Flag) ? BlueBorderColor : WhiteBorderColor;
     }
 }

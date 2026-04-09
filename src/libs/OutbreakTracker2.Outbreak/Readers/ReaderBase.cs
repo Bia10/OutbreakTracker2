@@ -268,12 +268,18 @@ public abstract class ReaderBase : IDisposable
     protected ReadOnlySpan<nint> GetFileSpecificOffsets(
         (nint[] File1, nint[] File2) offsetTuple,
         [CallerMemberName] string methodName = ""
+    ) => GetFileSpecificOffsets(offsetTuple.File1, offsetTuple.File2, methodName);
+
+    protected ReadOnlySpan<nint> GetFileSpecificOffsets(
+        ReadOnlySpan<nint> offsetsFile1,
+        ReadOnlySpan<nint> offsetsFile2,
+        [CallerMemberName] string methodName = ""
     )
     {
         ReadOnlySpan<nint> offsets = CurrentFile switch
         {
-            GameFile.FileOne => offsetTuple.File1,
-            GameFile.FileTwo => offsetTuple.File2,
+            GameFile.FileOne => offsetsFile1,
+            GameFile.FileTwo => offsetsFile2,
             _ => [],
         };
 
@@ -365,10 +371,7 @@ public abstract class ReaderBase : IDisposable
     {
         address = nint.Zero;
 
-        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(
-            (offsetsFile1.ToArray(), offsetsFile2.ToArray()),
-            methodName
-        );
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(offsetsFile1, offsetsFile2, methodName);
 
         nint basePtr = GetLobbyBasePointer(slotIndex, methodName);
 
@@ -401,10 +404,7 @@ public abstract class ReaderBase : IDisposable
         address = nint.Zero;
         errorMessage = null;
 
-        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(
-            (offsetsFile1.ToArray(), offsetsFile2.ToArray()),
-            methodName
-        );
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(offsetsFile1, offsetsFile2, methodName);
         if (offsets.IsEmpty)
         {
             errorMessage = $"[{methodName}] Selected offsets for current game file {CurrentFile} are empty.";
@@ -460,7 +460,7 @@ public abstract class ReaderBase : IDisposable
 
         if (EqualityComparer<TResult>.Default.Equals(result, errorValue) && address != nint.Zero) // Check if errorValue is default AND address was valid
         {
-            Logger.LogDebug(
+            Logger.LogTrace(
                 "[{MethodName}] Read operation for {Type} at address 0x{Address:X} returned error value.",
                 methodName,
                 typeof(TResult).Name,
@@ -478,7 +478,7 @@ public abstract class ReaderBase : IDisposable
         }
         else
         {
-            Logger.LogDebug(
+            Logger.LogTrace(
                 "[{MethodName}] Read {Type} at address 0x{Address:X}. Value: {Result}",
                 methodName,
                 typeof(TResult).Name,
@@ -535,7 +535,7 @@ public abstract class ReaderBase : IDisposable
 
         if (EqualityComparer<TResult>.Default.Equals(result, errorValue) && address != nint.Zero)
         {
-            Logger.LogDebug(
+            Logger.LogTrace(
                 "[{MethodName}] Read operation for {Type} at address 0x{Address:X} for slot {SlotIndex} returned error value.",
                 methodName,
                 typeof(TResult).Name,
@@ -555,7 +555,7 @@ public abstract class ReaderBase : IDisposable
         }
         else
         {
-            Logger.LogDebug(
+            Logger.LogTrace(
                 "[{MethodName}] Read {Type} at address 0x{Address:X} for slot {SlotIndex}. Value: {Result}",
                 methodName,
                 typeof(TResult).Name,

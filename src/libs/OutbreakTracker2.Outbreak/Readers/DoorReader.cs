@@ -34,8 +34,7 @@ public sealed class DoorReader : ReaderBase, IDoorReader
         _addressProviders = addressProviders.ToDictionary(p => p.SupportedFile);
 
         DecodedDoors = new DecodedDoor[GameConstants.MaxDoors];
-        for (int i = 0; i < GameConstants.MaxDoors; i++)
-            DecodedDoors[i] = new DecodedDoor();
+        Array.Fill(DecodedDoors, new DecodedDoor());
     }
 
     private T ReadDoorProperty<T>(int doorId, DoorPropertyType propertyType, T errorValue)
@@ -61,27 +60,7 @@ public sealed class DoorReader : ReaderBase, IDoorReader
 
     private string DecodeFlag(ushort doorHp, ushort flag)
     {
-        if (doorHp is 500)
-            return "unlocked";
-
-        return flag switch
-        {
-            0 => "unlocked",
-            1 => "locked",
-            2 => "locked", //Fragile lock wild things
-            3 => "locked", //Fragile lock underbelly, elephant restaurant(simple lock)
-            4 => "locked", //Fragile lock underbelly
-            6 => "unknownState6",
-            8 => "locked", //Fragile lock wild things
-            10 => "unlocked",
-            12 => "unlocked",
-            13 => "unknownState13", // Wild things
-            18 => "unknownState18", // Flashback
-            44 => "unlocked",
-            130 => "unlocked",
-            2000 => "unlocked",
-            _ => LogUnknownFlag(flag),
-        };
+        return DoorConstants.TryGetStatus(doorHp, flag, out string? status) ? status : LogUnknownFlag(flag);
     }
 
     private string LogUnknownFlag(ushort flag)
@@ -99,6 +78,7 @@ public sealed class DoorReader : ReaderBase, IDoorReader
             return;
 
         DecodedDoor[] newDecodedDoors = new DecodedDoor[GameConstants.MaxDoors];
+        Array.Fill(newDecodedDoors, new DecodedDoor());
 
         for (int i = 0; i < provider.MaxDoors; i++)
         {

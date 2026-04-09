@@ -1,56 +1,67 @@
 <UserControl
-    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor.InGameDoorView"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    xmlns:converters="clr-namespace:OutbreakTracker2.Application.Converters"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
-    xmlns:inGameDoor1="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor"
-    d:DesignHeight="160"
-    d:DesignWidth="280"
-    x:DataType="inGameDoor1:InGameDoorViewModel"
-    mc:Ignorable="d">
+x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor.InGameDoorView"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+xmlns:converters="clr-namespace:OutbreakTracker2.Application.Converters"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+xmlns:inGameDoor1="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor"
+d:DesignHeight="160"
+d:DesignWidth="280"
+x:DataType="inGameDoor1:InGameDoorViewModel"
+mc:Ignorable="d">
 
     <Panel>
         <suki:GlassCard
-            Margin="4,3"
-            Padding="8,6"
-            BorderBrush="{Binding BorderBrush}"
-            BorderThickness="2"
-            CornerRadius="6">
+        Margin="4,3"
+        Padding="8,6"
+        BorderBrush="{Binding BorderBrush}"
+        BorderThickness="2"
+        CornerRadius="6">
 
             <StackPanel Spacing="4">
 
-                <TextBlock
+                <Grid>
+                    <TextBlock
+                    HorizontalAlignment="Left"
                     FontSize="13"
                     FontWeight="Bold"
                     Text="Door" />
+                    <avalonia:MaterialIcon
+                    Width="15"
+                    Height="15"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Foreground="{Binding LockForeground}"
+                    Kind="{Binding IsLocked, Converter={x:Static converters:BoolToIconConverters.Password}}"
+                    ToolTip.Tip="Door Lock Status" />
+                </Grid>
 
                 <!--  HP progress bar with status overlaid, same pattern as enemy cards  -->
                 <Grid>
                     <ProgressBar
-                        Height="18"
-                        Maximum="100"
-                        Value="{Binding HealthPercentage}" />
+                    Height="18"
+                    Maximum="100"
+                    Value="{Binding HealthPercentage}" />
                     <StackPanel
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="3">
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="3">
                         <avalonia:MaterialIcon
-                            Width="13"
-                            Height="13"
-                            VerticalAlignment="Center"
-                            IsVisible="{Binding IsDestroyed}"
-                            Kind="Skull"
-                            ToolTip.Tip="This door has been destroyed" />
+                        Width="13"
+                        Height="13"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding IsDestroyed}"
+                        Kind="Skull"
+                        ToolTip.Tip="This door has been destroyed" />
                         <TextBlock
-                            VerticalAlignment="Center"
-                            FontSize="11"
-                            FontWeight="SemiBold"
-                            Text="{Binding HpStatus}" />
+                        VerticalAlignment="Center"
+                        FontSize="11"
+                        FontWeight="SemiBold"
+                        Text="{Binding HpStatus}" />
                     </StackPanel>
                 </Grid>
 
@@ -58,38 +69,30 @@
                 <StackPanel Margin="0,2,0,0" Spacing="1">
                     <DockPanel>
                         <TextBlock
-                            DockPanel.Dock="Left"
-                            FontSize="11"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource SukiLowText}"
-                            Text="Flag:" />
+                        DockPanel.Dock="Left"
+                        FontSize="11"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource SukiLowText}"
+                        Text="Flag:" />
                         <TextBlock
-                            Margin="3,0,0,0"
-                            FontSize="11"
-                            Text="{Binding Flag}"
-                            TextTrimming="CharacterEllipsis" />
+                        Margin="3,0,0,0"
+                        FontSize="11"
+                        Text="{Binding Flag}"
+                        TextTrimming="CharacterEllipsis" />
                     </DockPanel>
                     <DockPanel>
-                        <avalonia:MaterialIcon
-                            Width="13"
-                            Height="13"
-                            Margin="0,0,3,0"
-                            VerticalAlignment="Center"
-                            Foreground="{Binding LockForeground}"
-                            Kind="{Binding IsLocked, Converter={x:Static converters:BoolToIconConverters.Password}}"
-                            ToolTip.Tip="Door Lock Status" />
                         <TextBlock
-                            DockPanel.Dock="Left"
-                            FontSize="11"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource SukiLowText}"
-                            Text="Status:" />
+                        DockPanel.Dock="Left"
+                        FontSize="11"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource SukiLowText}"
+                        Text="Status:" />
                         <TextBlock
-                            Margin="3,0,0,0"
-                            FontSize="11"
-                            Foreground="{Binding LockForeground}"
-                            Text="{Binding Status}"
-                            TextTrimming="CharacterEllipsis" />
+                        Margin="3,0,0,0"
+                        FontSize="11"
+                        Foreground="{Binding LockForeground}"
+                        Text="{Binding Status}"
+                        TextTrimming="CharacterEllipsis" />
                     </DockPanel>
                 </StackPanel>
 
@@ -98,11 +101,11 @@
 
         <!--  Glow border overlay for event animations  -->
         <Border
-            x:Name="GlowBorder"
-            Margin="4,3"
-            BorderThickness="2"
-            CornerRadius="6"
-            IsHitTestVisible="False"
-            Opacity="0" />
+        x:Name="GlowBorder"
+        Margin="4,3"
+        BorderThickness="2"
+        CornerRadius="6"
+        IsHitTestVisible="False"
+        Opacity="0" />
     </Panel>
 </UserControl>
