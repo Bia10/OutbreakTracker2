@@ -3,7 +3,7 @@ using R3;
 
 namespace OutbreakTracker2.Application.Services.Tracking;
 
-public interface IEntityTracker<T>
+public interface IEntityTracker<T> : IDisposable
     where T : IHasId
 {
     IEntityChangeSource<T> Changes { get; }

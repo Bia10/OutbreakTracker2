@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Application.Services.Tracking;
 
-public interface IEntityChangeSource<T>
+public interface IEntityChangeSource<T> : IDisposable
     where T : IHasId
 {
     R3.Observable<T> Added { get; }
