@@ -13,8 +13,8 @@ public enum ScenarioStatus : byte
     [EnumMember(Value = "In Game")]
     InGame = 2,
 
-    [EnumMember(Value = "Room Transition Loading")]
-    RoomTransitionLoading = 3,
+    [EnumMember(Value = "Transition Loading")]
+    TransitionLoading = 3,
 
     [EnumMember(Value = "Cinematic Playing")]
     CinematicPlaying = 4,
