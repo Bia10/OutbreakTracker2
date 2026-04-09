@@ -36,7 +36,7 @@
                 VerticalAlignment="Center"
                 FontSize="10"
                 FontWeight="SemiBold"
-                Text="{Binding VirusPercentage, StringFormat='{}{0:F1}%'}" />
+                Text="{Binding VirusPercentage, StringFormat='{}{0:F3}%'}" />
         </Grid>
     </StackPanel>
 </UserControl>
