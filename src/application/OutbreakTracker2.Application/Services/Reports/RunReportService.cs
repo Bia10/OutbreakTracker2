@@ -142,7 +142,11 @@ public sealed class RunReportService : IRunReportService
             _sessionEvents = null;
         }
 
-        RunReport report = new(Ulid.NewUlid(), scenarioId, scenarioName, startedAt, endedAt, events);
+        Scenario scenario = EnumUtility.TryParseByValueOrMember<Scenario>(scenarioName, out Scenario parsed)
+            ? parsed
+            : Scenario.Unknown;
+
+        RunReport report = new(Ulid.NewUlid(), scenarioId, scenarioName, scenario, startedAt, endedAt, events);
 
         RunReportStats stats = report.ComputeStats();
         _logger.LogInformation(
@@ -300,6 +304,9 @@ public sealed class RunReportService : IRunReportService
             if (!string.Equals(prev.Status, curr.Status, StringComparison.Ordinal))
                 Emit(new PlayerStatusChangedEvent(now, curr.Id, curr.Name, prev.Status, curr.Status));
 
+            if (curr.IsInGame && prev.RoomId != curr.RoomId)
+                Emit(new PlayerRoomChangedEvent(now, curr.Id, curr.Name, prev.RoomId, curr.RoomId));
+
             EmitEffectChange(now, curr, "Bleed", prev.BleedTime, curr.BleedTime);
             EmitEffectChange(now, curr, "Herb", prev.HerbTime, curr.HerbTime);
             EmitEffectChange(now, curr, "AntiVirus", prev.AntiVirusTime, curr.AntiVirusTime);
@@ -444,6 +451,18 @@ public sealed class RunReportService : IRunReportService
                         FindContributingPlayers(change.Current.RoomId)
                     )
                 );
+
+            if (change.Current.Enabled != 0 && change.Previous.RoomId != change.Current.RoomId)
+                Emit(
+                    new EnemyRoomChangedEvent(
+                        now,
+                        change.Current.Id,
+                        change.Current.Name,
+                        change.Current.SlotId,
+                        change.Previous.RoomId,
+                        change.Current.RoomId
+                    )
+                );
         }
     }
 
@@ -536,6 +555,9 @@ public sealed class RunReportService : IRunReportService
                 string prevHolderName = ResolvePickupHolderName(p.PickedUp);
                 Emit(new ItemDroppedEvent(now, c.TypeName, c.RoomId, prevHolderName));
             }
+
+            if (p.Quantity != c.Quantity)
+                Emit(new ItemQuantityChangedEvent(now, c.TypeName, c.SlotIndex, c.RoomId, p.Quantity, c.Quantity));
         }
     }
 
@@ -553,6 +575,9 @@ public sealed class RunReportService : IRunReportService
 
             if (change.Previous.Hp != change.Current.Hp)
                 Emit(new DoorDamagedEvent(now, change.Current.Id, change.Previous.Hp, change.Current.Hp));
+
+            if (change.Previous.Flag != change.Current.Flag)
+                Emit(new DoorFlagChangedEvent(now, change.Current.Id, change.Previous.Flag, change.Current.Flag));
         }
     }
 

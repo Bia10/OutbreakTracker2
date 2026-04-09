@@ -2,6 +2,7 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Reports.Events;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Services.Reports;
@@ -104,10 +105,11 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
         sb.AppendLine("| Scenario Time | Event |");
         sb.AppendLine("|--------------|-------|");
 
+        Scenario scenario = report.Scenario;
         foreach (RunEvent evt in report.Events)
         {
             string scenarioTime = TimeUtility.GetTimeFromFrames(evt.ScenarioFrame);
-            string description = DescribeEvent(evt);
+            string description = DescribeEvent(evt, scenario);
             sb.Append(CultureInfo.InvariantCulture, $"| `{scenarioTime}` | {description} |").AppendLine();
         }
 
@@ -115,7 +117,7 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
         return sb.ToString();
     }
 
-    private static string DescribeEvent(RunEvent evt) =>
+    private static string DescribeEvent(RunEvent evt, Scenario scenario) =>
         evt switch
         {
             PlayerJoinedEvent e =>
@@ -139,37 +141,43 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
             PlayerVirusChangedEvent e =>
                 $"Player **{e.PlayerName}** virus: {e.OldVirusPercentage:F3}% → **{e.NewVirusPercentage:F3}%** ({e.Delta:F3}%)",
 
-            EnemySpawnedEvent e => $"Enemy **{e.EnemyName}** spawned (Room {e.RoomId}, Slot {e.SlotId}, HP: {e.MaxHp})",
+            EnemySpawnedEvent e =>
+                $"Enemy **{e.EnemyName}** spawned ({scenario.GetRoomName(e.RoomId)}, Slot {e.SlotId}, HP: {e.MaxHp})",
 
             EnemyKilledEvent e =>
-                $"Enemy **{e.EnemyName}** killed (Room {e.RoomId}, Slot {e.SlotId}){FormatContributions(e.ContributingPlayers)}",
+                $"Enemy **{e.EnemyName}** killed ({scenario.GetRoomName(e.RoomId)}, Slot {e.SlotId}){FormatContributions(e.ContributingPlayers)}",
 
             EnemyDamagedEvent e =>
                 $"Enemy **{e.EnemyName}** damaged: {e.OldHp} → {e.NewHp}/{e.MaxHp} (-{e.Damage}){FormatContributions(e.ContributingPlayers)}",
 
             EnemyDespawnedEvent e =>
-                $"Enemy **{e.EnemyName}** despawned (Room {e.RoomId}, Slot {e.SlotId}, HP remaining: {e.RemainingHp}/{e.MaxHp})",
+                $"Enemy **{e.EnemyName}** despawned ({scenario.GetRoomName(e.RoomId)}, Slot {e.SlotId}, HP remaining: {e.RemainingHp}/{e.MaxHp})",
 
             EnemyStatusChangedEvent { IsActivation: true } e =>
-                $"Enemy **{e.EnemyName}** activated 0x{e.OldStatus:X2} → 0x{e.NewStatus:X2} (Room {e.RoomId}){FormatContributions(e.ContributingPlayers)}",
+                $"Enemy **{e.EnemyName}** activated 0x{e.OldStatus:X2} → 0x{e.NewStatus:X2} ({scenario.GetRoomName(e.RoomId)}){FormatContributions(e.ContributingPlayers)}",
 
             EnemyStatusChangedEvent e =>
-                $"Enemy **{e.EnemyName}** status: 0x{e.OldStatus:X2} → 0x{e.NewStatus:X2} (Room {e.RoomId}){FormatContributions(e.ContributingPlayers)}",
+                $"Enemy **{e.EnemyName}** status: 0x{e.OldStatus:X2} → 0x{e.NewStatus:X2} ({scenario.GetRoomName(e.RoomId)}){FormatContributions(e.ContributingPlayers)}",
 
             DoorStateChangedEvent e => $"Door status changed: {e.OldStatus} → **{e.NewStatus}**",
 
             DoorDamagedEvent e => $"Door damaged: {e.OldHp} → {e.NewHp} HP (-{e.Damage})",
 
+            DoorFlagChangedEvent e => $"Door flag changed: 0x{e.OldFlag:X4} → **0x{e.NewFlag:X4}**",
+
             ItemPickedUpEvent e when string.IsNullOrEmpty(e.PickedUpByName) =>
-                $"**{e.TypeName}** looted from scenario slot (Room {e.RoomId})",
+                $"**{e.TypeName}** looted from scenario slot ({scenario.GetRoomName(e.RoomId)})",
             ItemPickedUpEvent e =>
-                $"**{e.PickedUpByName}** looted **{e.TypeName}** from scenario slot (Room {e.RoomId})",
+                $"**{e.PickedUpByName}** looted **{e.TypeName}** from scenario slot ({scenario.GetRoomName(e.RoomId)})",
 
             ItemDroppedEvent e when string.IsNullOrEmpty(e.PreviousHolder) =>
-                $"**{e.TypeName}** returned to scenario slot (Room {e.RoomId})",
+                $"**{e.TypeName}** returned to scenario slot ({scenario.GetRoomName(e.RoomId)})",
             ItemDroppedEvent e =>
-                $"**{e.PreviousHolder}** returned **{e.TypeName}** to scenario slot (Room {e.RoomId})",
+                $"**{e.PreviousHolder}** returned **{e.TypeName}** to scenario slot ({scenario.GetRoomName(e.RoomId)})",
+            ItemQuantityChangedEvent e =>
+                $"**{e.TypeName}** (slot {e.SlotIndex}) quantity: {e.OldQuantity} → **{e.NewQuantity}** ({scenario.GetRoomName(e.RoomId)})",
 
+            ScenarioStatusChangedEvent e => $"Scenario status: {e.OldStatus} → **{e.NewStatus}**",
             PlayerStatusChangedEvent e => $"Player **{e.PlayerName}** status: {e.OldStatus} → **{e.NewStatus}**",
 
             PlayerEffectChangedEvent { IsApplied: true } e =>
@@ -178,6 +186,11 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
 
             PlayerInventoryChangedEvent e =>
                 $"Player **{e.PlayerName}** {e.Kind} slot {e.SlotIndex}: {e.OldItemName} → **{e.NewItemName}**",
+
+            PlayerRoomChangedEvent e => $"Player **{e.PlayerName}** moved room: {e.OldRoomId} → **{e.NewRoomId}**",
+
+            EnemyRoomChangedEvent e =>
+                $"Enemy **{e.EnemyName}** (Slot {e.SlotId}) moved room: {e.OldRoomId} → **{e.NewRoomId}**",
 
             _ => evt.GetType().Name,
         };
