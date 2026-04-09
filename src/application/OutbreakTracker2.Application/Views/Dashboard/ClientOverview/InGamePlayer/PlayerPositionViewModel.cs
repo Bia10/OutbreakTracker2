@@ -1,11 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer;
 
-public sealed partial class PlayerPositionViewModel(IDataManager dataManager) : ObservableObject
+public sealed partial class PlayerPositionViewModel : ObservableObject
 {
     [ObservableProperty]
     private float _positionX;
@@ -16,21 +15,18 @@ public sealed partial class PlayerPositionViewModel(IDataManager dataManager) : 
     [ObservableProperty]
     private string _roomName = string.Empty;
 
-    private readonly IDataManager _dataManager = dataManager;
-
-    public void Update(float positionX, float positionY, short roomId)
+    public void Update(float positionX, float positionY, short roomId, string scenarioName)
     {
         PositionX = positionX;
         PositionY = positionY;
-        RoomName = GetRoomName(roomId);
+        RoomName = GetRoomName(roomId, scenarioName);
     }
 
-    private string GetRoomName(short roomId)
+    private static string GetRoomName(short roomId, string scenarioName)
     {
-        string curScenarioName = _dataManager.InGameScenario.ScenarioName;
         if (
-            !string.IsNullOrEmpty(curScenarioName)
-            && EnumUtility.TryParseByValueOrMember(curScenarioName, out Scenario scenarioEnum)
+            !string.IsNullOrEmpty(scenarioName)
+            && EnumUtility.TryParseByValueOrMember(scenarioName, out Scenario scenarioEnum)
         )
             return scenarioEnum.GetRoomName(roomId);
 

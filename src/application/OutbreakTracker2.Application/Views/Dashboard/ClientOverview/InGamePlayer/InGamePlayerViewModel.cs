@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Views.Common.Character;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
@@ -51,33 +50,42 @@ public sealed partial class InGamePlayerViewModel : ObservableObject
     [ObservableProperty]
     private CharacterBustViewModel _playerBustViewModel;
 
-    private readonly IDataManager _dataManager;
-
     public InGamePlayerViewModel(
         DecodedInGamePlayer player,
-        IDataManager dataManager,
+        byte currentGameFile,
+        string scenarioName,
+        DecodedItem[] scenarioItems,
         ICharacterBustViewModelFactory characterBustViewModelFactory,
         IItemSlotViewModelFactory itemSlotViewModelFactory
     )
     {
-        _dataManager = dataManager;
         _gauges = new PlayerGaugesViewModel();
         _statusEffects = new PlayerStatusEffectsViewModel();
         _conditions = new PlayerConditionsViewModel();
         _attributes = new PlayerAttributesViewModel();
-        _position = new PlayerPositionViewModel(dataManager);
-        _inventory = new InventoryViewModel(player, dataManager, itemSlotViewModelFactory);
+        _position = new PlayerPositionViewModel();
+        _inventory = new InventoryViewModel(player, itemSlotViewModelFactory);
         _playerBustViewModel = characterBustViewModelFactory.Create();
 
-        Update(player);
+        Update(player, currentGameFile, scenarioName, scenarioItems);
     }
 
-    public void Update(DecodedInGamePlayer player)
+    public void Update(
+        DecodedInGamePlayer player,
+        byte currentGameFile,
+        string scenarioName,
+        DecodedItem[] scenarioItems
+    )
     {
-        UpdateProperties(player);
+        UpdateProperties(player, currentGameFile, scenarioName, scenarioItems);
     }
 
-    private void UpdateProperties(DecodedInGamePlayer player)
+    private void UpdateProperties(
+        DecodedInGamePlayer player,
+        byte currentGameFile,
+        string scenarioName,
+        DecodedItem[] scenarioItems
+    )
     {
         UniqueNameId = player.NameId > 0 ? $"NameId_{player.NameId}" : $"Ulid_{player.Id}";
 
@@ -101,11 +109,11 @@ public sealed partial class InGamePlayerViewModel : ObservableObject
             player.AntiVirusGTime,
             player.HerbTime,
             player.Status,
-            _dataManager.InGameScenario.CurrentFile
+            currentGameFile
         );
         Conditions.Update(player.Condition, player.Status);
         Attributes.Update(player.CritBonus, player.Size, player.Power, player.Speed);
-        Position.Update(player.PositionX, player.PositionY, player.RoomId);
+        Position.Update(player.PositionX, player.PositionY, player.RoomId, scenarioName);
 
         Inventory.UpdateFromPlayerData(
             player.Status,
@@ -115,7 +123,8 @@ public sealed partial class InGamePlayerViewModel : ObservableObject
             player.SpecialInventory,
             player.DeadInventory,
             player.SpecialDeadInventory,
-            (GameFile)_dataManager.InGameScenario.CurrentFile
+            (GameFile)currentGameFile,
+            scenarioItems
         );
 
         if (EnumUtility.TryParseByValueOrMember(CharacterType, out CharacterBaseType charType))

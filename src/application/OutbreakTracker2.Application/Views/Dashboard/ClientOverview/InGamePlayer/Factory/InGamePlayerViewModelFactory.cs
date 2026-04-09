@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Views.Common.Character;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
 using OutbreakTracker2.Outbreak.Models;
@@ -8,17 +7,20 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlay
 
 public sealed class InGamePlayerViewModelFactory(
     ILogger<InGamePlayerViewModelFactory> logger,
-    IDataManager dataManager,
     ICharacterBustViewModelFactory characterBustViewModelFactory,
     IItemSlotViewModelFactory itemSlotViewModelFactory
 ) : IInGamePlayerViewModelFactory
 {
     private readonly ILogger<InGamePlayerViewModelFactory> _logger = logger;
-    private readonly IDataManager _dataManager = dataManager;
     private readonly ICharacterBustViewModelFactory _characterBustViewModelFactory = characterBustViewModelFactory;
     private readonly IItemSlotViewModelFactory _itemSlotViewModelFactory = itemSlotViewModelFactory;
 
-    public InGamePlayerViewModel Create(DecodedInGamePlayer playerData)
+    public InGamePlayerViewModel Create(
+        DecodedInGamePlayer playerData,
+        byte currentGameFile,
+        string scenarioName,
+        DecodedItem[] scenarioItems
+    )
     {
         if (playerData is null)
         {
@@ -28,7 +30,9 @@ public sealed class InGamePlayerViewModelFactory(
 
         return new InGamePlayerViewModel(
             playerData,
-            _dataManager,
+            currentGameFile,
+            scenarioName,
+            scenarioItems,
             _characterBustViewModelFactory,
             _itemSlotViewModelFactory
         );

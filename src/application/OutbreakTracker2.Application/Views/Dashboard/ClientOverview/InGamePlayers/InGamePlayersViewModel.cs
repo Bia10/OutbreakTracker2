@@ -49,7 +49,14 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
         _subscription = trackerRegistry
             .Players.Changes.Diffs.WithLatestFrom(
                 dataManager.InGameScenarioObservable,
-                (diff, scenario) => (Diff: diff, ScenarioStatus: scenario.Status)
+                (diff, scenario) =>
+                    (
+                        Diff: diff,
+                        ScenarioStatus: scenario.Status,
+                        ScenarioName: scenario.ScenarioName,
+                        CurrentFile: scenario.CurrentFile,
+                        ScenarioItems: scenario.Items
+                    )
             )
             .ObserveOnThreadPool()
             .SubscribeAwait(
@@ -57,6 +64,9 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
                 {
                     CollectionDiff<DecodedInGamePlayer> diff = data.Diff;
                     ScenarioStatus lastScenarioStatus = data.ScenarioStatus;
+                    string scenarioName = data.ScenarioName;
+                    byte currentGameFile = data.CurrentFile;
+                    DecodedItem[] scenarioItems = data.ScenarioItems;
 
                     _logger.LogTrace(
                         "Processing player diff on thread pool: +{Added} -{Removed} ~{Changed}",
@@ -78,7 +88,12 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
 
                                 ct.ThrowIfCancellationRequested();
                                 _logger.LogDebug("Creating new ViewModel for player slot {Id}", player.Id);
-                                InGamePlayerViewModel vm = _inGamePlayerViewModelFactory.Create(player);
+                                InGamePlayerViewModel vm = _inGamePlayerViewModelFactory.Create(
+                                    player,
+                                    currentGameFile,
+                                    scenarioName,
+                                    scenarioItems
+                                );
                                 newVms ??= [];
                                 newVms.Add((player.Id, vm));
                             }
@@ -96,7 +111,12 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
                             if (!wasActive && isActive)
                             {
                                 _logger.LogDebug("Player {Id} became active; creating VM", change.Current.Id);
-                                InGamePlayerViewModel vm = _inGamePlayerViewModelFactory.Create(change.Current);
+                                InGamePlayerViewModel vm = _inGamePlayerViewModelFactory.Create(
+                                    change.Current,
+                                    currentGameFile,
+                                    scenarioName,
+                                    scenarioItems
+                                );
                                 lateJoins ??= [];
                                 lateJoins.Add((change.Current.Id, vm));
                             }
@@ -132,7 +152,7 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
                                                 out InGamePlayerViewModel? vm
                                             )
                                         )
-                                            vm.Update(change.Current);
+                                            vm.Update(change.Current, currentGameFile, scenarioName, scenarioItems);
 
                                     // Add newly-appeared players
                                     if (newVms is not null)
@@ -207,13 +227,13 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
     {
         _logger.LogDebug("Disposing InGamePlayersViewModel");
         _subscription.Dispose();
-        PlayersView.Dispose();
 
         await _dispatcherService
             .InvokeOnUIAsync(() =>
             {
                 _players.Clear();
                 _viewModelCache.Clear();
+                PlayersView.Dispose();
                 _logger.LogDebug("InGamePlayersViewModel collections cleared on UI thread during async dispose");
             })
             .ConfigureAwait(false);

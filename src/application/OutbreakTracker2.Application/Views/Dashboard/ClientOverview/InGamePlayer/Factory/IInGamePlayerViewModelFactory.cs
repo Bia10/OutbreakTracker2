@@ -4,5 +4,10 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlay
 
 public interface IInGamePlayerViewModelFactory
 {
-    InGamePlayerViewModel Create(DecodedInGamePlayer playerData);
+    InGamePlayerViewModel Create(
+        DecodedInGamePlayer playerData,
+        byte currentGameFile,
+        string scenarioName,
+        DecodedItem[] scenarioItems
+    );
 }

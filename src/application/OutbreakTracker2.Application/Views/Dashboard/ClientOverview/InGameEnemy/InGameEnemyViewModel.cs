@@ -1,7 +1,6 @@
 ﻿using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using CommunityToolkit.Mvvm.ComponentModel;
-using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Enemy;
@@ -12,6 +11,18 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnem
 
 public sealed partial class InGameEnemyViewModel : ObservableObject
 {
+    private static readonly Color InvalidEnemyColor = Color.FromArgb(255, 255, 0, 0);
+    private static readonly Color ExplosiveEnemyColor = Color.FromArgb(255, 255, 80, 40);
+    private static readonly Color UtilityEnemyColor = Color.FromArgb(255, 0, 255, 0);
+    private static readonly Color DefaultEnemyColor = Color.FromArgb(255, 255, 255, 255);
+    private static readonly Color InvalidSlotColor = Color.FromArgb(255, 0, 0, 0);
+
+    private static readonly IBrush InvalidEnemyBrush = new ImmutableSolidColorBrush(InvalidEnemyColor);
+    private static readonly IBrush ExplosiveEnemyBrush = new ImmutableSolidColorBrush(ExplosiveEnemyColor);
+    private static readonly IBrush UtilityEnemyBrush = new ImmutableSolidColorBrush(UtilityEnemyColor);
+    private static readonly IBrush DefaultEnemyBrush = new ImmutableSolidColorBrush(DefaultEnemyColor);
+    private static readonly IBrush InvalidSlotBrush = new ImmutableSolidColorBrush(InvalidSlotColor);
+
     [ObservableProperty]
     private string _name = string.Empty;
 
@@ -46,20 +57,17 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(BorderBrush))]
     private Color _rawBorderColor;
 
-    public IBrush BorderBrush => new ImmutableSolidColorBrush(RawBorderColor);
+    public IBrush BorderBrush => GetBorderBrush(RawBorderColor);
 
     public Ulid UniqueId { get; }
 
-    private readonly IDataManager _dataManager;
-
-    public InGameEnemyViewModel(DecodedEnemy enemy, IDataManager dataManager)
+    public InGameEnemyViewModel(DecodedEnemy enemy, string scenarioName)
     {
-        _dataManager = dataManager;
         UniqueId = enemy.Id;
-        Update(enemy);
+        Update(enemy, scenarioName);
     }
 
-    public void Update(DecodedEnemy enemy)
+    public void Update(DecodedEnemy enemy, string scenarioName)
     {
         if (UniqueId != enemy.Id)
             return;
@@ -73,20 +81,36 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
         HealthPercentage = IsDead ? 0.0 : PercentageUtility.GetPercentage(enemy.CurHp, enemy.MaxHp);
         BossType = ConvertBossType(enemy.BossType);
         Status = ConvertStatus(enemy.Status);
-        RoomName = UpdateRoomName(enemy.RoomId);
+        RoomName = UpdateRoomName(enemy.RoomId, scenarioName);
         RawBorderColor = GetEnemyColorForFileTwo(enemy.SlotId, enemy.NameId);
     }
 
-    private string UpdateRoomName(byte enemyRoomId)
+    private static string UpdateRoomName(byte enemyRoomId, string scenarioName)
     {
-        string curScenarioName = _dataManager.InGameScenario.ScenarioName;
         if (
-            !string.IsNullOrEmpty(curScenarioName)
-            && EnumUtility.TryParseByValueOrMember(curScenarioName, out Scenario scenarioEnum)
+            !string.IsNullOrEmpty(scenarioName)
+            && EnumUtility.TryParseByValueOrMember(scenarioName, out Scenario scenarioEnum)
         )
             return scenarioEnum.GetRoomName(enemyRoomId);
 
         return $"Room {enemyRoomId}";
+    }
+
+    private static IBrush GetBorderBrush(Color color)
+    {
+        if (color == ExplosiveEnemyColor)
+            return ExplosiveEnemyBrush;
+
+        if (color == UtilityEnemyColor)
+            return UtilityEnemyBrush;
+
+        if (color == InvalidEnemyColor)
+            return InvalidEnemyBrush;
+
+        if (color == InvalidSlotColor)
+            return InvalidSlotBrush;
+
+        return DefaultEnemyBrush;
     }
 
     private static string ConvertBossType(byte type) =>
@@ -176,17 +200,17 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
     public static Color GetEnemyColorForFileOne(int slotId, byte nameId)
     {
         if (slotId is < 0 or >= GameConstants.MaxEnemies1)
-            return Color.FromArgb(255, 0, 0, 0);
+            return InvalidSlotColor;
 
         bool enemyTypeParsed = EnumUtility.TryParseByValueOrMember(nameId, out EnemyType enemyType);
         if (!enemyTypeParsed)
-            return Color.FromArgb(255, 255, 0, 0);
+            return InvalidEnemyColor;
 
         return enemyType switch
         {
-            EnemyType.Mine or EnemyType.GasolineTank or EnemyType.Fire => Color.FromArgb(255, 255, 80, 40),
-            EnemyType.Mouse or EnemyType.Rafflesia or EnemyType.Typewriter => Color.FromArgb(255, 0, 255, 0),
-            _ => Color.FromArgb(255, 255, 255, 255),
+            EnemyType.Mine or EnemyType.GasolineTank or EnemyType.Fire => ExplosiveEnemyColor,
+            EnemyType.Mouse or EnemyType.Rafflesia or EnemyType.Typewriter => UtilityEnemyColor,
+            _ => DefaultEnemyColor,
         };
     }
 
@@ -197,13 +221,13 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
 
         bool enemyTypeParsed = EnumUtility.TryParseByValueOrMember(nameId, out EnemyType enemyType);
         if (!enemyTypeParsed)
-            return Color.FromArgb(255, 255, 0, 0);
+            return InvalidEnemyColor;
 
         return enemyType switch
         {
-            EnemyType.Mine or EnemyType.GasolineTank or EnemyType.Fire => Color.FromArgb(255, 255, 80, 40),
-            EnemyType.Mouse or EnemyType.Rafflesia or EnemyType.Typewriter => Color.FromArgb(255, 0, 255, 0),
-            _ => Color.FromArgb(255, 255, 255, 255),
+            EnemyType.Mine or EnemyType.GasolineTank or EnemyType.Fire => ExplosiveEnemyColor,
+            EnemyType.Mouse or EnemyType.Rafflesia or EnemyType.Typewriter => UtilityEnemyColor,
+            _ => DefaultEnemyColor,
         };
     }
 

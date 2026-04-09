@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
@@ -9,7 +8,6 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
 
 public sealed partial class InventoryViewModel : ObservableObject
 {
-    private readonly IDataManager _dataManager;
     private readonly IItemSlotViewModelFactory _itemSlotViewModelFactory;
 
     public ItemSlotViewModel[] EquippedItems { get; }
@@ -33,15 +31,10 @@ public sealed partial class InventoryViewModel : ObservableObject
     public bool IsSpecialInventoryVisible => HasSpecialInventory && !IsDeadOrZombie;
     public bool IsSpecialDeadInventoryVisible => HasSpecialInventory && IsDeadOrZombie;
 
-    public InventoryViewModel(
-        DecodedInGamePlayer player,
-        IDataManager dataManager,
-        IItemSlotViewModelFactory itemSlotViewModelFactory
-    )
+    public InventoryViewModel(DecodedInGamePlayer player, IItemSlotViewModelFactory itemSlotViewModelFactory)
     {
         _playerStatus = player.Status;
         _playerName = player.Name;
-        _dataManager = dataManager;
         _itemSlotViewModelFactory = itemSlotViewModelFactory;
 
         EquippedItems = CreateSection(1);
@@ -68,37 +61,43 @@ public sealed partial class InventoryViewModel : ObservableObject
         byte[] specialInventory,
         byte[] deadInventory,
         byte[] specialDeadInventory,
-        GameFile gameFile
+        GameFile gameFile,
+        DecodedItem[] scenarioItems
     )
     {
         PlayerStatus = playerStatus;
-        UpdateSlot(EquippedItems[0], equippedItem, gameFile);
-        UpdateSlots(MainSlots, mainInventory, gameFile);
-        UpdateSlot(SpecialItems[0], specialItem, gameFile);
-        UpdateSlots(SpecialSlots, specialInventory, gameFile);
-        UpdateSlots(DeadSlots, deadInventory, gameFile);
-        UpdateSlots(SpecialDeadSlots, specialDeadInventory, gameFile);
+        UpdateSlot(EquippedItems[0], equippedItem, gameFile, scenarioItems);
+        UpdateSlots(MainSlots, mainInventory, gameFile, scenarioItems);
+        UpdateSlot(SpecialItems[0], specialItem, gameFile, scenarioItems);
+        UpdateSlots(SpecialSlots, specialInventory, gameFile, scenarioItems);
+        UpdateSlots(DeadSlots, deadInventory, gameFile, scenarioItems);
+        UpdateSlots(SpecialDeadSlots, specialDeadInventory, gameFile, scenarioItems);
     }
 
-    private void UpdateSlots(ItemSlotViewModel[] slots, byte[] inventory, GameFile gameFile)
+    private void UpdateSlots(
+        ItemSlotViewModel[] slots,
+        byte[] inventory,
+        GameFile gameFile,
+        DecodedItem[] scenarioItems
+    )
     {
         for (int i = 0; i < slots.Length; i++)
-            UpdateSlot(slots[i], inventory[i], gameFile);
+            UpdateSlot(slots[i], inventory[i], gameFile, scenarioItems);
     }
 
-    private void UpdateSlot(ItemSlotViewModel slot, byte itemId, GameFile gameFile)
+    private void UpdateSlot(ItemSlotViewModel slot, byte itemId, GameFile gameFile, DecodedItem[] scenarioItems)
     {
-        (string name, string count, string debug) = LookupItemDetails(itemId);
+        (string name, string count, string debug) = LookupItemDetails(itemId, scenarioItems);
         slot.UpdateDisplay(name, count, debug, gameFile);
     }
 
-    private (string Name, string Count, string Debug) LookupItemDetails(byte itemId)
+    private static (string Name, string Count, string Debug) LookupItemDetails(byte itemId, DecodedItem[] scenarioItems)
     {
         if (itemId is 0x0)
             return ("Empty", "0", "0x00 | 0");
 
-        DecodedItem? item = _dataManager
-            .InGameScenario.Items.AsValueEnumerable()
+        DecodedItem? item = scenarioItems
+            .AsValueEnumerable()
             .Where(IsValidItem)
             .FirstOrDefault(item => item.Id.Equals(itemId));
 

@@ -18,7 +18,6 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
 {
     private readonly ILogger<InGameScenarioViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
-    private readonly IDataManager _dataManager;
     private readonly ScenarioEntityCommands _entityCommands;
     private readonly Dictionary<Scenario, Action<DecodedInGameScenario>> _scenarioUpdateActions;
     private DisposableBag _disposables;
@@ -135,7 +134,6 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
     )
     {
         _logger = logger;
-        _dataManager = dataManager;
         _dispatcherService = dispatcherService;
         _entityCommands = entityCommands;
         _scenarioEntitiesVm = scenarioEntitiesViewModel;
@@ -224,6 +222,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
                     async (inGameScenario, cancellationToken) =>
                     {
                         _logger.LogTrace("Processing inGame scenario data on thread pool");
+                        DecodedInGamePlayer[] players = dataManager.InGamePlayers;
                         try
                         {
                             await dispatcherService
@@ -231,7 +230,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
                                     () =>
                                     {
                                         _logger.LogTrace("Updating InGameScenarioViewModel properties on UI thread");
-                                        Update(inGameScenario);
+                                        Update(inGameScenario, players);
                                     },
                                     cancellationToken
                                 )
@@ -317,7 +316,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
 
     public void Dispose() => _disposables.Dispose();
 
-    public void Update(DecodedInGameScenario scenario)
+    public void Update(DecodedInGameScenario scenario, DecodedInGamePlayer[] players)
     {
         if (scenario.CurrentFile is < 1 or > 2)
         {
@@ -350,16 +349,15 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         GasRandomOrderDisplay = CalculateGasRandomOrderDisplay();
         IsCleared = GetClearedDisplay();
 
-        ResolveItemDisplayFields(scenario);
+        ResolveItemDisplayFields(scenario, players);
         ScenarioEntitiesVm.UpdateItems(scenario.Items, scenario.FrameCounter, (GameFile)scenario.CurrentFile);
 
         UpdateScenarioSpecificViewModel(scenario);
     }
 
-    private void ResolveItemDisplayFields(DecodedInGameScenario scenario)
+    private void ResolveItemDisplayFields(DecodedInGameScenario scenario, DecodedInGamePlayer[] players)
     {
         bool scenarioParsed = EnumUtility.TryParseByValueOrMember(ScenarioName, out Scenario scenarioEnum);
-        DecodedInGamePlayer[] players = _dataManager.InGamePlayers;
 
         for (int i = 0; i < scenario.Items.Length; i++)
         {

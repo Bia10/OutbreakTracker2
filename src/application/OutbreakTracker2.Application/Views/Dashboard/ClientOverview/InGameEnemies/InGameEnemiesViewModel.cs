@@ -16,7 +16,7 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
 
     private readonly ILogger<InGameEnemiesViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
-    private readonly IDataManager _dataManager;
+    private readonly TimeProvider _timeProvider;
     private readonly IDisposable _subscription;
     private readonly Dictionary<Ulid, InGameEnemyViewModel> _viewModelCache = [];
     private readonly ObservableList<InGameEnemyViewModel> _enemies = [];
@@ -35,21 +35,28 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
         ILogger<InGameEnemiesViewModel> logger,
         IDispatcherService dispatcherService,
         IDataManager dataManager,
+        TimeProvider timeProvider,
         ITrackerRegistry trackerRegistry
     )
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
-        _dataManager = dataManager;
+        _timeProvider = timeProvider;
 
         EnemiesView = _enemies.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
         _subscription = trackerRegistry
-            .Enemies.Changes.Diffs.ObserveOnThreadPool()
+            .Enemies.Changes.Diffs.WithLatestFrom(
+                dataManager.InGameScenarioObservable,
+                (diff, scenario) => (Diff: diff, ScenarioName: scenario.ScenarioName)
+            )
+            .ObserveOnThreadPool()
             .SubscribeAwait(
-                async (diff, ct) =>
+                async (data, ct) =>
                 {
-                    DateTimeOffset now = DateTimeOffset.UtcNow;
+                    CollectionDiff<DecodedEnemy> diff = data.Diff;
+                    string scenarioName = data.ScenarioName;
+                    DateTimeOffset now = _timeProvider.GetUtcNow();
 
                     // Detect death transitions in the Changed stream, keep alive entries up to date
                     foreach (EntityChange<DecodedEnemy> change in diff.Changed)
@@ -100,7 +107,7 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
                             if (InGameEnemyViewModel.IsDeadStatus(hs))
                                 _enemyDeathTimes.TryAdd(enemy.Id, now);
 
-                            newVms.Add(new InGameEnemyViewModel(enemy, _dataManager));
+                            newVms.Add(new InGameEnemyViewModel(enemy, scenarioName));
                         }
                     }
 
@@ -175,7 +182,7 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
                                 // In-place property updates — no ObservableList mutation
                                 foreach (EntityChange<DecodedEnemy> change in diff.Changed)
                                     if (_viewModelCache.TryGetValue(change.Current.Id, out InGameEnemyViewModel? vm))
-                                        vm.Update(change.Current);
+                                        vm.Update(change.Current, scenarioName);
 
                                 // Batch add — single CollectionChanged for all new enemies
                                 if (newVms is { Count: > 0 })
@@ -207,7 +214,7 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
 
     public void Dispose()
     {
-        _logger.LogInformation("Disposing InGameEnemiesViewModel");
+        _logger.LogDebug("Disposing InGameEnemiesViewModel");
         _subscription.Dispose();
 
         _dispatcherService.PostOnUI(() =>
@@ -216,10 +223,10 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
             _viewModelCache.Clear();
             _enemyDeathTimes.Clear();
             _pendingRemovals.Clear();
+            EnemiesView.Dispose();
             _logger.LogDebug("InGameEnemiesViewModel collections cleared on UI thread during dispose");
         });
 
-        EnemiesView.Dispose();
-        _logger.LogInformation("InGameEnemiesViewModel disposed");
+        _logger.LogDebug("InGameEnemiesViewModel disposed");
     }
 }
