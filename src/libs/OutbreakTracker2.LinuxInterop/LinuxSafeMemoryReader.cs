@@ -1,5 +1,4 @@
 ﻿using System.Buffers;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -98,17 +97,17 @@ public sealed class LinuxSafeMemoryReader(ILogger<LinuxSafeMemoryReader> logger)
             if (bytesRead < 0)
             {
                 int errno = Marshal.GetLastPInvokeError();
+                string errorMessage = Marshal.GetLastPInvokeErrorMessage();
                 _logger.LogError(
                     "process_vm_readv failed for type {TypeName} at address 0x{Address:X} (PID {Pid}). errno: {Errno} ({Message})",
                     typeName,
                     address,
                     (int)hProcess,
                     errno,
-                    new Win32Exception(errno).Message
+                    errorMessage
                 );
-                throw new Win32Exception(
-                    errno,
-                    $"process_vm_readv failed at address 0x{address:X} for PID {(int)hProcess}."
+                throw new IOException(
+                    $"process_vm_readv failed at address 0x{address:X} for PID {(int)hProcess}. errno: {errno} ({errorMessage})"
                 );
             }
 
