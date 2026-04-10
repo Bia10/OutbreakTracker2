@@ -23,7 +23,7 @@ public sealed class EnemiesReader : ReaderBase, IEnemiesReader
             DecodedEnemies2[i] = new DecodedEnemy();
     }
 
-    private static byte GetBossType(byte nameId)
+    private static byte GetBossType(byte nameId, ushort maxHp)
     {
         if (!EnumUtility.TryParseByValueOrMember(nameId, out EnemyType enemyType))
             return 0;
@@ -31,8 +31,7 @@ public sealed class EnemiesReader : ReaderBase, IEnemiesReader
         return enemyType switch
         {
             EnemyType.Thanatos or EnemyType.Nyx or EnemyType.NyxTyrant or EnemyType.Tyrant => 2,
-            EnemyType.Megabyte
-            or EnemyType.GLeech
+            EnemyType.GLeech
             or EnemyType.Leechman
             or EnemyType.GMutant
             or EnemyType.Titan
@@ -40,7 +39,6 @@ public sealed class EnemiesReader : ReaderBase, IEnemiesReader
             or EnemyType.TyrantQuestion
             or EnemyType.NyxCore
             or EnemyType.Axeman
-            or EnemyType.Megabytes
             or EnemyType.Gigabyte => 1,
             _ => 0,
         };
@@ -121,7 +119,7 @@ public sealed class EnemiesReader : ReaderBase, IEnemiesReader
                 MaxHp = maxHp,
                 RoomId = roomId,
                 Status = status,
-                BossType = GetBossType(nameId),
+                BossType = GetBossType(nameId, maxHp),
                 Name = ResolveEnemyDisplayName(nameId, typeId),
             };
         }
