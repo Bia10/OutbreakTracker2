@@ -2,8 +2,10 @@
 
 namespace OutbreakTracker2.Outbreak.Models;
 
-public sealed record DecodedItem
+public readonly record struct DecodedItem
 {
+    public DecodedItem() { }
+
     [JsonInclude]
     [JsonPropertyName(nameof(SlotIndex))]
     public byte SlotIndex { get; init; }

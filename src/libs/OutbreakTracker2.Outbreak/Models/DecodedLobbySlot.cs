@@ -3,8 +3,10 @@ using OutbreakTracker2.Outbreak.Common;
 
 namespace OutbreakTracker2.Outbreak.Models;
 
-public sealed record DecodedLobbySlot : IHasId
+public readonly record struct DecodedLobbySlot : IHasId
 {
+    public DecodedLobbySlot() { }
+
     [JsonInclude]
     [JsonPropertyName(nameof(Id))]
     public Ulid Id { get; init; }

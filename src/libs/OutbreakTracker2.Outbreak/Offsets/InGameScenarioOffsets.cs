@@ -89,8 +89,8 @@ internal static class InGameScenarioOffsets
         FileTwoPtrs.PickupStructSize
     );
     public static readonly (nint File1, nint File2) ItemRoomIdOffset = (
-        FileOnePtrs.RoomIdOffset,
-        FileTwoPtrs.RoomIdOffset
+        FileOnePtrs.ItemRoomIdOffset,
+        FileTwoPtrs.ItemRoomIdOffset
     );
     public static readonly (nint File1, nint File2) ItemNumberOffset = (
         FileOnePtrs.NumberOffset,

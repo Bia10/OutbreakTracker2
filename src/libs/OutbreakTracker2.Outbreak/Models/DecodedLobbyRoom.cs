@@ -3,8 +3,10 @@ using OutbreakTracker2.Outbreak.Common;
 
 namespace OutbreakTracker2.Outbreak.Models;
 
-public sealed record DecodedLobbyRoom
+public readonly record struct DecodedLobbyRoom
 {
+    public DecodedLobbyRoom() { }
+
     [JsonInclude]
     [JsonPropertyName(nameof(Status))]
     public string Status { get; init; } = string.Empty;
