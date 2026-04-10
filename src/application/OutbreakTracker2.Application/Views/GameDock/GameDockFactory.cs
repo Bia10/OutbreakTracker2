@@ -18,8 +18,7 @@ namespace OutbreakTracker2.Application.Views.GameDock;
 /// │  (left     │        [22%  ←  fill  →    │  ─────────────  │
 /// │   22%,top) │           56%)             │ Scenario (bot) │
 /// ├────────────┤                            │     (22%)      │
-/// │  Lobby     │                            │                │
-/// │  Slots     │                            │                │
+/// │  Items     │                            │                │
 /// │  (left,bot)│                            │                │
 /// └────────────┴────────────────────────────┴────────────────┘
 /// </code>
@@ -34,7 +33,6 @@ public sealed class GameDockFactory(
     GameScreenTool gameScreenTool,
     EntitiesDockTool enemyListTool,
     MapDockTool mapDockTool,
-    LobbySlotsDockTool lobbySlotsDockTool,
     PlayersDockTool playersTool,
     ScenarioInfoDockTool scenarioInfoTool,
     ScenarioItemsDockTool scenarioItemsTool,
@@ -67,14 +65,6 @@ public sealed class GameDockFactory(
         mapDockTool.CanDrag = true;
         mapDockTool.CanDrop = true;
         mapDockTool.CanPin = true;
-
-        lobbySlotsDockTool.Id = "LobbySlots";
-        lobbySlotsDockTool.Title = "Lobby Slots";
-        lobbySlotsDockTool.CanClose = true;
-        lobbySlotsDockTool.CanFloat = false;
-        lobbySlotsDockTool.CanDrag = true;
-        lobbySlotsDockTool.CanDrop = true;
-        lobbySlotsDockTool.CanPin = true;
 
         playersTool.Id = "Players";
         playersTool.Title = "Players";
@@ -126,7 +116,7 @@ public sealed class GameDockFactory(
             VisibleDockables = CreateList<IDockable>(
                 CreateGameToolDock("EntitiesToolDock", 0.6, Alignment.Left, enemyListTool),
                 new ProportionalDockSplitter(),
-                CreateGameToolDock("LobbySlotsToolDock", 0.4, Alignment.Left, scenarioItemsTool, lobbySlotsDockTool)
+                CreateGameToolDock("ItemsToolDock", 0.4, Alignment.Left, scenarioItemsTool)
             ),
         };
 

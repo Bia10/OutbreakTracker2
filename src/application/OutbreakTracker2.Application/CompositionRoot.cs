@@ -173,7 +173,6 @@ internal static class CompositionRoot
         services.AddSingleton<GameScreenTool>();
         services.AddSingleton<EntitiesDockTool>();
         services.AddSingleton<MapDockTool>();
-        services.AddSingleton<LobbySlotsDockTool>();
         services.AddSingleton<PlayersDockTool>();
         services.AddSingleton<ScenarioInfoDockTool>();
         services.AddSingleton<ScenarioEntitiesViewModel>();

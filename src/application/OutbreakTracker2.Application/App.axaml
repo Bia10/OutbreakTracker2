@@ -24,9 +24,6 @@ RequestedThemeVariant="Default">
         <DataTemplate DataType="{x:Type dockables:MapDockTool}">
             <canvas:MapCanvasView DataContext="{Binding MapCanvasViewModel}" />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type dockables:LobbySlotsDockTool}">
-            <lobbySlots:LobbySlotsView DataContext="{Binding LobbySlotsViewModel}" />
-        </DataTemplate>
         <DataTemplate DataType="{x:Type dockables:PlayersDockTool}">
             <inGamePlayers:InGamePlayersView DataContext="{Binding InGamePlayersViewModel}" />
         </DataTemplate>
