@@ -1,4 +1,5 @@
-﻿using ObservableCollections;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using ObservableCollections;
 using OutbreakTracker2.Application.Services.Toasts;
 using OutbreakTracker2.Application.Views.Common.Item;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor;
@@ -7,7 +8,7 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
 
-public sealed class ScenarioEntitiesViewModel : IDisposable
+public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDisposable
 {
     private readonly IToastService _toastService;
     private readonly IItemImageViewModelFactory _itemImageViewModelFactory;
@@ -22,6 +23,9 @@ public sealed class ScenarioEntitiesViewModel : IDisposable
     public NotifyCollectionChangedSynchronizedViewList<DecodedEnemy> Enemies { get; }
     public NotifyCollectionChangedSynchronizedViewList<InGameDoorViewModel> Doors { get; }
     public NotifyCollectionChangedSynchronizedViewList<ScenarioRoomGroupViewModel> RoomGroups { get; }
+
+    [ObservableProperty]
+    private bool _hasRoomGroups;
 
     public ScenarioEntitiesViewModel(IToastService toastService, IItemImageViewModelFactory itemImageViewModelFactory)
     {
@@ -47,6 +51,7 @@ public sealed class ScenarioEntitiesViewModel : IDisposable
         _items.Clear();
         _roomGroups.Clear();
         _previousPickedUpStates.Clear();
+        HasRoomGroups = false;
     }
 
     public void UpdateItems(DecodedItem[] newItems, int frameCounter, GameFile gameFile)
@@ -66,10 +71,12 @@ public sealed class ScenarioEntitiesViewModel : IDisposable
             ScenarioRoomGroupViewModel[] groups = vms.GroupBy(vm =>
                     string.IsNullOrEmpty(vm.RoomName) ? "Unknown" : vm.RoomName
                 )
-                .OrderBy(g => g.Key, StringComparer.Ordinal)
+                .OrderBy(g => string.Equals(g.Key, "Spawning/Scenario Cleared", StringComparison.Ordinal) ? 1 : 0)
+                .ThenBy(g => g.Key, StringComparer.Ordinal)
                 .Select(g => new ScenarioRoomGroupViewModel(g.Key, g.ToList()))
                 .ToArray();
             _roomGroups.AddRange(groups);
+            HasRoomGroups = true;
             return;
         }
 

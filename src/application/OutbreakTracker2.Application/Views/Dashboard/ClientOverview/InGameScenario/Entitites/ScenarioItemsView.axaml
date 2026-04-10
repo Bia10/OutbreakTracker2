@@ -4,41 +4,48 @@ xmlns="https://github.com/avaloniaui"
 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:common="clr-namespace:OutbreakTracker2.Application.Views.Common"
 xmlns:entitites="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites"
 x:DataType="entitites:ScenarioEntitiesViewModel"
 mc:Ignorable="d">
-    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        <ItemsControl ItemsSource="{Binding RoomGroups}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="entitites:ScenarioRoomGroupViewModel">
-                    <StackPanel Margin="0,6,0,0">
-                        <TextBlock
-                        Margin="4,0,0,2"
-                        FontSize="11"
-                        FontWeight="SemiBold"
-                        Opacity="0.85"
-                        Text="{Binding RoomName}" />
-                        <Separator Opacity="0.3" />
-                        <ItemsControl ItemsSource="{Binding Items}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="entitites:ScenarioItemSlotViewModel">
-                                    <entitites:ScenarioItemSlotView />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </ScrollViewer>
+    <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" IsVisible="{Binding HasRoomGroups}" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding RoomGroups}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="entitites:ScenarioRoomGroupViewModel">
+                        <StackPanel Margin="0,6,0,0">
+                            <TextBlock
+                            Margin="4,0,0,2"
+                            FontSize="11"
+                            FontWeight="SemiBold"
+                            Opacity="0.85"
+                            Text="{Binding RoomName}" />
+                            <Separator Opacity="0.3" />
+                            <ItemsControl ItemsSource="{Binding Items}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="entitites:ScenarioItemSlotViewModel">
+                                        <entitites:ScenarioItemSlotView />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <common:NotInGameWatermark
+        IsVisible="{Binding !HasRoomGroups}"
+        Message="No items — not in-game" />
+    </Grid>
 </UserControl>
