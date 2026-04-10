@@ -1,14 +1,21 @@
-﻿using OutbreakTracker2.Application.Services.Toasts;
+﻿using OutbreakTracker2.Application.Services.Settings;
+using OutbreakTracker2.Application.Services.Toasts;
 using OutbreakTracker2.Application.Services.Tracking;
 using R3;
 
 namespace OutbreakTracker2.Application.Services.Notifications;
 
-public sealed class NotificationService(IToastService toastService, ITrackerRegistry trackerRegistry)
-    : INotificationService
+public sealed class NotificationService(
+    IToastService toastService,
+    ITrackerRegistry trackerRegistry,
+    IAppSettingsService settingsService
+) : INotificationService
 {
     private readonly IDisposable _alertSubscription = trackerRegistry.AllAlerts.Subscribe(alert =>
     {
+        if (!settingsService.Current.Notifications.EnableToastAlerts)
+            return;
+
         _ = alert.Level switch
         {
             AlertLevel.Info => toastService.InvokeInfoToastAsync(alert.Message, alert.Title),

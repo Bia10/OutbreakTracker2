@@ -21,6 +21,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
     private readonly IDisposable _subscription;
     private readonly Dictionary<Ulid, LobbyRoomPlayerViewModel> _viewModelCache = [];
     private readonly ObservableList<LobbyRoomPlayerViewModel> _playersInternal = [];
+
     public NotifyCollectionChangedSynchronizedViewList<LobbyRoomPlayerViewModel> PlayersView { get; }
 
     public ScenarioImageViewModel ScenarioImageViewModel { get; }
@@ -45,6 +46,9 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
     [ObservableProperty]
     private string _scenarioName = string.Empty;
 
+    [ObservableProperty]
+    private bool _isAtLobby;
+
     public string PlayersDisplay => $"{CurPlayer}/{MaxPlayer}";
 
     public LobbyRoomViewModel(
@@ -63,11 +67,28 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
             SynchronizationContextCollectionEventDispatcher.Current
         );
 
+        IsAtLobby = dataManager.IsAtLobby;
+
+        IDisposable lobbyPresenceSubscription = dataManager
+            .IsAtLobbyObservable.ObserveOnThreadPool()
+            .SubscribeAwait(
+                async (isAtLobby, cancellationToken) =>
+                {
+                    await _dispatcherService
+                        .InvokeOnUIAsync(() => IsAtLobby = isAtLobby, cancellationToken)
+                        .ConfigureAwait(false);
+                },
+                AwaitOperation.Drop
+            );
+
         IDisposable lobbyRoomDataSubscription = dataManager
             .LobbyRoomObservable.ObserveOnThreadPool()
             .SubscribeAwait(
                 async (lobbyData, cancellationToken) =>
                 {
+                    if (!dataManager.IsAtLobby)
+                        return;
+
                     _logger.LogTrace("Processing lobby room data on thread pool");
                     try
                     {
@@ -99,6 +120,9 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
             .SubscribeAwait(
                 async (incomingPlayersSnapshot, cancellationToken) =>
                 {
+                    if (!dataManager.IsAtLobby)
+                        return;
+
                     _logger.LogTrace(
                         "Processing lobby room players snapshot on thread pool with {Length} entries",
                         incomingPlayersSnapshot.Length
@@ -367,7 +391,11 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
                 AwaitOperation.Drop
             );
 
-        _subscription = Disposable.Combine(lobbyRoomDataSubscription, lobbyRoomPlayersSubscription);
+        _subscription = Disposable.Combine(
+            lobbyPresenceSubscription,
+            lobbyRoomDataSubscription,
+            lobbyRoomPlayersSubscription
+        );
     }
 
     private static bool IsPlayerActive(DecodedLobbyRoomPlayer player) =>

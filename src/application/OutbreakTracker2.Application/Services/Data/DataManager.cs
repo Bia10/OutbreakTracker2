@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Comparers;
 using OutbreakTracker2.Application.Services.Launcher;
+using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Readers;
 using OutbreakTracker2.PCSX2.Client;
@@ -34,6 +35,7 @@ public sealed class DataManager : IDataManager, IDisposable
     private readonly ReactiveProperty<DecodedLobbyRoom> _lobbyRoomState = new(new DecodedLobbyRoom());
     private readonly ReactiveProperty<DecodedLobbyRoomPlayer[]> _lobbyRoomPlayersState = new([]);
     private readonly ReactiveProperty<DecodedLobbySlot[]> _lobbySlotsState = new([]);
+    private readonly ReactiveProperty<bool> _isAtLobbyState = new(false);
 
     private volatile bool _isInitialized;
     private volatile bool _wasInScenario;
@@ -45,6 +47,7 @@ public sealed class DataManager : IDataManager, IDisposable
     public Observable<DecodedLobbyRoom> LobbyRoomObservable { get; }
     public Observable<DecodedLobbyRoomPlayer[]> LobbyRoomPlayersObservable { get; }
     public Observable<DecodedLobbySlot[]> LobbySlotsObservable { get; }
+    public Observable<bool> IsAtLobbyObservable { get; }
 
     public DecodedDoor[] Doors => _doorsState.Value;
     public DecodedEnemy[] Enemies => _enemiesState.Value;
@@ -53,9 +56,19 @@ public sealed class DataManager : IDataManager, IDisposable
     public DecodedLobbyRoom LobbyRoom => _lobbyRoomState.Value;
     public DecodedLobbyRoomPlayer[] LobbyRoomPlayers => _lobbyRoomPlayersState.Value;
     public DecodedLobbySlot[] LobbySlots => _lobbySlotsState.Value;
+    public bool IsAtLobby => _isAtLobbyState.Value;
 
     private readonly TimeSpan _fastUpdateInterval = TimeSpan.FromMilliseconds(250);
     private readonly TimeSpan _slowUpdateInterval = TimeSpan.FromMilliseconds(500);
+    private static readonly IReadOnlySet<string> _activeLobbyStatuses = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "Waiting",
+        "In Game",
+        "Full",
+        "Creating room",
+        "Hosting room",
+        "Launching room",
+    };
 
     public DataManager(
         ILogger<DataManager> logger,
@@ -83,6 +96,7 @@ public sealed class DataManager : IDataManager, IDisposable
             new ArraySequenceComparer<DecodedLobbyRoomPlayer>()
         );
         LobbySlotsObservable = _lobbySlotsState.DistinctUntilChanged(new ArraySequenceComparer<DecodedLobbySlot>());
+        IsAtLobbyObservable = _isAtLobbyState.DistinctUntilChanged();
 
         SetupObservablesLogging();
     }
@@ -213,7 +227,6 @@ public sealed class DataManager : IDataManager, IDisposable
     private void UpdateLobbyRoom()
     {
         _lobbyRoomReader?.UpdateLobbyRoom();
-        _lobbyRoomState.Value = _lobbyRoomReader?.DecodedLobbyRoom ?? new DecodedLobbyRoom();
     }
 
     private void UpdateLobbyRoomPlayers()
@@ -240,6 +253,7 @@ public sealed class DataManager : IDataManager, IDisposable
     private void UpdateCoreGameData()
     {
         _wasInScenario = true;
+        _isAtLobbyState.Value = false;
         UpdateInGameScenario();
         UpdateDoors();
         UpdateEnemies();
@@ -255,9 +269,22 @@ public sealed class DataManager : IDataManager, IDisposable
         }
 
         UpdateLobbyRoom();
+        DecodedLobbyRoom lobbyRoom = _lobbyRoomReader?.DecodedLobbyRoom ?? new DecodedLobbyRoom();
+        bool isAtLobby = IsLobbyActive(lobbyRoom);
+
+        _isAtLobbyState.Value = isAtLobby;
+        if (!isAtLobby)
+            return;
+
+        _lobbyRoomState.Value = lobbyRoom;
         UpdateLobbyRoomPlayers();
         UpdateLobbySlots();
     }
+
+    private static bool IsLobbyActive(DecodedLobbyRoom lobbyRoom) =>
+        lobbyRoom.CurPlayer is >= 0 and <= GameConstants.MaxPlayers
+        && lobbyRoom.MaxPlayer is >= 2 and <= GameConstants.MaxPlayers
+        && _activeLobbyStatuses.Contains(lobbyRoom.Status);
 
     private bool IsInScenario() => _inGameScenarioReader is not null && _inGameScenarioReader.IsInScenario();
 
@@ -286,6 +313,7 @@ public sealed class DataManager : IDataManager, IDisposable
         _lobbySlotReader?.Dispose();
         _lobbySlotReader = null;
 
+        _isAtLobbyState.Value = false;
         _wasInScenario = false;
         ResetInGameData();
 
@@ -307,6 +335,7 @@ public sealed class DataManager : IDataManager, IDisposable
         _lobbyRoomState.Dispose();
         _lobbyRoomPlayersState.Dispose();
         _lobbySlotsState.Dispose();
+        _isAtLobbyState.Dispose();
 
         _logger.LogInformation("DataManager disposed");
     }

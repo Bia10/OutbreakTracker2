@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using ObservableCollections;
+using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Services.Tracking;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlot;
@@ -10,7 +11,7 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlots;
 
-public sealed class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
+public sealed partial class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
 {
     private readonly IDisposable _subscription;
     private readonly ILogger<LobbySlotsViewModel> _logger;
@@ -22,7 +23,11 @@ public sealed class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
 
     public NotifyCollectionChangedSynchronizedViewList<LobbySlotViewModel> LobbySlotsView { get; }
 
+    [ObservableProperty]
+    private bool _isAtLobby;
+
     public LobbySlotsViewModel(
+        IDataManager dataManager,
         ITrackerRegistry trackerRegistry,
         ILogger<LobbySlotsViewModel> logger,
         IDispatcherService dispatcherService,
@@ -36,11 +41,28 @@ public sealed class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
             SynchronizationContextCollectionEventDispatcher.Current
         );
 
-        _subscription = trackerRegistry
+        IsAtLobby = dataManager.IsAtLobby;
+
+        IDisposable lobbyPresenceSubscription = dataManager
+            .IsAtLobbyObservable.ObserveOnThreadPool()
+            .SubscribeAwait(
+                async (isAtLobby, cancellationToken) =>
+                {
+                    await _dispatcherService
+                        .InvokeOnUIAsync(() => IsAtLobby = isAtLobby, cancellationToken)
+                        .ConfigureAwait(false);
+                },
+                AwaitOperation.Drop
+            );
+
+        IDisposable lobbySlotDiffSubscription = trackerRegistry
             .LobbySlots.Changes.Diffs.ObserveOnThreadPool()
             .SubscribeAwait(
                 async (diff, cancellationToken) =>
                 {
+                    if (!dataManager.IsAtLobby)
+                        return;
+
                     if (diff.Added.Count == 0 && diff.Removed.Count == 0 && diff.Changed.Count == 0)
                         return;
 
@@ -95,6 +117,8 @@ public sealed class LobbySlotsViewModel : ObservableObject, IAsyncDisposable
                 },
                 AwaitOperation.Drop
             );
+
+        _subscription = Disposable.Combine(lobbyPresenceSubscription, lobbySlotDiffSubscription);
     }
 
     public async ValueTask DisposeAsync()

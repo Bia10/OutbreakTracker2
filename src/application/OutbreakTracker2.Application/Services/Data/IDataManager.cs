@@ -20,6 +20,8 @@ public interface IDataManager
 
     public DecodedLobbySlot[] LobbySlots { get; }
 
+    public bool IsAtLobby { get; }
+
     public Observable<DecodedDoor[]> DoorsObservable { get; }
 
     public Observable<DecodedEnemy[]> EnemiesObservable { get; }
@@ -33,6 +35,8 @@ public interface IDataManager
     public Observable<DecodedLobbyRoomPlayer[]> LobbyRoomPlayersObservable { get; }
 
     public Observable<DecodedLobbySlot[]> LobbySlotsObservable { get; }
+
+    public Observable<bool> IsAtLobbyObservable { get; }
 
     public ValueTask InitializeAsync(IGameClient gameClient, CancellationToken cancellationToken);
 }

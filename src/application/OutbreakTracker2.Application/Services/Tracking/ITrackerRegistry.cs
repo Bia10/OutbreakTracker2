@@ -8,7 +8,6 @@ public interface ITrackerRegistry
     IEntityTracker<DecodedEnemy> Enemies { get; }
     IEntityTracker<DecodedDoor> Doors { get; }
     IEntityTracker<DecodedInGamePlayer> Players { get; }
-    IEntityTracker<DecodedLobbyRoomPlayer> LobbyPlayers { get; }
     IEntityTracker<DecodedLobbySlot> LobbySlots { get; }
 
     Observable<AlertNotification> AllAlerts { get; }
