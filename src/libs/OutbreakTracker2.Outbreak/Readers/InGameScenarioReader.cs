@@ -198,7 +198,7 @@ public sealed class InGameScenarioReader(IGameClient gameClient, IEEmemAddressRe
         return items;
     }
 
-    public bool IsInScenario() => GetFrameCount() > 0 && GetScenarioStatus() != ScenarioStatus.None;
+    public bool IsInScenario() => GetFrameCount() > 0 && GetScenarioStatus() == ScenarioStatus.InGame;
 
     public void UpdateScenario()
     {
