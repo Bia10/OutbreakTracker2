@@ -71,4 +71,21 @@ public sealed partial class ClientAlreadyRunningViewModel(
             UpdateProcesses([processId]);
         }
     }
+
+    [RelayCommand]
+    public async Task TerminateProcessAsync(int processId)
+    {
+        try
+        {
+            Process process = Process.GetProcessById(processId);
+            process.Kill();
+            RunningProcesses.Remove(RunningProcesses.First(p => p.Id == processId));
+            await _toastService.InvokeSuccessToastAsync("Process terminated.").ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to terminate process {ProcessId}", processId);
+            await _toastService.InvokeErrorToastAsync($"Termination failed: {ex.Message}").ConfigureAwait(false);
+        }
+    }
 }
