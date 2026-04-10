@@ -135,67 +135,48 @@ public sealed partial class ClientNotRunningViewModel(
 
             launchAndInitializePipeline
                 .Timeout(TimeSpan.FromSeconds(LaunchTimeout))
-                .SubscribeAwait(
-                    onNextAsync: async ValueTask (_, _) =>
+                .SelectAwait(
+                    async (_, _) =>
                     {
                         await _toastService.DismissToastAsync(launchToast).ConfigureAwait(false);
                         IsClientLaunching = false;
-                    },
-                    onErrorResume: async void (innerEx) =>
-                    {
-                        try
+                        return Unit.Default;
+                    }
+                )
+                .Catch(
+                    (Exception innerEx) =>
+                        Observable.FromAsync<Unit>(async _ =>
                         {
                             _logger.LogError(innerEx, "Error in client launch/data manager stream");
                             await _toastService.DismissToastAsync(launchToast).ConfigureAwait(false);
 
-                            switch (innerEx)
+                            Task toastTask = innerEx switch
                             {
-                                case TimeoutException:
-                                    await _toastService
-                                        .InvokeErrorToastAsync("PCSX2 client launch and initialization timed out!")
-                                        .ConfigureAwait(false);
-                                    break;
-                                case OperationCanceledException:
-                                    await _toastService
-                                        .InvokeWarningToastAsync("PCSX2 client launch cancelled!")
-                                        .ConfigureAwait(false);
-                                    break;
-                                case InvalidOperationException or ArgumentNullException:
-                                    await _toastService
-                                        .InvokeErrorToastAsync($"Setup error: {innerEx.Message}")
-                                        .ConfigureAwait(false);
-                                    break;
-                                default:
-                                    await _toastService
-                                        .InvokeErrorToastAsync($"An unexpected error occurred: {innerEx.Message}")
-                                        .ConfigureAwait(false);
-                                    break;
-                            }
+                                TimeoutException => _toastService.InvokeErrorToastAsync(
+                                    "PCSX2 client launch and initialization timed out!"
+                                ),
+                                OperationCanceledException => _toastService.InvokeWarningToastAsync(
+                                    "PCSX2 client launch cancelled!"
+                                ),
+                                InvalidOperationException or ArgumentNullException =>
+                                    _toastService.InvokeErrorToastAsync($"Setup error: {innerEx.Message}"),
+                                _ => _toastService.InvokeErrorToastAsync(
+                                    $"An unexpected error occurred: {innerEx.Message}"
+                                ),
+                            };
+                            await toastTask.ConfigureAwait(false);
 
                             IsClientLaunching = false;
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error in client launch/data manager stream error handler");
-                        }
-                    },
-                    onCompleted: async void (result) =>
-                    {
-                        try
-                        {
-                            _logger.LogInformation(
-                                "Client launch/data manager stream completed with {Status}",
-                                result.IsSuccess ? "success" : "failure"
-                            );
-                            await _toastService.DismissToastAsync(launchToast).ConfigureAwait(false);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error in client launch/data manager stream completed handler");
-                        }
-                    },
-                    configureAwait: true,
-                    cancelOnCompleted: true
+                            return Unit.Default;
+                        })
+                )
+                .Subscribe(
+                    onNext: _ => { },
+                    onCompleted: result =>
+                        _logger.LogInformation(
+                            "Client launch/data manager stream completed with {Status}",
+                            result.IsSuccess ? "success" : "failure"
+                        )
                 )
                 .AddTo(_disposables);
         }
