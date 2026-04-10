@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Dialogs;
 using Avalonia.Logging;
 using OutbreakTracker2.Application.SerilogSinks;
@@ -23,7 +22,7 @@ internal static class Program
             // Pre-DI crash — write to a file so crashes are never silently lost
             try
             {
-                string version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
+                string version = typeof(App).Assembly.GetName().Version?.ToString() ?? "unknown";
                 Directory.CreateDirectory("logs");
                 File.AppendAllText("logs/crash.txt", $"[{DateTime.UtcNow:O}] FATAL v{version}: {ex}\n");
             }

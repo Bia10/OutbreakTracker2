@@ -77,8 +77,7 @@ public sealed partial class ClientAlreadyRunningViewModel(
     {
         try
         {
-            Process process = Process.GetProcessById(processId);
-            process.Kill();
+            await _processLauncher.KillAsync(processId).ConfigureAwait(false);
             RunningProcesses.Remove(RunningProcesses.First(p => p.Id == processId));
             await _toastService.InvokeSuccessToastAsync("Process terminated.").ConfigureAwait(false);
         }

@@ -3,6 +3,12 @@
     <NoWarn>$(NoWarn);CA2007</NoWarn>
   </PropertyGroup>
 
+  <!-- Test projects use reflection by design; AOT/trim analysis would produce false positives -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <EnableAotAnalyzer>false</EnableAotAnalyzer>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+  </PropertyGroup>
+
   <!-- Exclude test assembly from code coverage metrics -->
   <ItemGroup>
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
