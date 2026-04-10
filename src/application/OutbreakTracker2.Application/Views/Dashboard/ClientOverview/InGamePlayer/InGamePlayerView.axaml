@@ -1,16 +1,17 @@
 <UserControl
-    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer.InGamePlayerView"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
-    xmlns:inGamePlayer="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer"
-    xmlns:inventory="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    x:DataType="inGamePlayer:InGamePlayerViewModel"
-    mc:Ignorable="d">
+x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer.InGamePlayerView"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+xmlns:inGamePlayer="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer"
+xmlns:inventory="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory"
+xmlns:converters="clr-namespace:OutbreakTracker2.Application.Converters"
+d:DesignHeight="450"
+d:DesignWidth="800"
+x:DataType="inGamePlayer:InGamePlayerViewModel"
+mc:Ignorable="d">
 
     <UserControl.DataTemplates>
         <DataTemplate DataType="{x:Type inGamePlayer:PlayerGaugesViewModel}">
@@ -34,17 +35,18 @@
     </UserControl.DataTemplates>
 
     <suki:GlassCard
-        Margin="1"
-        Padding="3,2"
-        CornerRadius="6">
+    Margin="1"
+    Padding="3,2"
+    CornerRadius="6"
+    Opacity="{Binding IsInGame, Converter={x:Static converters:BoolToOpacityConverter.InGame}}">
         <StackPanel Spacing="4">
             <WrapPanel ItemSpacing="5" VerticalAlignment="Center">
                 <TextBlock
-                    VerticalAlignment="Center"
-                    FontSize="13"
-                    FontWeight="Bold"
-                    Text="{Binding CharacterName}"
-                    TextTrimming="CharacterEllipsis" />
+                VerticalAlignment="Center"
+                FontSize="13"
+                FontWeight="Bold"
+                Text="{Binding CharacterName}"
+                TextTrimming="CharacterEllipsis" />
                 <ContentControl VerticalAlignment="Center" Content="{Binding StatusEffects}" />
             </WrapPanel>
             <ContentControl Content="{Binding Gauges}" />

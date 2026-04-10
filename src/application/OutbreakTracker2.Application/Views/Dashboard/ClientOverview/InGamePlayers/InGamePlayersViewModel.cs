@@ -217,7 +217,7 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
 
     private static bool IsPlayerActive(DecodedInGamePlayer? player)
     {
-        if (player is null || !player.IsEnabled || !player.IsInGame)
+        if (player is null || !player.IsEnabled)
             return false;
 
         return player.NameId > 0 || !string.IsNullOrEmpty(player.Type);
