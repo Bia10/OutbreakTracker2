@@ -18,7 +18,7 @@ internal static class DefaultEnemyAlertRules
                 (cur, _) =>
                 {
                     EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
-                    return settings.Spawned && cur.Enabled != 0 && cur.MaxHp > 0 && cur.SlotId > 0;
+                    return settings.Spawned && cur.Enabled != 0 && cur.MaxHp > 0 && cur.SlotId > 0 && cur.RoomId != 0;
                 },
                 cur =>
                 {
@@ -41,6 +41,7 @@ internal static class DefaultEnemyAlertRules
                         && cur.Enabled != 0
                         && cur.MaxHp > 0
                         && cur.SlotId > 0
+                        && cur.RoomId != 0
                         && (prev?.Enabled == 0);
                 },
                 cur =>

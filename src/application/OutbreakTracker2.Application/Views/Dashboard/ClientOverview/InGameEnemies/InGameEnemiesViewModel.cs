@@ -288,9 +288,7 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
     /// valid slot, not in spawn room). Death-timer logic is handled separately.
     /// </summary>
     private static bool IsEnemyBasicallyValid(DecodedEnemy enemy) =>
-        !string.IsNullOrEmpty(enemy.Name)
-        && !enemy.RoomName.Equals("Spawning/Scenario Cleared", StringComparison.Ordinal)
-        && enemy is { SlotId: > 0, MaxHp: > 0 };
+        !string.IsNullOrEmpty(enemy.Name) && enemy.RoomId != 0 && enemy is { SlotId: > 0, MaxHp: > 0 };
 
     public void Dispose()
     {
