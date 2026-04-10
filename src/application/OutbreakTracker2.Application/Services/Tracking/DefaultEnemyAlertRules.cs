@@ -1,5 +1,6 @@
 ﻿using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Settings;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Services.Tracking;
@@ -59,7 +60,11 @@ internal static class DefaultEnemyAlertRules
                 (cur, prev) =>
                 {
                     EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
-                    return settings.Killed && cur.CurHp == 0 && (prev?.CurHp ?? 0) > 0 && prev?.Enabled != 0;
+                    return settings.Killed
+                        && cur.CurHp == 0
+                        && (prev?.CurHp ?? 0) > 0
+                        && prev?.Enabled != 0
+                        && dataManager.InGameScenario.Status == ScenarioStatus.InGame;
                 },
                 cur =>
                 {
@@ -78,7 +83,9 @@ internal static class DefaultEnemyAlertRules
                 (cur, _) =>
                 {
                     EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
-                    return settings.Killed && cur.CurHp <= 1;
+                    return settings.Killed
+                        && cur.CurHp <= 1
+                        && dataManager.InGameScenario.Status == ScenarioStatus.InGame;
                 },
                 cur =>
                 {
