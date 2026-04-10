@@ -1,10 +1,10 @@
 <!--
-    Vendored ToolChromeControl — grip-only header, SukiUI-styled.
+Vendored ToolChromeControl — grip header with close button only, SukiUI-styled.
 
-    DockProperties.IsDragArea must be set as an inline attribute (not via
-    a Style setter) because DockHelpers.GetControl uses AvaloniaObject.IsSet(),
-    which returns false for Style-derived values.
-    See doc/SukiUI_Dock_Integration_Issues.md, Issue 11.
+DockProperties.IsDragArea must be set as an inline attribute (not via
+a Style setter) because DockHelpers.GetControl uses AvaloniaObject.IsSet(),
+which returns false for Style-derived values.
+See doc/SukiUI_Dock_Integration_Issues.md, Issue 11.
 -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -24,7 +24,8 @@
 
         <Setter Property="Template">
             <ControlTemplate>
-                <Grid RowDefinitions="Auto,*">
+                <Grid RowDefinitions="Auto,*"
+                      x:DataType="controls:IToolDock" x:CompileBindings="True">
 
                     <!-- Grip header (Row 0) -->
                     <Border x:Name="PART_Border"
@@ -36,10 +37,11 @@
                               DockProperties.IsDragArea="True"
                               DockProperties.IsDragEnabled="True"
                               Background="Transparent"
-                              ColumnDefinitions="Auto,*"
+                              ColumnDefinitions="Auto,*,Auto"
                               MinHeight="30">
                             <!-- 2x3 dot grip handle -->
                             <Grid x:Name="PART_Grid"
+                                  Grid.Column="0"
                                   RowDefinitions="Auto,Auto,Auto"
                                   ColumnDefinitions="Auto,Auto"
                                   VerticalAlignment="Center"
@@ -54,19 +56,38 @@
                             <!-- Title -->
                             <TextBlock x:Name="PART_Title"
                                        Grid.Column="1"
-                                       Text="{ReflectionBinding ActiveDockable.Title, FallbackValue=''}" />
+                                       Text="{Binding ActiveDockable.Title, FallbackValue=''}" />
+                            <!-- Close button -->
+                            <Button x:Name="PART_CloseButton"
+                                    Grid.Column="2"
+                                    Command="{Binding Owner.Factory.CloseDockable}"
+                                    CommandParameter="{Binding ActiveDockable}"
+                                    IsVisible="{Binding ActiveDockable.CanClose, FallbackValue=False}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="3"
+                                    Width="18"
+                                    Height="16"
+                                    Margin="4,0,8,0"
+                                    VerticalAlignment="Center">
+                                <Viewbox>
+                                    <Path x:Name="PART_ClosePath"
+                                          Fill="{DynamicResource SukiLowText}"
+                                          Stretch="UniformToFill" />
+                                </Viewbox>
+                            </Button>
                         </Grid>
                     </Border>
 
                     <!-- Tool content (Row 1) -->
                     <ContentPresenter
-                        x:Name="PART_ContentPresenter"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        Content="{TemplateBinding Content}"
-                        Padding="{TemplateBinding Padding}"
-                        Grid.Row="1" />
+                    x:Name="PART_ContentPresenter"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Content="{TemplateBinding Content}"
+                    Padding="{TemplateBinding Padding}"
+                    Grid.Row="1" />
 
                     <!-- PART_Panel kept hidden — required name for Dock.Avalonia compat -->
                     <Panel x:Name="PART_Panel" IsVisible="False" Height="0" Grid.Row="0" />
@@ -118,6 +139,12 @@
 
         <Style Selector="^:pointerover /template/ Grid#PART_Grid Ellipse">
             <Setter Property="Opacity" Value="0.7" />
+        </Style>
+
+        <!-- Close X icon path data -->
+        <Style Selector="^/template/ Path#PART_ClosePath">
+            <Setter Property="Data"
+                    Value="M1169 1024l879 -879l-145 -145l-879 879l-879 -879l-145 145l879 879l-879 879l145 145l879 -879l879 879l145 -145z" />
         </Style>
 
     </ControlTheme>

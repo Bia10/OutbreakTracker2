@@ -4,10 +4,10 @@ using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies;
 namespace OutbreakTracker2.Application.Views.GameDock.Dockables;
 
 /// <summary>
-/// Dock tool panel that displays the in-game enemy / mob list.
-/// Docked on the left side of the game screen.
+/// Dock tool panel that displays all in-game scenario entities
+/// (enemies, mines, gas canisters, etc.). Docked on the left side of the game screen.
 /// </summary>
-public sealed class EnemyListDockTool(InGameEnemiesViewModel inGameEnemiesViewModel) : Tool
+public sealed class EntitiesDockTool(InGameEnemiesViewModel inGameEnemiesViewModel) : Tool
 {
     public InGameEnemiesViewModel InGameEnemiesViewModel { get; } = inGameEnemiesViewModel;
 }

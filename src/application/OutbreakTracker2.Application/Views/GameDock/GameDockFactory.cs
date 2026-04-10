@@ -14,7 +14,7 @@ namespace OutbreakTracker2.Application.Views.GameDock;
 /// Layout (horizontal proportional split):
 /// <code>
 /// ┌────────────┬────────────────────────────┬────────────────┐
-/// │  Mob List  │   Game Screen (Document)   │  Players (top) │
+/// │  Entities  │   Game Screen (Document)   │  Players (top) │
 /// │  (left     │        [22%  ←  fill  →    │  ─────────────  │
 /// │   22%,top) │           56%)             │ Scenario (bot) │
 /// ├────────────┤                            │     (22%)      │
@@ -32,7 +32,7 @@ namespace OutbreakTracker2.Application.Views.GameDock;
 /// </summary>
 public sealed class GameDockFactory(
     GameScreenTool gameScreenTool,
-    EnemyListDockTool enemyListTool,
+    EntitiesDockTool enemyListTool,
     MapDockTool mapDockTool,
     LobbySlotsDockTool lobbySlotsDockTool,
     PlayersDockTool playersTool,
@@ -48,13 +48,13 @@ public sealed class GameDockFactory(
     {
         gameScreenTool.Id = "GameScreen";
         gameScreenTool.Title = "Game Screen";
-        gameScreenTool.CanClose = false;
+        gameScreenTool.CanClose = true;
         gameScreenTool.CanFloat = false; // float blocked to prevent Win32 HWND z-order conflicts
         gameScreenTool.CanDrag = true; // in-layout moves are safe; only float is hazardous
 
-        enemyListTool.Id = "EnemyList";
-        enemyListTool.Title = "Mob List";
-        enemyListTool.CanClose = false;
+        enemyListTool.Id = "Entities";
+        enemyListTool.Title = "Entities";
+        enemyListTool.CanClose = true;
         enemyListTool.CanFloat = false;
         enemyListTool.CanDrag = true;
         enemyListTool.CanDrop = true;
@@ -70,7 +70,7 @@ public sealed class GameDockFactory(
 
         lobbySlotsDockTool.Id = "LobbySlots";
         lobbySlotsDockTool.Title = "Lobby Slots";
-        lobbySlotsDockTool.CanClose = false;
+        lobbySlotsDockTool.CanClose = true;
         lobbySlotsDockTool.CanFloat = false;
         lobbySlotsDockTool.CanDrag = true;
         lobbySlotsDockTool.CanDrop = true;
@@ -78,7 +78,7 @@ public sealed class GameDockFactory(
 
         playersTool.Id = "Players";
         playersTool.Title = "Players";
-        playersTool.CanClose = false;
+        playersTool.CanClose = true;
         playersTool.CanFloat = false;
         playersTool.CanDrag = true;
         playersTool.CanDrop = true;
@@ -86,7 +86,7 @@ public sealed class GameDockFactory(
 
         scenarioInfoTool.Id = "ScenarioInfo";
         scenarioInfoTool.Title = "Scenario";
-        scenarioInfoTool.CanClose = false;
+        scenarioInfoTool.CanClose = true;
         scenarioInfoTool.CanFloat = false;
         scenarioInfoTool.CanDrag = true;
         scenarioInfoTool.CanDrop = true;
@@ -124,7 +124,7 @@ public sealed class GameDockFactory(
             Orientation = Orientation.Vertical,
             ActiveDockable = null,
             VisibleDockables = CreateList<IDockable>(
-                CreateGameToolDock("EnemyListToolDock", 0.6, Alignment.Left, enemyListTool),
+                CreateGameToolDock("EntitiesToolDock", 0.6, Alignment.Left, enemyListTool),
                 new ProportionalDockSplitter(),
                 CreateGameToolDock("LobbySlotsToolDock", 0.4, Alignment.Left, lobbySlotsDockTool)
             ),

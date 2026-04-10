@@ -171,7 +171,7 @@ internal static class CompositionRoot
 
         // Game Dock: dockable instances and the factory that wires them into a layout
         services.AddSingleton<GameScreenTool>();
-        services.AddSingleton<EnemyListDockTool>();
+        services.AddSingleton<EntitiesDockTool>();
         services.AddSingleton<MapDockTool>();
         services.AddSingleton<LobbySlotsDockTool>();
         services.AddSingleton<PlayersDockTool>();
