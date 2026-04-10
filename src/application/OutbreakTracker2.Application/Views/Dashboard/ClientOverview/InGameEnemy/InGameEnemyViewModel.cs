@@ -158,6 +158,7 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
 
         if (
             curHp == 0x7fff
+            || (enemyType is EnemyType.Megabytes && maxHp == 1)
             || enemyType is EnemyType.Drainer11
             || enemyType is EnemyType.Drainer12
             || enemyType is EnemyType.Drainer14
@@ -192,6 +193,7 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
 
         if (
             curHp is 0x7fff
+            || (enemyType is EnemyType.Megabytes && maxHp == 1)
             || enemyType is EnemyType.Drainer11
             || enemyType is EnemyType.Drainer12
             || enemyType is EnemyType.Drainer14
