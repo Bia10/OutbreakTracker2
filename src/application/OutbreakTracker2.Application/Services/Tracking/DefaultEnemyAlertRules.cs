@@ -65,6 +65,7 @@ internal static class DefaultEnemyAlertRules
                         && cur.CurHp == 0
                         && (prev?.CurHp ?? 0) > 0
                         && prev?.Enabled != 0
+                        && !AlertRuleHelpers.IsInvulnerableEnemy(cur.NameId, cur.MaxHp)
                         && dataManager.InGameScenario.Status == ScenarioStatus.InGame;
                 },
                 cur =>
@@ -86,6 +87,8 @@ internal static class DefaultEnemyAlertRules
                     EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
                     return settings.Killed
                         && cur.CurHp <= 1
+                        && cur.RoomId != 0
+                        && !AlertRuleHelpers.IsInvulnerableEnemy(cur.NameId, cur.MaxHp)
                         && dataManager.InGameScenario.Status == ScenarioStatus.InGame;
                 },
                 cur =>

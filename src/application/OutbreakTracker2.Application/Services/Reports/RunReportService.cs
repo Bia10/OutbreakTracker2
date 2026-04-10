@@ -397,7 +397,7 @@ public sealed class RunReportService : IRunReportService
 
         foreach (DecodedEnemy enemy in diff.Removed)
         {
-            if (enemy.CurHp <= 1)
+            if (enemy.CurHp <= 1 && !AlertRuleHelpers.IsInvulnerableEnemy(enemy.NameId, enemy.MaxHp))
                 Emit(
                     new EnemyKilledEvent(
                         now,
