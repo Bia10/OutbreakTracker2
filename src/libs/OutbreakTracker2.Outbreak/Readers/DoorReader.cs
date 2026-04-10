@@ -89,6 +89,7 @@ public sealed class DoorReader : ReaderBase, IDoorReader
             newDecodedDoors[i] = new DecodedDoor
             {
                 Id = doorUlid,
+                SlotId = i,
                 Hp = curHp,
                 Flag = flag,
                 Status = DecodeFlag(curHp, flag),

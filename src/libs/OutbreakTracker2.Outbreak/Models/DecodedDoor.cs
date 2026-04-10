@@ -7,6 +7,7 @@ public readonly record struct DecodedDoor : IHasId
     public DecodedDoor()
     {
         Id = default;
+        SlotId = default;
         Hp = default;
         Flag = default;
         Status = string.Empty;
@@ -15,6 +16,10 @@ public readonly record struct DecodedDoor : IHasId
     [JsonInclude]
     [JsonPropertyName(nameof(Id))]
     public Ulid Id { get; init; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(SlotId))]
+    public int SlotId { get; init; }
 
     [JsonInclude]
     [JsonPropertyName(nameof(Hp))]
