@@ -281,7 +281,7 @@ public sealed class DataManager : IDataManager, IDisposable
         UpdateLobbySlots();
     }
 
-    private static bool IsLobbyActive(DecodedLobbyRoom lobbyRoom) =>
+    private static bool IsLobbyActive(in DecodedLobbyRoom lobbyRoom) =>
         lobbyRoom.CurPlayer is >= 0 and <= GameConstants.MaxPlayers
         && lobbyRoom.MaxPlayer is >= 2 and <= GameConstants.MaxPlayers
         && _activeLobbyStatuses.Contains(lobbyRoom.Status);

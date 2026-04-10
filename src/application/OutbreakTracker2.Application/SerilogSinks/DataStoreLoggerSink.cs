@@ -7,7 +7,7 @@ using Serilog.Events;
 
 namespace OutbreakTracker2.Application.SerilogSinks;
 
-public sealed class DataStoreLoggerSink : ILogEventSink, IDisposable
+public sealed class DataStoreLoggerSink : ILogEventSink, IDisposable, IAsyncDisposable
 {
     private readonly ILogDataStorageService _dataStore;
     private readonly DataStoreLoggerConfiguration _config;
@@ -164,7 +164,9 @@ public sealed class DataStoreLoggerSink : ILogEventSink, IDisposable
         return new EventId(id ?? 0, eventName ?? string.Empty);
     }
 
-    public async void Dispose()
+    public void Dispose() => DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+    public async ValueTask DisposeAsync()
     {
         try
         {

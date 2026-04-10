@@ -68,7 +68,7 @@ public sealed partial class LobbySlotViewModel : ObservableObject
         Update(initialData);
     }
 
-    public void Update(DecodedLobbySlot model)
+    public void Update(in DecodedLobbySlot model)
     {
         SlotNumber = model.SlotNumber;
         Status = model.Status;

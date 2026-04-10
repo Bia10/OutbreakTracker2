@@ -1,22 +1,42 @@
 <UserControl
-    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites.ScenarioItemsView"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:entitites="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites"
-    x:DataType="entitites:ScenarioEntitiesViewModel"
-    mc:Ignorable="d">
+x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites.ScenarioItemsView"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:entitites="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites"
+x:DataType="entitites:ScenarioEntitiesViewModel"
+mc:Ignorable="d">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        <ItemsControl ItemsSource="{Binding Items}">
+        <ItemsControl ItemsSource="{Binding RoomGroups}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <WrapPanel Orientation="Horizontal" />
+                    <StackPanel Orientation="Vertical" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="entitites:ScenarioItemSlotViewModel">
-                    <entitites:ScenarioItemSlotView />
+                <DataTemplate DataType="entitites:ScenarioRoomGroupViewModel">
+                    <StackPanel Margin="0,6,0,0">
+                        <TextBlock
+                        Margin="4,0,0,2"
+                        FontSize="11"
+                        FontWeight="SemiBold"
+                        Opacity="0.85"
+                        Text="{Binding RoomName}" />
+                        <Separator Opacity="0.3" />
+                        <ItemsControl ItemsSource="{Binding Items}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="entitites:ScenarioItemSlotViewModel">
+                                    <entitites:ScenarioItemSlotView />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

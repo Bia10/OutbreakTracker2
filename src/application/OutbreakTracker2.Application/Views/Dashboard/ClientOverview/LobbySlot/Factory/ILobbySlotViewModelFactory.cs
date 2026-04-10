@@ -4,5 +4,5 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlot.
 
 public interface ILobbySlotViewModelFactory
 {
-    LobbySlotViewModel Create(DecodedLobbySlot initialData);
+    LobbySlotViewModel Create(in DecodedLobbySlot initialData);
 }

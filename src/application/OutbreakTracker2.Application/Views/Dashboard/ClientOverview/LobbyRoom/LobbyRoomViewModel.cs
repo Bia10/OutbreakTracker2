@@ -402,7 +402,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
         !string.IsNullOrEmpty(player.CharacterName)
         || (!string.IsNullOrEmpty(player.NpcName) && player is { IsEnabled: true });
 
-    private void UpdateLobbyProperties(DecodedLobbyRoom model)
+    private void UpdateLobbyProperties(in DecodedLobbyRoom model)
     {
         if (model.CurPlayer is <= 0 or > 4)
             return;

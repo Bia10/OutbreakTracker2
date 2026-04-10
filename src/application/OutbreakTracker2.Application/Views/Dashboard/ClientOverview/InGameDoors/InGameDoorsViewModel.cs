@@ -9,7 +9,7 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoors;
 
-public sealed partial class InGameDoorsViewModel : ObservableObject, IDisposable
+public sealed partial class InGameDoorsViewModel : ObservableObject, IAsyncDisposable
 {
     private readonly IDisposable _subscription;
     private readonly ILogger<InGameDoorsViewModel> _logger;
@@ -93,19 +93,21 @@ public sealed partial class InGameDoorsViewModel : ObservableObject, IDisposable
             );
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         _logger.LogDebug("Disposing InGameDoorsViewModel");
         _subscription.Dispose();
 
-        _dispatcherService.PostOnUI(() =>
-        {
-            Doors.Clear();
-            _viewModelCache.Clear();
-            DoorsView.Dispose();
-            _logger.LogDebug("InGameDoorsViewModel collections cleared on UI thread during dispose");
-        });
+        await _dispatcherService
+            .InvokeOnUIAsync(() =>
+            {
+                Doors.Clear();
+                _viewModelCache.Clear();
+                DoorsView.Dispose();
+                _logger.LogDebug("InGameDoorsViewModel collections cleared on UI thread during async dispose");
+            })
+            .ConfigureAwait(false);
 
-        _logger.LogDebug("InGameDoorsViewModel disposal complete");
+        _logger.LogDebug("InGameDoorsViewModel asynchronous disposal complete");
     }
 }

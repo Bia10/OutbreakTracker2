@@ -13,7 +13,7 @@ public sealed class LobbySlotViewModelFactory(
     private readonly ILogger<LobbySlotViewModelFactory> _logger = logger;
     private readonly IServiceProvider _serviceProvider = serviceProvider;
 
-    public LobbySlotViewModel Create(DecodedLobbySlot initialData)
+    public LobbySlotViewModel Create(in DecodedLobbySlot initialData)
     {
         _logger.LogTrace("Creating new LobbySlotViewModel for initial data");
 

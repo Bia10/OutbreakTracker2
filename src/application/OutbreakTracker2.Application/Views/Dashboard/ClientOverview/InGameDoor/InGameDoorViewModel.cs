@@ -67,7 +67,7 @@ public sealed partial class InGameDoorViewModel : ObservableObject
         Update(doorData);
     }
 
-    public void Update(DecodedDoor doorData)
+    public void Update(in DecodedDoor doorData)
     {
         if (UniqueId != doorData.Id)
             return;

@@ -541,9 +541,9 @@ public sealed class RunReportService : IRunReportService
             DecodedItem p = prev[i];
             DecodedItem c = curr[i];
 
-            // GetItems() may return a pre-allocated array with null elements if memory
-            // is not yet mapped (early in the PCSX2 startup sequence).
-            if (p is null || c is null)
+            // GetItems() may return a pre-allocated array with default-valued struct elements if
+            // memory is not yet mapped (early in the PCSX2 startup sequence); skip uninitialized slots.
+            if (string.IsNullOrEmpty(p.TypeName) || string.IsNullOrEmpty(c.TypeName))
                 continue;
 
             if (p.PickedUp == 0 && c.PickedUp > 0)

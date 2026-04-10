@@ -22,6 +22,9 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(Present))]
     [NotifyPropertyChangedFor(nameof(PickedUpDisplay))]
     [NotifyPropertyChangedFor(nameof(IsHeldByPlayer))]
+    [NotifyPropertyChangedFor(nameof(IsEmpty))]
+    [NotifyPropertyChangedFor(nameof(DisplayName))]
+    [NotifyPropertyChangedFor(nameof(DebugInfo))]
     private DecodedItem _item;
 
     [ObservableProperty]
@@ -32,6 +35,8 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(PickedUpAtDisplay))]
     private int? _pickedUpAtFrame;
 
+    public byte PositionIndex { get; private set; }
+
     public string TypeName => Item.TypeName;
     public short Quantity => Item.Quantity;
     public byte SlotIndex => Item.SlotIndex;
@@ -41,23 +46,34 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject
     public byte Mix => Item.Mix;
     public int Present => Item.Present;
 
+    public bool IsEmpty =>
+        string.IsNullOrEmpty(Item.TypeName) || string.Equals(Item.TypeName, "Unknown", StringComparison.Ordinal);
+    public string DisplayName => IsEmpty ? "Empty" : Item.TypeName;
+    public string DebugInfo => $"0x{Item.Id:X2} | {Item.Id}";
+
     public string PickedUpDisplay => Item.PickedUp > 0 ? $"P{Item.PickedUp}" : string.Empty;
     public bool IsHeldByPlayer => Item.PickedUp > 0;
     public string TrackingMenuHeader => IsPickupTracked ? "Stop Tracking Pickup" : "Track Pickup";
     public string PickedUpAtDisplay =>
         PickedUpAtFrame.HasValue ? TimeUtility.GetTimeFromFrames(PickedUpAtFrame.Value) : "--:--:--.–";
 
-    public ScenarioItemSlotViewModel(DecodedItem item, ItemImageViewModel itemImageViewModel, GameFile gameFile)
+    public ScenarioItemSlotViewModel(
+        DecodedItem item,
+        ItemImageViewModel itemImageViewModel,
+        GameFile gameFile,
+        byte positionIndex
+    )
     {
         _item = item;
         ItemImageViewModel = itemImageViewModel;
+        PositionIndex = positionIndex;
         RefreshImage(gameFile);
     }
 
     [RelayCommand]
     private void TogglePickupTracking() => IsPickupTracked = !IsPickupTracked;
 
-    public void UpdateItem(DecodedItem newItem, int frameCounter, GameFile gameFile)
+    public void UpdateItem(in DecodedItem newItem, int frameCounter, GameFile gameFile, byte positionIndex)
     {
         if (Item.PickedUp == 0 && newItem.PickedUp > 0)
             PickedUpAtFrame = frameCounter;
@@ -65,12 +81,13 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject
             PickedUpAtFrame = null;
 
         Item = newItem;
+        PositionIndex = positionIndex;
         RefreshImage(gameFile);
     }
 
     private void RefreshImage(GameFile gameFile)
     {
-        if (string.IsNullOrEmpty(Item.TypeName))
+        if (IsEmpty || string.IsNullOrEmpty(Item.TypeName))
         {
             _ = ItemImageViewModel.ClearImageAsync();
             return;

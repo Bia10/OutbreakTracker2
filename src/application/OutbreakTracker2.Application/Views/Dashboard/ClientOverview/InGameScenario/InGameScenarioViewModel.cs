@@ -321,6 +321,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         if (scenario.CurrentFile is < 1 or > 2)
         {
             FrameCounter = 0;
+            ScenarioEntitiesVm.ClearItems();
             return;
         }
 
@@ -381,6 +382,18 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
                 }
                 else
                 {
+                    // Only warn when we have a valid player array — index 0 is a startup race
+                    // where players haven't been decoded yet; those items are filtered by Present==0.
+                    if (players.Length > 0)
+                        _logger.LogWarning(
+                            "Item slot={Slot} type={Type} has PickedUp={PickedUp} which is out of valid player range [1,{Max}]; Present={Present} Qty={Qty}",
+                            item.SlotIndex,
+                            item.TypeName,
+                            item.PickedUp,
+                            players.Length,
+                            item.Present,
+                            item.Quantity
+                        );
                     pickedUpByName = $"P{item.PickedUp}";
                 }
             }
@@ -419,19 +432,12 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
 
     private string GetGameTime() => TimeUtility.GetTimeFromFrames(FrameCounter);
 
-    private int CalculateGasRandomOrderDisplay()
-    {
-        switch (GasRandom)
+    private int CalculateGasRandomOrderDisplay() =>
+        GasRandom switch
         {
-            case 0:
-                return -1;
-            case > 0 and < 240:
-                return (GasRandom / 10) + 1;
-            case >= 240 and < 255:
-                return 25;
-            default:
-                _logger.LogTrace("Unrecognized GasRandom value: {GasRandom}", GasRandom);
-                return -1;
-        }
-    }
+            0 => -1,
+            > 0 and < 240 => (GasRandom / 10) + 1,
+            >= 240 and < 255 => 25,
+            _ => -1,
+        };
 }

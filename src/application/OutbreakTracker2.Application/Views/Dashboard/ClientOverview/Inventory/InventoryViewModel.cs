@@ -101,8 +101,8 @@ public sealed partial class InventoryViewModel : ObservableObject
             .Where(IsValidItem)
             .FirstOrDefault(item => item.Id.Equals(itemId));
 
-        return item is not null
-            ? (item.TypeName, item.Quantity.ToString(CultureInfo.InvariantCulture), $"0x{itemId:X2} | {itemId}")
+        return item is { } i
+            ? (i.TypeName, i.Quantity.ToString(CultureInfo.InvariantCulture), $"0x{itemId:X2} | {itemId}")
             : ("Unknown", "0", $"0x{itemId:X2} | {itemId}");
     }
 

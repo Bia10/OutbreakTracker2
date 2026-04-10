@@ -16,10 +16,12 @@ public sealed class ScenarioEntitiesViewModel : IDisposable
     private readonly ObservableList<ScenarioItemSlotViewModel> _items = new();
     private readonly ObservableList<DecodedEnemy> _enemies = new();
     private readonly ObservableList<InGameDoorViewModel> _doors = new();
+    private readonly ObservableList<ScenarioRoomGroupViewModel> _roomGroups = new();
 
     public NotifyCollectionChangedSynchronizedViewList<ScenarioItemSlotViewModel> Items { get; }
     public NotifyCollectionChangedSynchronizedViewList<DecodedEnemy> Enemies { get; }
     public NotifyCollectionChangedSynchronizedViewList<InGameDoorViewModel> Doors { get; }
+    public NotifyCollectionChangedSynchronizedViewList<ScenarioRoomGroupViewModel> RoomGroups { get; }
 
     public ScenarioEntitiesViewModel(IToastService toastService, IItemImageViewModelFactory itemImageViewModelFactory)
     {
@@ -29,6 +31,7 @@ public sealed class ScenarioEntitiesViewModel : IDisposable
         Items = _items.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
         Enemies = _enemies.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
         Doors = _doors.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
+        RoomGroups = _roomGroups.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
     }
 
     public void Dispose()
@@ -36,113 +39,74 @@ public sealed class ScenarioEntitiesViewModel : IDisposable
         Items.Dispose();
         Enemies.Dispose();
         Doors.Dispose();
+        RoomGroups.Dispose();
     }
 
-    private static bool IsUnoccupiedSlot(DecodedItem item) =>
-        item.SlotIndex == 0 && item.Quantity == 0 && item.PickedUp == 0 && item.Present == 0;
-
-    private static (int SlotId, Ulid Id) GetEnemyKey(DecodedEnemy enemy) => (enemy.SlotId, enemy.Id);
+    public void ClearItems()
+    {
+        _items.Clear();
+        _roomGroups.Clear();
+        _previousPickedUpStates.Clear();
+    }
 
     public void UpdateItems(DecodedItem[] newItems, int frameCounter, GameFile gameFile)
     {
-        List<DecodedItem> newItemsList = [.. newItems.Where(item => !IsUnoccupiedSlot(item))];
-        HashSet<byte> newSlotIndices = [.. newItemsList.Select(item => item.SlotIndex)];
-        Dictionary<byte, ScenarioItemSlotViewModel> existingBySlot = _items.ToDictionary(vm => vm.SlotIndex);
-
-        for (int i = _items.Count - 1; i >= 0; i--)
+        // First call: pre-populate all slots without filtering — display all 255.
+        if (_items.Count == 0)
         {
-            ScenarioItemSlotViewModel existingSlotVm = _items[i];
-            if (!newSlotIndices.Contains(existingSlotVm.SlotIndex))
-            {
-                _previousPickedUpStates.Remove(existingSlotVm.SlotIndex);
-                _items.RemoveAt(i);
-                existingBySlot.Remove(existingSlotVm.SlotIndex);
-            }
-        }
-
-        foreach (DecodedItem newItem in newItemsList)
-        {
-            existingBySlot.TryGetValue(newItem.SlotIndex, out ScenarioItemSlotViewModel? existingSlotVm);
-
-            if (existingSlotVm is null)
+            ScenarioItemSlotViewModel[] vms = new ScenarioItemSlotViewModel[newItems.Length];
+            for (int i = 0; i < newItems.Length; i++)
             {
                 ItemImageViewModel imageVm = _itemImageViewModelFactory.Create();
-                ScenarioItemSlotViewModel newSlotVm = new(newItem, imageVm, gameFile);
-                _items.Add(newSlotVm);
-                existingBySlot[newItem.SlotIndex] = newSlotVm;
-                _previousPickedUpStates[newItem.SlotIndex] = newItem.PickedUp;
+                vms[i] = new ScenarioItemSlotViewModel(newItems[i], imageVm, gameFile, (byte)i);
+                _previousPickedUpStates[(byte)i] = newItems[i].PickedUp;
             }
-            else
-            {
-                if (existingSlotVm.IsPickupTracked)
-                {
-                    short previousPickedUp = _previousPickedUpStates.GetValueOrDefault(newItem.SlotIndex, (short)0);
-                    if (previousPickedUp == 0 && newItem.PickedUp > 0)
-                    {
-                        string holder =
-                            string.IsNullOrEmpty(newItem.PickedUpByName)
-                            || string.Equals(newItem.PickedUpByName, "None", StringComparison.Ordinal)
-                                ? $"P{newItem.PickedUp}"
-                                : newItem.PickedUpByName;
-                        _ = _toastService.InvokeInfoToastAsync(
-                            $"{holder} picked up {newItem.TypeName}",
-                            "Item Picked Up"
-                        );
-                        existingSlotVm.IsPickupTracked = false;
-                    }
-                }
+            _items.AddRange(vms);
 
-                _previousPickedUpStates[newItem.SlotIndex] = newItem.PickedUp;
-                existingSlotVm.UpdateItem(newItem, frameCounter, gameFile);
+            ScenarioRoomGroupViewModel[] groups = vms.GroupBy(vm =>
+                    string.IsNullOrEmpty(vm.RoomName) ? "Unknown" : vm.RoomName
+                )
+                .OrderBy(g => g.Key, StringComparer.Ordinal)
+                .Select(g => new ScenarioRoomGroupViewModel(g.Key, g.ToList()))
+                .ToArray();
+            _roomGroups.AddRange(groups);
+            return;
+        }
+
+        // Subsequent calls: update every slot in-place — no add/remove, only Replace events.
+        for (int i = 0; i < newItems.Length && i < _items.Count; i++)
+        {
+            DecodedItem newItem = newItems[i];
+            ScenarioItemSlotViewModel vm = _items[i];
+            byte slotKey = (byte)i;
+
+            if (vm.IsPickupTracked && !string.IsNullOrEmpty(newItem.TypeName))
+            {
+                short previousPickedUp = _previousPickedUpStates.GetValueOrDefault(slotKey, (short)0);
+                if (previousPickedUp == 0 && newItem.PickedUp > 0)
+                {
+                    string holder =
+                        string.IsNullOrEmpty(newItem.PickedUpByName)
+                        || string.Equals(newItem.PickedUpByName, "None", StringComparison.Ordinal)
+                            ? $"P{newItem.PickedUp}"
+                            : newItem.PickedUpByName;
+                    _ = _toastService.InvokeInfoToastAsync($"{holder} picked up {newItem.TypeName}", "Item Picked Up");
+                    vm.IsPickupTracked = false;
+                }
             }
+
+            _previousPickedUpStates[slotKey] = newItem.PickedUp;
+            vm.UpdateItem(newItem, frameCounter, gameFile, slotKey);
         }
     }
 
     public void UpdateEnemies(DecodedEnemy[] newEnemies)
     {
-        List<DecodedEnemy> newEnemiesList = [.. newEnemies];
-        HashSet<(int SlotId, Ulid Id)> newEnemyKeys = [.. newEnemiesList.Select(GetEnemyKey)];
-
-        for (int i = _enemies.Count - 1; i >= 0; i--)
-        {
-            DecodedEnemy existingEnemy = _enemies[i];
-            if (!newEnemyKeys.Contains(GetEnemyKey(existingEnemy)))
-                _enemies.RemoveAt(i);
-        }
-
-        Dictionary<(int SlotId, Ulid Id), int> existingIndexByKey = _enemies
-            .Select((enemy, index) => (Key: GetEnemyKey(enemy), Index: index))
-            .ToDictionary(entry => entry.Key, entry => entry.Index);
-
-        foreach (DecodedEnemy newEnemy in newEnemiesList)
-        {
-            (int SlotId, Ulid Id) key = GetEnemyKey(newEnemy);
-
-            if (!existingIndexByKey.TryGetValue(key, out int existingIndex))
-            {
-                _enemies.Add(newEnemy);
-                existingIndexByKey[key] = _enemies.Count - 1;
-            }
-            else
-            {
-                DecodedEnemy existingEnemy = _enemies[existingIndex];
-
-                if (
-                    existingEnemy.Enabled != newEnemy.Enabled
-                    || existingEnemy.InGame != newEnemy.InGame
-                    || existingEnemy.RoomId != newEnemy.RoomId
-                    || existingEnemy.TypeId != newEnemy.TypeId
-                    || existingEnemy.NameId != newEnemy.NameId
-                    || !string.Equals(existingEnemy.Name, newEnemy.Name, System.StringComparison.Ordinal)
-                    || existingEnemy.CurHp != newEnemy.CurHp
-                    || existingEnemy.MaxHp != newEnemy.MaxHp
-                    || existingEnemy.BossType != newEnemy.BossType
-                    || existingEnemy.Status != newEnemy.Status
-                    || !string.Equals(existingEnemy.RoomName, newEnemy.RoomName, System.StringComparison.Ordinal)
-                )
-                    _enemies[existingIndex] = newEnemy;
-            }
-        }
+        // Batch reset: Clear fires a single Reset event, AddRange fires a single Add event.
+        // This avoids individual Remove events which trigger DataGrid virtualization
+        // RemoveNonDisplayedRows during a measure pass, causing an ArgumentOutOfRangeException.
+        _enemies.Clear();
+        _enemies.AddRange(newEnemies);
     }
 
     public void UpdateDoors(DecodedDoor[] newDoors)
