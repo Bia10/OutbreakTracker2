@@ -17,6 +17,7 @@ using OutbreakTracker2.Application.Services.Locator;
 using OutbreakTracker2.Application.Services.LogStorage;
 using OutbreakTracker2.Application.Services.Notifications;
 using OutbreakTracker2.Application.Services.Reports;
+using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Services.Toasts;
 using OutbreakTracker2.Application.Services.Tracking;
 using OutbreakTracker2.Application.Views.Common;
@@ -44,6 +45,7 @@ using OutbreakTracker2.Application.Views.GameDock;
 using OutbreakTracker2.Application.Views.GameDock.Dockables;
 using OutbreakTracker2.Application.Views.Log;
 using OutbreakTracker2.Application.Views.Map.Canvas;
+using OutbreakTracker2.Application.Views.Settings;
 using OutbreakTracker2.Memory.SafeMemory;
 using OutbreakTracker2.Memory.String;
 using OutbreakTracker2.Outbreak.Readers;
@@ -77,7 +79,8 @@ internal static class CompositionRoot
             .AddView<InGameDoorsView, InGameDoorsViewModel>(services)
             .AddView<ItemSlotView, ItemSlotViewModel>(services)
             .AddView<LogView, LogViewModel>(services)
-            .AddView<GameDockView, GameDockViewModel>(services);
+            .AddView<GameDockView, GameDockViewModel>(services)
+            .AddView<AppSettingsDialogView, AppSettingsDialogViewModel>(services, registerViewModel: false);
 
     internal static IServiceProvider ConfigureServicesAndLogging(
         IServiceCollection services,
@@ -116,6 +119,7 @@ internal static class CompositionRoot
 
         services.AddSingleton<IDispatcherService, DispatcherService>();
         services.AddSingleton<IToastService, ToastService>();
+        services.AddSingleton<IAppSettingsService, AppSettingsService>();
         services.AddSingleton<ITrackerRegistry, TrackerRegistry>();
         services.AddSingleton<INotificationService, NotificationService>();
         services.AddSingleton(TimeProvider.System);

@@ -5,7 +5,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OutbreakTracker2.Application.Pages;
 using OutbreakTracker2.Application.Services;
+using OutbreakTracker2.Application.Services.Settings;
+using OutbreakTracker2.Application.Views.Settings;
 using SukiUI;
+using SukiUI.Dialogs;
 using SukiUI.Models;
 using SukiUI.Toasts;
 
@@ -17,6 +20,7 @@ internal sealed partial class OutbreakTracker2ViewModel : ObservableObject
     public IAvaloniaReadOnlyList<SukiColorTheme> Themes { get; }
 
     public ISukiToastManager ToastManager { get; }
+    public ISukiDialogManager DialogManager { get; }
 
     [ObservableProperty]
     private ThemeVariant _baseTheme;
@@ -35,10 +39,13 @@ internal sealed partial class OutbreakTracker2ViewModel : ObservableObject
     public OutbreakTracker2ViewModel(
         IEnumerable<PageBase> pages,
         PageNavigationService pageNavigationService,
-        ISukiToastManager toastManager
+        ISukiToastManager toastManager,
+        ISukiDialogManager dialogManager,
+        IAppSettingsService settingsService
     )
     {
         ToastManager = toastManager;
+        DialogManager = dialogManager;
         Pages = new AvaloniaList<PageBase>(pages.AsValueEnumerable().OrderBy(x => x.Index).ToArray());
         _theme = SukiTheme.GetInstance();
 
@@ -74,7 +81,20 @@ internal sealed partial class OutbreakTracker2ViewModel : ObservableObject
                 .WithTitle("Color Changed")
                 .WithContent($"Color has changed to {theme.DisplayName}.")
                 .Queue();
+
+        OpenSettingsCommand = new RelayCommand(() =>
+        {
+            DialogManager
+                .CreateDialog()
+                .WithTitle("Settings")
+                .WithViewModel(dialog => new AppSettingsDialogViewModel(settingsService, ToastManager, dialog), false)
+                .Dismiss()
+                .ByClickingBackground()
+                .TryShow();
+        });
     }
+
+    public IRelayCommand OpenSettingsCommand { get; }
 
     [RelayCommand]
     private void ToggleBaseTheme() => _theme.SwitchBaseTheme();

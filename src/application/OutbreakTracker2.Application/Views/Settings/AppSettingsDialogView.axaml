@@ -1,0 +1,175 @@
+<UserControl
+x:Class="OutbreakTracker2.Application.Views.Settings.AppSettingsDialogView"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:suki="https://github.com/kikipoulet/SukiUI"
+xmlns:settings="clr-namespace:OutbreakTracker2.Application.Views.Settings"
+x:DataType="settings:AppSettingsDialogViewModel"
+x:CompileBindings="False"
+d:DesignHeight="760"
+d:DesignWidth="980"
+mc:Ignorable="d">
+
+    <Grid MinWidth="920" MaxWidth="1000" RowDefinitions="*,Auto">
+        <TabControl SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
+            <TabItem Header="General">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="18" Spacing="14">
+                        <suki:GlassCard Padding="18">
+                            <StackPanel Spacing="10">
+                                <TextBlock FontSize="22" FontWeight="SemiBold" Text="Application Settings" />
+                                <TextBlock Opacity="0.8" Text="Configure tracker notifications and alert rules without editing JSON by hand." TextWrapping="Wrap" />
+
+                                <Border Height="1" Margin="0,4,0,4" Background="{DynamicResource SukiControlBorderBrush}" />
+
+                                <CheckBox Content="Enable toast alerts" IsChecked="{Binding EnableToastAlerts}" />
+
+                                <TextBlock FontWeight="SemiBold" Text="User settings file" />
+                                <SelectableTextBlock Text="{Binding UserSettingsPath}" TextWrapping="Wrap" />
+
+                                <Grid Margin="0,4,0,0" ColumnDefinitions="*,*,*,*" ColumnSpacing="10" RowDefinitions="Auto">
+                                    <Button Grid.Column="0"
+                                            MinHeight="38"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            Click="OnImportSettingsClick"
+                                            Content="Import Settings" />
+                                    <Button Grid.Column="1"
+                                            MinHeight="38"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            Click="OnExportSettingsClick"
+                                            Content="Export Settings" />
+                                    <Button Grid.Column="2"
+                                            MinHeight="38"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            Command="{Binding OpenSettingsFolderCommand}"
+                                            Content="Open Settings Folder" />
+                                    <Button Grid.Column="3"
+                                            MinHeight="38"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            Command="{Binding ResetToDefaultsCommand}"
+                                            Content="Reset To Defaults" />
+                                </Grid>
+
+                                <TextBlock Foreground="IndianRed" Text="{Binding ValidationMessage}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </suki:GlassCard>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Tracking">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="18" Spacing="14">
+                        <suki:GlassCard Padding="18">
+                            <StackPanel Spacing="10">
+                                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Player Alerts" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <CheckBox Width="220" Content="Danger condition" IsChecked="{Binding PlayerDangerCondition}" />
+                                    <CheckBox Width="220" Content="Gas condition" IsChecked="{Binding PlayerGasCondition}" />
+                                    <CheckBox Width="220" Content="Dead status" IsChecked="{Binding PlayerDeadStatus}" />
+                                    <CheckBox Width="220" Content="Zombie status" IsChecked="{Binding PlayerZombieStatus}" />
+                                    <CheckBox Width="220" Content="Down status" IsChecked="{Binding PlayerDownStatus}" />
+                                    <CheckBox Width="220" Content="Bleed status" IsChecked="{Binding PlayerBleedStatus}" />
+                                    <CheckBox Width="220" Content="Health reaches zero" IsChecked="{Binding PlayerHealthZero}" />
+                                    <CheckBox Width="220" Content="Antivirus expired" IsChecked="{Binding PlayerAntiVirusExpired}" />
+                                    <CheckBox Width="220" Content="Antivirus-G expired" IsChecked="{Binding PlayerAntiVirusGExpired}" />
+                                    <CheckBox Width="220" Content="Bleed stopped" IsChecked="{Binding PlayerBleedStopped}" />
+                                    <CheckBox Width="220" Content="Room change" IsChecked="{Binding PlayerRoomChange}" />
+                                    <CheckBox Width="220" Content="Player joined" IsChecked="{Binding PlayerJoined}" />
+                                    <CheckBox Width="220" Content="Player left" IsChecked="{Binding PlayerLeft}" />
+                                </WrapPanel>
+
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                                    <suki:GlassCard Grid.Column="0" Padding="14">
+                                        <StackPanel Spacing="8">
+                                            <CheckBox Content="Enable virus warning alert" IsChecked="{Binding PlayerVirusWarningEnabled}" />
+                                            <TextBlock Opacity="0.8" Text="Threshold percent" />
+                                            <NumericUpDown Minimum="0" Maximum="100" Increment="1" FormatString="F0" IsEnabled="{Binding PlayerVirusWarningEnabled}" Value="{Binding PlayerVirusWarningThreshold, Mode=TwoWay}" />
+                                        </StackPanel>
+                                    </suki:GlassCard>
+
+                                    <suki:GlassCard Grid.Column="1" Padding="14">
+                                        <StackPanel Spacing="8">
+                                            <CheckBox Content="Enable virus critical alert" IsChecked="{Binding PlayerVirusCriticalEnabled}" />
+                                            <TextBlock Opacity="0.8" Text="Threshold percent" />
+                                            <NumericUpDown Minimum="0" Maximum="100" Increment="1" FormatString="F0" IsEnabled="{Binding PlayerVirusCriticalEnabled}" Value="{Binding PlayerVirusCriticalThreshold, Mode=TwoWay}" />
+                                        </StackPanel>
+                                    </suki:GlassCard>
+                                </Grid>
+                            </StackPanel>
+                        </suki:GlassCard>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="14">
+                            <suki:GlassCard Grid.Column="0" Padding="18">
+                                <StackPanel Spacing="10">
+                                    <TextBlock FontSize="20" FontWeight="SemiBold" Text="Enemy Alerts" />
+                                    <CheckBox Content="Enemy spawned" IsChecked="{Binding EnemySpawned}" />
+                                    <CheckBox Content="Enemy killed" IsChecked="{Binding EnemyKilled}" />
+                                    <CheckBox Content="Enemy despawned" IsChecked="{Binding EnemyDespawned}" />
+                                    <CheckBox Content="Enemy room change" IsChecked="{Binding EnemyRoomChange}" />
+                                </StackPanel>
+                            </suki:GlassCard>
+
+                            <suki:GlassCard Grid.Column="1" Padding="18">
+                                <StackPanel Spacing="10">
+                                    <TextBlock FontSize="20" FontWeight="SemiBold" Text="Door Alerts" />
+                                    <CheckBox Content="Door flag changed" IsChecked="{Binding DoorFlagChanged}" />
+                                    <CheckBox Content="Door destroyed" IsChecked="{Binding DoorDestroyed}" />
+                                    <CheckBox Content="Door status changed" IsChecked="{Binding DoorStatusChanged}" />
+                                </StackPanel>
+                            </suki:GlassCard>
+                        </Grid>
+
+                        <TextBlock Foreground="IndianRed" Text="{Binding ValidationMessage}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Lobby">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="18" Spacing="14">
+                        <suki:GlassCard Padding="18">
+                            <StackPanel Spacing="10">
+                                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Lobby Creation Alerts" />
+                                <CheckBox Content="Any lobby game created" IsChecked="{Binding LobbyGameCreated}" />
+                                <CheckBox Content="Lobby title contains filter" IsChecked="{Binding LobbyNameMatchCreated}" />
+                                <TextBox IsEnabled="{Binding LobbyNameMatchCreated}" Text="{Binding LobbyNameMatchFilter, Mode=TwoWay}" Watermark="Example: Training" />
+                                <CheckBox Content="Scenario contains filter" IsChecked="{Binding LobbyScenarioMatchCreated}" />
+                                <TextBox IsEnabled="{Binding LobbyScenarioMatchCreated}" Text="{Binding LobbyScenarioMatchFilter, Mode=TwoWay}" Watermark="Example: Wild" />
+                                <TextBlock Opacity="0.8" Text="Filtered rules require non-empty text before settings can be saved." TextWrapping="Wrap" />
+                            </StackPanel>
+                        </suki:GlassCard>
+
+                        <TextBlock Foreground="IndianRed" Text="{Binding ValidationMessage}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <Border Grid.Row="1" Padding="18,12,18,18" Background="Transparent">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+                <TextBlock VerticalAlignment="Center" Foreground="IndianRed" Text="{Binding ValidationMessage}" TextWrapping="Wrap" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button MinWidth="92"
+                            MinHeight="38"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Command="{Binding CancelCommand}"
+                            Content="Cancel" />
+                    <Button MinWidth="92"
+                            MinHeight="38"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Command="{Binding SaveCommand}"
+                            Content="Save" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

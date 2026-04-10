@@ -10,6 +10,7 @@ using OutbreakTracker2.Application.Services.Atlas;
 using OutbreakTracker2.Application.Services.Launcher;
 using OutbreakTracker2.Application.Services.Notifications;
 using OutbreakTracker2.Application.Services.Reports;
+using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGame;
 using R3;
 using Serilog;
@@ -70,7 +71,13 @@ public sealed partial class App : Avalonia.Application
     {
         try
         {
-            IConfigurationRoot configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+            string userSettingsPath = AppSettingsFilePaths.GetUserSettingsPath();
+
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile(userSettingsPath, optional: true, reloadOnChange: true)
+                .Build();
 
             ServiceCollection services = new();
             services.AddSingleton(desktop);

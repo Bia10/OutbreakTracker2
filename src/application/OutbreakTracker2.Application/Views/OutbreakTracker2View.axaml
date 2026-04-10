@@ -1,33 +1,35 @@
 <suki:SukiWindow
-    x:Class="OutbreakTracker2.Application.Views.OutbreakTracker2View"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:suki="https://github.com/kikipoulet/SukiUI"
-    xmlns:views="clr-namespace:OutbreakTracker2.Application.Views"
-    Title="Outbreak Tracker 2"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    xmlns:converters="clr-namespace:OutbreakTracker2.Application.Converters"
-    x:DataType="views:OutbreakTracker2ViewModel"
-    IsTitleBarVisible="{Binding TitleBarVisible, Mode=TwoWay}"
-    CanMinimize="{Binding !WindowLocked}"
-    CanMove="{Binding !WindowLocked}"
-    CanResize="{Binding !WindowLocked}"
-    IsMenuVisible="True"
-    mc:Ignorable="d">
+x:Class="OutbreakTracker2.Application.Views.OutbreakTracker2View"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:suki="https://github.com/kikipoulet/SukiUI"
+xmlns:views="clr-namespace:OutbreakTracker2.Application.Views"
+Title="Outbreak Tracker 2"
+d:DesignHeight="450"
+d:DesignWidth="800"
+xmlns:converters="clr-namespace:OutbreakTracker2.Application.Converters"
+x:DataType="views:OutbreakTracker2ViewModel"
+x:CompileBindings="False"
+IsTitleBarVisible="{Binding TitleBarVisible, Mode=TwoWay}"
+CanMinimize="{Binding !WindowLocked}"
+CanMove="{Binding !WindowLocked}"
+CanResize="{Binding !WindowLocked}"
+IsMenuVisible="True"
+mc:Ignorable="d">
     <suki:SukiWindow.Hosts>
         <suki:SukiToastHost Manager="{Binding ToastManager}" />
+        <suki:SukiDialogHost Manager="{Binding DialogManager}" />
     </suki:SukiWindow.Hosts>
     <suki:SukiWindow.LogoContent>
         <avalonia:MaterialIcon
-            Width="20"
-            Height="20"
-            VerticalAlignment="Center"
-            Foreground="{DynamicResource SukiPrimaryColor}"
-            Kind="Dog">
+        Width="20"
+        Height="20"
+        VerticalAlignment="Center"
+        Foreground="{DynamicResource SukiPrimaryColor}"
+        Kind="Dog">
             <avalonia:MaterialIcon.Transitions>
                 <Transitions>
                     <BrushTransition Property="Foreground" Duration="{DynamicResource ShortAnimationDuration}" />
@@ -35,6 +37,14 @@
             </avalonia:MaterialIcon.Transitions>
         </avalonia:MaterialIcon>
     </suki:SukiWindow.LogoContent>
+    <suki:SukiWindow.RightWindowTitleBarControls>
+        <Button
+        Classes="WindowControlsButton"
+        Command="{Binding OpenSettingsCommand}"
+        ToolTip.Tip="Open settings">
+            <avalonia:MaterialIcon Foreground="{DynamicResource SukiText}" Kind="Cog" />
+        </Button>
+    </suki:SukiWindow.RightWindowTitleBarControls>
     <suki:SukiWindow.MenuItems>
         <MenuItem Header="Theme">
             <MenuItem Command="{Binding ToggleBaseThemeCommand}" Header="{Binding BaseTheme}">
@@ -43,9 +53,9 @@
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem
-                Click="ThemeMenuItem_OnClick"
-                Header="Switch To..."
-                ItemsSource="{Binding Themes}">
+            Click="ThemeMenuItem_OnClick"
+            Header="Switch To..."
+            ItemsSource="{Binding Themes}">
                 <MenuItem.DataTemplates>
                     <DataTemplate DataType="{x:Type suki:SukiColorTheme}">
                         <TextBlock Foreground="{Binding PrimaryBrush}" Text="{Binding DisplayName}" />
@@ -55,17 +65,17 @@
         </MenuItem>
         <MenuItem Header="Window">
             <MenuItem
-                Command="{Binding ToggleTitleBarCommand}"
-                Header="Title Bar"
-                ToolTip.Tip="Toggle the title bar">
+            Command="{Binding ToggleTitleBarCommand}"
+            Header="Title Bar"
+            ToolTip.Tip="Toggle the title bar">
                 <MenuItem.Icon>
                     <avalonia:MaterialIcon Kind="{Binding TitleBarVisible, Converter={x:Static converters:BoolToIconConverters.Visibility}}" />
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem
-                Command="{Binding ToggleWindowLockCommand}"
-                Header="Window Lock"
-                ToolTip.Tip="Lock window position and size">
+            Command="{Binding ToggleWindowLockCommand}"
+            Header="Window Lock"
+            ToolTip.Tip="Lock window position and size">
                 <MenuItem.Icon>
                     <avalonia:MaterialIcon Kind="{Binding WindowLocked, Converter={x:Static converters:BoolToIconConverters.WindowLock}}" />
                 </MenuItem.Icon>
@@ -73,9 +83,9 @@
         </MenuItem>
     </suki:SukiWindow.MenuItems>
     <suki:SukiSideMenu
-        IsSearchEnabled="True"
-        ItemsSource="{Binding Pages}"
-        SelectedItem="{Binding ActivePage}">
+    IsSearchEnabled="True"
+    ItemsSource="{Binding Pages}"
+    SelectedItem="{Binding ActivePage}">
         <suki:SukiSideMenu.ItemTemplate>
             <DataTemplate>
                 <suki:SukiSideMenuItem Classes="Compact" Header="{Binding DisplayName}">
@@ -85,9 +95,6 @@
                 </suki:SukiSideMenuItem>
             </DataTemplate>
         </suki:SukiSideMenu.ItemTemplate>
-        <suki:SukiSideMenu.HeaderContent>
-            <!--  TODO: img  -->
-        </suki:SukiSideMenu.HeaderContent>
         <suki:SukiSideMenu.FooterContent>
             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                 <StackPanel.Styles>
@@ -97,10 +104,10 @@
                     </Style>
                 </StackPanel.Styles>
                 <Button
-                    Classes="Basic"
-                    Command="{Binding OpenUrlCommand}"
-                    CommandParameter="https://github.com/Bia10/OutbreakTracker2"
-                    ToolTip.Tip="Open on GitHub">
+                Classes="Basic"
+                Command="{Binding OpenUrlCommand}"
+                CommandParameter="https://github.com/Bia10/OutbreakTracker2"
+                ToolTip.Tip="Open on GitHub">
                     <avalonia:MaterialIcon Kind="Github" />
                 </Button>
             </StackPanel>

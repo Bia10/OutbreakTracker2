@@ -15,7 +15,7 @@ public class OutbreakTracker2Views
     public OutbreakTracker2Views AddView<
         TView,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel
-    >(ServiceCollection services)
+    >(ServiceCollection services, bool registerViewModel = true)
         where TView : ContentControl, new()
         where TViewModel : ObservableObject
     {
@@ -23,10 +23,13 @@ public class OutbreakTracker2Views
 
         _vmToViewFactoryMap[viewModelType] = static () => new TView();
 
-        if (viewModelType.IsAssignableTo(typeof(PageBase)))
-            services.AddSingleton(typeof(PageBase), viewModelType);
-        else
-            services.AddSingleton(viewModelType);
+        if (registerViewModel)
+        {
+            if (viewModelType.IsAssignableTo(typeof(PageBase)))
+                services.AddSingleton(typeof(PageBase), viewModelType);
+            else
+                services.AddSingleton(viewModelType);
+        }
 
         return this;
     }
