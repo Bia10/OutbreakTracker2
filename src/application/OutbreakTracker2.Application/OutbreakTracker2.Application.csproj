@@ -67,8 +67,6 @@
     <PackageReference Include="Dock.Avalonia" />
     <PackageReference Include="Dock.Avalonia.Themes.Fluent" />
     <PackageReference Include="Dock.Model.Mvvm" />
-    <!-- WMI process events: Windows only -->
-    <PackageReference Condition="$([MSBuild]::IsOsPlatform('Windows'))" Include="System.Management" />
     <PackageReference Include="Ulid" />
     <PackageReference Include="ZLinq" />
     <!-- ZLinq drop-in replaces System.Linq; remove the implicit using to avoid ambiguity -->

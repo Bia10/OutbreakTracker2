@@ -199,6 +199,13 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessL
         }
     }
 
+    public async Task KillAsync(int processId)
+    {
+        Process process = Process.GetProcessById(processId);
+        process.Kill();
+        await process.WaitForExitAsync().ConfigureAwait(false);
+    }
+
     public Task<IGameClient> AttachAsync(int processId)
     {
         Process? monitoredProcess = ClientMonitoredProcess;

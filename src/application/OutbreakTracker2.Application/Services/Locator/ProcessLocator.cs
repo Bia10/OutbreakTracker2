@@ -1,10 +1,6 @@
 ﻿using System.Diagnostics;
-using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
 using R3;
-#if WINDOWS
-using System.Management;
-#endif
 
 namespace OutbreakTracker2.Application.Services.Locator;
 
@@ -32,75 +28,8 @@ public sealed class ProcessLocator(ILogger<ProcessLocator> logger) : IProcessLoc
             .DistinctUntilChanged();
     }
 
-    // WMI event-driven implementation (Windows only)
-    [SupportedOSPlatform("windows")]
-    public Observable<bool> IsProcessRunningEventDriven(string processName, TimeSpan? checkInterval = null)
-    {
-#if WINDOWS
-        return Observable
-            .Create<bool>(observer =>
-            {
-                if (Environment.OSVersion.Platform is not PlatformID.Win32NT)
-                {
-                    observer.OnCompleted(Result.Failure(new NotSupportedException("WMI is only supported on Windows")));
-                    return Disposable.Empty;
-                }
-
-                try
-                {
-                    WqlEventQuery query = new()
-                    {
-                        EventClassName = "__InstanceCreationEvent",
-                        WithinInterval = checkInterval ?? TimeSpan.FromSeconds(1),
-                        Condition = $"TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{processName}.exe'",
-                    };
-
-                    ManagementEventWatcher watcher = new(query);
-                    bool initialCheck = Process.GetProcessesByName(processName).Length is not 0;
-
-                    // Send initial state
-                    observer.OnNext(initialCheck);
-
-                    watcher.EventArrived += EventHandler;
-                    watcher.Start();
-
-                    return Disposable.Create(() =>
-                    {
-                        watcher.EventArrived -= EventHandler;
-                        watcher.Stop();
-                        watcher.Dispose();
-                    });
-
-                    void EventHandler(object sender, EventArrivedEventArgs args)
-                    {
-                        try
-                        {
-                            bool isRunning = Process.GetProcessesByName(processName).Length is not 0;
-                            observer.OnNext(isRunning);
-                        }
-                        catch (Exception ex)
-                        {
-                            observer.OnErrorResume(ex);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    observer.OnCompleted(Result.Failure(ex));
-                    return Disposable.Empty;
-                }
-            })
-            .DistinctUntilChanged()
-            .Catch<bool, Exception>(ex =>
-            {
-                _logger.LogWarning(ex, "WMI process monitoring failed for {ProcessName}", processName);
-                return Observable.Return(value: false);
-            });
-#else
-        // On non-Windows platforms (no WMI), fall back to polling.
-        return IsProcessRunningPolling(processName, checkInterval);
-#endif
-    }
+    // WMI event-driven implementation removed — WMI uses COM interop which is not supported in
+    // NativeAOT. Process detection now uses polling exclusively via IsProcessRunningPolling.
 
     public IReadOnlyList<int> GetProcessIds(string processName)
     {

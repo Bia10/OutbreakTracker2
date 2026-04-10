@@ -7,8 +7,6 @@ public interface IProcessLocator
 {
     Observable<bool> IsProcessRunningPolling(string processName, TimeSpan? checkInterval = null);
 
-    Observable<bool> IsProcessRunningEventDriven(string processName, TimeSpan? checkInterval = null);
-
     IReadOnlyList<int> GetProcessIds(string processName);
 
     IEnumerable<Process> GetProcessesByName(string processName);

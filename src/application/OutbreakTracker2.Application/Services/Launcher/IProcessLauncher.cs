@@ -20,6 +20,8 @@ public interface IProcessLauncher
 
     Task TerminateAsync(int? processId = null);
 
+    Task KillAsync(int processId);
+
     Observable<string> GetErrorObservable();
 
     bool HasExited(int processId);
