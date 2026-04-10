@@ -35,6 +35,7 @@ using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer.F
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoom;
@@ -80,7 +81,8 @@ internal static class CompositionRoot
             .AddView<ItemSlotView, ItemSlotViewModel>(services)
             .AddView<LogView, LogViewModel>(services)
             .AddView<GameDockView, GameDockViewModel>(services)
-            .AddView<AppSettingsDialogView, AppSettingsDialogViewModel>(services, registerViewModel: false);
+            .AddView<AppSettingsDialogView, AppSettingsDialogViewModel>(services, registerViewModel: false)
+            .AddView<FlashbackView, FlashbackViewModel>(services, registerViewModel: false);
 
     internal static IServiceProvider ConfigureServicesAndLogging(
         IServiceCollection services,

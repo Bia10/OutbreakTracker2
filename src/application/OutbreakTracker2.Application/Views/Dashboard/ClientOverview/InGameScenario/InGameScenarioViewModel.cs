@@ -140,6 +140,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
 
         DesperateTimesViewModel desperateTimesVm = new();
         EndOfTheRoadViewModel endOfTheRoadVm = new();
+        FlashbackViewModel flashbackVm = new();
         UnderbellyViewModel underbellyVm = new();
         WildThingsViewModel wildThingsVm = new();
         HellfireViewModel hellfireVm = new();
@@ -211,6 +212,14 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
                 {
                     belowFreezingPointVm.Update(scenario);
                     CurrentScenarioSpecificViewModel = belowFreezingPointVm;
+                }
+            },
+            {
+                Scenario.Flashback,
+                scenario =>
+                {
+                    flashbackVm.Update(scenario);
+                    CurrentScenarioSpecificViewModel = flashbackVm;
                 }
             },
         };
