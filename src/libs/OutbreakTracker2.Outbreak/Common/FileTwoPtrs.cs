@@ -31,6 +31,9 @@ public static class FileTwoPtrs
     public const nint LobbyRoomScenarioId = 0x62DDF6;
     public const nint LobbyRoomTime = 0x62E768;
     public const nint LobbyRoomCurPlayer = 0x6411E6;
+    public const nint RoomPriority = 0x7d7a90; // 128 rooms x 4 bytes; byte[0] = player index (0-3), 0xFF = no master
+    public const int RoomPriorityEntrySize = 4;
+    public const int RoomPriorityCount = 128;
 
     public const nint BaseLobbyRoomPlayer = 0x630D40; // Player slot at index 0
     public const int LobbyRoomPlayerStructSize = 0x3A8; // 936-byte structure size
@@ -155,6 +158,7 @@ public static class FileTwoPtrs
 
     public const nint CharacterEnabledOffset = 0x0; //0
     public const nint CharacterInGameOffset = 0x1; //1
+    public const nint CharacterLoadingStatusOffset = 0x546; // Non-zero while loading into area (File 2 only)
     public const nint PositionXOffset = 0x38; //56
     public const nint PositionYOffset = 0x40; //64
     public const nint SizeOffset = 0xB4; //180
@@ -190,6 +194,8 @@ public static class FileTwoPtrs
     public const nint InGameScenarioId = 0x3137BA;
     public const nint InGameFrameCounter = 0x4912B8;
     public const nint WildThingsTime = 0x491248;
+    public const nint WTGateMHp = 0x389096;
+    public const nint WTGateHp = 0x389098;
     public const nint PassWildThings = 0x48FE7B;
     public const nint PassDesperateTimes = 0x490070;
     public const nint PassDesperateTimes2 = 0x490072;

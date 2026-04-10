@@ -87,6 +87,7 @@ public sealed class LobbyRoomPlayerReader : ReaderBase, ILobbyRoomPlayerReader
                 newDecodedLobbyRoomPlayers[i] = new DecodedLobbyRoomPlayer
                 {
                     Id = GetPersistentUlidForRoomPlayerSlot(i),
+                    SlotIndex = (byte)i,
                 };
                 continue;
             }
@@ -129,6 +130,7 @@ public sealed class LobbyRoomPlayerReader : ReaderBase, ILobbyRoomPlayerReader
                 Id = GetPersistentUlidForRoomPlayerSlot(i),
                 IsEnabled = true,
                 NameId = nameId,
+                SlotIndex = (byte)i,
                 NpcType = npcType,
                 CharacterName = characterName,
                 CharacterHp = characterHp,

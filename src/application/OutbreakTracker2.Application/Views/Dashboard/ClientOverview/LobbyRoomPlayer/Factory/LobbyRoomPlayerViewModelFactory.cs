@@ -22,7 +22,6 @@ public sealed class LobbyRoomPlayerViewModelFactory(
 
         CharacterBustViewModel newCharacterBustViewModel = _characterBustViewModelFactory.Create();
         LobbyRoomPlayerViewModel lobbyRoomPlayerVm = new(playerData, newCharacterBustViewModel);
-        lobbyRoomPlayerVm.Update(playerData);
         return lobbyRoomPlayerVm;
     }
 }

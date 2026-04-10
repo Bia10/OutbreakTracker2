@@ -1,161 +1,184 @@
 ﻿<UserControl
-    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoomPlayer.LobbyRoomPlayerView"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
-    xmlns:lobbyRoomPlayer="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoomPlayer"
-    d:DesignHeight="150"
-    d:DesignWidth="250"
-    x:DataType="lobbyRoomPlayer:LobbyRoomPlayerViewModel"
-    mc:Ignorable="d">
+x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoomPlayer.LobbyRoomPlayerView"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:icons="using:Material.Icons.Avalonia"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+xmlns:converters="clr-namespace:OutbreakTracker2.Application.Converters"
+xmlns:lobbyRoomPlayer="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoomPlayer"
+d:DesignHeight="150"
+d:DesignWidth="250"
+x:DataType="lobbyRoomPlayer:LobbyRoomPlayerViewModel"
+mc:Ignorable="d">
 
     <suki:GlassCard
-        MinWidth="220"
-        MaxWidth="280"
-        Margin="5">
+    MinWidth="220"
+    MaxWidth="280"
+    Margin="5">
         <StackPanel>
             <TextBlock
-                Margin="5,0,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                FontSize="8"
-                Foreground="Gray"
-                Opacity="0.8"
-                Text="{Binding Id, StringFormat='ULID: {0}'}" />
+            Margin="5,0,0,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            FontSize="8"
+            Foreground="Gray"
+            Opacity="0.8"
+            Text="{Binding Id, StringFormat='ULID: {0}'}" />
 
             <suki:GroupBox Margin="0,5,0,0" Header="{Binding DisplayName}">
                 <Grid
-                    Margin="10"
-                    ColumnDefinitions="Auto,*"
-                    RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                Margin="10"
+                ColumnDefinitions="Auto,*"
+                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                    <StackPanel
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    IsVisible="{Binding IsRoomMaster}"
+                    Orientation="Horizontal"
+                    Spacing="4">
+                        <icons:MaterialIcon
+                        Width="14"
+                        Height="14"
+                        Foreground="Gold"
+                        Kind="Crown"
+                        ToolTip.Tip="Room Master" />
+                        <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="10"
+                        FontWeight="SemiBold"
+                        Foreground="Gold"
+                        Text="Room Master" />
+                    </StackPanel>
                     <Image
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        Grid.ColumnSpan="2"
-                        Margin="0,5,0,5"
-                        HorizontalAlignment="Left"
-                        Source="{Binding PlayerBustViewModel.PlayerBustImage}"
-                        Stretch="Uniform" />
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Margin="0,5,0,5"
+                    HorizontalAlignment="Left"
+                    Source="{Binding PlayerBustViewModel.PlayerBustImage}"
+                    Stretch="Uniform" />
 
                     <TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Margin="0,0,5,0"
-                        VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="NameId:" />
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Margin="0,0,5,0"
+                    VerticalAlignment="Center"
+                    FontWeight="SemiBold"
+                    Text="NameId:" />
                     <TextBlock
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Text="{Binding NameId}" />
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Text="{Binding NameId}" />
 
                     <TextBlock
-                        Grid.Row="2"
-                        Grid.Column="0"
-                        Margin="0,0,5,0"
-                        VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="Type:" />
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    Margin="0,0,5,0"
+                    VerticalAlignment="Center"
+                    FontWeight="SemiBold"
+                    Text="Type:" />
                     <TextBlock
-                        Grid.Row="2"
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Text="{Binding NpcType}" />
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Text="{Binding NpcType}" />
 
                     <StackPanel
-                        Grid.Row="3"
-                        Grid.Column="0"
-                        Grid.ColumnSpan="2"
-                        IsVisible="{Binding IsMainCharacter}">
+                    Grid.Row="4"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    IsVisible="{Binding IsMainCharacter}">
                         <Border
-                            Height="1"
-                            Margin="0,5,0,5"
-                            Background="{DynamicResource SukiControlBorderBrush}" />
+                        Height="1"
+                        Margin="0,5,0,5"
+                        Background="{DynamicResource SukiControlBorderBrush}" />
                         <Grid ColumnDefinitions="Auto,*">
                             <TextBlock
-                                Grid.Column="0"
-                                Margin="0,0,5,0"
-                                VerticalAlignment="Center"
-                                FontWeight="SemiBold"
-                                Text="Character Name:" />
+                            Grid.Column="0"
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Character Name:" />
                             <TextBlock
-                                Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Text="{Binding CharacterName}" />
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Text="{Binding CharacterName}" />
                         </Grid>
                         <Grid ColumnDefinitions="Auto,*">
                             <TextBlock
-                                Grid.Column="0"
-                                Margin="0,0,5,0"
-                                VerticalAlignment="Center"
-                                FontWeight="SemiBold"
-                                Text="HP:" />
+                            Grid.Column="0"
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="HP:" />
                             <TextBlock
-                                Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Text="{Binding CharacterHp}" />
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Text="{Binding CharacterHp}" />
                         </Grid>
                         <Grid ColumnDefinitions="Auto,*">
                             <TextBlock
-                                Grid.Column="0"
-                                Margin="0,0,5,0"
-                                VerticalAlignment="Center"
-                                FontWeight="SemiBold"
-                                Text="Power:" />
+                            Grid.Column="0"
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Power:" />
                             <TextBlock
-                                Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Text="{Binding CharacterPower}" />
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Text="{Binding CharacterPower}" />
                         </Grid>
                     </StackPanel>
 
                     <StackPanel
-                        Grid.Row="4"
-                        Grid.Column="0"
-                        Grid.ColumnSpan="2"
-                        IsVisible="{Binding IsOtherNpc}">
+                    Grid.Row="5"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    IsVisible="{Binding IsOtherNpc}">
                         <Border
-                            Height="1"
-                            Margin="0,5,0,5"
-                            Background="{DynamicResource SukiControlBorderBrush}" />
+                        Height="1"
+                        Margin="0,5,0,5"
+                        Background="{DynamicResource SukiControlBorderBrush}" />
                         <Grid ColumnDefinitions="Auto,*">
                             <TextBlock
-                                Grid.Column="0"
-                                Margin="0,0,5,0"
-                                VerticalAlignment="Center"
-                                FontWeight="SemiBold"
-                                Text="NPC Name:" />
+                            Grid.Column="0"
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="NPC Name:" />
                             <TextBlock
-                                Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Text="{Binding NpcName}" />
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Foreground="{Binding IsEnemyFactionNpc, Converter={x:Static converters:BoolToColorConverter.EnemyFaction}}"
+                            Text="{Binding NpcName}" />
                         </Grid>
                         <Grid ColumnDefinitions="Auto,*">
                             <TextBlock
-                                Grid.Column="0"
-                                Margin="0,0,5,0"
-                                VerticalAlignment="Center"
-                                FontWeight="SemiBold"
-                                Text="NPC HP:" />
+                            Grid.Column="0"
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="NPC HP:" />
                             <TextBlock
-                                Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Text="{Binding NpcHp}" />
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Text="{Binding NpcHp}" />
                         </Grid>
                         <Grid ColumnDefinitions="Auto,*">
                             <TextBlock
-                                Grid.Column="0"
-                                Margin="0,0,5,0"
-                                VerticalAlignment="Center"
-                                FontWeight="SemiBold"
-                                Text="NPC Power:" />
+                            Grid.Column="0"
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="NPC Power:" />
                             <TextBlock
-                                Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Text="{Binding NpcPower}" />
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Text="{Binding NpcPower}" />
                         </Grid>
                     </StackPanel>
                 </Grid>

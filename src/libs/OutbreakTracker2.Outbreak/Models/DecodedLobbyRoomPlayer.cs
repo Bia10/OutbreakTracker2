@@ -43,4 +43,8 @@ public sealed record DecodedLobbyRoomPlayer : IHasId
     [JsonInclude]
     [JsonPropertyName(nameof(NpcPower))]
     public string NpcPower { get; init; } = string.Empty;
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(SlotIndex))]
+    public byte SlotIndex { get; init; } = byte.MaxValue;
 }

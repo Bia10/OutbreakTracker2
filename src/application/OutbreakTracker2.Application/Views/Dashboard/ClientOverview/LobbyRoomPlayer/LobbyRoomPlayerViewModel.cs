@@ -33,6 +33,7 @@ public sealed partial class LobbyRoomPlayerViewModel : ObservableObject
     private string _characterPower = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsEnemyFactionNpc))]
     private string _npcName = string.Empty;
 
     [ObservableProperty]
@@ -41,8 +42,14 @@ public sealed partial class LobbyRoomPlayerViewModel : ObservableObject
     [ObservableProperty]
     private string _npcPower = string.Empty;
 
+    [ObservableProperty]
+    private bool _isRoomMaster;
+
+    private static readonly HashSet<string> EnemyFactionNpcs = ["Mr. Red", "Bob", "Tony"];
+
     public bool IsMainCharacter => string.Equals(NpcType, "Main Characters", StringComparison.Ordinal);
     public bool IsOtherNpc => string.Equals(NpcType, "Other NPCs", StringComparison.Ordinal);
+    public bool IsEnemyFactionNpc => !string.IsNullOrEmpty(NpcName) && EnemyFactionNpcs.Contains(NpcName);
     public byte DataPlayerId => NameId;
     public Ulid ViewModelId => Id;
 
@@ -52,10 +59,10 @@ public sealed partial class LobbyRoomPlayerViewModel : ObservableObject
     {
         PlayerBustViewModel = characterBustViewModel;
 
-        Update(model);
+        Update(model, 255);
     }
 
-    public void Update(DecodedLobbyRoomPlayer model)
+    public void Update(DecodedLobbyRoomPlayer model, byte roomMasterId)
     {
         IsEnabled = model.IsEnabled;
         NameId = model.NameId;
@@ -68,6 +75,7 @@ public sealed partial class LobbyRoomPlayerViewModel : ObservableObject
         NpcPower = model.NpcPower;
 
         DisplayName = string.Equals(NpcType, "Main Characters", StringComparison.Ordinal) ? CharacterName : NpcName;
+        IsRoomMaster = roomMasterId <= 3 && model.SlotIndex == roomMasterId;
 
         if (EnumUtility.TryParseByValueOrMember(DisplayName, out CharacterBaseType charType))
             _ = PlayerBustViewModel.UpdateBustAsync(charType);

@@ -21,6 +21,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
     private readonly IDisposable _subscription;
     private readonly Dictionary<Ulid, LobbyRoomPlayerViewModel> _viewModelCache = [];
     private readonly ObservableList<LobbyRoomPlayerViewModel> _playersInternal = [];
+    private byte _currentRoomMasterId = 255;
 
     public NotifyCollectionChangedSynchronizedViewList<LobbyRoomPlayerViewModel> PlayersView { get; }
 
@@ -256,7 +257,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
                                                 );
                                             }
 
-                                            vm.Update(playerData);
+                                            vm.Update(playerData, _currentRoomMasterId);
                                             _logger.LogTrace(
                                                 "Updating LobbyRoomPlayerViewModel properties on UI thread for ULID {Ulid} (PlayerId {PlayerId})",
                                                 vm.ViewModelId,
@@ -413,6 +414,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
         CurPlayer = model.CurPlayer;
         Difficulty = model.Difficulty;
         ScenarioName = model.ScenarioName;
+        _currentRoomMasterId = model.RoomMasterId;
 
         if (!string.IsNullOrEmpty(ScenarioName))
         {

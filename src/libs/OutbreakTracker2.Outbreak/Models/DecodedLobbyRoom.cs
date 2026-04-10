@@ -30,4 +30,8 @@ public readonly record struct DecodedLobbyRoom
     [JsonInclude]
     [JsonPropertyName(nameof(ScenarioName))]
     public string ScenarioName { get; init; } = string.Empty;
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(RoomMasterId))]
+    public byte RoomMasterId { get; init; } = 255;
 }

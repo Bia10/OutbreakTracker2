@@ -28,4 +28,7 @@ internal static class LobbyRoomOffsets
         [FileOnePtrs.LobbyRoomCurPlayer],
         [FileTwoPtrs.LobbyRoomCurPlayer]
     );
+
+    // File 1 address unknown — requires in-game PCSX2 memory scanning to discover
+    public static readonly (nint[] File1, nint[] File2) RoomPriority = ([], [FileTwoPtrs.RoomPriority]);
 }

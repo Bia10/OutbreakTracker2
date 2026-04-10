@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.LobbyRoom;
 using OutbreakTracker2.Outbreak.Enums.LobbySlot;
@@ -29,6 +30,28 @@ public sealed class LobbyRoomReader(IGameClient gameClient, IEEmemAddressReader 
 
     private short GetScenarioId() =>
         ReadValue(LobbyRoomOffsets.ScenarioId.File1, LobbyRoomOffsets.ScenarioId.File2, (short)-1);
+
+    private byte GetRoomMasterId()
+    {
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(LobbyRoomOffsets.RoomPriority);
+        if (offsets.IsEmpty)
+            return 255;
+
+        nint baseAddr = offsets[0];
+        if (baseAddr == nint.Zero)
+            return 255;
+
+        for (int i = 0; i < FileTwoPtrs.RoomPriorityCount; i++)
+        {
+            byte b = ReadValue<byte>(baseAddr, [(nint)(i * FileTwoPtrs.RoomPriorityEntrySize)]);
+            if (b <= 0x03)
+                return b;
+            if (b != 0xFF)
+                return 255; // invalid data guard
+        }
+
+        return 255;
+    }
 
     private short GetTime() => ReadValue(LobbyRoomOffsets.Time.File1, LobbyRoomOffsets.Time.File2, (short)-1);
 
@@ -74,6 +97,7 @@ public sealed class LobbyRoomReader(IGameClient gameClient, IEEmemAddressReader 
             Status = GetStatusName(GetStatus()),
             ScenarioName = GetScenarioName(GetScenarioId()),
             TimeLeft = GetFormattedTimeString(),
+            RoomMasterId = GetRoomMasterId(),
         };
     }
 
