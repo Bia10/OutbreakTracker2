@@ -126,7 +126,7 @@ public sealed class GameDockFactory(
             VisibleDockables = CreateList<IDockable>(
                 CreateGameToolDock("EntitiesToolDock", 0.6, Alignment.Left, enemyListTool),
                 new ProportionalDockSplitter(),
-                CreateGameToolDock("LobbySlotsToolDock", 0.4, Alignment.Left, lobbySlotsDockTool)
+                CreateGameToolDock("LobbySlotsToolDock", 0.4, Alignment.Left, scenarioItemsTool, lobbySlotsDockTool)
             ),
         };
 
@@ -178,13 +178,19 @@ public sealed class GameDockFactory(
         return rootDock;
     }
 
-    private IToolDock CreateGameToolDock(string id, double proportion, Alignment alignment, IDockable activeDockable)
+    private IToolDock CreateGameToolDock(
+        string id,
+        double proportion,
+        Alignment alignment,
+        IDockable activeDockable,
+        params IDockable[] additionalDockables
+    )
     {
         var toolDock = CreateToolDock();
         toolDock.Id = id;
         toolDock.Proportion = proportion;
         toolDock.ActiveDockable = activeDockable;
-        toolDock.VisibleDockables = CreateList<IDockable>(activeDockable);
+        toolDock.VisibleDockables = CreateList<IDockable>([activeDockable, .. additionalDockables]);
         toolDock.Alignment = alignment;
         toolDock.GripMode = GripMode.Visible;
         toolDock.IsCollapsable = false;
