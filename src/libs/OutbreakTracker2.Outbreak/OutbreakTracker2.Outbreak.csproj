@@ -1,6 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <!-- EPS05 fires on STJ source-generated serializer methods that pass readonly structs by value.
+         We cannot modify generated code, so suppress at the project level. -->
+    <NoWarn>$(NoWarn);EPS05</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

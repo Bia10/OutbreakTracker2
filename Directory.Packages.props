@@ -96,8 +96,8 @@
        ANALYZERS (private assets — not shipped)
        ═══════════════════════════════════════════════════════ -->
   <ItemGroup Label="Analyzers">
-    <PackageVersion Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2" />
-    <PackageVersion Include="ErrorProne.NET.Structs" Version="0.1.2" />
+    <PackageVersion Include="ErrorProne.NET.CoreAnalyzers" Version="0.8.2-beta.1" />
+    <PackageVersion Include="ErrorProne.NET.Structs" Version="0.6.1-beta.1" />
     <PackageVersion Include="Meziantou.Analyzer" Version="3.0.43" />
   </ItemGroup>
   <!-- ═══════════════════════════════════════════════════════
