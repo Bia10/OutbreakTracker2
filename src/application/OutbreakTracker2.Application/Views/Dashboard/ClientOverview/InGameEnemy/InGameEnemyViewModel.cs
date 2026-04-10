@@ -61,6 +61,12 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
 
     public Ulid UniqueId { get; }
 
+    /// <summary>Raised when enemy HP decreases, carrying Red as the glow color.</summary>
+    public event EventHandler<GlowEventArgs>? GlowTriggered;
+
+    private ushort _previousHp;
+    private bool _isFirstUpdate = true;
+
     public InGameEnemyViewModel(DecodedEnemy enemy, string scenarioName)
     {
         UniqueId = enemy.Id;
@@ -71,6 +77,12 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
     {
         if (UniqueId != enemy.Id)
             return;
+
+        if (!_isFirstUpdate && enemy.CurHp < _previousHp)
+            GlowTriggered?.Invoke(this, new GlowEventArgs(Colors.Red));
+
+        _previousHp = enemy.CurHp;
+        _isFirstUpdate = false;
 
         Name = $"{enemy.Name}({enemy.SlotId})";
         CurrentHp = enemy.CurHp;

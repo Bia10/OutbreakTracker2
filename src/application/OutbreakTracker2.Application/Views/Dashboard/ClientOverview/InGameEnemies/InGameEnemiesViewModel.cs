@@ -12,7 +12,7 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnem
 
 public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposable
 {
-    private static readonly TimeSpan DeadEnemyDisplayDuration = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan DeadEnemyDisplayDuration = TimeSpan.FromSeconds(3);
 
     private readonly ILogger<InGameEnemiesViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
@@ -192,10 +192,30 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
                         foreach (Ulid id in expiredRemovals)
                             _pendingRemovals.Remove(id);
 
+                    // Sweep enemies that have been dead longer than the display duration.
+                    // Removes them from the list even if their slot is still occupied.
+                    List<Ulid>? deadExpiredRemovals = null;
+                    foreach ((Ulid id, DateTimeOffset deathTime) in _enemyDeathTimes)
+                    {
+                        if ((now - deathTime) >= DeadEnemyDisplayDuration)
+                        {
+                            deadExpiredRemovals ??= [];
+                            deadExpiredRemovals.Add(id);
+                        }
+                    }
+
+                    if (deadExpiredRemovals is not null)
+                        foreach (Ulid id in deadExpiredRemovals)
+                        {
+                            _enemyDeathTimes.Remove(id);
+                            _pendingRemovals.Remove(id);
+                        }
+
                     bool hasChanges =
                         immediateRemovals is not null
                         || demotedIds is not null
                         || expiredRemovals is not null
+                        || deadExpiredRemovals is not null
                         || (newVms is { Count: > 0 })
                         || diff.Changed.Count > 0;
 
@@ -224,6 +244,12 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
                                 // Expired grace-period removals
                                 if (expiredRemovals is not null)
                                     foreach (Ulid id in expiredRemovals)
+                                        if (_viewModelCache.Remove(id, out InGameEnemyViewModel? vm))
+                                            _enemies.Remove(vm);
+
+                                // Dead-display-duration removals — enemy shown as dead long enough
+                                if (deadExpiredRemovals is not null)
+                                    foreach (Ulid id in deadExpiredRemovals)
                                         if (_viewModelCache.Remove(id, out InGameEnemyViewModel? vm))
                                             _enemies.Remove(vm);
 

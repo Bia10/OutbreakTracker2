@@ -1,108 +1,119 @@
 ﻿<UserControl
-    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy.InGameEnemyView"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
-    xmlns:inGameEnemy="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy"
-    d:DesignHeight="300"
-    d:DesignWidth="400"
-    x:DataType="inGameEnemy:InGameEnemyViewModel"
-    mc:Ignorable="d">
+x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy.InGameEnemyView"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+xmlns:inGameEnemy="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy"
+d:DesignHeight="300"
+d:DesignWidth="400"
+x:DataType="inGameEnemy:InGameEnemyViewModel"
+mc:Ignorable="d">
 
-    <suki:GlassCard
+    <Panel>
+        <suki:GlassCard
         Margin="4,3"
         Padding="8,6"
         BorderBrush="{Binding BorderBrush}"
         BorderThickness="2"
         CornerRadius="6">
 
-        <StackPanel Spacing="4">
+            <StackPanel Spacing="4">
 
-            <TextBlock
+                <TextBlock
                 FontSize="13"
                 FontWeight="Bold"
                 Text="{Binding Name}"
                 TextTrimming="CharacterEllipsis" />
 
-            <!-- HP bar with cur/max values overlaid inside -->
-            <Grid>
-                <ProgressBar
+                <!-- HP bar with cur/max values overlaid inside -->
+                <Grid>
+                    <ProgressBar
                     Height="18"
                     Maximum="100"
                     Value="{Binding HealthPercentage}" />
-                <StackPanel
+                    <StackPanel
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Orientation="Horizontal"
                     Spacing="3">
-                    <avalonia:MaterialIcon
+                        <avalonia:MaterialIcon
                         Width="13"
                         Height="13"
                         VerticalAlignment="Center"
                         IsVisible="{Binding IsDead}"
                         Kind="Skull"
                         ToolTip.Tip="This enemy is dead" />
-                    <avalonia:MaterialIcon
+                        <avalonia:MaterialIcon
                         Width="13"
                         Height="13"
                         VerticalAlignment="Center"
                         IsVisible="{Binding IsInvincible}"
                         Kind="Shield"
                         ToolTip.Tip="This enemy is invincible" />
-                    <TextBlock
+                        <TextBlock
                         VerticalAlignment="Center"
                         FontSize="11"
                         FontWeight="SemiBold"
                         Text="{Binding HealthStatus}" />
-                </StackPanel>
-            </Grid>
+                    </StackPanel>
+                </Grid>
 
-            <!-- Details -->
-            <StackPanel Margin="0,2,0,0" Spacing="1">
-                <DockPanel>
-                    <TextBlock
+                <!-- Details -->
+                <StackPanel Margin="0,2,0,0" Spacing="1">
+                    <DockPanel>
+                        <TextBlock
                         DockPanel.Dock="Left"
                         FontSize="11"
                         FontWeight="SemiBold"
                         Foreground="{DynamicResource SukiLowText}"
                         Text="Boss Type:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         FontSize="11"
                         Text="{Binding BossType}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
-                <DockPanel>
-                    <TextBlock
+                    </DockPanel>
+                    <DockPanel>
+                        <TextBlock
                         DockPanel.Dock="Left"
                         FontSize="11"
                         FontWeight="SemiBold"
                         Foreground="{DynamicResource SukiLowText}"
                         Text="Room:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         FontSize="11"
                         Text="{Binding RoomName}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
-                <DockPanel>
-                    <TextBlock
+                    </DockPanel>
+                    <DockPanel>
+                        <TextBlock
                         DockPanel.Dock="Left"
                         FontSize="11"
                         FontWeight="SemiBold"
                         Foreground="{DynamicResource SukiLowText}"
                         Text="Status:" />
-                    <TextBlock
+                        <TextBlock
                         Margin="3,0,0,0"
                         FontSize="11"
                         Text="{Binding Status}"
                         TextTrimming="CharacterEllipsis" />
-                </DockPanel>
-            </StackPanel>
+                    </DockPanel>
+                </StackPanel>
 
-        </StackPanel>
-    </suki:GlassCard>
+            </StackPanel>
+        </suki:GlassCard>
+
+        <!--  Glow border overlay for damage flash animation  -->
+        <Border
+        x:Name="GlowBorder"
+        Margin="4,3"
+        BorderThickness="2"
+        CornerRadius="6"
+        IsHitTestVisible="False"
+        Opacity="0" />
+    </Panel>
 </UserControl>
