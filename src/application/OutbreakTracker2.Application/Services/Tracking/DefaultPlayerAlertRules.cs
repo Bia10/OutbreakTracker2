@@ -2,7 +2,6 @@
 using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
-using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Services.Tracking;
 
@@ -232,14 +231,6 @@ internal static class DefaultPlayerAlertRules
                 or ScenarioStatus.GenericLoading
                 or ScenarioStatus.PostIntroLoading;
 
-    private static string ResolveRoomName(short roomId, string scenarioName)
-    {
-        if (
-            !string.IsNullOrEmpty(scenarioName)
-            && EnumUtility.TryParseByValueOrMember(scenarioName, out Scenario scenarioEnum)
-        )
-            return scenarioEnum.GetRoomName(roomId);
-
-        return $"Room {roomId}";
-    }
+    private static string ResolveRoomName(short roomId, string scenarioName) =>
+        AlertRuleHelpers.ResolveRoomName(roomId, scenarioName);
 }

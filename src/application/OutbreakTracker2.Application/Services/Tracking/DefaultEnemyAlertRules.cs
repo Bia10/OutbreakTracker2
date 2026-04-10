@@ -1,8 +1,6 @@
 ﻿using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Settings;
-using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
-using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Services.Tracking;
 
@@ -14,6 +12,25 @@ internal static class DefaultEnemyAlertRules
         IDataManager dataManager
     )
     {
+        enemies.AddAddedRule(
+            new PredicateAlertRule<DecodedEnemy>(
+                (cur, _) =>
+                {
+                    EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
+                    return settings.Spawned && cur.Enabled != 0 && cur.MaxHp > 0 && cur.SlotId > 0;
+                },
+                cur =>
+                {
+                    string roomName = ResolveRoomName(cur.RoomId, dataManager.InGameScenario.ScenarioName);
+                    return new AlertNotification(
+                        "Entity Spawned",
+                        $"{cur.Name} spawned in {roomName}!",
+                        AlertLevel.Info
+                    );
+                }
+            )
+        );
+
         enemies.AddRule(
             new PredicateAlertRule<DecodedEnemy>(
                 (cur, prev) =>
@@ -43,6 +60,25 @@ internal static class DefaultEnemyAlertRules
                 {
                     EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
                     return settings.Killed && cur.CurHp == 0 && (prev?.CurHp ?? 0) > 0 && prev?.Enabled != 0;
+                },
+                cur =>
+                {
+                    string roomName = ResolveRoomName(cur.RoomId, dataManager.InGameScenario.ScenarioName);
+                    return new AlertNotification(
+                        "Entity Killed",
+                        $"{cur.Name} in {roomName} was killed!",
+                        AlertLevel.Info
+                    );
+                }
+            )
+        );
+
+        enemies.AddRemovedRule(
+            new PredicateAlertRule<DecodedEnemy>(
+                (cur, _) =>
+                {
+                    EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
+                    return settings.Killed && cur.CurHp <= 1;
                 },
                 cur =>
                 {
@@ -95,14 +131,6 @@ internal static class DefaultEnemyAlertRules
         );
     }
 
-    private static string ResolveRoomName(byte roomId, string scenarioName)
-    {
-        if (
-            !string.IsNullOrEmpty(scenarioName)
-            && EnumUtility.TryParseByValueOrMember(scenarioName, out Scenario scenarioEnum)
-        )
-            return scenarioEnum.GetRoomName(roomId);
-
-        return $"Room {roomId}";
-    }
+    private static string ResolveRoomName(byte roomId, string scenarioName) =>
+        AlertRuleHelpers.ResolveRoomName(roomId, scenarioName);
 }

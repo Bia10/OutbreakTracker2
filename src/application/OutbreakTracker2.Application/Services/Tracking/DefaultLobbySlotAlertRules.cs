@@ -59,16 +59,16 @@ internal static class DefaultLobbySlotAlertRules
         );
     }
 
-    private static bool IsNewActiveLobbyGame(DecodedLobbySlot cur, DecodedLobbySlot? prev) =>
+    private static bool IsNewActiveLobbyGame(in DecodedLobbySlot cur, in DecodedLobbySlot? prev) =>
         IsActiveLobbyGame(cur) && !IsActiveLobbyGame(prev);
 
-    private static bool IsActiveLobbyGame(DecodedLobbySlot? slot) =>
-        slot is not null
-        && slot.SlotNumber >= 0
-        && slot.MaxPlayers > 0
-        && !string.IsNullOrWhiteSpace(slot.Title)
-        && !string.IsNullOrWhiteSpace(slot.Status)
-        && !string.Equals(slot.Status, "Unknown", StringComparison.Ordinal);
+    private static bool IsActiveLobbyGame(in DecodedLobbySlot? slot) =>
+        slot is { } s
+        && s.SlotNumber >= 0
+        && s.MaxPlayers > 0
+        && !string.IsNullOrWhiteSpace(s.Title)
+        && !string.IsNullOrWhiteSpace(s.Status)
+        && !string.Equals(s.Status, "Unknown", StringComparison.Ordinal);
 
     private static bool MatchesFilter(string? value, string filter) =>
         !string.IsNullOrWhiteSpace(value)
@@ -105,9 +105,9 @@ internal static class DefaultLobbySlotAlertRules
         return false;
     }
 
-    private static string GetDisplayTitle(DecodedLobbySlot slot) =>
+    private static string GetDisplayTitle(in DecodedLobbySlot slot) =>
         string.IsNullOrWhiteSpace(slot.Title) ? "Untitled Lobby" : slot.Title;
 
-    private static string GetDisplayScenario(DecodedLobbySlot slot) =>
+    private static string GetDisplayScenario(in DecodedLobbySlot slot) =>
         string.IsNullOrWhiteSpace(slot.ScenarioId) ? "Unknown scenario" : slot.ScenarioId;
 }
