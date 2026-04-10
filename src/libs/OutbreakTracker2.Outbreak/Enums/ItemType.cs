@@ -418,10 +418,10 @@ public enum ItemType : short
     [EnumMember(Value = "Staff Room Key")]
     StaffRoomKey = 10100,
 
-    [EnumMember(Value = "Key with a Red Tag (?? OB)")]
+    [EnumMember(Value = "Key with a Red Tag")]
     KeyWithRedTagOb = 10101,
 
-    [EnumMember(Value = "Key with a Blue Tag (?? OB)")]
+    [EnumMember(Value = "Key with a Blue Tag")]
     KeyWithBlueTagOb = 10102,
 
     [EnumMember(Value = "Forklift Key")]
@@ -443,7 +443,7 @@ public enum ItemType : short
     Detonator = 10108,
 
     // 10150: Notes
-    [EnumMember(Value = "Newspaper (?? OB)")]
+    [EnumMember(Value = "Newspaper")]
     NewspaperOb = 10150,
 
     // 10206-10211: Keys/Story Items
@@ -462,7 +462,7 @@ public enum ItemType : short
     [EnumMember(Value = "Security Room Card Key")]
     SecurityRoomCardKey = 10210,
 
-    [EnumMember(Value = "Red Jewel (?? HF)")]
+    [EnumMember(Value = "Red Jewel")]
     RedJewelHf = 10211,
 
     // 10600-10614: Keys/Story Items
@@ -512,13 +512,13 @@ public enum ItemType : short
     UnknownItem10614 = 10614,
 
     // 10650-10652: Notes
-    [EnumMember(Value = "Newspaper 1 (?? EOTR)")]
+    [EnumMember(Value = "Newspaper 1")]
     Newspaper1Eotr = 10650,
 
-    [EnumMember(Value = "Newspaper 2 (?? EOTR)")]
+    [EnumMember(Value = "Newspaper 2")]
     Newspaper2Eotr = 10651,
 
-    [EnumMember(Value = "Newspaper 3 (?? EOTR)")]
+    [EnumMember(Value = "Newspaper 3")]
     Newspaper3Eotr = 10652,
 
     // 11000-11010: Keys/Story Items
@@ -531,7 +531,7 @@ public enum ItemType : short
     [EnumMember(Value = "Ventilation Tower Key")]
     VentilationTowerKey = 11002,
 
-    [EnumMember(Value = "Valve Handle (?? UB)")]
+    [EnumMember(Value = "Valve Handle")]
     ValveHandleUb = 11003,
 
     [EnumMember(Value = "Repair Tape")]
@@ -549,20 +549,20 @@ public enum ItemType : short
     [EnumMember(Value = "Model Train Wheel")]
     ModelTrainWheel = 11008,
 
-    [EnumMember(Value = "Blood Pack (?? UB)(already used)")]
+    [EnumMember(Value = "Blood Pack (already used)")]
     BloodPackUbAlreadyUsed = 11009,
 
-    [EnumMember(Value = "Blood Pack (?? UB)")]
+    [EnumMember(Value = "Blood Pack")]
     BloodPackUb = 11010,
 
     // 11050-11052: Notes
-    [EnumMember(Value = "Newspaper 1 (?? UB)")]
+    [EnumMember(Value = "Newspaper 1")]
     Newspaper1Ub = 11050,
 
-    [EnumMember(Value = "Newspaper 2 (?? UB)")]
+    [EnumMember(Value = "Newspaper 2")]
     Newspaper2Ub = 11051,
 
-    [EnumMember(Value = "Newspaper 3 (?? UB)")]
+    [EnumMember(Value = "Newspaper 3")]
     Newspaper3Ub = 11052,
 
     // 11500-11515: Keys/Story Items
@@ -638,10 +638,10 @@ public enum ItemType : short
     Pendant = 12605,
 
     // 12800-12807: Keys/Story Items
-    [EnumMember(Value = "Blood pack (?? TH)(already used)")]
+    [EnumMember(Value = "Blood Pack (already used)")]
     BloodPackThAlreadyUsed = 12800,
 
-    [EnumMember(Value = "Blood pack (?? TH)")]
+    [EnumMember(Value = "Blood Pack")]
     BloodPackTh = 12801,
 
     [EnumMember(Value = "Unknown12802")]
@@ -653,10 +653,10 @@ public enum ItemType : short
     [EnumMember(Value = "Unknown12804")]
     Unknown12804 = 12804,
 
-    [EnumMember(Value = "Level 1 Card Key (?? TH)")]
+    [EnumMember(Value = "Level 1 Card Key")]
     Level1CardKeyTh = 12805,
 
-    [EnumMember(Value = "Level 2 Card Key (?? TH)")]
+    [EnumMember(Value = "Level 2 Card Key")]
     Level2CardKeyTh = 12806,
 
     [EnumMember(Value = "Chain Key")]
@@ -694,7 +694,7 @@ public enum ItemType : short
     [EnumMember(Value = "Turntable Key")]
     TurntableKey = 13506,
 
-    [EnumMember(Value = "Valve Handle (?? BFP)")]
+    [EnumMember(Value = "Valve Handle")]
     ValveHandleBfp = 13507,
 
     [EnumMember(Value = "Hand Burner")]
@@ -739,7 +739,7 @@ public enum ItemType : short
     [EnumMember(Value = "Brass Spectacles")]
     BrassSpectacles = 14100,
 
-    [EnumMember(Value = "Card Key (?? DD)")]
+    [EnumMember(Value = "Card Key")]
     CardKeyDd = 14101,
 
     [EnumMember(Value = "V-Poison")]
@@ -760,15 +760,15 @@ public enum ItemType : short
     [EnumMember(Value = "T-Blood")]
     TBlood = 14107,
 
-    [EnumMember(Value = "Red Jewel (?? DD)")]
+    [EnumMember(Value = "Red Jewel")]
     RedJewelDd = 14108,
 
-    [EnumMember(Value = "Blue Jewel (?? DD)")]
+    [EnumMember(Value = "Blue Jewel")]
     BlueJewelDd = 14109,
 
     [EnumMember(Value = "P-Base(depleted)")]
     PBaseDepleted = 14110,
 
-    [EnumMember(Value = "Key with a Red Tag (?? DD)")]
+    [EnumMember(Value = "Key with a Red Tag")]
     KeyWithRedTagDd = 14111,
 }

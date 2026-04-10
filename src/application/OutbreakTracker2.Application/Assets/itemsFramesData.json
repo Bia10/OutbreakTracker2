@@ -848,14 +848,14 @@
       "height": 48
     },
     {
-      "name": "File One/Key with a Red Tag (?? OB)",
+      "name": "File One/Key with a Red Tag",
       "x": 1392,
       "y": 96,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File One/Key with a Blue Tag (?? OB)",
+      "name": "File One/Key with a Blue Tag",
       "x": 1440,
       "y": 96,
       "width": 48,
@@ -897,7 +897,7 @@
       "height": 48
     },
     {
-      "name": "File One/Newspaper (?? OB)",
+      "name": "File One/Newspaper",
       "x": 1728,
       "y": 96,
       "width": 48,
@@ -939,35 +939,35 @@
       "height": 48
     },
     {
-      "name": "File One/Red Jewel (?? HF)",
+      "name": "File One/Red Jewel",
       "x": 1968,
       "y": 96,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File One/Blood pack (?? TH)(already used)",
+      "name": "File One/Blood Pack (already used)",
       "x": 0,
       "y": 144,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File One/Blood pack (?? TH)",
+      "name": "File One/Blood Pack",
       "x": 0,
       "y": 144,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File One/Level 1 Card Key (?? TH)",
+      "name": "File One/Level 1 Card Key",
       "x": 48,
       "y": 144,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File One/Level 2 Card Key (?? TH)",
+      "name": "File One/Level 2 Card Key",
       "x": 96,
       "y": 144,
       "width": 48,
@@ -1051,7 +1051,7 @@
       "height": 48
     },
     {
-      "name": "File One/Valve Handle (?? BFP)",
+      "name": "File One/Valve Handle",
       "x": 624,
       "y": 144,
       "width": 48,
@@ -1093,7 +1093,7 @@
       "height": 48
     },
     {
-      "name": "File One/Card Key (?? DD)",
+      "name": "File One/Card Key",
       "x": 912,
       "y": 144,
       "width": 48,
@@ -1142,14 +1142,7 @@
       "height": 48
     },
     {
-      "name": "File One/Red Jewel (?? DD)",
-      "x": 1248,
-      "y": 144,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File One/Blue Jewel (?? DD)",
+      "name": "File One/Blue Jewel",
       "x": 1296,
       "y": 144,
       "width": 48,
@@ -1158,13 +1151,6 @@
     {
       "name": "File One/P-Base(depleted)",
       "x": 1344,
-      "y": 144,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File One/Key with a Red Tag (?? DD)",
-      "x": 1392,
       "y": 144,
       "width": 48,
       "height": 48
@@ -2087,21 +2073,21 @@
       "height": 48
     },
     {
-      "name": "File Two/Newspaper 1 (?? EOTR)",
+      "name": "File Two/Newspaper 1",
       "x": 1296,
       "y": 288,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File Two/Newspaper 2 (?? EOTR)",
+      "name": "File Two/Newspaper 2",
       "x": 1296,
       "y": 288,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File Two/Newspaper 3 (?? EOTR)",
+      "name": "File Two/Newspaper 3",
       "x": 1296,
       "y": 288,
       "width": 48,
@@ -2129,7 +2115,7 @@
       "height": 48
     },
     {
-      "name": "File Two/Valve Handle (?? UB)",
+      "name": "File Two/Valve Handle",
       "x": 1488,
       "y": 288,
       "width": 48,
@@ -2171,29 +2157,8 @@
       "height": 48
     },
     {
-      "name": "File Two/Blood Pack (?? UB)",
+      "name": "File Two/Blood Pack",
       "x": 1776,
-      "y": 288,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Newspaper 1 (?? UB)",
-      "x": 1296,
-      "y": 288,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Newspaper 2 (?? UB)",
-      "x": 1296,
-      "y": 288,
-      "width": 48,
-      "height": 48
-    },
-    {
-      "name": "File Two/Newspaper 3 (?? UB)",
-      "x": 1296,
       "y": 288,
       "width": 48,
       "height": 48
