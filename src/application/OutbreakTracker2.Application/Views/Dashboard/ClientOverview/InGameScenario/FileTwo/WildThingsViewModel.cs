@@ -25,6 +25,9 @@ public sealed partial class WildThingsViewModel : ObservableObject
     [ObservableProperty]
     private string _passWildThingsDisplay = string.Empty;
 
+    [ObservableProperty]
+    private string _wtGateDisplay = string.Empty;
+
     public void Update(DecodedInGameScenario scenario)
     {
         if (!IsValidScenario(scenario.ScenarioName))
@@ -36,6 +39,7 @@ public sealed partial class WildThingsViewModel : ObservableObject
 
         WildThingsTimeDisplay = GetWildThingsTimeDisplay();
         PassWildThingsDisplay = CalculatePassWildThingsDisplay(scenario.GasRandom);
+        WtGateDisplay = scenario.WTGateMHp > 0 ? $"{scenario.WTGateHp}/{scenario.WTGateMHp}" : string.Empty;
     }
 
     private string CalculatePassWildThingsDisplay(int gasRandom)

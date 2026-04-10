@@ -42,6 +42,15 @@ public sealed class InGameScenarioReader(IGameClient gameClient, IEEmemAddressRe
     private short GetWildThingsTime() =>
         ReadValue(InGameScenarioOffsets.WildThingsTime.File1, InGameScenarioOffsets.WildThingsTime.File2, (short)-1);
 
+    private short GetFlashbackTime() =>
+        ReadValue(InGameScenarioOffsets.FlashbackTime.File1, InGameScenarioOffsets.FlashbackTime.File2, (short)-1);
+
+    private ushort GetWTGateMHp() =>
+        ReadValue(InGameScenarioOffsets.WTGateMHp.File1, InGameScenarioOffsets.WTGateMHp.File2, (ushort)0);
+
+    private ushort GetWTGateHp() =>
+        ReadValue(InGameScenarioOffsets.WTGateHp.File1, InGameScenarioOffsets.WTGateHp.File2, (ushort)0);
+
     private short GetEscapeTime() =>
         ReadValue(InGameScenarioOffsets.EscapeTime.File1, InGameScenarioOffsets.EscapeTime.File2, (short)-1);
 
@@ -213,6 +222,9 @@ public sealed class InGameScenarioReader(IGameClient gameClient, IEEmemAddressRe
             Status = GetScenarioStatus(),
             PlayerCount = GetPlayerCount(),
             WildThingsTime = GetWildThingsTime(),
+            FlashbackTime = GetFlashbackTime(),
+            WTGateMHp = GetWTGateMHp(),
+            WTGateHp = GetWTGateHp(),
             EscapeTime = GetEscapeTime(),
             FightTime = GetDesperateTimesFightTime(),
             FightTime2 = GetDesperateTimesFightTime2(),

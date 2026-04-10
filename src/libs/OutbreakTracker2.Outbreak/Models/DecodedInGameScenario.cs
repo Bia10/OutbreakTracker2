@@ -27,6 +27,18 @@ public sealed record DecodedInGameScenario
     public short WildThingsTime { get; init; }
 
     [JsonInclude]
+    [JsonPropertyName(nameof(WTGateMHp))]
+    public ushort WTGateMHp { get; init; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(WTGateHp))]
+    public ushort WTGateHp { get; init; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(FlashbackTime))]
+    public short FlashbackTime { get; init; }
+
+    [JsonInclude]
     [JsonPropertyName(nameof(EscapeTime))]
     public short EscapeTime { get; init; }
 

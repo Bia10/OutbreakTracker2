@@ -39,6 +39,9 @@ internal static class InGameScenarioOffsets
     public static readonly (nint[] File1, nint[] File2) Pass4 = ([FileOnePtrs.Pass4], [FileTwoPtrs.Pass4]);
 
     public static readonly (nint[] File1, nint[] File2) WildThingsTime = ([], [FileTwoPtrs.WildThingsTime]);
+    public static readonly (nint[] File1, nint[] File2) WTGateMHp = ([], [FileTwoPtrs.WTGateMHp]);
+    public static readonly (nint[] File1, nint[] File2) WTGateHp = ([], [FileTwoPtrs.WTGateHp]);
+    public static readonly (nint[] File1, nint[] File2) FlashbackTime = ([], [FileTwoPtrs.FlashbackTime]);
     public static readonly (nint[] File1, nint[] File2) EscapeTime = ([], [FileTwoPtrs.EscapeTime]);
     public static readonly (nint[] File1, nint[] File2) DesperateTimesFightTime = (
         [],
