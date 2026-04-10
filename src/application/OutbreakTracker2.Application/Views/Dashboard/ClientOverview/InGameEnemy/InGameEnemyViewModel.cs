@@ -181,6 +181,9 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
         //if (slotId is < 0 or >= GameConstants.MaxEnemies2)
         //return $"Invalid enemy SlotId({slotId})";
 
+        if (nameId == 0)
+            return "Empty";
+
         bool enemyTypeParsed = EnumUtility.TryParseByValueOrMember(nameId, out EnemyType enemyType);
         if (!enemyTypeParsed)
             return $"Failed to parse enemyType for nameId {nameId}";
@@ -230,6 +233,9 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
     {
         // if (slotId is < 0 or >= GameConstants.MaxEnemies2)
         // return Color.FromArgb(255, 0, 0, 0);
+
+        if (nameId == 0)
+            return Color.FromArgb(255, 0, 0, 0);
 
         bool enemyTypeParsed = EnumUtility.TryParseByValueOrMember(nameId, out EnemyType enemyType);
         if (!enemyTypeParsed)
