@@ -36,7 +36,7 @@ public sealed class TrackerRegistry : ITrackerRegistry, IDisposable
 
         DefaultPlayerAlertRules.Register(Players, settingsService, dataManager);
         DefaultEnemyAlertRules.Register(Enemies, settingsService, dataManager);
-        DefaultDoorAlertRules.Register(Doors, settingsService);
+        DefaultDoorAlertRules.Register(Doors, settingsService, dataManager);
         DefaultLobbySlotAlertRules.Register(LobbySlots, settingsService);
 
         AllAlerts = Observable.Merge(Enemies.Alerts, Doors.Alerts, Players.Alerts, gatedLobbyAlerts);

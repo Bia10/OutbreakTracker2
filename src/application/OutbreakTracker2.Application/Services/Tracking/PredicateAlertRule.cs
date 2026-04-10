@@ -2,7 +2,7 @@
 
 namespace OutbreakTracker2.Application.Services.Tracking;
 
-public sealed class PredicateAlertRule<T> : AlertRule<T>
+public sealed class PredicateAlertRule<T> : IAlertRule<T>
     where T : IHasId
 {
     private readonly Func<T, T?, bool> _condition;
@@ -14,7 +14,7 @@ public sealed class PredicateAlertRule<T> : AlertRule<T>
         _factory = factory ?? throw new ArgumentNullException(nameof(factory));
     }
 
-    public override bool ShouldTrigger(T current, T? previous) => _condition(current, previous);
+    public bool ShouldTrigger(T current, T? previous) => _condition(current, previous);
 
-    public override AlertNotification CreateNotification(T current) => _factory(current);
+    public AlertNotification CreateNotification(T current) => _factory(current);
 }

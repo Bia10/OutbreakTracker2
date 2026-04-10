@@ -6,8 +6,9 @@ namespace OutbreakTracker2.Application.Services.Tracking;
 public sealed class EntityTracker<T> : IEntityTracker<T>, IDisposable
     where T : IHasId
 {
-    private readonly List<AlertRule<T>> _rules = [];
-    private readonly List<AlertRule<T>> _removedRules = [];
+    private readonly List<IAlertRule<T>> _rules = [];
+    private readonly List<IAlertRule<T>> _addedRules = [];
+    private readonly List<IAlertRule<T>> _removedRules = [];
     private readonly Subject<AlertNotification> _alertSubject = new();
     private readonly IDisposable _subscription;
 
@@ -23,23 +24,31 @@ public sealed class EntityTracker<T> : IEntityTracker<T>, IDisposable
         // removed entities in a single pass rather than one callback per entity.
         _subscription = changes.Diffs.Subscribe(diff =>
         {
+            foreach (T added in diff.Added)
+            foreach (IAlertRule<T> rule in _addedRules)
+                if (rule.ShouldTrigger(added, default))
+                    _alertSubject.OnNext(rule.CreateNotification(added));
+
             foreach (EntityChange<T> change in diff.Changed)
-            foreach (AlertRule<T> rule in _rules)
+            foreach (IAlertRule<T> rule in _rules)
                 if (rule.ShouldTrigger(change.Current, change.Previous))
                     _alertSubject.OnNext(rule.CreateNotification(change.Current));
 
             // Removed rules receive (current: snapshot, previous: snapshot) — both the same
             // last-known value so rules can inspect the entity state at the moment of removal.
             foreach (T removed in diff.Removed)
-            foreach (AlertRule<T> rule in _removedRules)
+            foreach (IAlertRule<T> rule in _removedRules)
                 if (rule.ShouldTrigger(removed, removed))
                     _alertSubject.OnNext(rule.CreateNotification(removed));
         });
     }
 
-    public void AddRule(AlertRule<T> rule) => _rules.Add(rule ?? throw new ArgumentNullException(nameof(rule)));
+    public void AddRule(IAlertRule<T> rule) => _rules.Add(rule ?? throw new ArgumentNullException(nameof(rule)));
 
-    public void AddRemovedRule(AlertRule<T> rule) =>
+    public void AddAddedRule(IAlertRule<T> rule) =>
+        _addedRules.Add(rule ?? throw new ArgumentNullException(nameof(rule)));
+
+    public void AddRemovedRule(IAlertRule<T> rule) =>
         _removedRules.Add(rule ?? throw new ArgumentNullException(nameof(rule)));
 
     public void Dispose()
