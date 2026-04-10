@@ -1,11 +1,18 @@
-﻿using OutbreakTracker2.Application.Services.Settings;
+﻿using OutbreakTracker2.Application.Services.Data;
+using OutbreakTracker2.Application.Services.Settings;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Services.Tracking;
 
 internal static class DefaultPlayerAlertRules
 {
-    public static void Register(IEntityTracker<DecodedInGamePlayer> players, IAppSettingsService settingsService)
+    public static void Register(
+        IEntityTracker<DecodedInGamePlayer> players,
+        IAppSettingsService settingsService,
+        IDataManager dataManager
+    )
     {
         players.AddRule(
             new PredicateAlertRule<DecodedInGamePlayer>(
@@ -181,7 +188,11 @@ internal static class DefaultPlayerAlertRules
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
                     return settings.RoomChange && cur.IsInGame && prev is not null && cur.RoomId != prev.RoomId;
                 },
-                cur => new AlertNotification("Room Change", $"{cur.Name} moved to room {cur.RoomId}.", AlertLevel.Info)
+                cur =>
+                {
+                    string roomName = ResolveRoomName(cur.RoomId, dataManager.InGameScenario.ScenarioName);
+                    return new AlertNotification("Room Change", $"{cur.Name} moved to {roomName}.", AlertLevel.Info);
+                }
             )
         );
 
@@ -190,7 +201,10 @@ internal static class DefaultPlayerAlertRules
                 (cur, prev) =>
                 {
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
-                    return settings.Joined && cur.IsInGame && !(prev?.IsInGame ?? true);
+                    return settings.Joined
+                        && cur.IsInGame
+                        && !(prev?.IsInGame ?? true)
+                        && !IsTransitionalStatus(dataManager.InGameScenario.Status);
                 },
                 cur => new AlertNotification("Player Joined", $"{cur.Name} joined the game.", AlertLevel.Info)
             )
@@ -201,10 +215,31 @@ internal static class DefaultPlayerAlertRules
                 (cur, prev) =>
                 {
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
-                    return settings.Left && !cur.IsInGame && (prev?.IsInGame ?? false);
+                    return settings.Left
+                        && !cur.IsInGame
+                        && (prev?.IsInGame ?? false)
+                        && !IsTransitionalStatus(dataManager.InGameScenario.Status);
                 },
                 cur => new AlertNotification("Player Left", $"{cur.Name} left the game.", AlertLevel.Warning)
             )
         );
+    }
+
+    private static bool IsTransitionalStatus(ScenarioStatus status) =>
+        status
+            is ScenarioStatus.TransitionLoading
+                or ScenarioStatus.CinematicPlaying
+                or ScenarioStatus.GenericLoading
+                or ScenarioStatus.PostIntroLoading;
+
+    private static string ResolveRoomName(short roomId, string scenarioName)
+    {
+        if (
+            !string.IsNullOrEmpty(scenarioName)
+            && EnumUtility.TryParseByValueOrMember(scenarioName, out Scenario scenarioEnum)
+        )
+            return scenarioEnum.GetRoomName(roomId);
+
+        return $"Room {roomId}";
     }
 }

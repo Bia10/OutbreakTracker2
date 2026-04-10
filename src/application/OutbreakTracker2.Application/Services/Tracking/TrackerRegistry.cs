@@ -34,8 +34,8 @@ public sealed class TrackerRegistry : ITrackerRegistry, IDisposable
             .Where(static state => state.IsAtLobby)
             .Select(static state => state.Alert);
 
-        DefaultPlayerAlertRules.Register(Players, settingsService);
-        DefaultEnemyAlertRules.Register(Enemies, settingsService);
+        DefaultPlayerAlertRules.Register(Players, settingsService, dataManager);
+        DefaultEnemyAlertRules.Register(Enemies, settingsService, dataManager);
         DefaultDoorAlertRules.Register(Doors, settingsService);
         DefaultLobbySlotAlertRules.Register(LobbySlots, settingsService);
 

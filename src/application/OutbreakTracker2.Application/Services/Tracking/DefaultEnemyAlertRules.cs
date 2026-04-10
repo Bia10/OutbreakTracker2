@@ -1,11 +1,18 @@
-﻿using OutbreakTracker2.Application.Services.Settings;
+﻿using OutbreakTracker2.Application.Services.Data;
+using OutbreakTracker2.Application.Services.Settings;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Services.Tracking;
 
 internal static class DefaultEnemyAlertRules
 {
-    public static void Register(IEntityTracker<DecodedEnemy> enemies, IAppSettingsService settingsService)
+    public static void Register(
+        IEntityTracker<DecodedEnemy> enemies,
+        IAppSettingsService settingsService,
+        IDataManager dataManager
+    )
     {
         enemies.AddRule(
             new PredicateAlertRule<DecodedEnemy>(
@@ -18,11 +25,15 @@ internal static class DefaultEnemyAlertRules
                         && cur.SlotId > 0
                         && (prev?.Enabled == 0);
                 },
-                cur => new AlertNotification(
-                    "Mob Spawned",
-                    $"{cur.Name} spawned in room {cur.RoomId}!",
-                    AlertLevel.Info
-                )
+                cur =>
+                {
+                    string roomName = ResolveRoomName(cur.RoomId, dataManager.InGameScenario.ScenarioName);
+                    return new AlertNotification(
+                        "Entity Spawned",
+                        $"{cur.Name} spawned in {roomName}!",
+                        AlertLevel.Info
+                    );
+                }
             )
         );
 
@@ -33,11 +44,15 @@ internal static class DefaultEnemyAlertRules
                     EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
                     return settings.Killed && cur.CurHp == 0 && (prev?.CurHp ?? 0) > 0 && prev?.Enabled != 0;
                 },
-                cur => new AlertNotification(
-                    "Mob Killed",
-                    $"{cur.Name} in room {cur.RoomId} was killed!",
-                    AlertLevel.Info
-                )
+                cur =>
+                {
+                    string roomName = ResolveRoomName(cur.RoomId, dataManager.InGameScenario.ScenarioName);
+                    return new AlertNotification(
+                        "Entity Killed",
+                        $"{cur.Name} in {roomName} was killed!",
+                        AlertLevel.Info
+                    );
+                }
             )
         );
 
@@ -48,11 +63,15 @@ internal static class DefaultEnemyAlertRules
                     EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
                     return settings.Despawned && cur.Enabled == 0 && (prev?.Enabled ?? 0) != 0;
                 },
-                cur => new AlertNotification(
-                    "Mob Despawned",
-                    $"{cur.Name} despawned from room {cur.RoomId}.",
-                    AlertLevel.Info
-                )
+                cur =>
+                {
+                    string roomName = ResolveRoomName(cur.RoomId, dataManager.InGameScenario.ScenarioName);
+                    return new AlertNotification(
+                        "Entity Despawned",
+                        $"{cur.Name} despawned from {roomName}.",
+                        AlertLevel.Info
+                    );
+                }
             )
         );
 
@@ -63,12 +82,27 @@ internal static class DefaultEnemyAlertRules
                     EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
                     return settings.RoomChange && cur.RoomId != (prev?.RoomId ?? cur.RoomId) && cur.Enabled != 0;
                 },
-                cur => new AlertNotification(
-                    "Mob Room Change",
-                    $"{cur.Name} moved to room {cur.RoomId}.",
-                    AlertLevel.Info
-                )
+                cur =>
+                {
+                    string roomName = ResolveRoomName(cur.RoomId, dataManager.InGameScenario.ScenarioName);
+                    return new AlertNotification(
+                        "Entity Room Change",
+                        $"{cur.Name} moved to {roomName}.",
+                        AlertLevel.Info
+                    );
+                }
             )
         );
+    }
+
+    private static string ResolveRoomName(byte roomId, string scenarioName)
+    {
+        if (
+            !string.IsNullOrEmpty(scenarioName)
+            && EnumUtility.TryParseByValueOrMember(scenarioName, out Scenario scenarioEnum)
+        )
+            return scenarioEnum.GetRoomName(roomId);
+
+        return $"Room {roomId}";
     }
 }
