@@ -24,11 +24,25 @@ mc:Ignorable="d">
             <StackPanel Spacing="4">
 
                 <Grid>
-                    <TextBlock
+                    <StackPanel
                     HorizontalAlignment="Left"
-                    FontSize="13"
-                    FontWeight="Bold"
-                    Text="Door" />
+                    Orientation="Horizontal"
+                    Spacing="4">
+                        <TextBlock
+                        FontSize="13"
+                        FontWeight="Bold"
+                        Text="Door" />
+                        <Border
+                        Padding="4,1"
+                        Background="{DynamicResource SukiCardBackground}"
+                        CornerRadius="3">
+                            <TextBlock
+                            FontSize="11"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource SukiLowText}"
+                            Text="{Binding SlotId, StringFormat='#{0}'}" />
+                        </Border>
+                    </StackPanel>
                     <avalonia:MaterialIcon
                     Width="15"
                     Height="15"

@@ -53,6 +53,8 @@ public sealed partial class InGameDoorViewModel : ObservableObject
 
     public Ulid UniqueId { get; private set; }
 
+    public int SlotId { get; private set; }
+
     /// <summary>Raised when a door property changes, carrying the glow color for border animation.</summary>
     public event EventHandler<GlowEventArgs>? GlowTriggered;
 
@@ -64,6 +66,7 @@ public sealed partial class InGameDoorViewModel : ObservableObject
     public InGameDoorViewModel(DecodedDoor doorData)
     {
         UniqueId = doorData.Id;
+        SlotId = doorData.SlotId;
         Update(doorData);
     }
 
