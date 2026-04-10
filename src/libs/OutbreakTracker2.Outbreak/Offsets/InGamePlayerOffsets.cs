@@ -8,6 +8,12 @@ internal static class InGamePlayerOffsets
         [FileOnePtrs.CharacterEnabledOffset],
         [FileTwoPtrs.CharacterEnabledOffset]
     );
+
+    // File 1 does not have a dedicated loading status offset (0x546 in File 1 is MaxHP)
+    public static readonly (nint[] File1, nint[] File2) CharacterLoadingStatusOffset = (
+        [],
+        [FileTwoPtrs.CharacterLoadingStatusOffset]
+    );
     public static readonly (nint[] File1, nint[] File2) CharacterInGameOffset = (
         [FileOnePtrs.CharacterInGameOffset],
         [FileTwoPtrs.CharacterInGameOffset]

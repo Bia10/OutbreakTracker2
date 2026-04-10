@@ -135,4 +135,8 @@ public sealed record DecodedInGamePlayer : IHasId
     [JsonInclude]
     [JsonPropertyName(nameof(SlotIndex))]
     public int SlotIndex { get; init; }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(LoadingStatus))]
+    public byte LoadingStatus { get; init; }
 }

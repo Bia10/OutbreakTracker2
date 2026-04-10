@@ -30,6 +30,9 @@ public sealed partial class InGamePlayerViewModel : ObservableObject
     private bool _isInGame;
 
     [ObservableProperty]
+    private bool _isLoading;
+
+    [ObservableProperty]
     private PlayerGaugesViewModel _gauges;
 
     [ObservableProperty]
@@ -94,6 +97,7 @@ public sealed partial class InGamePlayerViewModel : ObservableObject
         CharacterType = player.Type;
         IsEnabled = player.IsEnabled;
         IsInGame = player.IsInGame;
+        IsLoading = player.LoadingStatus != 0;
 
         Gauges.Update(
             player.CurHealth,

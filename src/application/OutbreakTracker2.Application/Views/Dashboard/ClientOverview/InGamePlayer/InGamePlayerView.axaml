@@ -5,6 +5,7 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+xmlns:icons="using:Material.Icons.Avalonia"
 xmlns:inGamePlayer="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer"
 xmlns:inventory="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory"
 xmlns:converters="clr-namespace:OutbreakTracker2.Application.Converters"
@@ -47,6 +48,13 @@ mc:Ignorable="d">
                 FontWeight="Bold"
                 Text="{Binding CharacterName}"
                 TextTrimming="CharacterEllipsis" />
+                <TextBlock
+                IsVisible="{Binding IsLoading}"
+                VerticalAlignment="Center"
+                FontSize="10"
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource SukiLowText}"
+                Text="(Loading...)" />
                 <ContentControl VerticalAlignment="Center" Content="{Binding StatusEffects}" />
             </WrapPanel>
             <ContentControl Content="{Binding Gauges}" />

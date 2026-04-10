@@ -44,6 +44,14 @@ public sealed class InGamePlayerReader : ReaderBase, IInGamePlayerReader
         return ReadValue<bool>(basePlayerAddress, offsets);
     }
 
+    private byte GetLoadingStatus(nint basePlayerAddress)
+    {
+        ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.CharacterLoadingStatusOffset);
+        if (offsets.IsEmpty)
+            return 0;
+        return ReadValue<byte>(basePlayerAddress, offsets);
+    }
+
     private short GetRoomId(nint basePlayerAddress)
     {
         ReadOnlySpan<nint> offsets = GetFileSpecificOffsets(InGamePlayerOffsets.RoomIdOffset);
@@ -313,6 +321,7 @@ public sealed class InGamePlayerReader : ReaderBase, IInGamePlayerReader
                 Id = playerUlid,
                 IsEnabled = true,
                 IsInGame = GetIsInGame(basePlayerAddress),
+                LoadingStatus = GetLoadingStatus(basePlayerAddress),
                 RoomId = GetRoomId(basePlayerAddress),
                 CurHealth = curHealth,
                 MaxHealth = maxHealth,
