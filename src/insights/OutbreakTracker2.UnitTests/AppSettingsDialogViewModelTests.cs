@@ -54,6 +54,41 @@ public sealed class AppSettingsDialogViewModelTests
             );
     }
 
+    [Test]
+    public async Task Constructor_NormalizesLegacyScenarioFilter_ToExactScenarioSelection()
+    {
+        using FakeAppSettingsService settingsService = new(
+            new OutbreakTrackerSettings
+            {
+                AlertRules = new AlertRuleSettings
+                {
+                    Lobby = new LobbyAlertRuleSettings { ScenarioMatchCreated = true, ScenarioMatchFilter = "Wild" },
+                },
+            }
+        );
+
+        Type viewModelType = typeof(OutbreakTracker2.Application.App).Assembly.GetType(
+            "OutbreakTracker2.Application.Views.Settings.AppSettingsDialogViewModel",
+            throwOnError: true
+        )!;
+
+        object viewModel = Activator.CreateInstance(
+            viewModelType,
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+            binder: null,
+            args: [settingsService, CreateProxy<ISukiToastManager>(), CreateProxy<ISukiDialog>()],
+            culture: null
+        )!;
+
+        string? lobbyScenarioMatchFilter = (string?)
+            viewModelType.GetProperty("LobbyScenarioMatchFilter")!.GetValue(viewModel);
+        IReadOnlyList<string> lobbyScenarioOptions =
+            (IReadOnlyList<string>)viewModelType.GetProperty("LobbyScenarioOptions")!.GetValue(viewModel)!;
+
+        await Assert.That(lobbyScenarioMatchFilter).IsEqualTo("Wild things");
+        await Assert.That(lobbyScenarioOptions.Contains("Wild things")).IsTrue();
+    }
+
     private static T CreateProxy<T>()
         where T : class => DispatchProxy.Create<T, DefaultValueProxy>();
 

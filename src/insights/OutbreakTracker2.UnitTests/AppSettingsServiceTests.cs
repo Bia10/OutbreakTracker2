@@ -28,7 +28,7 @@ public sealed class AppSettingsServiceTests
                         NameMatchCreated = true,
                         NameMatchFilter = "Training",
                         ScenarioMatchCreated = true,
-                        ScenarioMatchFilter = "Wild",
+                        ScenarioMatchFilter = "Wild things",
                     },
                 },
             }
@@ -103,7 +103,7 @@ public sealed class AppSettingsServiceTests
                                                                                                 "NameMatchCreated": true,
                                                                                                 "NameMatchFilter": "Night",
                                                                                                 "ScenarioMatchCreated": true,
-                                                                                                "ScenarioMatchFilter": "Wild"
+                                                                                                                                                                                                "ScenarioMatchFilter": "Wild things"
                       }
                     }
                   }
@@ -121,7 +121,7 @@ public sealed class AppSettingsServiceTests
         await Assert.That(service.Current.AlertRules.Lobby.NameMatchCreated).IsTrue();
         await Assert.That(service.Current.AlertRules.Lobby.NameMatchFilter).IsEqualTo("Night");
         await Assert.That(service.Current.AlertRules.Lobby.ScenarioMatchCreated).IsTrue();
-        await Assert.That(service.Current.AlertRules.Lobby.ScenarioMatchFilter).IsEqualTo("Wild");
+        await Assert.That(service.Current.AlertRules.Lobby.ScenarioMatchFilter).IsEqualTo("Wild things");
         await Assert.That(File.Exists(environment.UserSettingsPath)).IsTrue();
 
         using JsonDocument jsonDocument = JsonDocument.Parse(await File.ReadAllTextAsync(environment.UserSettingsPath));
@@ -154,7 +154,7 @@ public sealed class AppSettingsServiceTests
                         NameMatchCreated = true,
                         NameMatchFilter = "City",
                         ScenarioMatchCreated = true,
-                        ScenarioMatchFilter = "Decisions",
+                        ScenarioMatchFilter = "Decisions, decisions",
                     },
                 },
             }

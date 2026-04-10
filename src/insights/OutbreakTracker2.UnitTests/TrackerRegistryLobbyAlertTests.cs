@@ -158,7 +158,7 @@ public sealed class TrackerRegistryLobbyAlertTests
                     {
                         GameCreated = false,
                         ScenarioMatchCreated = true,
-                        ScenarioMatchFilter = "Wild",
+                        ScenarioMatchFilter = "Wild things",
                     },
                 },
             }
@@ -168,6 +168,40 @@ public sealed class TrackerRegistryLobbyAlertTests
         dataManager.SetLobbyPresence(true);
         dataManager.SetLobbySlots([CreateInactiveSlot(slotId)]);
         dataManager.SetLobbySlots([CreateActiveSlot(slotId, 5, "Night Raid", "Wild Things")]);
+
+        await Assert.That(alerts.Count).IsEqualTo(1);
+        await Assert.That(alerts[0].Title).IsEqualTo("Tracked Lobby Scenario Created");
+    }
+
+    [Test]
+    public async Task LobbyScenarioMatchAlert_IsEmitted_ForLegacyPartialScenarioFilter()
+    {
+        using FakeDataManager dataManager = new();
+        using FakeAppSettingsService settingsService = new();
+        using TrackerRegistry trackerRegistry = new(dataManager, settingsService);
+
+        List<AlertNotification> alerts = [];
+        using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
+
+        settingsService.SetCurrent(
+            settingsService.Current with
+            {
+                AlertRules = settingsService.Current.AlertRules with
+                {
+                    Lobby = settingsService.Current.AlertRules.Lobby with
+                    {
+                        GameCreated = false,
+                        ScenarioMatchCreated = true,
+                        ScenarioMatchFilter = "Wild",
+                    },
+                },
+            }
+        );
+
+        Ulid slotId = Ulid.NewUlid();
+        dataManager.SetLobbyPresence(true);
+        dataManager.SetLobbySlots([CreateInactiveSlot(slotId)]);
+        dataManager.SetLobbySlots([CreateActiveSlot(slotId, 6, "Night Raid", "Wild things")]);
 
         await Assert.That(alerts.Count).IsEqualTo(1);
         await Assert.That(alerts[0].Title).IsEqualTo("Tracked Lobby Scenario Created");
