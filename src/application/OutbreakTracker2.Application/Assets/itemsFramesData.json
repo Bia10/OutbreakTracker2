@@ -50,7 +50,7 @@
       "height": 48
     },
     {
-      "name": "File One/Unknown(9)",
+      "name": "File One/Unused1",
       "x": 336,
       "y": 0,
       "width": 48,
@@ -414,7 +414,7 @@
       "height": 48
     },
     {
-      "name": "File One/Unknown(208)",
+      "name": "File One/Unused",
       "x": 576,
       "y": 48,
       "width": 48,
@@ -680,7 +680,7 @@
       "height": 48
     },
     {
-      "name": "File One/Unknown(402)",
+      "name": "File One/Coin holder(Jim's)(unused)",
       "x": 384,
       "y": 96,
       "width": 48,
@@ -694,7 +694,7 @@
       "height": 48
     },
     {
-      "name": "File One/Unknown(404)",
+      "name": "File One/Lock Pick (unused)",
       "x": 480,
       "y": 96,
       "width": 48,
@@ -848,14 +848,14 @@
       "height": 48
     },
     {
-      "name": "File One/Unknown(10101)",
+      "name": "File One/Key with a Red Tag (?? OB)",
       "x": 1392,
       "y": 96,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File One/Unknown(10102)",
+      "name": "File One/Key with a Blue Tag (?? OB)",
       "x": 1440,
       "y": 96,
       "width": 48,
@@ -897,7 +897,7 @@
       "height": 48
     },
     {
-      "name": "File One/Unknown(10150)",
+      "name": "File One/Newspaper (?? OB)",
       "x": 1728,
       "y": 96,
       "width": 48,
@@ -939,35 +939,35 @@
       "height": 48
     },
     {
-      "name": "File One/Unknown(10211)",
+      "name": "File One/Red Jewel (?? HF)",
       "x": 1968,
       "y": 96,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File One/Unknown(12800)",
+      "name": "File One/Blood pack (?? TH)(already used)",
       "x": 0,
       "y": 144,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File One/Unknown(12801)",
+      "name": "File One/Blood pack (?? TH)",
       "x": 0,
       "y": 144,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File One/Unknown(12805)",
+      "name": "File One/Level 1 Card Key (?? TH)",
       "x": 48,
       "y": 144,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File One/Unknown(12806)",
+      "name": "File One/Level 2 Card Key (?? TH)",
       "x": 96,
       "y": 144,
       "width": 48,
@@ -1051,7 +1051,7 @@
       "height": 48
     },
     {
-      "name": "File One/Unknown(13507)",
+      "name": "File One/Valve Handle (?? BFP)",
       "x": 624,
       "y": 144,
       "width": 48,
@@ -1093,7 +1093,7 @@
       "height": 48
     },
     {
-      "name": "File One/Unknown(14101)",
+      "name": "File One/Card Key (?? DD)",
       "x": 912,
       "y": 144,
       "width": 48,
@@ -1142,14 +1142,14 @@
       "height": 48
     },
     {
-      "name": "File One/Unknown(14108)",
+      "name": "File One/Red Jewel (?? DD)",
       "x": 1248,
       "y": 144,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File One/Unknown(14109)",
+      "name": "File One/Blue Jewel (?? DD)",
       "x": 1296,
       "y": 144,
       "width": 48,
@@ -1163,7 +1163,7 @@
       "height": 48
     },
     {
-      "name": "File One/Unknown(14111)",
+      "name": "File One/Key with a Red Tag (?? DD)",
       "x": 1392,
       "y": 144,
       "width": 48,
@@ -2087,21 +2087,21 @@
       "height": 48
     },
     {
-      "name": "File Two/Unknown(10650)",
+      "name": "File Two/Newspaper 1 (?? EOTR)",
       "x": 1296,
       "y": 288,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File Two/Unknown(10651)",
+      "name": "File Two/Newspaper 2 (?? EOTR)",
       "x": 1296,
       "y": 288,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File Two/Unknown(10652)",
+      "name": "File Two/Newspaper 3 (?? EOTR)",
       "x": 1296,
       "y": 288,
       "width": 48,
@@ -2129,7 +2129,7 @@
       "height": 48
     },
     {
-      "name": "File Two/Unknown(11003)",
+      "name": "File Two/Valve Handle (?? UB)",
       "x": 1488,
       "y": 288,
       "width": 48,
@@ -2143,7 +2143,7 @@
       "height": 48
     },
     {
-      "name": "File Two/Unknown(11005)",
+      "name": "File Two/Rubber Sheet(unused)",
       "x": 1584,
       "y": 288,
       "width": 48,
@@ -2171,28 +2171,28 @@
       "height": 48
     },
     {
-      "name": "File Two/Unknown(11010)",
+      "name": "File Two/Blood Pack (?? UB)",
       "x": 1776,
       "y": 288,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File Two/Unknown(11050)",
+      "name": "File Two/Newspaper 1 (?? UB)",
       "x": 1296,
       "y": 288,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File Two/Unknown(11051)",
+      "name": "File Two/Newspaper 2 (?? UB)",
       "x": 1296,
       "y": 288,
       "width": 48,
       "height": 48
     },
     {
-      "name": "File Two/Unknown(11052)",
+      "name": "File Two/Newspaper 3 (?? UB)",
       "x": 1296,
       "y": 288,
       "width": 48,

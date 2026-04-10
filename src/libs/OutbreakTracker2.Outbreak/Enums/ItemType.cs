@@ -35,7 +35,7 @@ public enum ItemType : short
     [EnumMember(Value = "Burst Handgun")]
     BurstHandgun = 8,
 
-    [EnumMember(Value = "Unused1(no name)")]
+    [EnumMember(Value = "Unused1")]
     Unused1 = 9,
 
     [EnumMember(Value = "Submachine Gun")]
@@ -74,7 +74,7 @@ public enum ItemType : short
     [EnumMember(Value = "UnknownItem21")]
     UnknownItem21 = 21,
 
-    [EnumMember(Value = "Unused22(no name)")]
+    [EnumMember(Value = "Unused22")]
     Unused22 = 22,
 
     [EnumMember(Value = "Grenade Launcher (BURST)")]
