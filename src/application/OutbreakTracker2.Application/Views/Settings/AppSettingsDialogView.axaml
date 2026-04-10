@@ -140,9 +140,11 @@ mc:Ignorable="d">
                                 <CheckBox Content="Any lobby game created" IsChecked="{Binding LobbyGameCreated}" />
                                 <CheckBox Content="Lobby title contains filter" IsChecked="{Binding LobbyNameMatchCreated}" />
                                 <TextBox IsEnabled="{Binding LobbyNameMatchCreated}" Text="{Binding LobbyNameMatchFilter, Mode=TwoWay}" Watermark="Example: Training" />
-                                <CheckBox Content="Scenario contains filter" IsChecked="{Binding LobbyScenarioMatchCreated}" />
-                                <TextBox IsEnabled="{Binding LobbyScenarioMatchCreated}" Text="{Binding LobbyScenarioMatchFilter, Mode=TwoWay}" Watermark="Example: Wild" />
-                                <TextBlock Opacity="0.8" Text="Filtered rules require non-empty text before settings can be saved." TextWrapping="Wrap" />
+                                <CheckBox Content="Exact scenario match" IsChecked="{Binding LobbyScenarioMatchCreated}" />
+                                <ComboBox IsEnabled="{Binding LobbyScenarioMatchCreated}"
+                                          ItemsSource="{Binding LobbyScenarioOptions}"
+                                          SelectedItem="{Binding LobbyScenarioMatchFilter, Mode=TwoWay}" />
+                                <TextBlock Opacity="0.8" Text="Lobby title matching still uses text. Scenario matching now uses an exact scenario selection from the known enum values." TextWrapping="Wrap" />
                             </StackPanel>
                         </suki:GlassCard>
 

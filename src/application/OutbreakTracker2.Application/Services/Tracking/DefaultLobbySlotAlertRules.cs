@@ -1,5 +1,7 @@
 ﻿using OutbreakTracker2.Application.Services.Settings;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Services.Tracking;
 
@@ -46,11 +48,11 @@ internal static class DefaultLobbySlotAlertRules
                     LobbyAlertRuleSettings settings = settingsService.Current.AlertRules.Lobby;
                     return settings.ScenarioMatchCreated
                         && IsNewActiveLobbyGame(cur, prev)
-                        && MatchesFilter(cur.ScenarioId, settings.ScenarioMatchFilter);
+                        && MatchesScenario(cur.ScenarioId, settings.ScenarioMatchFilter);
                 },
                 cur => new AlertNotification(
                     "Tracked Lobby Scenario Created",
-                    $"Slot {cur.SlotNumber} \"{GetDisplayTitle(cur)}\" opened for {GetDisplayScenario(cur)} and matches the configured scenario filter.",
+                    $"Slot {cur.SlotNumber} \"{GetDisplayTitle(cur)}\" opened for {GetDisplayScenario(cur)} and matches the configured scenario selection.",
                     AlertLevel.Info
                 )
             )
@@ -72,6 +74,36 @@ internal static class DefaultLobbySlotAlertRules
         !string.IsNullOrWhiteSpace(value)
         && !string.IsNullOrWhiteSpace(filter)
         && value.Contains(filter, StringComparison.OrdinalIgnoreCase);
+
+    private static bool MatchesScenario(string? currentScenario, string configuredScenario)
+    {
+        if (string.IsNullOrWhiteSpace(currentScenario) || string.IsNullOrWhiteSpace(configuredScenario))
+        {
+            return false;
+        }
+
+        if (
+            TryGetScenarioDisplayName(currentScenario, out string currentDisplayName)
+            && TryGetScenarioDisplayName(configuredScenario, out string configuredDisplayName)
+        )
+        {
+            return string.Equals(currentDisplayName, configuredDisplayName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return currentScenario.Contains(configuredScenario, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool TryGetScenarioDisplayName(string value, out string displayName)
+    {
+        if (EnumUtility.TryParseByValueOrMember(value, out Scenario scenario) && scenario != Scenario.Unknown)
+        {
+            displayName = EnumUtility.GetEnumString(scenario, Scenario.Unknown);
+            return true;
+        }
+
+        displayName = string.Empty;
+        return false;
+    }
 
     private static string GetDisplayTitle(DecodedLobbySlot slot) =>
         string.IsNullOrWhiteSpace(slot.Title) ? "Untitled Lobby" : slot.Title;

@@ -3,6 +3,8 @@ using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OutbreakTracker2.Application.Services.Settings;
+using OutbreakTracker2.Outbreak.Enums;
+using OutbreakTracker2.Outbreak.Utility;
 using SukiUI.Dialogs;
 using SukiUI.Toasts;
 
@@ -10,12 +12,16 @@ namespace OutbreakTracker2.Application.Views.Settings;
 
 internal sealed partial class AppSettingsDialogViewModel : ObservableObject
 {
+    private static readonly string[] LobbyScenarioOptionValues = CreateLobbyScenarioOptions();
+
     private readonly IAppSettingsService _settingsService;
     private readonly ISukiToastManager _toastManager;
     private readonly ISukiDialog _dialog;
     private bool _isLoadingSettings;
 
     public string UserSettingsPath { get; }
+
+    public IReadOnlyList<string> LobbyScenarioOptions { get; } = LobbyScenarioOptionValues;
 
     [ObservableProperty]
     private int _selectedTabIndex;
@@ -302,7 +308,7 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
             LobbyNameMatchCreated = lobby.NameMatchCreated;
             LobbyNameMatchFilter = lobby.NameMatchFilter ?? string.Empty;
             LobbyScenarioMatchCreated = lobby.ScenarioMatchCreated;
-            LobbyScenarioMatchFilter = lobby.ScenarioMatchFilter ?? string.Empty;
+            LobbyScenarioMatchFilter = NormalizeScenarioSelection(lobby.ScenarioMatchFilter);
         }
         finally
         {
@@ -355,7 +361,7 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
                     NameMatchCreated = LobbyNameMatchCreated,
                     NameMatchFilter = NormalizeFilter(LobbyNameMatchFilter),
                     ScenarioMatchCreated = LobbyScenarioMatchCreated,
-                    ScenarioMatchFilter = NormalizeFilter(LobbyScenarioMatchFilter),
+                    ScenarioMatchFilter = NormalizeScenarioSelection(LobbyScenarioMatchFilter),
                 },
             },
         };
@@ -370,6 +376,58 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
     }
 
     private static string NormalizeFilter(string? value) => value?.Trim() ?? string.Empty;
+
+    private static string NormalizeScenarioSelection(string? value)
+    {
+        string normalized = NormalizeFilter(value);
+        if (string.IsNullOrEmpty(normalized))
+        {
+            return string.Empty;
+        }
+
+        if (TryGetScenarioDisplayName(normalized, out string scenarioDisplayName))
+        {
+            return scenarioDisplayName;
+        }
+
+        string[] partialMatches = Array.FindAll(
+            LobbyScenarioOptionValues,
+            option => option.Contains(normalized, StringComparison.OrdinalIgnoreCase)
+        );
+
+        return partialMatches.Length == 1 ? partialMatches[0] : normalized;
+    }
+
+    private static bool TryGetScenarioDisplayName(string value, out string displayName)
+    {
+        if (EnumUtility.TryParseByValueOrMember(value, out Scenario scenario) && scenario != Scenario.Unknown)
+        {
+            displayName = EnumUtility.GetEnumString(scenario, Scenario.Unknown);
+            return true;
+        }
+
+        displayName = string.Empty;
+        return false;
+    }
+
+    private static string[] CreateLobbyScenarioOptions()
+    {
+        Scenario[] scenarios = Enum.GetValues<Scenario>();
+        string[] options = new string[scenarios.Length - 1];
+        int index = 0;
+
+        foreach (Scenario scenario in scenarios)
+        {
+            if (scenario == Scenario.Unknown)
+            {
+                continue;
+            }
+
+            options[index++] = EnumUtility.GetEnumString(scenario, Scenario.Unknown);
+        }
+
+        return options;
+    }
 
     private void QueueToast(NotificationType type, string title, string content) =>
         _toastManager.CreateSimpleInfoToast().OfType(type).WithTitle(title).WithContent(content).Queue();
