@@ -46,10 +46,14 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject
     public byte Mix => Item.Mix;
     public int Present => Item.Present;
 
+    private bool UsesInventoryEmptyStyle => Item is { TypeId: 0, Quantity: 0, SlotIndex: 0, PickedUp: 0 };
+
     public bool IsEmpty =>
-        string.IsNullOrEmpty(Item.TypeName) || string.Equals(Item.TypeName, "Unknown", StringComparison.Ordinal);
+        UsesInventoryEmptyStyle
+        || string.IsNullOrEmpty(Item.TypeName)
+        || string.Equals(Item.TypeName, "Unknown", StringComparison.Ordinal);
     public string DisplayName => IsEmpty ? "Empty" : Item.TypeName;
-    public string DebugInfo => $"0x{Item.Id:X2} | {Item.Id}";
+    public string DebugInfo => UsesInventoryEmptyStyle ? "0x00 | 0" : $"0x{Item.Id:X2} | {Item.Id}";
 
     public string PickedUpDisplay => Item.PickedUp > 0 ? $"P{Item.PickedUp}" : string.Empty;
     public bool IsHeldByPlayer => Item.PickedUp > 0;

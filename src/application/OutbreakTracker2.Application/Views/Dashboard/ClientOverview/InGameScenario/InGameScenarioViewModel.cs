@@ -4,8 +4,6 @@ using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
-using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
-using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 using OutbreakTracker2.Application.Views.GameDock;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
@@ -19,7 +17,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
     private readonly ILogger<InGameScenarioViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
     private readonly ScenarioEntityCommands _entityCommands;
-    private readonly Dictionary<Scenario, Action<DecodedInGameScenario>> _scenarioUpdateActions;
+    private readonly ScenarioViewModelRouter _router;
     private DisposableBag _disposables;
 
     public ICommand ShowItemsCommand => _entityCommands.ShowItems;
@@ -127,7 +125,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
 
     public InGameScenarioViewModel(
         ILogger<InGameScenarioViewModel> logger,
-        IDataManager dataManager,
+        IDataObservableSource dataObservable,
         IDispatcherService dispatcherService,
         ScenarioEntitiesViewModel scenarioEntitiesViewModel,
         ScenarioEntityCommands entityCommands
@@ -137,101 +135,19 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         _dispatcherService = dispatcherService;
         _entityCommands = entityCommands;
         _scenarioEntitiesVm = scenarioEntitiesViewModel;
-
-        DesperateTimesViewModel desperateTimesVm = new();
-        EndOfTheRoadViewModel endOfTheRoadVm = new();
-        FlashbackViewModel flashbackVm = new();
-        UnderbellyViewModel underbellyVm = new();
-        WildThingsViewModel wildThingsVm = new();
-        HellfireViewModel hellfireVm = new();
-        TheHiveViewModel theHiveVm = new();
-        DecisionsDecisionsViewModel decisionsDecisionsVm = new();
-        BelowFreezingPointViewModel belowFreezingPointVm = new();
-
-        _scenarioUpdateActions = new Dictionary<Scenario, Action<DecodedInGameScenario>>
-        {
-            {
-                Scenario.DesperateTimes,
-                scenario =>
-                {
-                    desperateTimesVm.Update(scenario);
-                    CurrentScenarioSpecificViewModel = desperateTimesVm;
-                }
-            },
-            {
-                Scenario.EndOfTheRoad,
-                scenario =>
-                {
-                    endOfTheRoadVm.Update(scenario);
-                    CurrentScenarioSpecificViewModel = endOfTheRoadVm;
-                }
-            },
-            {
-                Scenario.Underbelly,
-                scenario =>
-                {
-                    underbellyVm.Update(scenario);
-                    CurrentScenarioSpecificViewModel = underbellyVm;
-                }
-            },
-            {
-                Scenario.WildThings,
-                scenario =>
-                {
-                    wildThingsVm.Update(scenario);
-                    CurrentScenarioSpecificViewModel = wildThingsVm;
-                }
-            },
-            {
-                Scenario.Hellfire,
-                scenario =>
-                {
-                    hellfireVm.Update(scenario);
-                    CurrentScenarioSpecificViewModel = hellfireVm;
-                }
-            },
-            {
-                Scenario.TheHive,
-                scenario =>
-                {
-                    theHiveVm.Update(scenario);
-                    CurrentScenarioSpecificViewModel = theHiveVm;
-                }
-            },
-            {
-                Scenario.DecisionsDecisions,
-                scenario =>
-                {
-                    decisionsDecisionsVm.Update(scenario);
-                    CurrentScenarioSpecificViewModel = decisionsDecisionsVm;
-                }
-            },
-            {
-                Scenario.BelowFreezingPoint,
-                scenario =>
-                {
-                    belowFreezingPointVm.Update(scenario);
-                    CurrentScenarioSpecificViewModel = belowFreezingPointVm;
-                }
-            },
-            {
-                Scenario.Flashback,
-                scenario =>
-                {
-                    flashbackVm.Update(scenario);
-                    CurrentScenarioSpecificViewModel = flashbackVm;
-                }
-            },
-        };
+        _router = new ScenarioViewModelRouter();
 
         _disposables.Add(
-            dataManager
-                .InGameScenarioObservable.ObserveOnThreadPool()
+            dataObservable
+                .InGameScenarioObservable.WithLatestFrom(
+                    dataObservable.InGamePlayersObservable,
+                    (inGameScenario, players) => (Scenario: inGameScenario, Players: players)
+                )
+                .ObserveOnThreadPool()
                 .SubscribeAwait(
-                    async (inGameScenario, cancellationToken) =>
+                    async (data, cancellationToken) =>
                     {
                         _logger.LogTrace("Processing inGame scenario data on thread pool");
-                        DecodedInGamePlayer[] players = dataManager.InGamePlayers;
                         try
                         {
                             await dispatcherService
@@ -239,7 +155,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
                                     () =>
                                     {
                                         _logger.LogTrace("Updating InGameScenarioViewModel properties on UI thread");
-                                        Update(inGameScenario, players);
+                                        Update(data.Scenario, data.Players);
                                     },
                                     cancellationToken
                                 )
@@ -259,7 +175,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         );
 
         _disposables.Add(
-            dataManager
+            dataObservable
                 .EnemiesObservable.ObserveOnThreadPool()
                 .SubscribeAwait(
                     async (enemies, cancellationToken) =>
@@ -291,7 +207,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         );
 
         _disposables.Add(
-            dataManager
+            dataObservable
                 .DoorsObservable.ObserveOnThreadPool()
                 .SubscribeAwait(
                     async (doors, cancellationToken) =>
@@ -413,25 +329,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
 
     private void UpdateScenarioSpecificViewModel(DecodedInGameScenario scenario)
     {
-        if (
-            string.IsNullOrEmpty(scenario.ScenarioName)
-            || scenario.ScenarioName.Equals("Unknown(0)", StringComparison.Ordinal)
-        )
-            return;
-
-        CurrentScenarioSpecificViewModel = null;
-
-        bool parsedScenario = EnumUtility.TryParseByValueOrMember(scenario.ScenarioName, out Scenario scenarioType);
-        if (!parsedScenario)
-        {
-            _logger.LogWarning("Failed to parse scenario name: {ScenarioName}", scenario.ScenarioName);
-            return;
-        }
-
-        if (_scenarioUpdateActions.TryGetValue(scenarioType, out Action<DecodedInGameScenario>? updateAction))
-            updateAction(scenario);
-        else
-            _logger.LogTrace("No specific view configured for scenario: {ScenarioName}", scenario.ScenarioName);
+        CurrentScenarioSpecificViewModel = _router.Route(scenario, _logger);
     }
 
     private string GetClearedDisplay() =>

@@ -56,7 +56,7 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDispo
 
     public void UpdateItems(DecodedItem[] newItems, int frameCounter, GameFile gameFile)
     {
-        // First call: pre-populate all slots without filtering — display all 255.
+        // First call: retain the raw 255-slot decode, then project a filtered room-group view.
         if (_items.Count == 0)
         {
             ScenarioItemSlotViewModel[] vms = new ScenarioItemSlotViewModel[newItems.Length];
@@ -68,15 +68,22 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDispo
             }
             _items.AddRange(vms);
 
-            ScenarioRoomGroupViewModel[] groups = vms.GroupBy(vm =>
-                    string.IsNullOrEmpty(vm.RoomName) ? "Unknown" : vm.RoomName
-                )
+            HashSet<int> visibleIndices = [.. ScenarioItemRoomGroupProjection.GetVisibleIndices(newItems)];
+            List<ScenarioItemSlotViewModel> visibleItems = [];
+            for (int i = 0; i < vms.Length; i++)
+            {
+                if (visibleIndices.Contains(i))
+                    visibleItems.Add(vms[i]);
+            }
+
+            ScenarioRoomGroupViewModel[] groups = visibleItems
+                .GroupBy(vm => string.IsNullOrEmpty(vm.RoomName) ? "Unknown" : vm.RoomName)
                 .OrderBy(g => string.Equals(g.Key, "Spawning/Scenario Cleared", StringComparison.Ordinal) ? 1 : 0)
                 .ThenBy(g => g.Key, StringComparer.Ordinal)
                 .Select(g => new ScenarioRoomGroupViewModel(g.Key, g.ToList()))
                 .ToArray();
             _roomGroups.AddRange(groups);
-            HasRoomGroups = true;
+            HasRoomGroups = groups.Length > 0;
             return;
         }
 
