@@ -97,12 +97,6 @@ public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposabl
 
         IsSupported = embedder.IsSupported;
 
-        _logger.LogInformation(
-            "EmbeddedGameViewModel constructed. IsSupported={IsSupported}, EmbedderType={EmbedderType}",
-            IsSupported,
-            embedder.GetType().Name
-        );
-
         if (!IsSupported)
             _logger.LogInformation(
                 "Window embedding is not supported on this platform (no X11 display or unsupported OS)."
@@ -113,16 +107,9 @@ public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposabl
         {
             _dispatcherService.PostOnUI(() =>
             {
-                _logger.LogInformation(
-                    "ProcessUpdate received — IsRunning={IsRunning}, PID={Pid}",
-                    model.IsRunning,
-                    model.Id
-                );
-
                 if (model.IsRunning)
                 {
                     TrackedPid = model.Id;
-                    _logger.LogInformation("Tracking PCSX2 PID {Pid} for window embedding.", model.Id);
                 }
                 else
                 {
@@ -186,6 +173,9 @@ public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposabl
     /// <summary>Forwards a message to the logger so it appears in the App Log tab.</summary>
     internal void LogInfo(string message) => _logger.LogInformation("{Msg}", message);
 
+    /// <summary>Forwards a warning to the logger so it appears in the App Log tab.</summary>
+    internal void LogWarning(string message) => _logger.LogWarning("{Msg}", message);
+
     /// <summary>
     /// Minimizes the tracked PCSX2 window without moving it.
     /// No-op when window embedding is not supported on the current platform or no window is found.
@@ -220,11 +210,8 @@ public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposabl
         {
             StatusMessage = $"PCSX2 detected (PID {value}). Click \"Embed PCSX2\" to capture the game display.";
 
-            // Run an immediate window scan so diagnostics are populated before the user
-            // clicks anything.  This also writes to ILogger so App Log shows the result.
-            string diag = Embedder.GetDiagnosticInfo(value);
-            DiagnosticInfo = diag;
-            _logger.LogInformation("PCSX2 PID {Pid} detected. Window scan:\n{Diag}", value, diag);
+            // Populate the diagnostics panel eagerly without writing the full window scan into the app log.
+            DiagnosticInfo = Embedder.GetDiagnosticInfo(value);
         }
         else
         {

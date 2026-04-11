@@ -308,7 +308,7 @@ public sealed class EmbeddedGameView : NativeControlHost
                                 string diag = embedder.GetDiagnosticInfo(pid);
                                 cur.StatusMessage = $"Could not find a PCSX2 window for PID {pid} after 60 s.";
                                 cur.DiagnosticInfo = diag;
-                                cur.LogInfo($"Embed timed out. Window scan result:\n{diag}");
+                                cur.LogWarning($"Embed timed out for PCSX2 PID {pid} after 60 s.");
                                 cur.IsSearching = false;
                                 cur.IsEmbedRequested = false; // return to pre-embed overlay
                             }
@@ -326,11 +326,6 @@ public sealed class EmbeddedGameView : NativeControlHost
                         // Log what we're about to embed so it's visible in App Log
                         string diag = embedder.GetDiagnosticInfo(pid);
                         current.DiagnosticInfo = diag;
-                        current.LogInfo(
-                            System.FormattableString.Invariant(
-                                $"Embedding HWND 0x{found:X8} for PID {pid}. Window scan:\n{diag}"
-                            )
-                        );
 
                         double scale = VisualRoot?.RenderScaling ?? 1.0;
                         int w = PhysicalSize(Bounds.Width, scale);

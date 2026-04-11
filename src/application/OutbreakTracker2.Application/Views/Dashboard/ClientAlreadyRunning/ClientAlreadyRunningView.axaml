@@ -5,8 +5,10 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 xmlns:clientAlreadyRunning1="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientAlreadyRunning"
+xmlns:launcher="clr-namespace:OutbreakTracker2.Application.Services.Launcher"
 d:DesignHeight="450"
 d:DesignWidth="800"
+x:Name="Root"
 x:DataType="clientAlreadyRunning1:ClientAlreadyRunningViewModel"
 mc:Ignorable="d">
     <StackPanel Margin="10">
@@ -16,7 +18,7 @@ mc:Ignorable="d">
         Text="Existing PCSX2 Processes Found" />
         <ItemsControl x:Name="ProcessesItemsControl" ItemsSource="{Binding RunningProcesses}">
             <ItemsControl.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="launcher:ProcessModel">
                     <Border
                     Margin="0,5"
                     Padding="10"
@@ -35,11 +37,11 @@ mc:Ignorable="d">
                             VerticalAlignment="Center"
                             Spacing="5">
                                 <Button
-                                Command="{Binding $parent[UserControl].((clientAlreadyRunning1:ClientAlreadyRunningViewModel)DataContext).AttachToProcessAsync}"
+                                Command="{Binding $parent[UserControl].DataContext.AttachToProcessCommand}"
                                 CommandParameter="{Binding Id}"
                                 Content="Attach to Process" />
                                 <Button
-                                Command="{Binding $parent[UserControl].((clientAlreadyRunning1:ClientAlreadyRunningViewModel)DataContext).TerminateProcessAsync}"
+                                Command="{Binding $parent[UserControl].DataContext.TerminateProcessCommand}"
                                 CommandParameter="{Binding Id}"
                                 Content="Terminate Process" />
                             </StackPanel>
