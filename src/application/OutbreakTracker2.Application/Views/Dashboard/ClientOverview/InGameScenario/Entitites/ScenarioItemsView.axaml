@@ -5,8 +5,9 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 xmlns:common="clr-namespace:OutbreakTracker2.Application.Views.Common"
+xmlns:dockables="clr-namespace:OutbreakTracker2.Application.Views.GameDock.Dockables"
 xmlns:entitites="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites"
-x:DataType="entitites:ScenarioEntitiesViewModel"
+x:DataType="dockables:ScenarioItemsDockViewModel"
 mc:Ignorable="d">
     <Grid>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" IsVisible="{Binding HasRoomGroups}" VerticalScrollBarVisibility="Auto">
@@ -46,6 +47,6 @@ mc:Ignorable="d">
 
         <common:NotInGameWatermark
         IsVisible="{Binding !HasRoomGroups}"
-        Message="No items — not in-game" />
+        Message="{Binding EmptyMessage}" />
     </Grid>
 </UserControl>

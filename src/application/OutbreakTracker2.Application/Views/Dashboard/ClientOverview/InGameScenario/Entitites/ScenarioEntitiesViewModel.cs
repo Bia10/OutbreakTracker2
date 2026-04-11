@@ -3,6 +3,7 @@ using ObservableCollections;
 using OutbreakTracker2.Application.Services.Toasts;
 using OutbreakTracker2.Application.Views.Common.Item;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor;
+using OutbreakTracker2.Extensions;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 
@@ -10,6 +11,8 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScen
 
 public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDisposable
 {
+    private const string ClearedRoomName = "Spawning/Scenario Cleared";
+
     private readonly IToastService _toastService;
     private readonly IItemImageViewModelFactory _itemImageViewModelFactory;
     private readonly Dictionary<byte, short> _previousPickedUpStates = [];
@@ -59,40 +62,34 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDispo
         // First call: retain the raw 255-slot decode, then project a filtered room-group view.
         if (_items.Count == 0)
         {
+            DecodedItem[] initialDisplayItems = new DecodedItem[newItems.Length];
             ScenarioItemSlotViewModel[] vms = new ScenarioItemSlotViewModel[newItems.Length];
             for (int i = 0; i < newItems.Length; i++)
             {
+                DecodedItem displayItem = NormalizeDisplayItem(newItems[i]);
+                initialDisplayItems[i] = displayItem;
                 ItemImageViewModel imageVm = _itemImageViewModelFactory.Create();
-                vms[i] = new ScenarioItemSlotViewModel(newItems[i], imageVm, gameFile, (byte)i);
+                vms[i] = new ScenarioItemSlotViewModel(displayItem, imageVm, gameFile, (byte)i);
                 _previousPickedUpStates[(byte)i] = newItems[i].PickedUp;
             }
             _items.AddRange(vms);
 
-            HashSet<int> visibleIndices = [.. ScenarioItemRoomGroupProjection.GetVisibleIndices(newItems)];
-            List<ScenarioItemSlotViewModel> visibleItems = [];
-            for (int i = 0; i < vms.Length; i++)
-            {
-                if (visibleIndices.Contains(i))
-                    visibleItems.Add(vms[i]);
-            }
-
-            ScenarioRoomGroupViewModel[] groups = visibleItems
-                .GroupBy(vm => string.IsNullOrEmpty(vm.RoomName) ? "Unknown" : vm.RoomName)
-                .OrderBy(g => string.Equals(g.Key, "Spawning/Scenario Cleared", StringComparison.Ordinal) ? 1 : 0)
-                .ThenBy(g => g.Key, StringComparer.Ordinal)
-                .Select(g => new ScenarioRoomGroupViewModel(g.Key, g.ToList()))
-                .ToArray();
-            _roomGroups.AddRange(groups);
-            HasRoomGroups = groups.Length > 0;
+            RebuildRoomGroups(initialDisplayItems);
             return;
         }
 
         // Subsequent calls: update every slot in-place — no add/remove, only Replace events.
-        for (int i = 0; i < newItems.Length && i < _items.Count; i++)
+        int itemCount = Math.Min(newItems.Length, _items.Count);
+        DecodedItem[] displayItems = new DecodedItem[itemCount];
+
+        for (int i = 0; i < itemCount; i++)
         {
             DecodedItem newItem = newItems[i];
+            DecodedItem displayItem = NormalizeDisplayItem(newItem);
+            displayItems[i] = displayItem;
             ScenarioItemSlotViewModel vm = _items[i];
             byte slotKey = (byte)i;
+            string trackedTypeName = string.IsNullOrEmpty(vm.TypeName) ? newItem.TypeName : vm.TypeName;
 
             if (vm.IsPickupTracked && !string.IsNullOrEmpty(newItem.TypeName))
             {
@@ -104,14 +101,88 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDispo
                         || string.Equals(newItem.PickedUpByName, "None", StringComparison.Ordinal)
                             ? $"P{newItem.PickedUp}"
                             : newItem.PickedUpByName;
-                    _ = _toastService.InvokeInfoToastAsync($"{holder} picked up {newItem.TypeName}", "Item Picked Up");
+                    _ = _toastService.InvokeInfoToastAsync($"{holder} picked up {trackedTypeName}", "Item Picked Up");
                     vm.IsPickupTracked = false;
                 }
             }
 
             _previousPickedUpStates[slotKey] = newItem.PickedUp;
-            vm.UpdateItem(newItem, frameCounter, gameFile, slotKey);
+            vm.UpdateItem(displayItem, frameCounter, gameFile, slotKey);
         }
+
+        RebuildRoomGroups(displayItems);
+    }
+
+    private static DecodedItem NormalizeDisplayItem(in DecodedItem item)
+    {
+        bool isCleared = item is { TypeId: 0, Quantity: 0, PickedUp: 0, Present: 0 };
+        bool isPickedUp = item.PickedUp > 0;
+
+        if (!isCleared && !isPickedUp)
+            return item;
+
+        return item with
+        {
+            TypeId = 0,
+            TypeName = string.Empty,
+            Quantity = 0,
+            PickedUp = 0,
+            Present = 0,
+            RoomId = 0,
+            RoomName = ClearedRoomName,
+            PickedUpByName = "None",
+        };
+    }
+
+    private void RebuildRoomGroups(IReadOnlyList<DecodedItem> items)
+    {
+        HashSet<int> visibleIndices = [.. ScenarioItemRoomGroupProjection.GetVisibleIndices(items)];
+        List<ScenarioItemSlotViewModel> visibleItems = [];
+        int itemCount = Math.Min(items.Count, _items.Count);
+
+        for (int i = 0; i < itemCount; i++)
+        {
+            if (visibleIndices.Contains(i))
+                visibleItems.Add(_items[i]);
+        }
+
+        ScenarioRoomGroupViewModel[] groups = visibleItems
+            .GroupBy(vm => string.IsNullOrEmpty(vm.RoomName) ? "Unknown" : vm.RoomName)
+            .OrderBy(g => string.Equals(g.Key, ClearedRoomName, StringComparison.Ordinal) ? 1 : 0)
+            .ThenBy(g => g.Key, StringComparer.Ordinal)
+            .Select(g => new ScenarioRoomGroupViewModel(g.Key, g.ToList()))
+            .ToArray();
+
+        if (HasRoomGroupsChanged(groups))
+            _roomGroups.ReplaceAll(groups);
+
+        HasRoomGroups = groups.Length > 0;
+    }
+
+    private bool HasRoomGroupsChanged(ScenarioRoomGroupViewModel[] newGroups)
+    {
+        if (_roomGroups.Count != newGroups.Length)
+            return true;
+
+        for (int i = 0; i < newGroups.Length; i++)
+        {
+            ScenarioRoomGroupViewModel existing = _roomGroups[i];
+            ScenarioRoomGroupViewModel candidate = newGroups[i];
+
+            if (!string.Equals(existing.RoomName, candidate.RoomName, StringComparison.Ordinal))
+                return true;
+
+            if (existing.Items.Count != candidate.Items.Count)
+                return true;
+
+            for (int j = 0; j < existing.Items.Count; j++)
+            {
+                if (!ReferenceEquals(existing.Items[j], candidate.Items[j]))
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     public void UpdateEnemies(DecodedEnemy[] newEnemies)
