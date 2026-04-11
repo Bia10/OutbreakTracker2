@@ -105,6 +105,21 @@ internal static class DefaultPlayerAlertRules
             )
         );
 
+        players.AddAddedRule(
+            new PredicateAlertRule<DecodedInGamePlayer>(
+                (cur, _) =>
+                {
+                    PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
+                    return settings.VirusWarningEnabled && cur.VirusPercentage >= settings.VirusWarningThreshold;
+                },
+                cur => new AlertNotification(
+                    "Virus Warning",
+                    $"{cur.Name} virus is at {cur.VirusPercentage:F1}%!",
+                    AlertLevel.Warning
+                )
+            )
+        );
+
         players.AddRule(
             new PredicateAlertRule<DecodedInGamePlayer>(
                 (cur, prev) =>
@@ -118,6 +133,21 @@ internal static class DefaultPlayerAlertRules
                     "Virus Warning",
                     $"{cur.Name} virus is at {cur.VirusPercentage:F1}%!",
                     AlertLevel.Warning
+                )
+            )
+        );
+
+        players.AddAddedRule(
+            new PredicateAlertRule<DecodedInGamePlayer>(
+                (cur, _) =>
+                {
+                    PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
+                    return settings.VirusCriticalEnabled && cur.VirusPercentage >= settings.VirusCriticalThreshold;
+                },
+                cur => new AlertNotification(
+                    "Virus Critical",
+                    $"{cur.Name} virus is at {cur.VirusPercentage:F1}%!",
+                    AlertLevel.Error
                 )
             )
         );

@@ -4,6 +4,9 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlay
 
 public sealed partial class PlayerGaugesViewModel : ObservableObject
 {
+    private const double MinProgressPercentage = 0.0;
+    private const double MaxProgressPercentage = 100.0;
+
     [ObservableProperty]
     private short _currentHealth;
 
@@ -33,9 +36,12 @@ public sealed partial class PlayerGaugesViewModel : ObservableObject
     {
         CurrentHealth = currentHealth;
         MaximumHealth = maximumHealth;
-        HealthPercentage = healthPercentage;
+        HealthPercentage = ClampProgressPercentage(healthPercentage);
         CurVirus = curVirus;
         MaxVirus = maxVirus;
-        VirusPercentage = virusPercentage;
+        VirusPercentage = ClampProgressPercentage(virusPercentage);
     }
+
+    private static double ClampProgressPercentage(double percentage) =>
+        Math.Clamp(percentage, MinProgressPercentage, MaxProgressPercentage);
 }

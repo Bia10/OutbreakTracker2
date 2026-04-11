@@ -270,6 +270,66 @@ public sealed class TrackerRegistryLobbyAlertTests
         await Assert.That(alerts[0].Title).IsEqualTo("Virus Warning");
     }
 
+    [Test]
+    public async Task VirusWarningAlert_IsEmitted_WhenPlayerFirstAppearsAboveThreshold()
+    {
+        using FakeDataManager dataManager = new();
+        using FakeAppSettingsService settingsService = new(
+            new OutbreakTrackerSettings
+            {
+                AlertRules = new AlertRuleSettings
+                {
+                    Players = new PlayerAlertRuleSettings
+                    {
+                        VirusWarningEnabled = true,
+                        VirusWarningThreshold = 60.0,
+                        VirusCriticalEnabled = false,
+                    },
+                },
+            }
+        );
+        using TrackerRegistry trackerRegistry = new(dataManager, dataManager, settingsService);
+
+        List<AlertNotification> alerts = [];
+        using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
+
+        Ulid playerId = Ulid.NewUlid();
+        dataManager.SetInGamePlayers([CreatePlayer(playerId, 61.0)]);
+
+        await Assert.That(alerts.Count).IsEqualTo(1);
+        await Assert.That(alerts[0].Title).IsEqualTo("Virus Warning");
+    }
+
+    [Test]
+    public async Task VirusCriticalAlert_IsEmitted_WhenPlayerFirstAppearsAboveThreshold()
+    {
+        using FakeDataManager dataManager = new();
+        using FakeAppSettingsService settingsService = new(
+            new OutbreakTrackerSettings
+            {
+                AlertRules = new AlertRuleSettings
+                {
+                    Players = new PlayerAlertRuleSettings
+                    {
+                        VirusWarningEnabled = false,
+                        VirusCriticalEnabled = true,
+                        VirusCriticalThreshold = 90.0,
+                    },
+                },
+            }
+        );
+        using TrackerRegistry trackerRegistry = new(dataManager, dataManager, settingsService);
+
+        List<AlertNotification> alerts = [];
+        using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
+
+        Ulid playerId = Ulid.NewUlid();
+        dataManager.SetInGamePlayers([CreatePlayer(playerId, 91.0)]);
+
+        await Assert.That(alerts.Count).IsEqualTo(1);
+        await Assert.That(alerts[0].Title).IsEqualTo("Virus Critical");
+    }
+
     private static DecodedLobbySlot CreateInactiveSlot(Ulid slotId) =>
         new()
         {
