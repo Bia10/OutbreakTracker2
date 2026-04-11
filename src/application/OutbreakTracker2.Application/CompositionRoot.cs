@@ -113,6 +113,18 @@ internal static class CompositionRoot
     {
         services.AddSingleton(configuration);
 
+        AddCoreServices(services);
+        AddPlatformServices(services);
+        AddDockAndViewServices(services);
+        AddDataServices(services);
+
+        ServiceProviderOptions providerOptions = new() { ValidateOnBuild = true, ValidateScopes = true };
+
+        return services.BuildServiceProvider(providerOptions);
+    }
+
+    private static void AddCoreServices(IServiceCollection services)
+    {
         services.AddSingleton<ClipboardService>();
         services.AddSingleton<IClipboardService>(sp => sp.GetRequiredService<ClipboardService>());
         services.AddSingleton<PageNavigationService>();
@@ -140,7 +152,10 @@ internal static class CompositionRoot
         services.AddSingleton<IPcsx2Locator, Pcsx2Locator>();
         services.AddSingleton<IProcessLocator, ProcessLocator>();
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
+    }
 
+    private static void AddPlatformServices(IServiceCollection services)
+    {
         // Memory reader implementations: platform-specific
         if (OperatingSystem.IsWindows())
         {
@@ -170,7 +185,10 @@ internal static class CompositionRoot
             throw new PlatformNotSupportedException("Window embedding is currently only supported on Windows.");
 
         services.AddSingleton<EmbeddedGameViewModel>();
+    }
 
+    private static void AddDockAndViewServices(IServiceCollection services)
+    {
         // Game Dock: dockable instances and the factory that wires them into a layout
         services.AddSingleton<GameScreenTool>();
         services.AddSingleton<EntitiesDockTool>();
@@ -182,10 +200,29 @@ internal static class CompositionRoot
         services.AddSingleton<ScenarioEnemiesDockTool>();
         services.AddSingleton<ScenarioDoorsDockTool>();
         services.AddSingleton<ScenarioEntityCommands>();
+        services.AddSingleton<DockToolSet>();
         services.AddSingleton<GameDockFactory>();
 
+        services.AddSingleton<MapCanvasViewModel>();
+
+        services.AddTransient<ICharacterBustViewModelFactory, CharacterBustViewModelFactory>();
+        services.AddTransient<ILobbyRoomPlayerViewModelFactory, LobbyRoomPlayerViewModelFactory>();
+        services.AddTransient<IImageViewModelFactory, ImageViewModelFactory>();
+        services.AddTransient<IScenarioImageViewModelFactory, ScenarioImageViewModelFactory>();
+        services.AddTransient<ILobbySlotViewModelFactory, LobbySlotViewModelFactory>();
+        services.AddTransient<IInGamePlayerViewModelFactory, InGamePlayerViewModelFactory>();
+        services.AddTransient<IItemSlotViewModelFactory, ItemSlotViewModelFactory>();
+        services.AddTransient<IItemImageViewModelFactory, ItemImageViewModelFactory>();
+
+        services.AddSingleton<LobbySlotsViewModel>();
+    }
+
+    private static void AddDataServices(IServiceCollection services)
+    {
         services.AddSingleton<IEEmemMemory, EEmemMemory>();
         services.AddSingleton<IDataManager, DataManager>();
+        services.AddSingleton<IDataObservableSource>(sp => sp.GetRequiredService<IDataManager>());
+        services.AddSingleton<IDataSnapshot>(sp => sp.GetRequiredService<IDataManager>());
         services.AddSingleton<IGameReaderFactory, GameReaderFactory>();
         services.AddSingleton<IDoorAddressProvider, FileOneDoorAddressProvider>();
         services.AddSingleton<IDoorAddressProvider, FileTwoDoorAddressProvider>();
@@ -199,26 +236,5 @@ internal static class CompositionRoot
                 return new TextureAtlas(imageStream, spriteSheet, logger);
             };
         });
-
-        services.AddTransient<ImageViewModel>();
-        services.AddTransient<CharacterBustViewModel>();
-        services.AddTransient<ScenarioImageViewModel>();
-        services.AddTransient<ItemImageViewModel>();
-        services.AddSingleton<MapCanvasViewModel>();
-
-        services.AddTransient<ICharacterBustViewModelFactory, CharacterBustViewModelFactory>();
-        services.AddTransient<ILobbyRoomPlayerViewModelFactory, LobbyRoomPlayerViewModelFactory>();
-        services.AddTransient<IImageViewModelFactory, ImageViewModelFactory>();
-        services.AddTransient<IScenarioImageViewModelFactory, ScenarioImageViewModelFactory>();
-        services.AddTransient<ILobbySlotViewModelFactory, LobbySlotViewModelFactory>();
-        services.AddTransient<IInGamePlayerViewModelFactory, InGamePlayerViewModelFactory>();
-        services.AddTransient<IItemSlotViewModelFactory, ItemSlotViewModelFactory>();
-        services.AddTransient<IItemImageViewModelFactory, ItemImageViewModelFactory>();
-
-        services.AddSingleton<LobbySlotsViewModel>();
-
-        ServiceProviderOptions providerOptions = new() { ValidateOnBuild = true, ValidateScopes = true };
-
-        return services.BuildServiceProvider(providerOptions);
     }
 }
