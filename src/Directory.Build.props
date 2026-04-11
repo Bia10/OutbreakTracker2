@@ -11,6 +11,9 @@
 
     <!-- Non-CLS-compliant: required for P/Invoke and low-level interop types -->
     <CLSCompliant>false</CLSCompliant>
+
+    <!-- Prevent generated files under repo-local build output folders from being recompiled as sources. -->
+    <DefaultItemExcludesInProjectFolder>$(DefaultItemExcludesInProjectFolder);artifacts/**;verify-artifacts/**</DefaultItemExcludesInProjectFolder>
   </PropertyGroup>
 
   <ItemGroup>
