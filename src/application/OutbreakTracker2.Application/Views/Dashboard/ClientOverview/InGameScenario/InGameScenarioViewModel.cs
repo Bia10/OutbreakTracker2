@@ -18,6 +18,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
     private readonly IDispatcherService _dispatcherService;
     private readonly ScenarioEntityCommands _entityCommands;
     private readonly ScenarioViewModelRouter _router;
+    private readonly Dictionary<short, InvalidPickedUpWarning> _lastInvalidPickedUpWarnings = [];
     private DisposableBag _disposables;
 
     public ICommand ShowItemsCommand => _entityCommands.ShowItems;
@@ -310,6 +311,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
             string pickedUpByName;
             if (item.PickedUp == 0)
             {
+                _lastInvalidPickedUpWarnings.Remove(item.Id);
                 pickedUpByName = "None";
             }
             else
@@ -317,24 +319,46 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
                 int slotIndex = item.PickedUp - 1;
                 if (slotIndex >= 0 && slotIndex < players.Length)
                 {
+                    _lastInvalidPickedUpWarnings.Remove(item.Id);
                     DecodedInGamePlayer player = players[slotIndex];
                     pickedUpByName =
                         player.IsEnabled && !string.IsNullOrEmpty(player.Name) ? player.Name : $"P{item.PickedUp}";
                 }
                 else
                 {
-                    // Only warn when we have a valid player array — index 0 is a startup race
-                    // where players haven't been decoded yet; those items are filtered by Present==0.
-                    if (players.Length > 0)
-                        _logger.LogWarning(
-                            "Item slot={Slot} type={Type} has PickedUp={PickedUp} which is out of valid player range [1,{Max}]; Present={Present} Qty={Qty}",
+                    if (ShouldWarnInvalidPickedUp(item, players.Length))
+                    {
+                        InvalidPickedUpWarning warning = new(
                             item.SlotIndex,
                             item.TypeName,
                             item.PickedUp,
-                            players.Length,
                             item.Present,
-                            item.Quantity
+                            item.Quantity,
+                            players.Length
                         );
+
+                        if (
+                            !_lastInvalidPickedUpWarnings.TryGetValue(item.Id, out InvalidPickedUpWarning lastWarning)
+                            || lastWarning != warning
+                        )
+                        {
+                            _lastInvalidPickedUpWarnings[item.Id] = warning;
+                            _logger.LogWarning(
+                                "Item slot={Slot} type={Type} has PickedUp={PickedUp} which is out of valid player range [1,{Max}]; Present={Present} Qty={Qty}",
+                                item.SlotIndex,
+                                item.TypeName,
+                                item.PickedUp,
+                                players.Length,
+                                item.Present,
+                                item.Quantity
+                            );
+                        }
+                    }
+                    else
+                    {
+                        _lastInvalidPickedUpWarnings.Remove(item.Id);
+                    }
+
                     pickedUpByName = $"P{item.PickedUp}";
                 }
             }
@@ -342,6 +366,18 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
             scenario.Items[i] = item with { RoomName = roomName, PickedUpByName = pickedUpByName };
         }
     }
+
+    private static bool ShouldWarnInvalidPickedUp(DecodedItem item, int playerCount) =>
+        playerCount > 0 && item.Present != 0;
+
+    private readonly record struct InvalidPickedUpWarning(
+        byte SlotIndex,
+        string TypeName,
+        short PickedUp,
+        int Present,
+        short Quantity,
+        int MaxPlayers
+    );
 
     private void UpdateScenarioSpecificViewModel(DecodedInGameScenario scenario)
     {
