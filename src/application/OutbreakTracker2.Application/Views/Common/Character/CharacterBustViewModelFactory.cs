@@ -1,23 +1,23 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using OutbreakTracker2.Application.Services.Atlas;
 
 namespace OutbreakTracker2.Application.Views.Common.Character;
 
 public sealed class CharacterBustViewModelFactory(
     ILogger<CharacterBustViewModelFactory> logger,
-    IServiceProvider serviceProvider
+    ILogger<CharacterBustViewModel> characterBustViewModelLogger,
+    ISpriteNameResolver spriteNameResolver,
+    IImageViewModelFactory imageViewModelFactory
 ) : ICharacterBustViewModelFactory
 {
     private readonly ILogger<CharacterBustViewModelFactory> _logger = logger;
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly ILogger<CharacterBustViewModel> _characterBustViewModelLogger = characterBustViewModelLogger;
+    private readonly ISpriteNameResolver _spriteNameResolver = spriteNameResolver;
+    private readonly IImageViewModelFactory _imageViewModelFactory = imageViewModelFactory;
 
     public CharacterBustViewModel Create()
     {
         _logger.LogTrace("Creating a new CharacterBustViewModel instance");
-
-        CharacterBustViewModel newCharacterBustViewModel =
-            _serviceProvider.GetRequiredService<CharacterBustViewModel>();
-
-        return newCharacterBustViewModel;
+        return new CharacterBustViewModel(_characterBustViewModelLogger, _spriteNameResolver, _imageViewModelFactory);
     }
 }

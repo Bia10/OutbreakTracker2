@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Views.Common.ScenarioImg;
 using OutbreakTracker2.Outbreak.Models;
 
@@ -7,22 +6,17 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbySlot.
 
 public sealed class LobbySlotViewModelFactory(
     ILogger<LobbySlotViewModelFactory> logger,
-    IServiceProvider serviceProvider
+    ILogger<LobbySlotViewModel> lobbySlotViewModelLogger,
+    IScenarioImageViewModelFactory scenarioImageViewModelFactory
 ) : ILobbySlotViewModelFactory
 {
     private readonly ILogger<LobbySlotViewModelFactory> _logger = logger;
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly ILogger<LobbySlotViewModel> _lobbySlotViewModelLogger = lobbySlotViewModelLogger;
+    private readonly IScenarioImageViewModelFactory _scenarioImageViewModelFactory = scenarioImageViewModelFactory;
 
     public LobbySlotViewModel Create(in DecodedLobbySlot initialData)
     {
         _logger.LogTrace("Creating new LobbySlotViewModel for initial data");
-
-        ILogger<LobbySlotViewModel> lobbySlotVmLogger = _serviceProvider.GetRequiredService<
-            ILogger<LobbySlotViewModel>
-        >();
-        IScenarioImageViewModelFactory scenarioImageVmFactory =
-            _serviceProvider.GetRequiredService<IScenarioImageViewModelFactory>();
-
-        return new LobbySlotViewModel(lobbySlotVmLogger, scenarioImageVmFactory, initialData);
+        return new LobbySlotViewModel(_lobbySlotViewModelLogger, _scenarioImageViewModelFactory, initialData);
     }
 }

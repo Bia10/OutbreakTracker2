@@ -34,7 +34,7 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
     public InGameEnemiesViewModel(
         ILogger<InGameEnemiesViewModel> logger,
         IDispatcherService dispatcherService,
-        IDataManager dataManager,
+        IDataObservableSource dataObservable,
         TimeProvider timeProvider,
         ITrackerRegistry trackerRegistry
     )
@@ -47,7 +47,7 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
 
         _subscription = trackerRegistry
             .Enemies.Changes.Diffs.WithLatestFrom(
-                dataManager.InGameScenarioObservable,
+                dataObservable.InGameScenarioObservable,
                 (diff, scenario) => (Diff: diff, ScenarioName: scenario.ScenarioName)
             )
             .ObserveOnThreadPool()

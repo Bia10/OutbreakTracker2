@@ -22,12 +22,12 @@ public sealed partial class MapCanvasViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private double _mapHeight = 600;
 
-    public MapCanvasViewModel(IDataManager dataManager, IDispatcherService dispatcherService)
+    public MapCanvasViewModel(IDataObservableSource dataObservable, IDispatcherService dispatcherService)
     {
-        PlayersObservable = dataManager.InGamePlayersObservable;
-        EnemiesObservable = dataManager.EnemiesObservable;
+        PlayersObservable = dataObservable.InGamePlayersObservable;
+        EnemiesObservable = dataObservable.EnemiesObservable;
 
-        _playersIsInGameSubscription = dataManager
+        _playersIsInGameSubscription = dataObservable
             .InGamePlayersObservable.ObserveOnThreadPool()
             .Subscribe(players =>
             {

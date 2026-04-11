@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Services.Embedding;
 using OutbreakTracker2.Application.Services.Launcher;
+using OutbreakTracker2.WinInterop;
 using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGame;
@@ -24,12 +25,14 @@ public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposabl
 
     /// <summary>PID of the monitored PCSX2 process. Zero when no process is running.</summary>
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RequestEmbedCommand))]
     private int _trackedPid;
 
     /// <summary>
     /// <see langword="true"/> when the PCSX2 window has been successfully reparented into the host.
     /// </summary>
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RequestUnembedCommand))]
     [NotifyPropertyChangedFor(nameof(EmbedButtonContent))]
     [NotifyPropertyChangedFor(nameof(EmbedButtonCommand))]
     private bool _isEmbedded;
@@ -45,6 +48,8 @@ public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposabl
     /// Reset to <see langword="false"/> when the process exits or embedding times out.
     /// </summary>
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RequestEmbedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RequestUnembedCommand))]
     [NotifyPropertyChangedFor(nameof(IsPreEmbedState))]
     [NotifyPropertyChangedFor(nameof(EmbedButtonContent))]
     [NotifyPropertyChangedFor(nameof(EmbedButtonCommand))]
@@ -181,6 +186,34 @@ public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposabl
     /// <summary>Forwards a message to the logger so it appears in the App Log tab.</summary>
     internal void LogInfo(string message) => _logger.LogInformation("{Msg}", message);
 
+    /// <summary>
+    /// Minimizes the tracked PCSX2 window without moving it.
+    /// No-op when window embedding is not supported on the current platform or no window is found.
+    /// </summary>
+    internal void MinimizeTrackedWindow()
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+
+        nint hwnd = Embedder.FindProcessWindow(TrackedPid);
+        if (hwnd != nint.Zero)
+            Win32WindowNativeMethods.ShowWindow(hwnd, Win32WindowNativeMethods.SW_MINIMIZE);
+    }
+
+    /// <summary>
+    /// Restores the tracked PCSX2 window to its normal state.
+    /// No-op when window embedding is not supported on the current platform or no window is found.
+    /// </summary>
+    internal void RestoreTrackedWindow()
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+
+        nint hwnd = Embedder.FindProcessWindow(TrackedPid);
+        if (hwnd != nint.Zero)
+            Win32WindowNativeMethods.ShowWindow(hwnd, Win32WindowNativeMethods.SW_RESTORE);
+    }
+
     partial void OnTrackedPidChanged(int value)
     {
         if (value > 0)
@@ -199,19 +232,6 @@ public sealed partial class EmbeddedGameViewModel : ObservableObject, IDisposabl
             DiagnosticInfo = string.Empty;
             ShowDiagnostics = false;
         }
-
-        RequestEmbedCommand.NotifyCanExecuteChanged();
-    }
-
-    partial void OnIsEmbedRequestedChanged(bool value)
-    {
-        RequestEmbedCommand.NotifyCanExecuteChanged();
-        RequestUnembedCommand.NotifyCanExecuteChanged();
-    }
-
-    partial void OnIsEmbeddedChanged(bool value)
-    {
-        RequestUnembedCommand.NotifyCanExecuteChanged();
     }
 
     public void Dispose()

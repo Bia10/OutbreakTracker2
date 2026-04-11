@@ -1,4 +1,4 @@
-using Avalonia.Media;
+﻿using Avalonia.Media;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy;
 

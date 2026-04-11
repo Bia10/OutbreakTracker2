@@ -1,20 +1,24 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using OutbreakTracker2.Application.Services.Atlas;
+using OutbreakTracker2.Application.Services.Dispatcher;
 
 namespace OutbreakTracker2.Application.Views.Common;
 
-public sealed class ImageViewModelFactory(ILogger<ImageViewModelFactory> logger, IServiceProvider serviceProvider)
-    : IImageViewModelFactory
+public sealed class ImageViewModelFactory(
+    ILogger<ImageViewModelFactory> logger,
+    ILogger<ImageViewModel> imageViewModelLogger,
+    ITextureAtlasService textureAtlasService,
+    IDispatcherService dispatcherService
+) : IImageViewModelFactory
 {
     private readonly ILogger<ImageViewModelFactory> _logger = logger;
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly ILogger<ImageViewModel> _imageViewModelLogger = imageViewModelLogger;
+    private readonly ITextureAtlasService _textureAtlasService = textureAtlasService;
+    private readonly IDispatcherService _dispatcherService = dispatcherService;
 
     public ImageViewModel Create()
     {
         _logger.LogTrace("Creating a new ImageViewModel instance");
-
-        ImageViewModel instance = _serviceProvider.GetRequiredService<ImageViewModel>();
-
-        return instance;
+        return new ImageViewModel(_imageViewModelLogger, _textureAtlasService, _dispatcherService);
     }
 }

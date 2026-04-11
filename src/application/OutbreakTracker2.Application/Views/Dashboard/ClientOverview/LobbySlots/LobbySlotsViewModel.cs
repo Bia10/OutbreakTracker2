@@ -27,7 +27,7 @@ public sealed partial class LobbySlotsViewModel : ObservableObject, IAsyncDispos
     private bool _isAtLobby;
 
     public LobbySlotsViewModel(
-        IDataManager dataManager,
+        IDataObservableSource dataObservable,
         ITrackerRegistry trackerRegistry,
         ILogger<LobbySlotsViewModel> logger,
         IDispatcherService dispatcherService,
@@ -41,9 +41,7 @@ public sealed partial class LobbySlotsViewModel : ObservableObject, IAsyncDispos
             SynchronizationContextCollectionEventDispatcher.Current
         );
 
-        IsAtLobby = dataManager.IsAtLobby;
-
-        IDisposable lobbyPresenceSubscription = dataManager
+        IDisposable lobbyPresenceSubscription = dataObservable
             .IsAtLobbyObservable.ObserveOnThreadPool()
             .SubscribeAwait(
                 async (isAtLobby, cancellationToken) =>
@@ -56,13 +54,16 @@ public sealed partial class LobbySlotsViewModel : ObservableObject, IAsyncDispos
             );
 
         IDisposable lobbySlotDiffSubscription = trackerRegistry
-            .LobbySlots.Changes.Diffs.ObserveOnThreadPool()
+            .LobbySlots.Changes.Diffs.WithLatestFrom(
+                dataObservable.IsAtLobbyObservable,
+                (diff, isAtLobby) => (Diff: diff, IsAtLobby: isAtLobby)
+            )
+            .Where(static state => state.IsAtLobby)
+            .Select(static state => state.Diff)
+            .ObserveOnThreadPool()
             .SubscribeAwait(
                 async (diff, cancellationToken) =>
                 {
-                    if (!dataManager.IsAtLobby)
-                        return;
-
                     if (diff.Added.Count == 0 && diff.Removed.Count == 0 && diff.Changed.Count == 0)
                         return;
 

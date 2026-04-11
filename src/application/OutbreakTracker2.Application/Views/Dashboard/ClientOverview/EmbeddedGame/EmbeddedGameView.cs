@@ -208,10 +208,10 @@ public sealed class EmbeddedGameView : NativeControlHost
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (
-            !string.Equals(e.PropertyName, nameof(EmbeddedGameViewModel.IsEmbedRequested), StringComparison.Ordinal)
-            || sender is not EmbeddedGameViewModel vm
-        )
+        if (sender is not EmbeddedGameViewModel vm)
+            return;
+
+        if (!string.Equals(e.PropertyName, nameof(EmbeddedGameViewModel.IsEmbedRequested), StringComparison.Ordinal))
             return;
 
         if (vm.IsEmbedRequested)

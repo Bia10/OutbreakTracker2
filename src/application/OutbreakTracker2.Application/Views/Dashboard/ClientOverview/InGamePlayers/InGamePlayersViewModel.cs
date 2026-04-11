@@ -33,7 +33,7 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
     private bool _isHorizontalLayout = true;
 
     public InGamePlayersViewModel(
-        IDataManager dataManager,
+        IDataObservableSource dataObservable,
         ITrackerRegistry trackerRegistry,
         ILogger<InGamePlayersViewModel> logger,
         IDispatcherService dispatcherService,
@@ -48,7 +48,7 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
 
         _subscription = trackerRegistry
             .Players.Changes.Diffs.WithLatestFrom(
-                dataManager.InGameScenarioObservable,
+                dataObservable.InGameScenarioObservable,
                 (diff, scenario) =>
                     (
                         Diff: diff,
