@@ -184,6 +184,7 @@ public sealed class AppSettingsService : IAppSettingsService
         return defaults with
         {
             EntitiesDock = overrides.EntitiesDock ?? defaults.EntitiesDock,
+            ScenarioItemsDock = overrides.ScenarioItemsDock ?? defaults.ScenarioItemsDock,
         };
     }
 

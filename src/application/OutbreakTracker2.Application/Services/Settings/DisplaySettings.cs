@@ -3,4 +3,5 @@
 public sealed record DisplaySettings
 {
     public EntitiesDockSettings EntitiesDock { get; init; } = new();
+    public ScenarioItemsDockSettings ScenarioItemsDock { get; init; } = new();
 }

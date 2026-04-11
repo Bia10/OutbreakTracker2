@@ -22,6 +22,7 @@ public sealed class AppSettingsServiceTests
                 Display = new DisplaySettings
                 {
                     EntitiesDock = new EntitiesDockSettings { OnlyShowCurrentPlayerRoom = false },
+                    ScenarioItemsDock = new ScenarioItemsDockSettings { OnlyShowCurrentPlayerRoom = false },
                 },
                 AlertRules = new AlertRuleSettings
                 {
@@ -52,6 +53,15 @@ public sealed class AppSettingsServiceTests
                 settingsElement
                     .GetProperty("Display")
                     .GetProperty("EntitiesDock")
+                    .GetProperty("OnlyShowCurrentPlayerRoom")
+                    .GetBoolean()
+            )
+            .IsFalse();
+        await Assert
+            .That(
+                settingsElement
+                    .GetProperty("Display")
+                    .GetProperty("ScenarioItemsDock")
                     .GetProperty("OnlyShowCurrentPlayerRoom")
                     .GetBoolean()
             )
@@ -137,6 +147,8 @@ public sealed class AppSettingsServiceTests
         await Assert.That(service.Current.AlertRules.Lobby.ScenarioMatchFilter).IsEqualTo("Wild things");
         await Assert.That(importedSettings.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(service.Current.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
+        await Assert.That(importedSettings.Display.ScenarioItemsDock.OnlyShowCurrentPlayerRoom).IsTrue();
+        await Assert.That(service.Current.Display.ScenarioItemsDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(File.Exists(environment.UserSettingsPath)).IsTrue();
 
         using JsonDocument jsonDocument = JsonDocument.Parse(await File.ReadAllTextAsync(environment.UserSettingsPath));
@@ -164,6 +176,7 @@ public sealed class AppSettingsServiceTests
                 Display = new DisplaySettings
                 {
                     EntitiesDock = new EntitiesDockSettings { OnlyShowCurrentPlayerRoom = false },
+                    ScenarioItemsDock = new ScenarioItemsDockSettings { OnlyShowCurrentPlayerRoom = false },
                 },
                 AlertRules = new AlertRuleSettings
                 {
@@ -192,6 +205,7 @@ public sealed class AppSettingsServiceTests
         await Assert.That(resetSettings.AlertRules.Lobby.ScenarioMatchCreated).IsFalse();
         await Assert.That(resetSettings.AlertRules.Lobby.ScenarioMatchFilter).IsEqualTo(string.Empty);
         await Assert.That(resetSettings.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
+        await Assert.That(resetSettings.Display.ScenarioItemsDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(service.Current.Notifications.EnableToastAlerts).IsTrue();
     }
 
@@ -231,6 +245,9 @@ public sealed class AppSettingsServiceTests
                     },
                     "Display": {
                         "EntitiesDock": {
+                            "OnlyShowCurrentPlayerRoom": true
+                        },
+                        "ScenarioItemsDock": {
                             "OnlyShowCurrentPlayerRoom": true
                         }
                     },
