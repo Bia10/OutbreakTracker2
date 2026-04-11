@@ -14,7 +14,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(dataManager, settingsService);
+        using TrackerRegistry trackerRegistry = new(dataManager, dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -34,7 +34,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(dataManager, settingsService);
+        using TrackerRegistry trackerRegistry = new(dataManager, dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -52,7 +52,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(dataManager, settingsService);
+        using TrackerRegistry trackerRegistry = new(dataManager, dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -82,7 +82,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(dataManager, settingsService);
+        using TrackerRegistry trackerRegistry = new(dataManager, dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -110,7 +110,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(dataManager, settingsService);
+        using TrackerRegistry trackerRegistry = new(dataManager, dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -144,7 +144,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(dataManager, settingsService);
+        using TrackerRegistry trackerRegistry = new(dataManager, dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -178,7 +178,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(dataManager, settingsService);
+        using TrackerRegistry trackerRegistry = new(dataManager, dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -212,7 +212,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(dataManager, settingsService);
+        using TrackerRegistry trackerRegistry = new(dataManager, dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -257,7 +257,7 @@ public sealed class TrackerRegistryLobbyAlertTests
                 },
             }
         );
-        using TrackerRegistry trackerRegistry = new(dataManager, settingsService);
+        using TrackerRegistry trackerRegistry = new(dataManager, dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
