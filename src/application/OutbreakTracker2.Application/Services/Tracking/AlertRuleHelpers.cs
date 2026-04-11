@@ -37,6 +37,7 @@ internal static class AlertRuleHelpers
                 or EnemyType.Drainer14
                 or EnemyType.Neptune
                 or EnemyType.Tentacles
-                or EnemyType.LeechTentacles;
+                or EnemyType.LeechTentacles
+                or EnemyType.UnknownId62;
     }
 }

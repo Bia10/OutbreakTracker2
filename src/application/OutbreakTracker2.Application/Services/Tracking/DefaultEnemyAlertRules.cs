@@ -10,7 +10,7 @@ internal static class DefaultEnemyAlertRules
     public static void Register(
         IEntityTracker<DecodedEnemy> enemies,
         IAppSettingsService settingsService,
-        IDataManager dataManager
+        IDataSnapshot dataSnapshot
     )
     {
         enemies.AddAddedRule(
@@ -22,7 +22,7 @@ internal static class DefaultEnemyAlertRules
                 },
                 cur =>
                 {
-                    string roomName = ResolveRoomName(cur.RoomId, dataManager.InGameScenario.ScenarioName);
+                    string roomName = ResolveRoomName(cur.RoomId, dataSnapshot.InGameScenario.ScenarioName);
                     return new AlertNotification(
                         "Entity Spawned",
                         $"{cur.Name} spawned in {roomName}!",
@@ -46,7 +46,7 @@ internal static class DefaultEnemyAlertRules
                 },
                 cur =>
                 {
-                    string roomName = ResolveRoomName(cur.RoomId, dataManager.InGameScenario.ScenarioName);
+                    string roomName = ResolveRoomName(cur.RoomId, dataSnapshot.InGameScenario.ScenarioName);
                     return new AlertNotification(
                         "Entity Spawned",
                         $"{cur.Name} spawned in {roomName}!",
@@ -66,11 +66,11 @@ internal static class DefaultEnemyAlertRules
                         && (prev?.CurHp ?? 0) > 0
                         && prev?.Enabled != 0
                         && !AlertRuleHelpers.IsInvulnerableEnemy(cur.NameId, cur.MaxHp)
-                        && dataManager.InGameScenario.Status == ScenarioStatus.InGame;
+                        && dataSnapshot.InGameScenario.Status == ScenarioStatus.InGame;
                 },
                 cur =>
                 {
-                    string roomName = ResolveRoomName(cur.RoomId, dataManager.InGameScenario.ScenarioName);
+                    string roomName = ResolveRoomName(cur.RoomId, dataSnapshot.InGameScenario.ScenarioName);
                     return new AlertNotification(
                         "Entity Killed",
                         $"{cur.Name} in {roomName} was killed!",
@@ -89,11 +89,11 @@ internal static class DefaultEnemyAlertRules
                         && cur.CurHp <= 1
                         && cur.RoomId != 0
                         && !AlertRuleHelpers.IsInvulnerableEnemy(cur.NameId, cur.MaxHp)
-                        && dataManager.InGameScenario.Status == ScenarioStatus.InGame;
+                        && dataSnapshot.InGameScenario.Status == ScenarioStatus.InGame;
                 },
                 cur =>
                 {
-                    string roomName = ResolveRoomName(cur.RoomId, dataManager.InGameScenario.ScenarioName);
+                    string roomName = ResolveRoomName(cur.RoomId, dataSnapshot.InGameScenario.ScenarioName);
                     return new AlertNotification(
                         "Entity Killed",
                         $"{cur.Name} in {roomName} was killed!",
@@ -112,7 +112,7 @@ internal static class DefaultEnemyAlertRules
                 },
                 cur =>
                 {
-                    string roomName = ResolveRoomName(cur.RoomId, dataManager.InGameScenario.ScenarioName);
+                    string roomName = ResolveRoomName(cur.RoomId, dataSnapshot.InGameScenario.ScenarioName);
                     return new AlertNotification(
                         "Entity Despawned",
                         $"{cur.Name} despawned from {roomName}.",
@@ -131,7 +131,7 @@ internal static class DefaultEnemyAlertRules
                 },
                 cur =>
                 {
-                    string roomName = ResolveRoomName(cur.RoomId, dataManager.InGameScenario.ScenarioName);
+                    string roomName = ResolveRoomName(cur.RoomId, dataSnapshot.InGameScenario.ScenarioName);
                     return new AlertNotification(
                         "Entity Room Change",
                         $"{cur.Name} moved to {roomName}.",

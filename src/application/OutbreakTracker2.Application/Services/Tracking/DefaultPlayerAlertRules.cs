@@ -10,7 +10,7 @@ internal static class DefaultPlayerAlertRules
     public static void Register(
         IEntityTracker<DecodedInGamePlayer> players,
         IAppSettingsService settingsService,
-        IDataManager dataManager
+        IDataSnapshot dataSnapshot
     )
     {
         players.AddRule(
@@ -189,7 +189,7 @@ internal static class DefaultPlayerAlertRules
                 },
                 cur =>
                 {
-                    string roomName = ResolveRoomName(cur.RoomId, dataManager.InGameScenario.ScenarioName);
+                    string roomName = ResolveRoomName(cur.RoomId, dataSnapshot.InGameScenario.ScenarioName);
                     return new AlertNotification("Room Change", $"{cur.Name} moved to {roomName}.", AlertLevel.Info);
                 }
             )
@@ -203,7 +203,7 @@ internal static class DefaultPlayerAlertRules
                     return settings.Joined
                         && cur.IsInGame
                         && !(prev?.IsInGame ?? true)
-                        && !IsTransitionalStatus(dataManager.InGameScenario.Status);
+                        && !IsTransitionalStatus(dataSnapshot.InGameScenario.Status);
                 },
                 cur => new AlertNotification("Player Joined", $"{cur.Name} joined the game.", AlertLevel.Info)
             )
@@ -217,7 +217,7 @@ internal static class DefaultPlayerAlertRules
                     return settings.Left
                         && !cur.IsInGame
                         && (prev?.IsInGame ?? false)
-                        && !IsTransitionalStatus(dataManager.InGameScenario.Status);
+                        && !IsTransitionalStatus(dataSnapshot.InGameScenario.Status);
                 },
                 cur => new AlertNotification("Player Left", $"{cur.Name} left the game.", AlertLevel.Warning)
             )

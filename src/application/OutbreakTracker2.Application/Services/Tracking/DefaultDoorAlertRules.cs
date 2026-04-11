@@ -9,14 +9,14 @@ internal static class DefaultDoorAlertRules
     public static void Register(
         IEntityTracker<DecodedDoor> doors,
         IAppSettingsService settingsService,
-        IDataManager dataManager
+        IDataSnapshot dataSnapshot
     )
     {
         doors.AddRule(
             new PredicateAlertRule<DecodedDoor>(
                 (cur, prev) =>
                 {
-                    if (dataManager.InGameScenario.FrameCounter <= 0)
+                    if (dataSnapshot.InGameScenario.FrameCounter <= 0)
                         return false;
                     DoorAlertRuleSettings settings = settingsService.Current.AlertRules.Doors;
                     return settings.FlagChanged && cur.Flag != prev.Flag;
@@ -33,7 +33,7 @@ internal static class DefaultDoorAlertRules
             new PredicateAlertRule<DecodedDoor>(
                 (cur, prev) =>
                 {
-                    if (dataManager.InGameScenario.FrameCounter <= 0)
+                    if (dataSnapshot.InGameScenario.FrameCounter <= 0)
                         return false;
                     DoorAlertRuleSettings settings = settingsService.Current.AlertRules.Doors;
                     return settings.Destroyed && cur.Hp == 0 && prev.Hp > 0;
@@ -46,7 +46,7 @@ internal static class DefaultDoorAlertRules
             new PredicateAlertRule<DecodedDoor>(
                 (cur, prev) =>
                 {
-                    if (dataManager.InGameScenario.FrameCounter <= 0)
+                    if (dataSnapshot.InGameScenario.FrameCounter <= 0)
                         return false;
                     DoorAlertRuleSettings settings = settingsService.Current.AlertRules.Doors;
                     return settings.StatusChanged && !string.Equals(cur.Status, prev.Status, StringComparison.Ordinal);

@@ -14,29 +14,35 @@ public sealed class TrackerRegistry : ITrackerRegistry, IDisposable
 
     public Observable<AlertNotification> AllAlerts { get; }
 
-    public TrackerRegistry(IDataManager dataManager, IAppSettingsService settingsService)
+    public TrackerRegistry(
+        IDataObservableSource dataObservable,
+        IDataSnapshot dataSnapshot,
+        IAppSettingsService settingsService
+    )
     {
-        Enemies = new EntityTracker<DecodedEnemy>(new EntityChangeSource<DecodedEnemy>(dataManager.EnemiesObservable));
-        Doors = new EntityTracker<DecodedDoor>(new EntityChangeSource<DecodedDoor>(dataManager.DoorsObservable));
+        Enemies = new EntityTracker<DecodedEnemy>(
+            new EntityChangeSource<DecodedEnemy>(dataObservable.EnemiesObservable)
+        );
+        Doors = new EntityTracker<DecodedDoor>(new EntityChangeSource<DecodedDoor>(dataObservable.DoorsObservable));
         Players = new EntityTracker<DecodedInGamePlayer>(
-            new EntityChangeSource<DecodedInGamePlayer>(dataManager.InGamePlayersObservable)
+            new EntityChangeSource<DecodedInGamePlayer>(dataObservable.InGamePlayersObservable)
         );
         LobbySlots = new EntityTracker<DecodedLobbySlot>(
-            new EntityChangeSource<DecodedLobbySlot>(dataManager.LobbySlotsObservable)
+            new EntityChangeSource<DecodedLobbySlot>(dataObservable.LobbySlotsObservable)
         );
 
         Observable<AlertNotification> lobbySlotAlerts = LobbySlots.Alerts;
         Observable<AlertNotification> gatedLobbyAlerts = lobbySlotAlerts
             .WithLatestFrom(
-                dataManager.IsAtLobbyObservable,
+                dataObservable.IsAtLobbyObservable,
                 static (alert, isAtLobby) => (Alert: alert, IsAtLobby: isAtLobby)
             )
             .Where(static state => state.IsAtLobby)
             .Select(static state => state.Alert);
 
-        DefaultPlayerAlertRules.Register(Players, settingsService, dataManager);
-        DefaultEnemyAlertRules.Register(Enemies, settingsService, dataManager);
-        DefaultDoorAlertRules.Register(Doors, settingsService, dataManager);
+        DefaultPlayerAlertRules.Register(Players, settingsService, dataSnapshot);
+        DefaultEnemyAlertRules.Register(Enemies, settingsService, dataSnapshot);
+        DefaultDoorAlertRules.Register(Doors, settingsService, dataSnapshot);
         DefaultLobbySlotAlertRules.Register(LobbySlots, settingsService);
 
         AllAlerts = Observable.Merge(Enemies.Alerts, Doors.Alerts, Players.Alerts, gatedLobbyAlerts);

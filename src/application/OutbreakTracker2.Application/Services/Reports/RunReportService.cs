@@ -213,6 +213,7 @@ public sealed class RunReportService : IRunReportService
     {
         DateTimeOffset now = _timeProvider.GetUtcNow();
         bool hadActivePlayers = _activePlayers.Count > 0;
+        ScenarioStatus currentScenarioStatus = _lastScenarioStatus;
 
         // Update active-player snapshot before emitting events so FindContributingPlayers
         // sees the current room positions and lifecycle checks see the new counts.
@@ -239,7 +240,7 @@ public sealed class RunReportService : IRunReportService
 
         // During room transitions the game clears player memory temporarily.
         // Keep stale player data rather than evicting and restarting the session.
-        bool isTransitional = IsTransitionalStatus(_lastScenarioStatus);
+        bool isTransitional = IsTransitionalStatus(currentScenarioStatus);
 
         HashSet<Ulid>? removedActiveIds = null;
         if (!isTransitional)
@@ -259,7 +260,7 @@ public sealed class RunReportService : IRunReportService
         // Only start when actually in-game — this prevents a ghost session firing
         // immediately after GameFinished clears _activePlayers and ProcessPlayerDiff
         // re-adds them from the same diff tick.
-        if (!hadActivePlayers && hasActivePlayers && _lastScenarioStatus == ScenarioStatus.InGame)
+        if (!hadActivePlayers && hasActivePlayers && currentScenarioStatus == ScenarioStatus.InGame)
             AutoStartSession();
 
         foreach (DecodedInGamePlayer player in diff.Added)
