@@ -190,13 +190,15 @@ public sealed class InGameScenarioReader(IGameClient gameClient, IEEmemAddressRe
         for (int i = 0; i < GameConstants.MaxItems - 1; i++)
         {
             nint itemBaseOffset = (nint)pickupStructSize * i;
+            short typeId = ReadValue<short>(pickupSpaceStart, [itemBaseOffset + typeIdOffset]);
 
             items[i] = new DecodedItem
             {
                 Id = (short)(i + 1),
                 RoomId = ReadValue<byte>(pickupSpaceStart, [itemBaseOffset + roomIdOffset]),
                 SlotIndex = ReadValue<byte>(pickupSpaceStart, [itemBaseOffset + slotIndexOffset]),
-                TypeName = GetItemTypeName(ReadValue<short>(pickupSpaceStart, [itemBaseOffset + typeIdOffset])),
+                TypeId = typeId,
+                TypeName = GetItemTypeName(typeId),
                 Mix = ReadValue<byte>(pickupSpaceStart, [itemBaseOffset + mixOffset]),
                 Present = ReadValue<int>(pickupSpaceStart, [itemBaseOffset + presentOffset]),
                 Quantity = ReadValue<short>(pickupSpaceStart, [itemBaseOffset + quantityOffset]),

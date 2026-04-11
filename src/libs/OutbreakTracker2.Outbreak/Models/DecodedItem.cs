@@ -19,6 +19,10 @@ public readonly record struct DecodedItem
     public short En { get; init; }
 
     [JsonInclude]
+    [JsonPropertyName(nameof(TypeId))]
+    public short TypeId { get; init; }
+
+    [JsonInclude]
     [JsonPropertyName(nameof(TypeName))]
     public string TypeName { get; init; } = string.Empty;
 
