@@ -3,7 +3,6 @@ using Dock.Model.Controls;
 using Dock.Model.Core;
 using Dock.Model.Mvvm;
 using Dock.Model.Mvvm.Controls;
-using OutbreakTracker2.Application.Views.GameDock.Dockables;
 using Serilog;
 
 namespace OutbreakTracker2.Application.Views.GameDock;
@@ -29,82 +28,73 @@ namespace OutbreakTracker2.Application.Views.GameDock;
 /// z-order conflicts when panels are dragged over the HWND area.
 /// </para>
 /// </summary>
-public sealed class GameDockFactory(
-    GameScreenTool gameScreenTool,
-    EntitiesDockTool enemyListTool,
-    MapDockTool mapDockTool,
-    PlayersDockTool playersTool,
-    ScenarioInfoDockTool scenarioInfoTool,
-    ScenarioItemsDockTool scenarioItemsTool,
-    ScenarioEnemiesDockTool scenarioEnemiesDockTool,
-    ScenarioDoorsDockTool scenarioDoorsDockTool
-) : Factory
+public sealed class GameDockFactory(DockToolSet tools) : Factory
 {
     public override IToolDock CreateToolDock() => new GlobalToolDock();
 
     public override IRootDock CreateLayout()
     {
-        gameScreenTool.Id = "GameScreen";
-        gameScreenTool.Title = "Game Screen";
-        gameScreenTool.CanClose = true;
-        gameScreenTool.CanFloat = false; // float blocked to prevent Win32 HWND z-order conflicts
-        gameScreenTool.CanDrag = true; // in-layout moves are safe; only float is hazardous
+        tools.GameScreen.Id = "GameScreen";
+        tools.GameScreen.Title = "Game Screen";
+        tools.GameScreen.CanClose = true;
+        tools.GameScreen.CanFloat = false; // float blocked to prevent Win32 HWND z-order conflicts
+        tools.GameScreen.CanDrag = true; // in-layout moves are safe; only float is hazardous
 
-        enemyListTool.Id = "Entities";
-        enemyListTool.Title = "Entities";
-        enemyListTool.CanClose = true;
-        enemyListTool.CanFloat = false;
-        enemyListTool.CanDrag = true;
-        enemyListTool.CanDrop = true;
-        enemyListTool.CanPin = true;
+        tools.Entities.Id = "Entities";
+        tools.Entities.Title = "Entities";
+        tools.Entities.CanClose = true;
+        tools.Entities.CanFloat = false;
+        tools.Entities.CanDrag = true;
+        tools.Entities.CanDrop = true;
+        tools.Entities.CanPin = true;
 
-        mapDockTool.Id = "Map";
-        mapDockTool.Title = "Map";
-        mapDockTool.CanClose = true;
-        mapDockTool.CanFloat = false;
-        mapDockTool.CanDrag = true;
-        mapDockTool.CanDrop = true;
-        mapDockTool.CanPin = true;
+        tools.Map.Id = "Map";
+        tools.Map.Title = "Map";
+        tools.Map.CanClose = true;
+        tools.Map.CanFloat = false;
+        tools.Map.CanDrag = true;
+        tools.Map.CanDrop = true;
+        tools.Map.CanPin = true;
 
-        playersTool.Id = "Players";
-        playersTool.Title = "Players";
-        playersTool.CanClose = true;
-        playersTool.CanFloat = false;
-        playersTool.CanDrag = true;
-        playersTool.CanDrop = true;
-        playersTool.CanPin = true;
+        tools.Players.Id = "Players";
+        tools.Players.Title = "Players";
+        tools.Players.CanClose = true;
+        tools.Players.CanFloat = false;
+        tools.Players.CanDrag = true;
+        tools.Players.CanDrop = true;
+        tools.Players.CanPin = true;
 
-        scenarioInfoTool.Id = "ScenarioInfo";
-        scenarioInfoTool.Title = "Scenario";
-        scenarioInfoTool.CanClose = true;
-        scenarioInfoTool.CanFloat = false;
-        scenarioInfoTool.CanDrag = true;
-        scenarioInfoTool.CanDrop = true;
-        scenarioInfoTool.CanPin = true;
+        tools.ScenarioInfo.Id = "ScenarioInfo";
+        tools.ScenarioInfo.Title = "Scenario";
+        tools.ScenarioInfo.CanClose = true;
+        tools.ScenarioInfo.CanFloat = false;
+        tools.ScenarioInfo.CanDrag = true;
+        tools.ScenarioInfo.CanDrop = true;
+        tools.ScenarioInfo.CanPin = true;
 
-        scenarioItemsTool.Id = "ScenarioItems";
-        scenarioItemsTool.Title = "Items";
-        scenarioItemsTool.CanClose = true;
-        scenarioItemsTool.CanFloat = false;
-        scenarioItemsTool.CanDrag = true;
-        scenarioItemsTool.CanDrop = true;
-        scenarioItemsTool.CanPin = true;
+        tools.ScenarioItems.Id = "ScenarioItems";
+        tools.ScenarioItems.Title = "Items";
+        tools.ScenarioItems.CanClose = true;
+        tools.ScenarioItems.CanFloat = false;
+        tools.ScenarioItems.CanDrag = true;
+        tools.ScenarioItems.CanDrop = true;
+        tools.ScenarioItems.CanPin = true;
 
-        scenarioEnemiesDockTool.Id = "ScenarioEnemies";
-        scenarioEnemiesDockTool.Title = "Enemies";
-        scenarioEnemiesDockTool.CanClose = true;
-        scenarioEnemiesDockTool.CanFloat = false;
-        scenarioEnemiesDockTool.CanDrag = true;
-        scenarioEnemiesDockTool.CanDrop = true;
-        scenarioEnemiesDockTool.CanPin = true;
+        tools.ScenarioEnemies.Id = "ScenarioEnemies";
+        tools.ScenarioEnemies.Title = "Enemies";
+        tools.ScenarioEnemies.CanClose = true;
+        tools.ScenarioEnemies.CanFloat = false;
+        tools.ScenarioEnemies.CanDrag = true;
+        tools.ScenarioEnemies.CanDrop = true;
+        tools.ScenarioEnemies.CanPin = true;
 
-        scenarioDoorsDockTool.Id = "ScenarioDoors";
-        scenarioDoorsDockTool.Title = "Doors";
-        scenarioDoorsDockTool.CanClose = true;
-        scenarioDoorsDockTool.CanFloat = false;
-        scenarioDoorsDockTool.CanDrag = true;
-        scenarioDoorsDockTool.CanDrop = true;
-        scenarioDoorsDockTool.CanPin = true;
+        tools.ScenarioDoors.Id = "ScenarioDoors";
+        tools.ScenarioDoors.Title = "Doors";
+        tools.ScenarioDoors.CanClose = true;
+        tools.ScenarioDoors.CanFloat = false;
+        tools.ScenarioDoors.CanDrag = true;
+        tools.ScenarioDoors.CanDrop = true;
+        tools.ScenarioDoors.CanPin = true;
 
         var leftDock = new ProportionalDock
         {
@@ -114,9 +104,9 @@ public sealed class GameDockFactory(
             Orientation = Orientation.Vertical,
             ActiveDockable = null,
             VisibleDockables = CreateList<IDockable>(
-                CreateGameToolDock("EntitiesToolDock", 0.6, Alignment.Left, enemyListTool),
+                CreateGameToolDock("EntitiesToolDock", 0.6, Alignment.Left, tools.Entities),
                 new ProportionalDockSplitter(),
-                CreateGameToolDock("ItemsToolDock", 0.4, Alignment.Left, scenarioItemsTool)
+                CreateGameToolDock("ItemsToolDock", 0.4, Alignment.Left, tools.ScenarioItems)
             ),
         };
 
@@ -124,8 +114,8 @@ public sealed class GameDockFactory(
         centerDock.Id = "CenterDock";
         centerDock.Title = "Game Screen";
         centerDock.Proportion = 0.56; // explicit so PSP can redistribute to left/right when center collapses
-        centerDock.ActiveDockable = gameScreenTool;
-        centerDock.VisibleDockables = CreateList<IDockable>(gameScreenTool);
+        centerDock.ActiveDockable = tools.GameScreen;
+        centerDock.VisibleDockables = CreateList<IDockable>(tools.GameScreen);
         centerDock.GripMode = GripMode.Hidden;
         centerDock.IsCollapsable = false;
         centerDock.CanDrop = true;
@@ -138,9 +128,9 @@ public sealed class GameDockFactory(
             Orientation = Orientation.Vertical,
             ActiveDockable = null,
             VisibleDockables = CreateList<IDockable>(
-                CreateGameToolDock("PlayersToolDock", 0.6, Alignment.Right, playersTool),
+                CreateGameToolDock("PlayersToolDock", 0.6, Alignment.Right, tools.Players),
                 new ProportionalDockSplitter(),
-                CreateGameToolDock("ScenarioToolDock", 0.4, Alignment.Right, scenarioInfoTool)
+                CreateGameToolDock("ScenarioToolDock", 0.4, Alignment.Right, tools.ScenarioInfo)
             ),
         };
 
