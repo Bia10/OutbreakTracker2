@@ -1,0 +1,39 @@
+<UserControl
+x:Class="OutbreakTracker2.Application.Views.GameDock.Dockables.EntitiesDockView"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:common="clr-namespace:OutbreakTracker2.Application.Views.Common"
+xmlns:dockables="clr-namespace:OutbreakTracker2.Application.Views.GameDock.Dockables"
+xmlns:inGameEnemy="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy"
+d:DesignHeight="450"
+d:DesignWidth="800"
+x:DataType="dockables:EntitiesDockViewModel"
+mc:Ignorable="d">
+
+    <Grid>
+        <ScrollViewer
+        AllowAutoHide="True"
+        HorizontalScrollBarVisibility="Disabled"
+        IsVisible="{Binding HasEnemies}"
+        VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding EnemiesView}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="inGameEnemy:InGameEnemyViewModel">
+                        <inGameEnemy:InGameEnemyView />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <common:NotInGameWatermark
+        IsVisible="{Binding !HasEnemies}"
+        Message="{Binding EmptyMessage}" />
+    </Grid>
+</UserControl>

@@ -51,6 +51,9 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
     private string _status = string.Empty;
 
     [ObservableProperty]
+    private byte _roomId;
+
+    [ObservableProperty]
     private string _roomName = string.Empty;
 
     [ObservableProperty]
@@ -93,6 +96,7 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
         HealthPercentage = IsDead ? 0.0 : PercentageUtility.GetPercentage(enemy.CurHp, enemy.MaxHp);
         BossType = ConvertBossType(enemy.BossType);
         Status = ConvertStatus(enemy.Status);
+        RoomId = enemy.RoomId;
         RoomName = UpdateRoomName(enemy.RoomId, scenarioName);
         RawBorderColor = GetEnemyColorForFileTwo(enemy.SlotId, enemy.NameId);
     }
@@ -154,7 +158,7 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
         if (!enemyTypeParsed)
             return $"Failed to parse enemyType for nameId {nameId}";
 
-        string healthString = $"{curHp}/{maxHp}";
+        string healthString = $"{curHp}";
 
         if (
             curHp == 0x7fff
@@ -189,7 +193,7 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
         if (!enemyTypeParsed)
             return $"Failed to parse enemyType for nameId {nameId}";
 
-        string healthString = $"{curHp} / {maxHp}";
+        string healthString = $"{curHp}";
 
         if (
             curHp is 0x7fff

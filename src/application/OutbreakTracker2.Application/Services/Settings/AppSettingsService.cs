@@ -40,6 +40,7 @@ public sealed class AppSettingsService : IAppSettingsService
 
     public async ValueTask SaveAsync(OutbreakTrackerSettings settings, CancellationToken cancellationToken = default)
     {
+        settings = NormalizeSettings(settings);
         Validate(settings);
 
         string? directoryPath = Path.GetDirectoryName(_userSettingsPath);
@@ -83,7 +84,7 @@ public sealed class AppSettingsService : IAppSettingsService
                 .ParseAsync(source, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
-            OutbreakTrackerSettings settings = DeserializeImportedSettings(jsonDocument.RootElement);
+            OutbreakTrackerSettings settings = NormalizeSettings(DeserializeImportedSettings(jsonDocument.RootElement));
             await SaveAsync(settings, cancellationToken).ConfigureAwait(false);
             return settings;
         }
@@ -130,9 +131,10 @@ public sealed class AppSettingsService : IAppSettingsService
 
     private OutbreakTrackerSettings LoadValidatedSettings()
     {
-        OutbreakTrackerSettings settings =
+        OutbreakTrackerSettings settings = NormalizeSettings(
             _configurationRoot.GetSection(OutbreakTrackerSettings.SectionName).Get<OutbreakTrackerSettings>()
-            ?? new OutbreakTrackerSettings();
+                ?? new OutbreakTrackerSettings()
+        );
 
         if (File.Exists(_userSettingsPath))
         {
@@ -142,15 +144,61 @@ public sealed class AppSettingsService : IAppSettingsService
                 SettingsJsonContext.Default.UserSettingsDocument
             );
 
-            settings =
+            settings = MergeSettings(
+                settings,
                 document?.OutbreakTracker
-                ?? throw new InvalidOperationException(
-                    "The user settings file does not contain an OutbreakTracker section."
-                );
+                    ?? throw new InvalidOperationException(
+                        "The user settings file does not contain an OutbreakTracker section."
+                    )
+            );
         }
 
         Validate(settings);
         return settings;
+    }
+
+    private static OutbreakTrackerSettings NormalizeSettings(OutbreakTrackerSettings? settings) =>
+        MergeSettings(new OutbreakTrackerSettings(), settings);
+
+    private static OutbreakTrackerSettings MergeSettings(
+        OutbreakTrackerSettings defaults,
+        OutbreakTrackerSettings? overrides
+    )
+    {
+        if (overrides is null)
+            return defaults;
+
+        return defaults with
+        {
+            Notifications = overrides.Notifications ?? defaults.Notifications,
+            Display = MergeSettings(defaults.Display, overrides.Display),
+            AlertRules = MergeSettings(defaults.AlertRules, overrides.AlertRules),
+        };
+    }
+
+    private static DisplaySettings MergeSettings(DisplaySettings defaults, DisplaySettings? overrides)
+    {
+        if (overrides is null)
+            return defaults;
+
+        return defaults with
+        {
+            EntitiesDock = overrides.EntitiesDock ?? defaults.EntitiesDock,
+        };
+    }
+
+    private static AlertRuleSettings MergeSettings(AlertRuleSettings defaults, AlertRuleSettings? overrides)
+    {
+        if (overrides is null)
+            return defaults;
+
+        return defaults with
+        {
+            Players = overrides.Players ?? defaults.Players,
+            Enemies = overrides.Enemies ?? defaults.Enemies,
+            Doors = overrides.Doors ?? defaults.Doors,
+            Lobby = overrides.Lobby ?? defaults.Lobby,
+        };
     }
 
     private static void Validate(OutbreakTrackerSettings settings)

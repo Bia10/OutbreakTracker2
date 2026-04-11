@@ -19,6 +19,10 @@ public sealed class AppSettingsServiceTests
             new OutbreakTrackerSettings
             {
                 Notifications = new NotificationSettings { EnableToastAlerts = false },
+                Display = new DisplaySettings
+                {
+                    EntitiesDock = new EntitiesDockSettings { OnlyShowCurrentPlayerRoom = false },
+                },
                 AlertRules = new AlertRuleSettings
                 {
                     Players = new PlayerAlertRuleSettings { VirusWarningThreshold = 62, VirusCriticalThreshold = 88 },
@@ -42,6 +46,15 @@ public sealed class AppSettingsServiceTests
 
         await Assert
             .That(settingsElement.GetProperty("Notifications").GetProperty("EnableToastAlerts").GetBoolean())
+            .IsFalse();
+        await Assert
+            .That(
+                settingsElement
+                    .GetProperty("Display")
+                    .GetProperty("EntitiesDock")
+                    .GetProperty("OnlyShowCurrentPlayerRoom")
+                    .GetBoolean()
+            )
             .IsFalse();
         await Assert
             .That(
@@ -122,6 +135,8 @@ public sealed class AppSettingsServiceTests
         await Assert.That(service.Current.AlertRules.Lobby.NameMatchFilter).IsEqualTo("Night");
         await Assert.That(service.Current.AlertRules.Lobby.ScenarioMatchCreated).IsTrue();
         await Assert.That(service.Current.AlertRules.Lobby.ScenarioMatchFilter).IsEqualTo("Wild things");
+        await Assert.That(importedSettings.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
+        await Assert.That(service.Current.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(File.Exists(environment.UserSettingsPath)).IsTrue();
 
         using JsonDocument jsonDocument = JsonDocument.Parse(await File.ReadAllTextAsync(environment.UserSettingsPath));
@@ -146,6 +161,10 @@ public sealed class AppSettingsServiceTests
             new OutbreakTrackerSettings
             {
                 Notifications = new NotificationSettings { EnableToastAlerts = false },
+                Display = new DisplaySettings
+                {
+                    EntitiesDock = new EntitiesDockSettings { OnlyShowCurrentPlayerRoom = false },
+                },
                 AlertRules = new AlertRuleSettings
                 {
                     Players = new PlayerAlertRuleSettings { VirusWarningThreshold = 64, VirusCriticalThreshold = 93 },
@@ -172,6 +191,7 @@ public sealed class AppSettingsServiceTests
         await Assert.That(resetSettings.AlertRules.Lobby.NameMatchFilter).IsEqualTo(string.Empty);
         await Assert.That(resetSettings.AlertRules.Lobby.ScenarioMatchCreated).IsFalse();
         await Assert.That(resetSettings.AlertRules.Lobby.ScenarioMatchFilter).IsEqualTo(string.Empty);
+        await Assert.That(resetSettings.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(service.Current.Notifications.EnableToastAlerts).IsTrue();
     }
 
@@ -208,6 +228,11 @@ public sealed class AppSettingsServiceTests
                 "OutbreakTracker": {
                     "Notifications": {
                         "EnableToastAlerts": true
+                    },
+                    "Display": {
+                        "EntitiesDock": {
+                            "OnlyShowCurrentPlayerRoom": true
+                        }
                     },
                     "AlertRules": {
                         "Players": {

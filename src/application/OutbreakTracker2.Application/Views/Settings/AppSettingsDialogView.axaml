@@ -126,6 +126,17 @@ mc:Ignorable="d">
                             </suki:GlassCard>
                         </Grid>
 
+                        <suki:GlassCard Padding="18">
+                            <StackPanel Spacing="10">
+                                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Entities Dock" />
+                                <CheckBox Content="Only show entities in my character room"
+                                          IsChecked="{Binding EntitiesDockOnlyShowCurrentPlayerRoom}" />
+                                <TextBlock Opacity="0.8"
+                                           Text="Filters the docked Entities tool without changing the full in-game enemies tab."
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </suki:GlassCard>
+
                         <TextBlock Foreground="IndianRed" Text="{Binding ValidationMessage}" TextWrapping="Wrap" />
                     </StackPanel>
                 </ScrollViewer>

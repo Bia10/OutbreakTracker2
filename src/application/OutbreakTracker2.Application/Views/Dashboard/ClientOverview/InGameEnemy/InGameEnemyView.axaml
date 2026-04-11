@@ -33,6 +33,7 @@ mc:Ignorable="d">
                     <ProgressBar
                     Height="18"
                     Maximum="100"
+                    ShowProgressText="False"
                     Value="{Binding HealthPercentage}" />
                     <StackPanel
                     HorizontalAlignment="Center"

@@ -8,6 +8,8 @@ public sealed record OutbreakTrackerSettings
 
     public NotificationSettings Notifications { get; init; } = new();
 
+    public DisplaySettings Display { get; init; } = new();
+
     public AlertRuleSettings AlertRules { get; init; } = new();
 
     public bool TryValidate([NotNullWhen(false)] out string? error)

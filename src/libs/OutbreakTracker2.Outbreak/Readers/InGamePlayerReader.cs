@@ -346,6 +346,7 @@ public sealed class InGamePlayerReader : ReaderBase, IInGamePlayerReader
                 MaxVirus = maxVirus,
                 VirusPercentage = GetVirusPercentage(curVirus, maxVirus),
                 CritBonus = GetCritBonus(basePlayerAddress),
+                NameId = nameId,
                 Name = GetCharacterName(nameId, characterType),
                 Status = DecodeStatusText(status),
                 Condition = DecodeCondition(curHealth, maxHealth),

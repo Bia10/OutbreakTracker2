@@ -19,7 +19,7 @@ RequestedThemeVariant="Default">
             <embeddedGame:EmbeddedGameTabView DataContext="{Binding EmbeddedGameViewModel}" />
         </DataTemplate>
         <DataTemplate DataType="{x:Type dockables:EntitiesDockTool}">
-            <inGameEnemies:InGameEnemiesView DataContext="{Binding InGameEnemiesViewModel}" />
+            <dockables:EntitiesDockView DataContext="{Binding EntitiesDockViewModel}" />
         </DataTemplate>
         <DataTemplate DataType="{x:Type dockables:MapDockTool}">
             <canvas:MapCanvasView DataContext="{Binding MapCanvasViewModel}" />

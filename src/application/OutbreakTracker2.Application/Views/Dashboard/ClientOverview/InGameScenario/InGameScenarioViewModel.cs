@@ -255,7 +255,7 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         FrameCounter = scenario.FrameCounter;
         Difficulty = scenario.Difficulty;
         Status = scenario.Status;
-        PlayerCount = scenario.PlayerCount;
+        PlayerCount = GetTrackedPlayerCount(players);
         ItemRandom = scenario.ItemRandom;
         ItemRandom2 = scenario.ItemRandom2;
         PuzzleRandom = scenario.PuzzleRandom;
@@ -279,6 +279,22 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         ScenarioEntitiesVm.UpdateItems(scenario.Items, scenario.FrameCounter, (GameFile)scenario.CurrentFile);
 
         UpdateScenarioSpecificViewModel(scenario);
+    }
+
+    private static byte GetTrackedPlayerCount(DecodedInGamePlayer[] players)
+    {
+        byte count = 0;
+
+        foreach (DecodedInGamePlayer player in players)
+        {
+            if (!player.IsEnabled)
+                continue;
+
+            if (player.NameId > 0 || !string.IsNullOrEmpty(player.Type))
+                count++;
+        }
+
+        return count;
     }
 
     private void ResolveItemDisplayFields(DecodedInGameScenario scenario, DecodedInGamePlayer[] players)

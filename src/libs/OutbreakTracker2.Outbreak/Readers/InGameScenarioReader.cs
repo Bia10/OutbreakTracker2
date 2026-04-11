@@ -36,7 +36,7 @@ public sealed class InGameScenarioReader(IGameClient gameClient, IEEmemAddressRe
             (byte)0xFF
         );
 
-    private byte GetPlayerCount() =>
+    private byte GetLocalPlayerSlotIndex() =>
         ReadValue(InGameScenarioOffsets.PlayerNumber.File1, InGameScenarioOffsets.PlayerNumber.File2, (byte)0xFF);
 
     private short GetWildThingsTime() =>
@@ -216,13 +216,16 @@ public sealed class InGameScenarioReader(IGameClient gameClient, IEEmemAddressRe
         if (CurrentFile is GameFile.Unknown)
             return;
 
+        byte localPlayerSlotIndex = GetLocalPlayerSlotIndex();
+
         DecodedScenario = new DecodedInGameScenario
         {
             CurrentFile = (byte)CurrentFile,
             ScenarioName = GetScenarioName(GetScenarioId()),
             FrameCounter = GetFrameCount(),
             Status = GetScenarioStatus(),
-            PlayerCount = GetPlayerCount(),
+            PlayerCount = localPlayerSlotIndex,
+            LocalPlayerSlotIndex = localPlayerSlotIndex,
             WildThingsTime = GetWildThingsTime(),
             FlashbackTime = GetFlashbackTime(),
             WTGateMHp = GetWTGateMHp(),

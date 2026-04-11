@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.Specialized;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.Application.Services.Data;
@@ -10,7 +11,7 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies;
 
-public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposable
+public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposable, IEnemyCardCollectionSource
 {
     private static readonly TimeSpan DeadEnemyDisplayDuration = TimeSpan.FromSeconds(3);
 
@@ -289,6 +290,14 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
     /// </summary>
     private static bool IsEnemyBasicallyValid(DecodedEnemy enemy) =>
         !string.IsNullOrEmpty(enemy.Name) && enemy.RoomId != 0 && enemy is { SlotId: > 0, MaxHp: > 0 };
+
+    IEnumerable<InGameEnemyViewModel> IEnemyCardCollectionSource.Enemies => EnemiesView;
+
+    event NotifyCollectionChangedEventHandler? IEnemyCardCollectionSource.CollectionChanged
+    {
+        add => ((INotifyCollectionChanged)EnemiesView).CollectionChanged += value;
+        remove => ((INotifyCollectionChanged)EnemiesView).CollectionChanged -= value;
+    }
 
     public void Dispose()
     {

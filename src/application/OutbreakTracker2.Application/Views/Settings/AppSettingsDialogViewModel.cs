@@ -100,6 +100,9 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
     private bool _enemyRoomChange;
 
     [ObservableProperty]
+    private bool _entitiesDockOnlyShowCurrentPlayerRoom;
+
+    [ObservableProperty]
     private bool _doorFlagChanged;
 
     [ObservableProperty]
@@ -269,6 +272,8 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
         try
         {
             NotificationSettings notifications = settings.Notifications ?? new();
+            DisplaySettings display = settings.Display ?? new();
+            EntitiesDockSettings entitiesDock = display.EntitiesDock ?? new();
             AlertRuleSettings alertRules = settings.AlertRules ?? new();
             PlayerAlertRuleSettings players = alertRules.Players ?? new();
             EnemyAlertRuleSettings enemies = alertRules.Enemies ?? new();
@@ -299,6 +304,7 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
             EnemyKilled = enemies.Killed;
             EnemyDespawned = enemies.Despawned;
             EnemyRoomChange = enemies.RoomChange;
+            EntitiesDockOnlyShowCurrentPlayerRoom = entitiesDock.OnlyShowCurrentPlayerRoom;
 
             DoorFlagChanged = doors.FlagChanged;
             DoorDestroyed = doors.Destroyed;
@@ -320,6 +326,13 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
         new()
         {
             Notifications = new NotificationSettings { EnableToastAlerts = EnableToastAlerts },
+            Display = new DisplaySettings
+            {
+                EntitiesDock = new EntitiesDockSettings
+                {
+                    OnlyShowCurrentPlayerRoom = EntitiesDockOnlyShowCurrentPlayerRoom,
+                },
+            },
             AlertRules = new AlertRuleSettings
             {
                 Players = new PlayerAlertRuleSettings

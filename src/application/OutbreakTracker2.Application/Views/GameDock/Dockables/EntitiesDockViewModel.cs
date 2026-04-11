@@ -1,0 +1,306 @@
+﻿using System.Collections.Specialized;
+using System.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using ObservableCollections;
+using OutbreakTracker2.Application.Services.Data;
+using OutbreakTracker2.Application.Services.Dispatcher;
+using OutbreakTracker2.Application.Services.Settings;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy;
+using OutbreakTracker2.Extensions;
+using OutbreakTracker2.Outbreak.Models;
+using R3;
+
+namespace OutbreakTracker2.Application.Views.GameDock.Dockables;
+
+public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposable
+{
+    private const string DefaultEmptyMessage = "No active enemies - not in-game";
+    private const string CurrentRoomEmptyMessage = "No entities in your room";
+
+    private readonly IEnemyCardCollectionSource _source;
+    private readonly IDispatcherService _dispatcherService;
+    private readonly ObservableList<InGameEnemyViewModel> _enemies = [];
+    private readonly HashSet<InGameEnemyViewModel> _observedEnemies = [];
+    private DisposableBag _disposables;
+    private bool _onlyShowCurrentPlayerRoom;
+    private bool _hasCurrentPlayerRoom;
+    private short _currentPlayerRoomId;
+
+    public NotifyCollectionChangedSynchronizedViewList<InGameEnemyViewModel> EnemiesView { get; }
+
+    [ObservableProperty]
+    private bool _hasEnemies;
+
+    [ObservableProperty]
+    private string _emptyMessage = DefaultEmptyMessage;
+
+    public EntitiesDockViewModel(
+        IEnemyCardCollectionSource source,
+        IDataObservableSource dataObservable,
+        IDataSnapshot dataSnapshot,
+        IAppSettingsService settingsService,
+        IDispatcherService dispatcherService
+    )
+    {
+        _source = source;
+        _dispatcherService = dispatcherService;
+
+        EnemiesView = _enemies.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
+
+        _onlyShowCurrentPlayerRoom = GetEntitiesDockSettings(settingsService.Current).OnlyShowCurrentPlayerRoom;
+
+        (bool hasRoom, short roomId) currentPlayerRoom = ResolveCurrentPlayerRoom(
+            dataSnapshot.InGamePlayers,
+            dataSnapshot.InGameScenario.LocalPlayerSlotIndex
+        );
+        _hasCurrentPlayerRoom = currentPlayerRoom.hasRoom;
+        _currentPlayerRoomId = currentPlayerRoom.roomId;
+
+        ResetObservedEnemies();
+        _source.CollectionChanged += OnSourceCollectionChanged;
+
+        _disposables.Add(
+            dataObservable
+                .InGamePlayersObservable.WithLatestFrom(
+                    dataObservable.InGameScenarioObservable,
+                    static (players, scenario) => ResolveCurrentPlayerRoom(players, scenario.LocalPlayerSlotIndex)
+                )
+                .Subscribe(roomState => _dispatcherService.PostOnUI(() => UpdateCurrentPlayerRoom(roomState)))
+        );
+
+        _disposables.Add(
+            dataObservable
+                .InGameScenarioObservable.WithLatestFrom(
+                    dataObservable.InGamePlayersObservable,
+                    static (scenario, players) => ResolveCurrentPlayerRoom(players, scenario.LocalPlayerSlotIndex)
+                )
+                .Subscribe(roomState => _dispatcherService.PostOnUI(() => UpdateCurrentPlayerRoom(roomState)))
+        );
+
+        _disposables.Add(
+            settingsService
+                .SettingsObservable.Select(static settings =>
+                    GetEntitiesDockSettings(settings).OnlyShowCurrentPlayerRoom
+                )
+                .Subscribe(enabled => _dispatcherService.PostOnUI(() => UpdateFilterSetting(enabled)))
+        );
+
+        RebuildFilteredEnemies();
+    }
+
+    public void Dispose()
+    {
+        _source.CollectionChanged -= OnSourceCollectionChanged;
+
+        foreach (InGameEnemyViewModel enemy in _observedEnemies)
+            enemy.PropertyChanged -= OnEnemyPropertyChanged;
+
+        _observedEnemies.Clear();
+        _disposables.Dispose();
+        EnemiesView.Dispose();
+    }
+
+    private void OnSourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            ResetObservedEnemies();
+            RebuildFilteredEnemies();
+            return;
+        }
+
+        if (e.OldItems is not null)
+            foreach (object? item in e.OldItems)
+                if (item is InGameEnemyViewModel enemy)
+                    DetachEnemy(enemy);
+
+        if (e.NewItems is not null)
+            foreach (object? item in e.NewItems)
+                if (item is InGameEnemyViewModel enemy)
+                    AttachEnemy(enemy);
+
+        RebuildFilteredEnemies();
+    }
+
+    private void OnEnemyPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (
+            !string.IsNullOrEmpty(e.PropertyName)
+            && !string.Equals(e.PropertyName, nameof(InGameEnemyViewModel.RoomId), StringComparison.Ordinal)
+        )
+            return;
+
+        RebuildFilteredEnemies();
+    }
+
+    private void ResetObservedEnemies()
+    {
+        foreach (InGameEnemyViewModel enemy in _observedEnemies)
+            enemy.PropertyChanged -= OnEnemyPropertyChanged;
+
+        _observedEnemies.Clear();
+
+        foreach (InGameEnemyViewModel enemy in _source.Enemies)
+            AttachEnemy(enemy);
+    }
+
+    private void AttachEnemy(InGameEnemyViewModel enemy)
+    {
+        if (_observedEnemies.Add(enemy))
+            enemy.PropertyChanged += OnEnemyPropertyChanged;
+    }
+
+    private void DetachEnemy(InGameEnemyViewModel enemy)
+    {
+        if (_observedEnemies.Remove(enemy))
+            enemy.PropertyChanged -= OnEnemyPropertyChanged;
+    }
+
+    private void UpdateFilterSetting(bool onlyShowCurrentPlayerRoom)
+    {
+        if (_onlyShowCurrentPlayerRoom == onlyShowCurrentPlayerRoom)
+            return;
+
+        _onlyShowCurrentPlayerRoom = onlyShowCurrentPlayerRoom;
+        RebuildFilteredEnemies();
+    }
+
+    private void UpdateCurrentPlayerRoom((bool HasRoom, short RoomId) roomState)
+    {
+        if (
+            _hasCurrentPlayerRoom == roomState.HasRoom
+            && (!_hasCurrentPlayerRoom || _currentPlayerRoomId == roomState.RoomId)
+        )
+            return;
+
+        _hasCurrentPlayerRoom = roomState.HasRoom;
+        _currentPlayerRoomId = roomState.RoomId;
+        RebuildFilteredEnemies();
+    }
+
+    private void RebuildFilteredEnemies()
+    {
+        List<InGameEnemyViewModel> filteredEnemies = [];
+
+        foreach (InGameEnemyViewModel enemy in _source.Enemies)
+        {
+            if (ShouldInclude(enemy))
+                filteredEnemies.Add(enemy);
+        }
+
+        bool hasEnemies = filteredEnemies.Count > 0;
+        string emptyMessage =
+            hasEnemies ? string.Empty
+            : _onlyShowCurrentPlayerRoom && _hasCurrentPlayerRoom ? CurrentRoomEmptyMessage
+            : DefaultEmptyMessage;
+
+        if (!HasSameEnemySequence(filteredEnemies))
+            _enemies.ReplaceAll(filteredEnemies);
+
+        HasEnemies = hasEnemies;
+        EmptyMessage = emptyMessage;
+    }
+
+    private bool ShouldInclude(InGameEnemyViewModel enemy)
+    {
+        if (!_onlyShowCurrentPlayerRoom || !_hasCurrentPlayerRoom)
+            return true;
+
+        return enemy.RoomId == _currentPlayerRoomId;
+    }
+
+    private static (bool HasRoom, short RoomId) ResolveCurrentPlayerRoom(
+        DecodedInGamePlayer[] players,
+        byte localPlayerSlotIndex
+    )
+    {
+        if (TryResolvePlayerRoom(players, localPlayerSlotIndex, out short roomId))
+            return (true, roomId);
+
+        if (TryResolveSharedTrackedRoom(players, out roomId))
+            return (true, roomId);
+
+        return (false, 0);
+    }
+
+    private static bool IsTrackedPlayer(DecodedInGamePlayer player) =>
+        player.IsEnabled && player.IsInGame && (player.NameId > 0 || !string.IsNullOrEmpty(player.Type));
+
+    private bool HasSameEnemySequence(List<InGameEnemyViewModel> filteredEnemies)
+    {
+        if (_enemies.Count != filteredEnemies.Count)
+            return false;
+
+        int index = 0;
+        foreach (InGameEnemyViewModel enemy in _enemies)
+        {
+            if (!ReferenceEquals(enemy, filteredEnemies[index]))
+                return false;
+
+            index++;
+        }
+
+        return true;
+    }
+
+    private static bool TryResolvePlayerRoom(DecodedInGamePlayer[] players, byte localPlayerSlotIndex, out short roomId)
+    {
+        foreach (DecodedInGamePlayer player in players)
+        {
+            if (player.SlotIndex != localPlayerSlotIndex)
+                continue;
+
+            return TryGetPlayerRoom(player, out roomId);
+        }
+
+        if (localPlayerSlotIndex < players.Length)
+            return TryGetPlayerRoom(players[localPlayerSlotIndex], out roomId);
+
+        roomId = 0;
+        return false;
+    }
+
+    private static bool TryResolveSharedTrackedRoom(DecodedInGamePlayer[] players, out short roomId)
+    {
+        bool hasCandidateRoom = false;
+        short candidateRoomId = 0;
+
+        foreach (DecodedInGamePlayer player in players)
+        {
+            if (!TryGetPlayerRoom(player, out short playerRoomId))
+                continue;
+
+            if (!hasCandidateRoom)
+            {
+                candidateRoomId = playerRoomId;
+                hasCandidateRoom = true;
+                continue;
+            }
+
+            if (candidateRoomId != playerRoomId)
+            {
+                roomId = 0;
+                return false;
+            }
+        }
+
+        roomId = candidateRoomId;
+        return hasCandidateRoom;
+    }
+
+    private static bool TryGetPlayerRoom(DecodedInGamePlayer player, out short roomId)
+    {
+        if (!IsTrackedPlayer(player) || player.RoomId <= 0)
+        {
+            roomId = 0;
+            return false;
+        }
+
+        roomId = player.RoomId;
+        return true;
+    }
+
+    private static EntitiesDockSettings GetEntitiesDockSettings(OutbreakTrackerSettings settings) =>
+        (settings.Display ?? new DisplaySettings()).EntitiesDock ?? new EntitiesDockSettings();
+}

@@ -91,6 +91,10 @@ public sealed record DecodedInGameScenario
     public byte PlayerCount { get; init; }
 
     [JsonInclude]
+    [JsonPropertyName(nameof(LocalPlayerSlotIndex))]
+    public byte LocalPlayerSlotIndex { get; init; } = 0xFF;
+
+    [JsonInclude]
     [JsonPropertyName(nameof(PassDesperateTimes1))]
     public short PassDesperateTimes1 { get; init; }
 

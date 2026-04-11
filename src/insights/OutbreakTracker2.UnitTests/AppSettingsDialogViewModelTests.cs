@@ -89,6 +89,46 @@ public sealed class AppSettingsDialogViewModelTests
         await Assert.That(lobbyScenarioOptions.Contains("Wild things")).IsTrue();
     }
 
+    [Test]
+    public async Task BuildSettings_PreservesEntitiesDockRoomFilterToggle()
+    {
+        using FakeAppSettingsService settingsService = new(
+            new OutbreakTrackerSettings
+            {
+                Display = new DisplaySettings
+                {
+                    EntitiesDock = new EntitiesDockSettings { OnlyShowCurrentPlayerRoom = false },
+                },
+            }
+        );
+
+        Type viewModelType = typeof(OutbreakTracker2.Application.App).Assembly.GetType(
+            "OutbreakTracker2.Application.Views.Settings.AppSettingsDialogViewModel",
+            throwOnError: true
+        )!;
+
+        object viewModel = Activator.CreateInstance(
+            viewModelType,
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+            binder: null,
+            args: [settingsService, CreateProxy<ISukiToastManager>(), CreateProxy<ISukiDialog>()],
+            culture: null
+        )!;
+
+        bool loadedValue = (bool)
+            viewModelType.GetProperty("EntitiesDockOnlyShowCurrentPlayerRoom")!.GetValue(viewModel)!;
+        viewModelType.GetProperty("EntitiesDockOnlyShowCurrentPlayerRoom")!.SetValue(viewModel, true);
+
+        MethodInfo buildSettingsMethod = viewModelType.GetMethod(
+            "BuildSettings",
+            BindingFlags.Instance | BindingFlags.NonPublic
+        )!;
+        OutbreakTrackerSettings builtSettings = (OutbreakTrackerSettings)buildSettingsMethod.Invoke(viewModel, null)!;
+
+        await Assert.That(loadedValue).IsFalse();
+        await Assert.That(builtSettings.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
+    }
+
     private static T CreateProxy<T>()
         where T : class => DispatchProxy.Create<T, DefaultValueProxy>();
 

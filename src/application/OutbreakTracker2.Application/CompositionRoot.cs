@@ -191,6 +191,7 @@ internal static class CompositionRoot
     {
         // Game Dock: dockable instances and the factory that wires them into a layout
         services.AddSingleton<GameScreenTool>();
+        services.AddSingleton<EntitiesDockViewModel>();
         services.AddSingleton<EntitiesDockTool>();
         services.AddSingleton<MapDockTool>();
         services.AddSingleton<PlayersDockTool>();
@@ -204,6 +205,7 @@ internal static class CompositionRoot
         services.AddSingleton<GameDockFactory>();
 
         services.AddSingleton<MapCanvasViewModel>();
+        services.AddSingleton<IEnemyCardCollectionSource>(sp => sp.GetRequiredService<InGameEnemiesViewModel>());
 
         services.AddTransient<ICharacterBustViewModelFactory, CharacterBustViewModelFactory>();
         services.AddTransient<ILobbyRoomPlayerViewModelFactory, LobbyRoomPlayerViewModelFactory>();
