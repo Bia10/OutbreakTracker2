@@ -1,16 +1,15 @@
 <UserControl
-    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.ItemSlotView"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:adc="clr-namespace:Avalonia.Data.Converters;assembly=Avalonia.Base"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
-    xmlns:inventory="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory"
-    d:DesignHeight="66"
-    d:DesignWidth="78"
-    x:DataType="inventory:ItemSlotViewModel"
-    mc:Ignorable="d">
+x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.ItemSlotView"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:item="clr-namespace:OutbreakTracker2.Application.Views.Common.Item"
+xmlns:inventory="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory"
+d:DesignHeight="66"
+d:DesignWidth="78"
+x:DataType="inventory:ItemSlotViewModel"
+mc:Ignorable="d">
 
     <UserControl.Resources>
         <!--  Defaults — overridden by ancestor ScrollViewer resources in InGamePlayersView  -->
@@ -19,56 +18,17 @@
     </UserControl.Resources>
 
     <Grid
-        Width="{DynamicResource ItemSlotWidth}"
-        Height="{DynamicResource ItemSlotHeight}"
-        Margin="2">
-        <suki:GlassCard
-            Padding="0"
-            CornerRadius="3">
-            <Grid>
-                <Image
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    Source="{Binding ItemImageViewModel.ItemImage}"
-                    Stretch="Uniform" />
-                <TextBlock
-                    Margin="2,1"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
-                    FontSize="9"
-                    FontWeight="Heavy"
-                    Text="{Binding ItemCount}" />
-                <TextBlock
-                    Margin="2,1"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    FontSize="8"
-                    FontWeight="Bold"
-                    Text="{Binding SlotNumber}" />
-
-                <StackPanel
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    IsVisible="{Binding ItemImageViewModel.ItemImage, Converter={x:Static adc:ObjectConverters.IsNull}}">
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        FontSize="8"
-                        FontWeight="Bold"
-                        Text="{Binding ItemName}" />
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        FontSize="7"
-                        Opacity="0.7"
-                        Text="{Binding DebugInfo}" />
-                </StackPanel>
-            </Grid>
-        </suki:GlassCard>
+    Width="{DynamicResource ItemSlotWidth}"
+    Height="{DynamicResource ItemSlotHeight}"
+    Margin="2">
+        <item:ItemSlotControl />
 
         <!--  Glow border overlay — animated from code-behind when an inventory slot event is detected  -->
         <Border
-            x:Name="GlowBorder"
-            BorderThickness="3"
-            CornerRadius="3"
-            IsHitTestVisible="False"
-            Opacity="0" /></Grid>
+        x:Name="GlowBorder"
+        BorderThickness="3"
+        CornerRadius="3"
+        IsHitTestVisible="False"
+        Opacity="0" />
+    </Grid>
 </UserControl>

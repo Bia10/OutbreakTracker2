@@ -11,7 +11,7 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
 public sealed partial class ItemSlotViewModel(
     ILogger<ItemSlotViewModel> logger,
     IItemImageViewModelFactory itemImageViewModelFactory
-) : ObservableObject
+) : ObservableObject, IItemSlotDisplay
 {
     private readonly ILogger<ItemSlotViewModel> _logger = logger;
 
@@ -21,13 +21,20 @@ public sealed partial class ItemSlotViewModel(
     private int _slotNumber;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisplayName))]
+    [NotifyPropertyChangedFor(nameof(IsEmpty))]
     private string _itemName = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(QuantityText))]
     private string _itemCount = string.Empty;
 
     [ObservableProperty]
     private string _debugInfo = string.Empty;
+
+    public string DisplayName => string.IsNullOrEmpty(ItemName) ? "Empty" : ItemName;
+    public string QuantityText => ItemCount;
+    public bool IsEmpty => string.IsNullOrEmpty(ItemName) || ItemName.Equals("Empty", StringComparison.Ordinal);
 
     /// <summary>Raised whenever an inventory slot event is detected, carrying the glow color.</summary>
     public event EventHandler<GlowEventArgs>? GlowTriggered;

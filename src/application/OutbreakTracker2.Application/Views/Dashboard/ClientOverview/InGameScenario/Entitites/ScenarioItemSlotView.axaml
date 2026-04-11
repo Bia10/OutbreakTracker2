@@ -2,17 +2,16 @@
 x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites.ScenarioItemSlotView"
 xmlns="https://github.com/avaloniaui"
 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-xmlns:adc="clr-namespace:Avalonia.Data.Converters;assembly=Avalonia.Base"
 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+xmlns:item="clr-namespace:OutbreakTracker2.Application.Views.Common.Item"
 xmlns:entitites="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites"
 d:DesignHeight="100"
 d:DesignWidth="100"
 x:DataType="entitites:ScenarioItemSlotViewModel"
 mc:Ignorable="d">
 
-    <Grid Width="58" Height="50" Margin="3">
+    <Grid x:Name="ItemCard" Width="58" Height="50" Margin="3">
 
         <Grid.ContextMenu>
             <ContextMenu>
@@ -22,209 +21,169 @@ mc:Ignorable="d">
             </ContextMenu>
         </Grid.ContextMenu>
 
-        <!--  Main item card  -->
-        <suki:GlassCard x:Name="ItemCard" Padding="2" CornerRadius="4">
-            <FlyoutBase.AttachedFlyout>
-                <Flyout Placement="Bottom" ShowMode="Standard">
-                    <Border
-                    Padding="12"
-                    Background="{DynamicResource SukiCardBackground}"
-                    BorderBrush="{DynamicResource SukiControlBorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="6">
-                        <StackPanel Spacing="5" MinWidth="200">
-                            <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock
-                                Grid.Column="0"
-                                FontSize="13"
-                                FontWeight="SemiBold"
-                                Text="{Binding DisplayName}" />
-                                <Button
-                                Grid.Column="1"
-                                Padding="4,0"
-                                VerticalAlignment="Center"
-                                Click="OnDetailsFlyoutClose"
-                                Content="✕"
-                                FontSize="10" />
-                            </Grid>
-                            <Separator />
-                            <!--  Slot / Qty on same row  -->
-                            <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
-                                <TextBlock
-                                Grid.Row="0"
-                                Grid.Column="0"
-                                FontSize="11"
-                                Opacity="0.7"
-                                Text="Slot" />
-                                <TextBlock
-                                Grid.Row="0"
-                                Grid.Column="1"
-                                Margin="4,0,0,0"
-                                FontSize="11"
-                                Text="{Binding PositionIndex}" />
-                                <TextBlock
-                                Grid.Row="0"
-                                Grid.Column="2"
-                                Margin="10,0,0,0"
-                                FontSize="11"
-                                Opacity="0.7"
-                                Text="Qty" />
-                                <TextBlock
-                                Grid.Row="0"
-                                Grid.Column="3"
-                                Margin="4,0,0,0"
-                                FontSize="11"
-                                Text="{Binding Quantity}" />
-                                <!--  Room (full row)  -->
-                                <TextBlock
-                                Grid.Row="1"
-                                Grid.Column="0"
-                                Margin="0,4,0,0"
-                                FontSize="11"
-                                Opacity="0.7"
-                                Text="Room" />
-                                <TextBlock
-                                Grid.Row="1"
-                                Grid.Column="1"
-                                Grid.ColumnSpan="3"
-                                Margin="4,4,0,0"
-                                FontSize="11"
-                                Text="{Binding RoomName}"
-                                TextTrimming="CharacterEllipsis" />
-                                <!--  Held by / Picked up at on same row  -->
-                                <TextBlock
-                                Grid.Row="2"
-                                Grid.Column="0"
-                                Margin="0,4,0,0"
-                                FontSize="11"
-                                Opacity="0.7"
-                                Text="Held by" />
-                                <TextBlock
-                                Grid.Row="2"
-                                Grid.Column="1"
-                                Margin="4,4,0,0"
-                                FontSize="11"
-                                Text="{Binding PickedUpByName}" />
-                                <TextBlock
-                                Grid.Row="2"
-                                Grid.Column="2"
-                                Margin="10,4,0,0"
-                                FontSize="11"
-                                Opacity="0.7"
-                                Text="At" />
-                                <TextBlock
-                                Grid.Row="2"
-                                Grid.Column="3"
-                                Margin="4,4,0,0"
-                                FontSize="11"
-                                Text="{Binding PickedUpAtDisplay}" />
-                                <!--  Mix / Present on same row  -->
-                                <TextBlock
-                                Grid.Row="3"
-                                Grid.Column="0"
-                                Margin="0,4,0,0"
-                                FontSize="11"
-                                Opacity="0.7"
-                                Text="Mix" />
-                                <TextBlock
-                                Grid.Row="3"
-                                Grid.Column="1"
-                                Margin="4,4,0,0"
-                                FontSize="11"
-                                Text="{Binding Mix}" />
-                                <TextBlock
-                                Grid.Row="3"
-                                Grid.Column="2"
-                                Margin="10,4,0,0"
-                                FontSize="11"
-                                Opacity="0.7"
-                                Text="Present" />
-                                <TextBlock
-                                Grid.Row="3"
-                                Grid.Column="3"
-                                Margin="4,4,0,0"
-                                FontSize="11"
-                                Text="{Binding Present}" />
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-                </Flyout>
-            </FlyoutBase.AttachedFlyout>
-
-            <Grid>
-                <!--  Item image fills the tile naturally — tile size (67×67) controls the scale  -->
-                <Image
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                Source="{Binding ItemImageViewModel.ItemImage}"
-                Stretch="Uniform" />
-
-                <!--  Item name + debug info fallback when no image (mirrors inventory style)  -->
-                <StackPanel
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                IsVisible="{Binding ItemImageViewModel.ItemImage, Converter={x:Static adc:ObjectConverters.IsNull}}">
-                    <TextBlock
-                    Margin="2"
-                    HorizontalAlignment="Center"
-                    FontSize="10"
-                    FontWeight="Bold"
-                    Text="{Binding DisplayName}"
-                    TextAlignment="Center"
-                    TextWrapping="Wrap" />
-                    <TextBlock
-                    HorizontalAlignment="Center"
-                    FontSize="7"
-                    Opacity="0.7"
-                    Text="{Binding DebugInfo}" />
-                </StackPanel>
-
-                <!--  Quantity (top-left)  -->
-                <TextBlock
-                Margin="3,2"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                FontSize="11"
-                FontWeight="Heavy"
-                Text="{Binding Quantity}" />
-
-                <!--  Slot index (top-right)  -->
-                <TextBlock
-                Margin="3,2"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                FontSize="10"
-                Opacity="0.65"
-                Text="{Binding PositionIndex}" />
-
-
-                <!--  Player badge P1/P2/P3/P4 (bottom-right, only when held)  -->
+        <FlyoutBase.AttachedFlyout>
+            <Flyout Placement="Bottom" ShowMode="Standard">
                 <Border
-                Margin="2"
-                Padding="2,1"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                Background="#CC1E90FF"
-                CornerRadius="3"
-                IsVisible="{Binding IsHeldByPlayer}">
-                    <TextBlock
-                    FontSize="9"
-                    FontWeight="Bold"
-                    Foreground="White"
-                    Text="{Binding PickedUpDisplay}" />
+                Padding="12"
+                Background="{DynamicResource SukiCardBackground}"
+                BorderBrush="{DynamicResource SukiControlBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="6">
+                    <StackPanel Spacing="5" MinWidth="200">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock
+                            Grid.Column="0"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Text="{Binding DisplayName}" />
+                            <Button
+                            Grid.Column="1"
+                            Padding="4,0"
+                            VerticalAlignment="Center"
+                            Click="OnDetailsFlyoutClose"
+                            Content="x"
+                            FontSize="10" />
+                        </Grid>
+                        <Separator />
+                        <!--  Slot / Qty on same row  -->
+                        <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                            <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Text="Slot" />
+                            <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Margin="4,0,0,0"
+                            FontSize="11"
+                            Text="{Binding PositionIndex}" />
+                            <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="2"
+                            Margin="10,0,0,0"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Text="Qty" />
+                            <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="3"
+                            Margin="4,0,0,0"
+                            FontSize="11"
+                            Text="{Binding Quantity}" />
+                            <!--  Room (full row)  -->
+                            <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Margin="0,4,0,0"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Text="Room" />
+                            <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="3"
+                            Margin="4,4,0,0"
+                            FontSize="11"
+                            Text="{Binding RoomName}"
+                            TextTrimming="CharacterEllipsis" />
+                            <!--  Held by / Picked up at on same row  -->
+                            <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Margin="0,4,0,0"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Text="Held by" />
+                            <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Margin="4,4,0,0"
+                            FontSize="11"
+                            Text="{Binding PickedUpByName}" />
+                            <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            Margin="10,4,0,0"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Text="At" />
+                            <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="3"
+                            Margin="4,4,0,0"
+                            FontSize="11"
+                            Text="{Binding PickedUpAtDisplay}" />
+                            <!--  Mix / Present on same row  -->
+                            <TextBlock
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            Margin="0,4,0,0"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Text="Mix" />
+                            <TextBlock
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            Margin="4,4,0,0"
+                            FontSize="11"
+                            Text="{Binding Mix}" />
+                            <TextBlock
+                            Grid.Row="3"
+                            Grid.Column="2"
+                            Margin="10,4,0,0"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Text="Present" />
+                            <TextBlock
+                            Grid.Row="3"
+                            Grid.Column="3"
+                            Margin="4,4,0,0"
+                            FontSize="11"
+                            Text="{Binding Present}" />
+                        </Grid>
+                    </StackPanel>
                 </Border>
+            </Flyout>
+        </FlyoutBase.AttachedFlyout>
 
-                <!--  Tracking indicator dot (top-center, when tracking is on)  -->
-                <Ellipse
-                Width="6"
-                Height="6"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top"
-                Margin="0,3"
-                Fill="#FFFF8C00"
-                IsVisible="{Binding IsPickupTracked}" />
-            </Grid>
-        </suki:GlassCard>
+        <!--  Shared item slot rendering  -->
+        <item:ItemSlotControl />
+
+        <!--  Glow border overlay — animated from code-behind when a scenario slot event is detected  -->
+        <Border
+        x:Name="GlowBorder"
+        BorderThickness="3"
+        CornerRadius="3"
+        IsHitTestVisible="False"
+        Opacity="0" />
+
+        <!--  Player badge P1/P2/P3/P4 (bottom-right, only when held)  -->
+        <Border
+        Margin="2"
+        Padding="2,1"
+        HorizontalAlignment="Right"
+        VerticalAlignment="Bottom"
+        Background="#CC1E90FF"
+        CornerRadius="3"
+        IsVisible="{Binding IsHeldByPlayer}">
+            <TextBlock
+            FontSize="9"
+            FontWeight="Bold"
+            Foreground="White"
+            Text="{Binding PickedUpDisplay}" />
+        </Border>
+
+        <!--  Tracking indicator dot (top-center, when tracking is on)  -->
+        <Ellipse
+        Width="6"
+        Height="6"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Top"
+        Margin="0,3"
+        Fill="#FFFF8C00"
+        IsVisible="{Binding IsPickupTracked}" />
 
     </Grid>
 </UserControl>

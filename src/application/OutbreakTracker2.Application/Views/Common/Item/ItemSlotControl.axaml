@@ -1,0 +1,61 @@
+<UserControl
+x:Class="OutbreakTracker2.Application.Views.Common.Item.ItemSlotControl"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:adc="clr-namespace:Avalonia.Data.Converters;assembly=Avalonia.Base"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+xmlns:item="clr-namespace:OutbreakTracker2.Application.Views.Common.Item"
+d:DesignHeight="50"
+d:DesignWidth="58"
+x:DataType="item:IItemSlotDisplay"
+mc:Ignorable="d">
+
+    <suki:GlassCard Padding="0" CornerRadius="3">
+        <Grid>
+            <Image
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Source="{Binding ItemImageViewModel.ItemImage}"
+            Stretch="Uniform" />
+
+            <!--  Quantity (top-left)  -->
+            <TextBlock
+            Margin="2,1"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            FontSize="9"
+            FontWeight="Heavy"
+            Text="{Binding QuantityText}" />
+
+            <!--  Slot number (top-right)  -->
+            <TextBlock
+            Margin="2,1"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            FontSize="8"
+            FontWeight="Bold"
+            Text="{Binding SlotNumber}" />
+
+            <!--  Name + debug fallback when no image  -->
+            <StackPanel
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsVisible="{Binding ItemImageViewModel.ItemImage, Converter={x:Static adc:ObjectConverters.IsNull}}">
+                <TextBlock
+                HorizontalAlignment="Center"
+                FontSize="8"
+                FontWeight="Bold"
+                Text="{Binding DisplayName}"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+                <TextBlock
+                HorizontalAlignment="Center"
+                FontSize="7"
+                Opacity="0.7"
+                Text="{Binding DebugInfo}" />
+            </StackPanel>
+        </Grid>
+    </suki:GlassCard>
+</UserControl>

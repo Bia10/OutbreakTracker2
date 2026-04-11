@@ -1,6 +1,15 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
+using Avalonia;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Microsoft.Extensions.Logging.Abstractions;
+using OutbreakTracker2.Application.Services.Atlas;
+using OutbreakTracker2.Application.Services.Dispatcher;
+using OutbreakTracker2.Application.Views.Common;
+using OutbreakTracker2.Application.Views.Common.Item;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.UnitTests;
@@ -33,6 +42,29 @@ public sealed class ScenarioItemSlotViewModelTests
     }
 
     [Test]
+    public async Task ClearedSlotWithNonZeroSlotIndex_UsesInventoryEmptyStyle()
+    {
+        ScenarioItemSlotViewModel viewModel = CreateViewModel(
+            new DecodedItem
+            {
+                Id = 160,
+                TypeId = 0,
+                TypeName = "Handgun",
+                Quantity = 0,
+                PickedUp = 0,
+                SlotIndex = 7,
+                Present = 0,
+                RoomId = 5,
+                RoomName = "Room 5",
+            }
+        );
+
+        await Assert.That(viewModel.IsEmpty).IsTrue();
+        await Assert.That(viewModel.DisplayName).IsEqualTo("Empty");
+        await Assert.That(viewModel.DebugInfo).IsEqualTo("0x00 | 0");
+    }
+
+    [Test]
     public async Task LegitItem_IsNotInvalidatedByZeroPresentAndMix()
     {
         ScenarioItemSlotViewModel viewModel = CreateViewModel(
@@ -55,6 +87,27 @@ public sealed class ScenarioItemSlotViewModelTests
     }
 
     [Test]
+    public async Task InteractableZeroQuantityHandgun_DoesNotUseInventoryEmptyStyle()
+    {
+        ScenarioItemSlotViewModel viewModel = CreateViewModel(
+            new DecodedItem
+            {
+                Id = 1,
+                TypeId = 0,
+                TypeName = "Handgun",
+                Quantity = 0,
+                PickedUp = 0,
+                SlotIndex = 7,
+                Present = 1,
+            }
+        );
+
+        await Assert.That(viewModel.IsEmpty).IsFalse();
+        await Assert.That(viewModel.DisplayName).IsEqualTo("Handgun");
+        await Assert.That(viewModel.DebugInfo).IsEqualTo("0x01 | 1");
+    }
+
+    [Test]
     public async Task RealHandgunPickup_DoesNotUseInventoryEmptyStyle()
     {
         ScenarioItemSlotViewModel viewModel = CreateViewModel(
@@ -74,6 +127,99 @@ public sealed class ScenarioItemSlotViewModelTests
         await Assert.That(viewModel.DebugInfo).IsEqualTo("0x01 | 1");
     }
 
+    [Test]
+    public async Task UpdateItem_RaisesOrangeGlow_WhenSlotContentsChange()
+    {
+        ScenarioItemSlotViewModel viewModel = CreateLiveViewModel(
+            new DecodedItem
+            {
+                Id = 1,
+                TypeId = 10,
+                TypeName = "Green Herb",
+                Quantity = 1,
+                Present = 1,
+            }
+        );
+
+        Color? glowColor = null;
+        viewModel.GlowTriggered += (_, args) => glowColor = args.Color;
+
+        viewModel.UpdateItem(
+            new DecodedItem
+            {
+                Id = 2,
+                TypeId = 11,
+                TypeName = "Handgun Ammo",
+                Quantity = 15,
+                Present = 1,
+            },
+            frameCounter: 100,
+            GameFile.FileOne,
+            positionIndex: 0
+        );
+
+        await Assert.That(glowColor.HasValue).IsTrue();
+        await Assert.That(glowColor!.Value).IsEqualTo(Colors.Orange);
+    }
+
+    [Test]
+    public async Task UpdateItem_RaisesRedGlow_WhenSlotEmpties()
+    {
+        ScenarioItemSlotViewModel viewModel = CreateLiveViewModel(
+            new DecodedItem
+            {
+                Id = 1,
+                TypeId = 10,
+                TypeName = "Green Herb",
+                Quantity = 1,
+                Present = 1,
+            }
+        );
+
+        Color? glowColor = null;
+        viewModel.GlowTriggered += (_, args) => glowColor = args.Color;
+
+        viewModel.UpdateItem(
+            new DecodedItem
+            {
+                Id = 1,
+                TypeId = 0,
+                TypeName = string.Empty,
+                Quantity = 0,
+                PickedUp = 0,
+                Present = 0,
+            },
+            frameCounter: 100,
+            GameFile.FileOne,
+            positionIndex: 0
+        );
+
+        await Assert.That(glowColor.HasValue).IsTrue();
+        await Assert.That(glowColor!.Value).IsEqualTo(Colors.Red);
+    }
+
+    [Test]
+    public async Task UpdateItem_DoesNotRaiseGlow_WhenSlotContentsStayTheSame()
+    {
+        DecodedItem item = new()
+        {
+            Id = 1,
+            TypeId = 10,
+            TypeName = "Green Herb",
+            Quantity = 1,
+            Present = 1,
+        };
+
+        ScenarioItemSlotViewModel viewModel = CreateLiveViewModel(item);
+
+        bool glowTriggered = false;
+        viewModel.GlowTriggered += (_, _) => glowTriggered = true;
+
+        viewModel.UpdateItem(item, frameCounter: 100, GameFile.FileOne, positionIndex: 0);
+
+        await Assert.That(glowTriggered).IsFalse();
+    }
+
     private static ScenarioItemSlotViewModel CreateViewModel(DecodedItem item)
     {
         ScenarioItemSlotViewModel viewModel = (ScenarioItemSlotViewModel)
@@ -81,5 +227,57 @@ public sealed class ScenarioItemSlotViewModelTests
 
         ItemField.SetValue(viewModel, item);
         return viewModel;
+    }
+
+    private static ScenarioItemSlotViewModel CreateLiveViewModel(DecodedItem item) =>
+        new(item, CreateItemImageViewModel(), GameFile.FileOne, positionIndex: 0);
+
+    private static ItemImageViewModel CreateItemImageViewModel() =>
+        new(NullLogger<ItemImageViewModel>.Instance, new StubImageViewModelFactory());
+
+    private sealed class StubImageViewModelFactory : IImageViewModelFactory
+    {
+        public ImageViewModel Create() =>
+            new(NullLogger<ImageViewModel>.Instance, new StubTextureAtlasService(), new ImmediateDispatcherService());
+    }
+
+    private sealed class StubTextureAtlasService : ITextureAtlasService
+    {
+        private static readonly ITextureAtlas EmptyAtlas = new StubTextureAtlas();
+
+        public ITextureAtlas GetAtlas(string name) => EmptyAtlas;
+
+        public IReadOnlyDictionary<string, ITextureAtlas> GetAllAtlases() => new Dictionary<string, ITextureAtlas>();
+
+        public Task LoadAtlasesAsync() => Task.CompletedTask;
+    }
+
+    private sealed class StubTextureAtlas : ITextureAtlas
+    {
+        public Bitmap? Texture => null;
+
+        public Rect GetSourceRectangle(string name) => default;
+    }
+
+    private sealed class ImmediateDispatcherService : IDispatcherService
+    {
+        public bool IsOnUIThread() => true;
+
+        public void PostOnUI(Action action) => action();
+
+        public Task InvokeOnUIAsync(Action action, CancellationToken cancellationToken = default)
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        public Task<TResult?> InvokeOnUIAsync<TResult>(
+            Func<TResult> action,
+            CancellationToken cancellationToken = default
+        )
+        {
+            TResult result = action();
+            return Task.FromResult<TResult?>(result);
+        }
     }
 }
