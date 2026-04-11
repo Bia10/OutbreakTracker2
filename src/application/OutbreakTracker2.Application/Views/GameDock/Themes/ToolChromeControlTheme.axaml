@@ -83,8 +83,6 @@ See doc/SukiUI_Dock_Integration_Issues.md, Issue 11.
                     <ContentPresenter
                     x:Name="PART_ContentPresenter"
                     Background="{TemplateBinding Background}"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
                     Content="{TemplateBinding Content}"
                     Padding="{TemplateBinding Padding}"
                     Grid.Row="1" />

@@ -1,13 +1,13 @@
 <!--
-    Vendored PinnedDockControl ControlTheme.
+Vendored PinnedDockControl ControlTheme.
 
-    Vendored because the NuGet's compiled ControlTheme key does not resolve
-    for dynamically-created pinned controls.
-    See doc/SukiUI_Dock_Integration_Issues.md, Issues 3 and 4.
+Vendored because the NuGet's compiled ControlTheme key does not resolve
+for dynamically-created pinned controls.
+See doc/SukiUI_Dock_Integration_Issues.md, Issues 3 and 4.
 
-    Required template part names: PART_PinnedDockGrid, PART_PinnedDock, PART_PinnedDockSplitter.
-    PinnedDockDisplayMode and PinnedDock.VisibleDockables.Count are not available
-    in this NuGet build; uses !PinnedDock.IsEmpty for visibility instead.
+Required template part names: PART_PinnedDockGrid, PART_PinnedDock, PART_PinnedDockSplitter.
+PinnedDockDisplayMode and PinnedDock.VisibleDockables.Count are not available
+in this NuGet build; uses !PinnedDock.IsEmpty for visibility instead.
 -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -17,13 +17,13 @@
     <ControlTheme x:Key="{x:Type PinnedDockControl}" TargetType="PinnedDockControl">
 
         <Setter Property="PinnedDockAlignment"
-                Value="{CompiledBinding PinnedDock.Alignment}"
+                Value="{Binding PinnedDock, Converter={x:Static localConverters:PinnedDockAlignmentConverter.Instance}}"
                 x:DataType="dmc:IRootDock" />
 
         <Setter Property="Template">
             <ControlTemplate>
                 <Grid Name="PART_PinnedDockGrid"
-                      IsVisible="{Binding !PinnedDock.IsEmpty, FallbackValue=False}"
+                      IsVisible="{Binding PinnedDock, Converter={x:Static localConverters:PinnedDockHasVisibleContentConverter.Instance}}"
                       x:DataType="dmc:IRootDock"
                       x:CompileBindings="True">
                     <ContentControl Content="{Binding PinnedDock}" Name="PART_PinnedDock">

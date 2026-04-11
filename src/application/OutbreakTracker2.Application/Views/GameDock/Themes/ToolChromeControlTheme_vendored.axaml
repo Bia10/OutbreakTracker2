@@ -1,10 +1,10 @@
 <!--
-    Vendored ToolChromeControl — grip-only header, SukiUI-styled.
+Vendored ToolChromeControl — grip-only header, SukiUI-styled.
 
-    DockProperties.IsDragArea must be set as an inline attribute (not via
-    a Style setter) because DockHelpers.GetControl uses AvaloniaObject.IsSet(),
-    which returns false for Style-derived values.
-    See doc/SukiUI_Dock_Integration_Issues.md, Issue 11.
+DockProperties.IsDragArea must be set as an inline attribute (not via
+a Style setter) because DockHelpers.GetControl uses AvaloniaObject.IsSet(),
+which returns false for Style-derived values.
+See doc/SukiUI_Dock_Integration_Issues.md, Issue 11.
 -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -60,13 +60,11 @@
 
                     <!-- Tool content (Row 1) -->
                     <ContentPresenter
-                        x:Name="PART_ContentPresenter"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        Content="{TemplateBinding Content}"
-                        Padding="{TemplateBinding Padding}"
-                        Grid.Row="1" />
+                    x:Name="PART_ContentPresenter"
+                    Background="{TemplateBinding Background}"
+                    Content="{TemplateBinding Content}"
+                    Padding="{TemplateBinding Padding}"
+                    Grid.Row="1" />
 
                     <!-- PART_Panel kept hidden — required name for Dock.Avalonia compat -->
                     <Panel x:Name="PART_Panel" IsVisible="False" Height="0" Grid.Row="0" />
