@@ -210,23 +210,6 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
         return enemy.RoomId == _currentPlayerRoomId;
     }
 
-    private static (bool HasRoom, short RoomId) ResolveCurrentPlayerRoom(
-        DecodedInGamePlayer[] players,
-        byte localPlayerSlotIndex
-    )
-    {
-        if (TryResolvePlayerRoom(players, localPlayerSlotIndex, out short roomId))
-            return (true, roomId);
-
-        if (TryResolveSharedTrackedRoom(players, out roomId))
-            return (true, roomId);
-
-        return (false, 0);
-    }
-
-    private static bool IsTrackedPlayer(DecodedInGamePlayer player) =>
-        player.IsEnabled && player.IsInGame && (player.NameId > 0 || !string.IsNullOrEmpty(player.Type));
-
     private bool HasSameEnemySequence(List<InGameEnemyViewModel> filteredEnemies)
     {
         if (_enemies.Count != filteredEnemies.Count)
@@ -244,63 +227,11 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
         return true;
     }
 
-    private static bool TryResolvePlayerRoom(DecodedInGamePlayer[] players, byte localPlayerSlotIndex, out short roomId)
-    {
-        foreach (DecodedInGamePlayer player in players)
-        {
-            if (player.SlotIndex != localPlayerSlotIndex)
-                continue;
-
-            return TryGetPlayerRoom(player, out roomId);
-        }
-
-        if (localPlayerSlotIndex < players.Length)
-            return TryGetPlayerRoom(players[localPlayerSlotIndex], out roomId);
-
-        roomId = 0;
-        return false;
-    }
-
-    private static bool TryResolveSharedTrackedRoom(DecodedInGamePlayer[] players, out short roomId)
-    {
-        bool hasCandidateRoom = false;
-        short candidateRoomId = 0;
-
-        foreach (DecodedInGamePlayer player in players)
-        {
-            if (!TryGetPlayerRoom(player, out short playerRoomId))
-                continue;
-
-            if (!hasCandidateRoom)
-            {
-                candidateRoomId = playerRoomId;
-                hasCandidateRoom = true;
-                continue;
-            }
-
-            if (candidateRoomId != playerRoomId)
-            {
-                roomId = 0;
-                return false;
-            }
-        }
-
-        roomId = candidateRoomId;
-        return hasCandidateRoom;
-    }
-
-    private static bool TryGetPlayerRoom(DecodedInGamePlayer player, out short roomId)
-    {
-        if (!IsTrackedPlayer(player) || player.RoomId <= 0)
-        {
-            roomId = 0;
-            return false;
-        }
-
-        roomId = player.RoomId;
-        return true;
-    }
-
     private static EntitiesDockSettings GetEntitiesDockSettings(OutbreakTrackerSettings settings) =>
         (settings.Display ?? new DisplaySettings()).EntitiesDock ?? new EntitiesDockSettings();
+
+    private static (bool HasRoom, short RoomId) ResolveCurrentPlayerRoom(
+        DecodedInGamePlayer[] players,
+        byte localPlayerSlotIndex
+    ) => CurrentPlayerRoomResolver.Resolve(players, localPlayerSlotIndex);
 }

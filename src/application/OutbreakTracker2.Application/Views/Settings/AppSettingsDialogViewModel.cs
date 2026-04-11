@@ -103,6 +103,9 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
     private bool _entitiesDockOnlyShowCurrentPlayerRoom;
 
     [ObservableProperty]
+    private bool _scenarioItemsDockOnlyShowCurrentPlayerRoom;
+
+    [ObservableProperty]
     private bool _doorFlagChanged;
 
     [ObservableProperty]
@@ -274,6 +277,7 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
             NotificationSettings notifications = settings.Notifications ?? new();
             DisplaySettings display = settings.Display ?? new();
             EntitiesDockSettings entitiesDock = display.EntitiesDock ?? new();
+            ScenarioItemsDockSettings scenarioItemsDock = display.ScenarioItemsDock ?? new();
             AlertRuleSettings alertRules = settings.AlertRules ?? new();
             PlayerAlertRuleSettings players = alertRules.Players ?? new();
             EnemyAlertRuleSettings enemies = alertRules.Enemies ?? new();
@@ -305,6 +309,7 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
             EnemyDespawned = enemies.Despawned;
             EnemyRoomChange = enemies.RoomChange;
             EntitiesDockOnlyShowCurrentPlayerRoom = entitiesDock.OnlyShowCurrentPlayerRoom;
+            ScenarioItemsDockOnlyShowCurrentPlayerRoom = scenarioItemsDock.OnlyShowCurrentPlayerRoom;
 
             DoorFlagChanged = doors.FlagChanged;
             DoorDestroyed = doors.Destroyed;
@@ -331,6 +336,10 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
                 EntitiesDock = new EntitiesDockSettings
                 {
                     OnlyShowCurrentPlayerRoom = EntitiesDockOnlyShowCurrentPlayerRoom,
+                },
+                ScenarioItemsDock = new ScenarioItemsDockSettings
+                {
+                    OnlyShowCurrentPlayerRoom = ScenarioItemsDockOnlyShowCurrentPlayerRoom,
                 },
             },
             AlertRules = new AlertRuleSettings

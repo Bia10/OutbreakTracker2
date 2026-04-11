@@ -31,7 +31,7 @@ RequestedThemeVariant="Default">
             <inGameScenario:InGameScenarioView DataContext="{Binding InGameScenarioViewModel}" />
         </DataTemplate>
         <DataTemplate DataType="{x:Type dockables:ScenarioItemsDockTool}">
-            <entitites:ScenarioItemsView DataContext="{Binding ScenarioEntitiesViewModel}" />
+            <entitites:ScenarioItemsView DataContext="{Binding ScenarioItemsDockViewModel}" />
         </DataTemplate>
         <DataTemplate DataType="{x:Type dockables:ScenarioEnemiesDockTool}">
             <entitites:ScenarioEnemiesView DataContext="{Binding ScenarioEntitiesViewModel}" />

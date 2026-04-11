@@ -90,7 +90,7 @@ public sealed class AppSettingsDialogViewModelTests
     }
 
     [Test]
-    public async Task BuildSettings_PreservesEntitiesDockRoomFilterToggle()
+    public async Task BuildSettings_PreservesDockRoomFilterToggles()
     {
         using FakeAppSettingsService settingsService = new(
             new OutbreakTrackerSettings
@@ -98,6 +98,7 @@ public sealed class AppSettingsDialogViewModelTests
                 Display = new DisplaySettings
                 {
                     EntitiesDock = new EntitiesDockSettings { OnlyShowCurrentPlayerRoom = false },
+                    ScenarioItemsDock = new ScenarioItemsDockSettings { OnlyShowCurrentPlayerRoom = false },
                 },
             }
         );
@@ -117,7 +118,10 @@ public sealed class AppSettingsDialogViewModelTests
 
         bool loadedValue = (bool)
             viewModelType.GetProperty("EntitiesDockOnlyShowCurrentPlayerRoom")!.GetValue(viewModel)!;
+        bool loadedItemsValue = (bool)
+            viewModelType.GetProperty("ScenarioItemsDockOnlyShowCurrentPlayerRoom")!.GetValue(viewModel)!;
         viewModelType.GetProperty("EntitiesDockOnlyShowCurrentPlayerRoom")!.SetValue(viewModel, true);
+        viewModelType.GetProperty("ScenarioItemsDockOnlyShowCurrentPlayerRoom")!.SetValue(viewModel, true);
 
         MethodInfo buildSettingsMethod = viewModelType.GetMethod(
             "BuildSettings",
@@ -126,7 +130,9 @@ public sealed class AppSettingsDialogViewModelTests
         OutbreakTrackerSettings builtSettings = (OutbreakTrackerSettings)buildSettingsMethod.Invoke(viewModel, null)!;
 
         await Assert.That(loadedValue).IsFalse();
+        await Assert.That(loadedItemsValue).IsFalse();
         await Assert.That(builtSettings.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
+        await Assert.That(builtSettings.Display.ScenarioItemsDock.OnlyShowCurrentPlayerRoom).IsTrue();
     }
 
     private static T CreateProxy<T>()
