@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using OutbreakTracker2.Application.Comparers;
 using OutbreakTracker2.Application.Services.Launcher;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Models;
@@ -28,35 +27,29 @@ public sealed class DataManager : IDataManager, IDisposable
     private ILobbyRoomReader? _lobbyRoomReader;
     private ILobbySlotReader? _lobbySlotReader;
 
-    private readonly ReactiveProperty<DecodedDoor[]> _doorsState = new([]);
-    private readonly ReactiveProperty<DecodedEnemy[]> _enemiesState = new([]);
-    private readonly ReactiveProperty<DecodedInGamePlayer[]> _inGamePlayersState = new([]);
-    private readonly ReactiveProperty<DecodedInGameScenario> _inGameScenarioState = new(new DecodedInGameScenario());
-    private readonly ReactiveProperty<DecodedLobbyRoom> _lobbyRoomState = new(new DecodedLobbyRoom());
-    private readonly ReactiveProperty<DecodedLobbyRoomPlayer[]> _lobbyRoomPlayersState = new([]);
-    private readonly ReactiveProperty<DecodedLobbySlot[]> _lobbySlotsState = new([]);
-    private readonly ReactiveProperty<bool> _isAtLobbyState = new(false);
+    private readonly GameStateStore _store = new();
 
     private volatile bool _isInitialized;
     private volatile bool _wasInScenario;
 
-    public Observable<DecodedDoor[]> DoorsObservable { get; }
-    public Observable<DecodedEnemy[]> EnemiesObservable { get; }
-    public Observable<DecodedInGamePlayer[]> InGamePlayersObservable { get; }
-    public Observable<DecodedInGameScenario> InGameScenarioObservable { get; }
-    public Observable<DecodedLobbyRoom> LobbyRoomObservable { get; }
-    public Observable<DecodedLobbyRoomPlayer[]> LobbyRoomPlayersObservable { get; }
-    public Observable<DecodedLobbySlot[]> LobbySlotsObservable { get; }
-    public Observable<bool> IsAtLobbyObservable { get; }
+    private IDataObservableSource Store => _store;
+    public Observable<DecodedDoor[]> DoorsObservable => Store.DoorsObservable;
+    public Observable<DecodedEnemy[]> EnemiesObservable => Store.EnemiesObservable;
+    public Observable<DecodedInGamePlayer[]> InGamePlayersObservable => Store.InGamePlayersObservable;
+    public Observable<DecodedInGameScenario> InGameScenarioObservable => Store.InGameScenarioObservable;
+    public Observable<DecodedLobbyRoom> LobbyRoomObservable => Store.LobbyRoomObservable;
+    public Observable<DecodedLobbyRoomPlayer[]> LobbyRoomPlayersObservable => Store.LobbyRoomPlayersObservable;
+    public Observable<DecodedLobbySlot[]> LobbySlotsObservable => Store.LobbySlotsObservable;
+    public Observable<bool> IsAtLobbyObservable => Store.IsAtLobbyObservable;
 
-    public DecodedDoor[] Doors => _doorsState.Value;
-    public DecodedEnemy[] Enemies => _enemiesState.Value;
-    public DecodedInGamePlayer[] InGamePlayers => _inGamePlayersState.Value;
-    public DecodedInGameScenario InGameScenario => _inGameScenarioState.Value;
-    public DecodedLobbyRoom LobbyRoom => _lobbyRoomState.Value;
-    public DecodedLobbyRoomPlayer[] LobbyRoomPlayers => _lobbyRoomPlayersState.Value;
-    public DecodedLobbySlot[] LobbySlots => _lobbySlotsState.Value;
-    public bool IsAtLobby => _isAtLobbyState.Value;
+    public DecodedDoor[] Doors => _store.DoorsState.Value;
+    public DecodedEnemy[] Enemies => _store.EnemiesState.Value;
+    public DecodedInGamePlayer[] InGamePlayers => _store.InGamePlayersState.Value;
+    public DecodedInGameScenario InGameScenario => _store.InGameScenarioState.Value;
+    public DecodedLobbyRoom LobbyRoom => _store.LobbyRoomState.Value;
+    public DecodedLobbyRoomPlayer[] LobbyRoomPlayers => _store.LobbyRoomPlayersState.Value;
+    public DecodedLobbySlot[] LobbySlots => _store.LobbySlotsState.Value;
+    public bool IsAtLobby => _store.IsAtLobbyState.Value;
 
     private readonly TimeSpan _fastUpdateInterval = TimeSpan.FromMilliseconds(250);
     private readonly TimeSpan _slowUpdateInterval = TimeSpan.FromMilliseconds(500);
@@ -84,19 +77,6 @@ public sealed class DataManager : IDataManager, IDisposable
         _processSubscription = processLauncher
             .ProcessUpdate.Where(model => !model.IsRunning)
             .Subscribe(_ => StopUpdateLoops());
-
-        DoorsObservable = _doorsState.DistinctUntilChanged(new ArraySequenceComparer<DecodedDoor>());
-        EnemiesObservable = _enemiesState.DistinctUntilChanged(new ArraySequenceComparer<DecodedEnemy>());
-        InGamePlayersObservable = _inGamePlayersState.DistinctUntilChanged(
-            new ArraySequenceComparer<DecodedInGamePlayer>()
-        );
-        InGameScenarioObservable = _inGameScenarioState.DistinctUntilChanged();
-        LobbyRoomObservable = _lobbyRoomState.DistinctUntilChanged();
-        LobbyRoomPlayersObservable = _lobbyRoomPlayersState.DistinctUntilChanged(
-            new ArraySequenceComparer<DecodedLobbyRoomPlayer>()
-        );
-        LobbySlotsObservable = _lobbySlotsState.DistinctUntilChanged(new ArraySequenceComparer<DecodedLobbySlot>());
-        IsAtLobbyObservable = _isAtLobbyState.DistinctUntilChanged();
 
         SetupObservablesLogging();
     }
@@ -203,25 +183,25 @@ public sealed class DataManager : IDataManager, IDisposable
     private void UpdateDoors()
     {
         _doorReader?.UpdateDoors();
-        _doorsState.Value = _doorReader?.DecodedDoors ?? [];
+        _store.DoorsState.Value = _doorReader?.DecodedDoors ?? [];
     }
 
     private void UpdateEnemies()
     {
         _enemiesReader?.UpdateEnemies2();
-        _enemiesState.Value = _enemiesReader?.DecodedEnemies2 ?? [];
+        _store.EnemiesState.Value = _enemiesReader?.DecodedEnemies2 ?? [];
     }
 
     private void UpdateInGamePlayer()
     {
         _inGamePlayerReader?.UpdateInGamePlayers();
-        _inGamePlayersState.Value = _inGamePlayerReader?.DecodedInGamePlayers ?? [];
+        _store.InGamePlayersState.Value = _inGamePlayerReader?.DecodedInGamePlayers ?? [];
     }
 
     private void UpdateInGameScenario()
     {
         _inGameScenarioReader?.UpdateScenario();
-        _inGameScenarioState.Value = _inGameScenarioReader?.DecodedScenario ?? new DecodedInGameScenario();
+        _store.InGameScenarioState.Value = _inGameScenarioReader?.DecodedScenario ?? new DecodedInGameScenario();
     }
 
     private void UpdateLobbyRoom()
@@ -232,28 +212,32 @@ public sealed class DataManager : IDataManager, IDisposable
     private void UpdateLobbyRoomPlayers()
     {
         _lobbyRoomPlayerReader?.UpdateRoomPlayers();
-        _lobbyRoomPlayersState.Value = _lobbyRoomPlayerReader?.DecodedLobbyRoomPlayers ?? [];
+        _store.LobbyRoomPlayersState.Value = _lobbyRoomPlayerReader?.DecodedLobbyRoomPlayers ?? [];
     }
 
     private void UpdateLobbySlots()
     {
         _lobbySlotReader?.UpdateLobbySlots();
-        _lobbySlotsState.Value = _lobbySlotReader?.DecodedLobbySlots ?? [];
+        _store.LobbySlotsState.Value = _lobbySlotReader?.DecodedLobbySlots ?? [];
     }
 
     private void ResetInGameData()
     {
         _logger.LogInformation("Resetting in-game data states to defaults (scenario ended or game stopped)");
-        _doorsState.Value = [];
-        _enemiesState.Value = [];
-        _inGamePlayersState.Value = [];
-        _inGameScenarioState.Value = new DecodedInGameScenario();
+        // Reset scenario status FIRST so subscribers (e.g. RunReportService) see Status=None
+        // before the enemy/door/player diffs fire. Otherwise the enemy removal diff arrives
+        // while _lastScenarioStatus is still InGame, causing ghost kill events for every
+        // dead slot (CurHp <= 1) in the fixed 80-slot enemy array.
+        _store.InGameScenarioState.Value = new DecodedInGameScenario();
+        _store.DoorsState.Value = [];
+        _store.EnemiesState.Value = [];
+        _store.InGamePlayersState.Value = [];
     }
 
     private void UpdateCoreGameData()
     {
         _wasInScenario = true;
-        _isAtLobbyState.Value = false;
+        _store.IsAtLobbyState.Value = false;
         UpdateInGameScenario();
         UpdateDoors();
         UpdateEnemies();
@@ -272,11 +256,11 @@ public sealed class DataManager : IDataManager, IDisposable
         DecodedLobbyRoom lobbyRoom = _lobbyRoomReader?.DecodedLobbyRoom ?? new DecodedLobbyRoom();
         bool isAtLobby = IsLobbyActive(lobbyRoom);
 
-        _isAtLobbyState.Value = isAtLobby;
+        _store.IsAtLobbyState.Value = isAtLobby;
         if (!isAtLobby)
             return;
 
-        _lobbyRoomState.Value = lobbyRoom;
+        _store.LobbyRoomState.Value = lobbyRoom;
         UpdateLobbyRoomPlayers();
         UpdateLobbySlots();
     }
@@ -313,7 +297,7 @@ public sealed class DataManager : IDataManager, IDisposable
         _lobbySlotReader?.Dispose();
         _lobbySlotReader = null;
 
-        _isAtLobbyState.Value = false;
+        _store.IsAtLobbyState.Value = false;
         _wasInScenario = false;
         ResetInGameData();
 
@@ -328,14 +312,7 @@ public sealed class DataManager : IDataManager, IDisposable
         StopUpdateLoops();
         _loggingSubscriptions?.Dispose();
 
-        _doorsState.Dispose();
-        _enemiesState.Dispose();
-        _inGamePlayersState.Dispose();
-        _inGameScenarioState.Dispose();
-        _lobbyRoomState.Dispose();
-        _lobbyRoomPlayersState.Dispose();
-        _lobbySlotsState.Dispose();
-        _isAtLobbyState.Dispose();
+        _store.Dispose();
 
         _logger.LogInformation("DataManager disposed");
     }

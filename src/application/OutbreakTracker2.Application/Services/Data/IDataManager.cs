@@ -1,42 +1,12 @@
-﻿using OutbreakTracker2.Outbreak.Models;
-using OutbreakTracker2.PCSX2.Client;
-using R3;
+﻿using OutbreakTracker2.PCSX2.Client;
 
 namespace OutbreakTracker2.Application.Services.Data;
 
-public interface IDataManager
+/// <summary>
+/// Full contract. Only <see cref="DataManager"/> implements this.
+/// Prefer <see cref="IDataObservableSource"/> or <see cref="IDataSnapshot"/> at injection sites.
+/// </summary>
+public interface IDataManager : IDataObservableSource, IDataSnapshot
 {
-    public DecodedDoor[] Doors { get; }
-
-    public DecodedEnemy[] Enemies { get; }
-
-    public DecodedInGamePlayer[] InGamePlayers { get; }
-
-    public DecodedInGameScenario InGameScenario { get; }
-
-    public DecodedLobbyRoom LobbyRoom { get; }
-
-    public DecodedLobbyRoomPlayer[] LobbyRoomPlayers { get; }
-
-    public DecodedLobbySlot[] LobbySlots { get; }
-
-    public bool IsAtLobby { get; }
-
-    public Observable<DecodedDoor[]> DoorsObservable { get; }
-
-    public Observable<DecodedEnemy[]> EnemiesObservable { get; }
-
-    public Observable<DecodedInGamePlayer[]> InGamePlayersObservable { get; }
-
-    public Observable<DecodedInGameScenario> InGameScenarioObservable { get; }
-
-    public Observable<DecodedLobbyRoom> LobbyRoomObservable { get; }
-
-    public Observable<DecodedLobbyRoomPlayer[]> LobbyRoomPlayersObservable { get; }
-
-    public Observable<DecodedLobbySlot[]> LobbySlotsObservable { get; }
-
-    public Observable<bool> IsAtLobbyObservable { get; }
-
-    public ValueTask InitializeAsync(IGameClient gameClient, CancellationToken cancellationToken);
+    ValueTask InitializeAsync(IGameClient gameClient, CancellationToken cancellationToken);
 }
