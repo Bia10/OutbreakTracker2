@@ -103,15 +103,15 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
             sb.AppendLine();
         }
 
+        Scenario scenario = report.Scenario;
         sb.AppendLine("---");
         sb.AppendLine();
-        AppendMonsterLog(sb, report);
+        AppendMonsterLog(sb, report, scenario);
         sb.AppendLine("## Event Timeline");
         sb.AppendLine();
         sb.AppendLine("| Scenario Time | Event |");
         sb.AppendLine("|--------------|-------|");
 
-        Scenario scenario = report.Scenario;
         foreach (RunEvent evt in report.Events)
         {
             string scenarioTime = TimeUtility.GetTimeFromFrames(evt.ScenarioFrame);
@@ -154,7 +154,7 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
                 $"Enemy **{e.EnemyName}** killed ({scenario.GetRoomName(e.RoomId)}, Slot {e.SlotId}){FormatContributions(e.ContributingPlayers)}",
 
             EnemyDamagedEvent e =>
-                $"Enemy **{e.EnemyName}** damaged: {e.OldHp} → {e.NewHp}/{e.MaxHp} (-{e.Damage}){FormatContributions(e.ContributingPlayers)}",
+                $"Enemy **{e.EnemyName}** damaged: {e.OldHp} → {e.NewHp}/{e.MaxHp} (-{e.Damage}) ({scenario.GetRoomName(e.RoomId)}){FormatContributions(e.ContributingPlayers)}",
 
             EnemyDespawnedEvent e =>
                 $"Enemy **{e.EnemyName}** despawned ({scenario.GetRoomName(e.RoomId)}, Slot {e.SlotId}, HP remaining: {e.RemainingHp}/{e.MaxHp})",
@@ -165,11 +165,11 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
             EnemyStatusChangedEvent e =>
                 $"Enemy **{e.EnemyName}** status: 0x{e.OldStatus:X2} → 0x{e.NewStatus:X2} ({scenario.GetRoomName(e.RoomId)}){FormatContributions(e.ContributingPlayers)}",
 
-            DoorStateChangedEvent e => $"Door status changed: {e.OldStatus} → **{e.NewStatus}**",
+            DoorStateChangedEvent e => $"Door #{e.SlotId} status changed: {e.OldStatus} → **{e.NewStatus}**",
 
-            DoorDamagedEvent e => $"Door damaged: {e.OldHp} → {e.NewHp} HP (-{e.Damage})",
+            DoorDamagedEvent e => $"Door #{e.SlotId} damaged: {e.OldHp} → {e.NewHp} HP (-{e.Damage})",
 
-            DoorFlagChangedEvent e => $"Door flag changed: 0x{e.OldFlag:X4} → **0x{e.NewFlag:X4}**",
+            DoorFlagChangedEvent e => $"Door #{e.SlotId} flag changed: 0x{e.OldFlag:X4} → **0x{e.NewFlag:X4}**",
 
             ItemPickedUpEvent e when string.IsNullOrEmpty(e.PickedUpByName) =>
                 $"**{e.TypeName}** looted from scenario slot ({scenario.GetRoomName(e.RoomId)})",
@@ -193,15 +193,16 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
             PlayerInventoryChangedEvent e =>
                 $"Player **{e.PlayerName}** {e.Kind} slot {e.SlotIndex}: {e.OldItemName} → **{e.NewItemName}**",
 
-            PlayerRoomChangedEvent e => $"Player **{e.PlayerName}** moved room: {e.OldRoomId} → **{e.NewRoomId}**",
+            PlayerRoomChangedEvent e =>
+                $"Player **{e.PlayerName}** moved room: {scenario.GetRoomName(e.OldRoomId)} → **{scenario.GetRoomName(e.NewRoomId)}**",
 
             EnemyRoomChangedEvent e =>
-                $"Enemy **{e.EnemyName}** (Slot {e.SlotId}) moved room: {e.OldRoomId} → **{e.NewRoomId}**",
+                $"Enemy **{e.EnemyName}** (Slot {e.SlotId}) moved room: {scenario.GetRoomName(e.OldRoomId)} → **{scenario.GetRoomName(e.NewRoomId)}**",
 
             _ => evt.GetType().Name,
         };
 
-    private static void AppendMonsterLog(StringBuilder sb, RunReport report)
+    private static void AppendMonsterLog(StringBuilder sb, RunReport report, Scenario scenario)
     {
         // Build per-enemy lifecycle records: spawn time, spawn room, end time, end room, outcome.
         Dictionary<Ulid, (string Name, DateTimeOffset SpawnedAt, byte SpawnRoom, ushort MaxHp)> spawns = [];
@@ -273,7 +274,7 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
             string endElapsed = FormatElapsed(endedAt - report.StartedAt);
             sb.Append(
                     CultureInfo.InvariantCulture,
-                    $"| {name} | {spawnRoom} | `{spawnElapsed}` | {endRoom} | `{endElapsed}` | {FormatDuration(alive)} | {outcome} |"
+                    $"| {name} | {scenario.GetRoomName(spawnRoom)} | `{spawnElapsed}` | {scenario.GetRoomName(endRoom)} | `{endElapsed}` | {FormatDuration(alive)} | {outcome} |"
                 )
                 .AppendLine();
         }

@@ -428,46 +428,80 @@ public sealed class RunReportService : IRunReportService
 
         foreach (EntityChange<DecodedEnemy> change in diff.Changed)
         {
-            if (change.Previous.CurHp > change.Current.CurHp)
+            DecodedEnemy prev = change.Previous;
+            DecodedEnemy curr = change.Current;
+
+            // Kill detection: HP transitioned from the alive range into the dead range.
+            // The game marks death at CurHp == 0x0 or CurHp >= 0x8000 (0xffff is the most
+            // common), matching GetEnemiesHealthStatusStringForFileTwo's dead HP cases.
+            // Guards against slot reuse between rooms: NameId must match (same entity type)
+            // and curr.NameId != 0 (non-empty slot). This is the primary kill path because
+            // the fixed 80-slot array keeps the same Ulid per slot so deaths surface here
+            // as diff.Changed, never as diff.Removed during live play.
+            bool prevAliveHp = prev.CurHp > 0 && prev.CurHp < 0x8000;
+            bool currDeadHp = curr.CurHp == 0 || curr.CurHp >= 0x8000;
+            if (
+                prevAliveHp
+                && currDeadHp
+                && prev.Enabled != 0
+                && curr.NameId != 0
+                && prev.NameId == curr.NameId
+                && !AlertRuleHelpers.IsInvulnerableEnemy(prev.NameId, prev.MaxHp)
+            )
+            {
+                Emit(
+                    new EnemyKilledEvent(
+                        now,
+                        prev.Id,
+                        prev.Name,
+                        prev.SlotId,
+                        prev.RoomId,
+                        FindContributingPlayers(prev.RoomId)
+                    )
+                );
+                continue;
+            }
+
+            // Scripted despawn: slot was disabled by the engine while HP was still positive.
+            if (prev.Enabled != 0 && curr.Enabled == 0 && curr.CurHp > 0)
+            {
+                Emit(
+                    new EnemyDespawnedEvent(now, prev.Id, prev.Name, prev.SlotId, prev.RoomId, prev.CurHp, prev.MaxHp)
+                );
+                continue;
+            }
+
+            if (prev.CurHp > curr.CurHp)
                 Emit(
                     new EnemyDamagedEvent(
                         now,
-                        change.Current.Id,
-                        change.Current.Name,
-                        change.Current.SlotId,
-                        change.Current.RoomId,
-                        change.Previous.CurHp,
-                        change.Current.CurHp,
-                        change.Current.MaxHp,
-                        FindContributingPlayers(change.Current.RoomId)
+                        curr.Id,
+                        curr.Name,
+                        curr.SlotId,
+                        curr.RoomId,
+                        prev.CurHp,
+                        curr.CurHp,
+                        curr.MaxHp,
+                        FindContributingPlayers(curr.RoomId)
                     )
                 );
 
-            if (change.Previous.Status != change.Current.Status)
+            if (prev.Status != curr.Status)
                 Emit(
                     new EnemyStatusChangedEvent(
                         now,
-                        change.Current.Id,
-                        change.Current.Name,
-                        change.Current.SlotId,
-                        change.Current.RoomId,
-                        change.Previous.Status,
-                        change.Current.Status,
-                        FindContributingPlayers(change.Current.RoomId)
+                        curr.Id,
+                        curr.Name,
+                        curr.SlotId,
+                        curr.RoomId,
+                        prev.Status,
+                        curr.Status,
+                        FindContributingPlayers(curr.RoomId)
                     )
                 );
 
-            if (change.Current.Enabled != 0 && change.Previous.RoomId != change.Current.RoomId)
-                Emit(
-                    new EnemyRoomChangedEvent(
-                        now,
-                        change.Current.Id,
-                        change.Current.Name,
-                        change.Current.SlotId,
-                        change.Previous.RoomId,
-                        change.Current.RoomId
-                    )
-                );
+            if (curr.Enabled != 0 && prev.RoomId != curr.RoomId)
+                Emit(new EnemyRoomChangedEvent(now, curr.Id, curr.Name, curr.SlotId, prev.RoomId, curr.RoomId));
         }
     }
 
@@ -481,12 +515,18 @@ public sealed class RunReportService : IRunReportService
 
     // Statuses where player memory is being reloaded and data reads are unreliable.
     // During these states we preserve the last known player snapshot instead of evicting.
+    // Unknown8-11 are observed in online sessions between room transitions; they must be
+    // treated as transitional to prevent spurious session splits.
     private static bool IsTransitionalStatus(ScenarioStatus status) =>
         status
             is ScenarioStatus.TransitionLoading
                 or ScenarioStatus.CinematicPlaying
                 or ScenarioStatus.GenericLoading
-                or ScenarioStatus.PostIntroLoading;
+                or ScenarioStatus.PostIntroLoading
+                or ScenarioStatus.Unknown8
+                or ScenarioStatus.Unknown9
+                or ScenarioStatus.Unknown10
+                or ScenarioStatus.Unknown11;
 
     private void ProcessScenarioDiff(DecodedInGameScenario scenario)
     {
@@ -576,13 +616,37 @@ public sealed class RunReportService : IRunReportService
         foreach (EntityChange<DecodedDoor> change in diff.Changed)
         {
             if (!string.Equals(change.Previous.Status, change.Current.Status, StringComparison.Ordinal))
-                Emit(new DoorStateChangedEvent(now, change.Current.Id, change.Previous.Status, change.Current.Status));
+                Emit(
+                    new DoorStateChangedEvent(
+                        now,
+                        change.Current.Id,
+                        change.Current.SlotId,
+                        change.Previous.Status,
+                        change.Current.Status
+                    )
+                );
 
             if (change.Previous.Hp != change.Current.Hp)
-                Emit(new DoorDamagedEvent(now, change.Current.Id, change.Previous.Hp, change.Current.Hp));
+                Emit(
+                    new DoorDamagedEvent(
+                        now,
+                        change.Current.Id,
+                        change.Current.SlotId,
+                        change.Previous.Hp,
+                        change.Current.Hp
+                    )
+                );
 
             if (change.Previous.Flag != change.Current.Flag)
-                Emit(new DoorFlagChangedEvent(now, change.Current.Id, change.Previous.Flag, change.Current.Flag));
+                Emit(
+                    new DoorFlagChangedEvent(
+                        now,
+                        change.Current.Id,
+                        change.Current.SlotId,
+                        change.Previous.Flag,
+                        change.Current.Flag
+                    )
+                );
         }
     }
 
