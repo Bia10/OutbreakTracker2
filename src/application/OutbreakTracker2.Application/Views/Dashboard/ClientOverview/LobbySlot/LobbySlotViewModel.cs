@@ -81,7 +81,7 @@ public sealed partial class LobbySlotViewModel : ObservableObject
 
         if (EnumUtility.TryParseByValueOrMember(ScenarioId, out Scenario scenarioType))
         {
-            TrackScenarioImageUpdate(ScenarioImageViewModel.UpdateImageAsync(scenarioType), ScenarioId);
+            _ = TrackScenarioImageUpdateAsync(ScenarioImageViewModel.UpdateImageAsync(scenarioType), ScenarioId);
         }
         else
         {
@@ -89,11 +89,11 @@ public sealed partial class LobbySlotViewModel : ObservableObject
                 "ScenarioName '{ScenarioName}' could not be parsed to a ScenarioType. Displaying default image",
                 ScenarioId
             );
-            TrackScenarioImageUpdate(ScenarioImageViewModel.UpdateToDefaultImageAsync(), ScenarioId);
+            _ = TrackScenarioImageUpdateAsync(ScenarioImageViewModel.UpdateToDefaultImageAsync(), ScenarioId);
         }
     }
 
-    private async void TrackScenarioImageUpdate(ValueTask updateTask, string scenarioId)
+    private async Task TrackScenarioImageUpdateAsync(ValueTask updateTask, string scenarioId)
     {
         try
         {

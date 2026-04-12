@@ -20,6 +20,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
     private readonly ILogger<LobbyRoomViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
     private readonly IDisposable _subscription;
+    private readonly CancellationTokenSource _imageUpdateCts = new();
 
     // Keyed by the decoded player's stable Ulid so VMs are reused by slot identity,
     // not by their own transient object identity.
@@ -194,7 +195,11 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
         {
             if (EnumUtility.TryParseByValueOrMember(ScenarioName, out Scenario scenarioType))
             {
-                TrackScenarioImageUpdate(ScenarioImageViewModel.UpdateImageAsync(scenarioType), ScenarioName);
+                _ = TrackScenarioImageUpdateAsync(
+                    ScenarioImageViewModel.UpdateImageAsync(scenarioType),
+                    ScenarioName,
+                    _imageUpdateCts.Token
+                );
             }
             else
             {
@@ -202,17 +207,26 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
                     "ScenarioName '{ScenarioName}' could not be parsed to a ScenarioType. Displaying default image",
                     ScenarioName
                 );
-                TrackScenarioImageUpdate(ScenarioImageViewModel.UpdateToDefaultImageAsync(), ScenarioName);
+                _ = TrackScenarioImageUpdateAsync(
+                    ScenarioImageViewModel.UpdateToDefaultImageAsync(),
+                    ScenarioName,
+                    _imageUpdateCts.Token
+                );
             }
         }
     }
 
-    private async void TrackScenarioImageUpdate(ValueTask updateTask, string scenarioName)
+    private async Task TrackScenarioImageUpdateAsync(
+        ValueTask updateTask,
+        string scenarioName,
+        CancellationToken cancellationToken
+    )
     {
         try
         {
             await updateTask.ConfigureAwait(false);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to update scenario image for lobby room {ScenarioName}", scenarioName);
@@ -223,6 +237,8 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
     {
         _logger.LogDebug("Disposing LobbyRoomViewModel asynchronously");
 
+        _imageUpdateCts.Cancel();
+        _imageUpdateCts.Dispose();
         _subscription.Dispose();
 
         await _dispatcherService

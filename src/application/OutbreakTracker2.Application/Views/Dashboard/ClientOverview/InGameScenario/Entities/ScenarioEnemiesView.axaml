@@ -1,25 +1,24 @@
 <UserControl
-    x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities.ScenarioEnemiesView"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:Entities="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities"
-    x:DataType="Entities:ScenarioEntitiesViewModel"
-    mc:Ignorable="d">
+x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities.ScenarioEnemiesView"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:Entities="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities"
+x:DataType="Entities:ScenarioEntitiesViewModel"
+mc:Ignorable="d">
     <DataGrid
-        AutoGenerateColumns="False"
-        CanUserReorderColumns="True"
-        CanUserResizeColumns="True"
-        CanUserSortColumns="True"
-        IsReadOnly="True"
-        ItemsSource="{Binding Enemies}">
+    AutoGenerateColumns="False"
+    CanUserReorderColumns="True"
+    CanUserResizeColumns="True"
+    CanUserSortColumns="True"
+    IsReadOnly="True"
+    ItemsSource="{Binding Enemies}">
         <DataGrid.Columns>
             <DataGridTextColumn Header="Slot" Binding="{Binding SlotId}" Width="45" />
             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*" />
             <DataGridTextColumn Header="HP" Binding="{Binding CurHp}" Width="60" />
             <DataGridTextColumn Header="MaxHP" Binding="{Binding MaxHp}" Width="65" />
-            <DataGridTextColumn Header="Room" Binding="{Binding RoomName}" Width="2*" />
             <DataGridTextColumn Header="Boss" Binding="{Binding BossType}" Width="55" />
             <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="65" />
         </DataGrid.Columns>

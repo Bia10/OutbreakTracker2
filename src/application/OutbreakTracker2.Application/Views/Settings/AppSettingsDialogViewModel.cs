@@ -1,7 +1,9 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FastEnumUtility;
 using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Utility;
@@ -434,7 +436,7 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
 
     private static string[] CreateLobbyScenarioOptions()
     {
-        Scenario[] scenarios = Enum.GetValues<Scenario>();
+        ImmutableArray<Scenario> scenarios = FastEnum.GetValues<Scenario>();
         string[] options = new string[scenarios.Length - 1];
         int index = 0;
 
