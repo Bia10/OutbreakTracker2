@@ -7,7 +7,7 @@ namespace OutbreakTracker2.Application.Views.GameDock;
 /// Registered as a singleton; GameDockFactory receives it as a single constructor parameter.
 /// </summary>
 public sealed record DockToolSet(
-    GameScreenTool GameScreen,
+    GameScreenDockTool GameScreen,
     EntitiesDockTool Entities,
     MapDockTool Map,
     PlayersDockTool Players,

@@ -21,11 +21,13 @@ namespace OutbreakTracker2.Application;
 public sealed partial class App : Avalonia.Application
 {
     private static readonly TimeSpan CleanUpTimeout = TimeSpan.FromSeconds(5);
+    private readonly Lock _cleanUpGate = new();
 
     // Bootstrap logger available before DI is wired — used by the static error handlers.
     // Backed by a minimal Serilog configuration set up in OnFrameworkInitializationCompleted.
     private ILogger<App>? _bootstrapLogger;
     private IServiceProvider? _serviceProvider;
+    private Task? _cleanUpTask;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
@@ -114,6 +116,9 @@ public sealed partial class App : Avalonia.Application
 
             // Terminate any PCSX2 process whose window surface OT2 is currently embedding
             // so the process is not left running headless when OT2 exits.
+            // Unsubscribe first to guarantee exactly-once registration if
+            // OnFrameworkInitializationCompleted is called more than once (e.g. hot-reload).
+            desktop.ShutdownRequested -= OnShutdownRequested;
             desktop.ShutdownRequested += OnShutdownRequested;
 
             _bootstrapLogger?.LogInformation("Application initialized successfully!");
@@ -142,9 +147,12 @@ public sealed partial class App : Avalonia.Application
         TaskScheduler.UnobservedTaskException -= OnUnobservedTaskException;
         Dispatcher.UIThread.UnhandledException -= OnUiUnhandledException;
 
+        IServiceProvider? serviceProvider = _serviceProvider;
+        _serviceProvider = null;
+
         // Dispose texture atlases before the container so the service provider is still
         // alive when we resolve ITextureAtlasService.
-        if (_serviceProvider?.GetService<ITextureAtlasService>() is { } atlasService)
+        if (serviceProvider?.GetService<ITextureAtlasService>() is { } atlasService)
         {
             foreach (ITextureAtlas atlas in atlasService.GetAllAtlases().Values)
                 (atlas as IDisposable)?.Dispose();
@@ -152,20 +160,25 @@ public sealed partial class App : Avalonia.Application
 
         // Several singletons only implement IAsyncDisposable (InGamePlayersViewModel,
         // LobbySlotsViewModel, LobbyRoomViewModel, LogDataStorageService, …).
-        if (_serviceProvider is IAsyncDisposable asyncDisposable)
+        if (serviceProvider is IAsyncDisposable asyncDisposable)
             await asyncDisposable.DisposeAsync().ConfigureAwait(false);
         else
-            (_serviceProvider as IDisposable)?.Dispose();
-        _serviceProvider = null;
+            (serviceProvider as IDisposable)?.Dispose();
 
         await Log.CloseAndFlushAsync().ConfigureAwait(false);
 
         _bootstrapLogger?.LogInformation("Application exited!");
     }
 
+    private Task GetOrStartCleanUpTask()
+    {
+        lock (_cleanUpGate)
+            return _cleanUpTask ??= CleanUpAsync();
+    }
+
     private async Task CleanUpWithTimeoutAsync(string operationName)
     {
-        Task cleanUpTask = CleanUpAsync();
+        Task cleanUpTask = GetOrStartCleanUpTask();
         Task completedTask = await Task.WhenAny(cleanUpTask, Task.Delay(CleanUpTimeout)).ConfigureAwait(false);
 
         if (completedTask != cleanUpTask)

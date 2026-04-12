@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Dock.Model.Controls;
 using Dock.Model.Core;
 using Material.Icons;
@@ -38,37 +37,36 @@ public sealed partial class GameDockViewModel : PageBase
         // when they need to be re-added after the user closes their floating window.
         IDock homeDock = (IDock)scenarioInfoTool.Owner!;
 
-        entityCommands.ShowItems = new RelayCommand(() =>
-        {
-            EnsureOriginalOwner(scenarioItemsTool, homeDock);
-            if (scenarioItemsTool.Owner is null)
-                factory.AddDockable(homeDock, scenarioItemsTool);
-            factory.FloatDockable(scenarioItemsTool);
-        });
-
-        entityCommands.ShowEnemies = new RelayCommand(() =>
-        {
-            EnsureOriginalOwner(scenarioEnemiesDockTool, homeDock);
-            if (scenarioEnemiesDockTool.Owner is null)
-                factory.AddDockable(homeDock, scenarioEnemiesDockTool);
-            factory.FloatDockable(scenarioEnemiesDockTool);
-        });
-
-        entityCommands.ShowDoors = new RelayCommand(() =>
-        {
-            EnsureOriginalOwner(scenarioDoorsDockTool, homeDock);
-            if (scenarioDoorsDockTool.Owner is null)
-                factory.AddDockable(homeDock, scenarioDoorsDockTool);
-            factory.FloatDockable(scenarioDoorsDockTool);
-        });
-
-        entityCommands.ShowMap = new RelayCommand(() =>
-        {
-            EnsureOriginalOwner(mapDockTool, homeDock);
-            if (mapDockTool.Owner is null)
-                factory.AddDockable(homeDock, mapDockTool);
-            factory.FloatDockable(mapDockTool);
-        });
+        entityCommands.Configure(
+            showItems: () =>
+            {
+                EnsureOriginalOwner(scenarioItemsTool, homeDock);
+                if (scenarioItemsTool.Owner is null)
+                    factory.AddDockable(homeDock, scenarioItemsTool);
+                factory.FloatDockable(scenarioItemsTool);
+            },
+            showEnemies: () =>
+            {
+                EnsureOriginalOwner(scenarioEnemiesDockTool, homeDock);
+                if (scenarioEnemiesDockTool.Owner is null)
+                    factory.AddDockable(homeDock, scenarioEnemiesDockTool);
+                factory.FloatDockable(scenarioEnemiesDockTool);
+            },
+            showDoors: () =>
+            {
+                EnsureOriginalOwner(scenarioDoorsDockTool, homeDock);
+                if (scenarioDoorsDockTool.Owner is null)
+                    factory.AddDockable(homeDock, scenarioDoorsDockTool);
+                factory.FloatDockable(scenarioDoorsDockTool);
+            },
+            showMap: () =>
+            {
+                EnsureOriginalOwner(mapDockTool, homeDock);
+                if (mapDockTool.Owner is null)
+                    factory.AddDockable(homeDock, mapDockTool);
+                factory.FloatDockable(mapDockTool);
+            }
+        );
     }
 
     private static void EnsureOriginalOwner(IDockable dockable, IDock owner)

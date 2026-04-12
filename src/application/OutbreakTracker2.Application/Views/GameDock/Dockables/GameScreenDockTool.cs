@@ -11,7 +11,7 @@ namespace OutbreakTracker2.Application.Views.GameDock.Dockables;
 /// fixed, non-overlapping layout cell avoids z-order conflicts.
 /// </para>
 /// </summary>
-public sealed class GameScreenTool(EmbeddedGameViewModel embeddedGameViewModel) : Tool
+public sealed class GameScreenDockTool(EmbeddedGameViewModel embeddedGameViewModel) : Tool
 {
     public EmbeddedGameViewModel EmbeddedGameViewModel { get; } = embeddedGameViewModel;
 }

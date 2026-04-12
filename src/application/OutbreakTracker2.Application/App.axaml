@@ -5,7 +5,7 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 xmlns:suki="https://github.com/kikipoulet/SukiUI"
 xmlns:dockables="clr-namespace:OutbreakTracker2.Application.Views.GameDock.Dockables"
-xmlns:entitites="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites"
+xmlns:Entities="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities"
 xmlns:embeddedGame="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGame"
 xmlns:inGameDoors="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoors"
 xmlns:inGameEnemies="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies"
@@ -15,7 +15,7 @@ xmlns:lobbySlots="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.Cli
 xmlns:canvas="clr-namespace:OutbreakTracker2.Application.Views.Map.Canvas"
 RequestedThemeVariant="Default">
     <Application.DataTemplates>
-        <DataTemplate DataType="{x:Type dockables:GameScreenTool}">
+        <DataTemplate DataType="{x:Type dockables:GameScreenDockTool}">
             <embeddedGame:EmbeddedGameTabView DataContext="{Binding EmbeddedGameViewModel}" />
         </DataTemplate>
         <DataTemplate DataType="{x:Type dockables:EntitiesDockTool}">
@@ -31,10 +31,10 @@ RequestedThemeVariant="Default">
             <inGameScenario:InGameScenarioView DataContext="{Binding InGameScenarioViewModel}" />
         </DataTemplate>
         <DataTemplate DataType="{x:Type dockables:ScenarioItemsDockTool}">
-            <entitites:ScenarioItemsView DataContext="{Binding ScenarioItemsDockViewModel}" />
+            <Entities:ScenarioItemsView DataContext="{Binding ScenarioItemsDockViewModel}" />
         </DataTemplate>
         <DataTemplate DataType="{x:Type dockables:ScenarioEnemiesDockTool}">
-            <entitites:ScenarioEnemiesView DataContext="{Binding ScenarioEntitiesViewModel}" />
+            <Entities:ScenarioEnemiesView DataContext="{Binding ScenarioEntitiesViewModel}" />
         </DataTemplate>
         <DataTemplate DataType="{x:Type dockables:ScenarioDoorsDockTool}">
             <inGameDoors:InGameDoorsView DataContext="{Binding InGameDoorsViewModel}" />

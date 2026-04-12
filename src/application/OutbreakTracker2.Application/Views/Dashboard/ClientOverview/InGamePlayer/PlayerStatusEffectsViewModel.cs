@@ -9,10 +9,10 @@ public sealed partial class PlayerStatusEffectsViewModel : ObservableObject
     private string _bleedTime = string.Empty;
 
     [ObservableProperty]
-    private string _antiVirusTime = string.Empty;
+    private string _antivirusTime = string.Empty;
 
     [ObservableProperty]
-    private string _antiVirusGTime = string.Empty;
+    private string _antivirusGTime = string.Empty;
 
     [ObservableProperty]
     private string _herbTime = string.Empty;
@@ -23,17 +23,17 @@ public sealed partial class PlayerStatusEffectsViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AreEffectsVisible))]
-    private bool _isAntiVirusActive;
+    private bool _isAntivirusActive;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AreEffectsVisible))]
-    private bool _isAntiVirusGActive;
+    private bool _isAntivirusGActive;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AreEffectsVisible))]
     private bool _isHerbActive;
 
-    public bool AreEffectsVisible => IsBleedActive || IsAntiVirusActive || IsAntiVirusGActive || IsHerbActive;
+    public bool AreEffectsVisible => IsBleedActive || IsAntivirusActive || IsAntivirusGActive || IsHerbActive;
 
     public void Update(
         ushort bleedTimeValue,
@@ -45,13 +45,13 @@ public sealed partial class PlayerStatusEffectsViewModel : ObservableObject
     )
     {
         IsBleedActive = bleedTimeValue > 0 || status is "Bleed" or "Poison+Bleed" or "Gas+Bleed";
-        IsAntiVirusActive = antiVirusTimeValue > 0;
-        IsAntiVirusGActive = antiVirusGTimeValue > 0;
+        IsAntivirusActive = antiVirusTimeValue > 0;
+        IsAntivirusGActive = antiVirusGTimeValue > 0;
         IsHerbActive = herbTimeValue > 0;
 
         BleedTime = TimeUtility.FormatBleedTime(bleedTimeValue, status);
-        AntiVirusTime = TimeUtility.FormatAntivirusOrHerbTime(antiVirusTimeValue, herbTimeValue);
-        AntiVirusGTime = TimeUtility.FormatAntivirusGTime(antiVirusGTimeValue, currentGameFile);
-        HerbTime = TimeUtility.FormatAntivirusOrHerbTime(antiVirusTimeValue, herbTimeValue);
+        AntivirusTime = TimeUtility.FormatAntivirusTime(antiVirusTimeValue);
+        AntivirusGTime = TimeUtility.FormatAntivirusGTime(antiVirusGTimeValue, currentGameFile);
+        HerbTime = TimeUtility.FormatHerbTime(herbTimeValue);
     }
 }

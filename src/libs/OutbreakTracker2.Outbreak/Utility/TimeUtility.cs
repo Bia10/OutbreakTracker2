@@ -125,17 +125,20 @@ public static class TimeUtility
     }
 
     /// <summary>
-    /// Formats the Antivirus or Herb time based on which is greater and positive,
-    /// if the conditions for its display are met.
+    /// Formats the Antivirus time (StoppingVirus units) into a M:SS string.
     /// </summary>
     /// <param name="antivirusTime">Player's antivirus time (StoppingVirus units).</param>
+    /// <returns>The formatted time string (M:SS), or "0:00" when the timer is inactive.</returns>
+    public static string FormatAntivirusTime(ushort antivirusTime) =>
+        antivirusTime > 0 ? GetStoppingVirusTimeToString(antivirusTime) : "0:00";
+
+    /// <summary>
+    /// Formats the Herb time (StoppingVirus units) into a M:SS string.
+    /// </summary>
     /// <param name="herbTime">Player's herb time (StoppingVirus units).</param>
-    /// <returns>The formatted time string (M:SS) if displayed, otherwise null.</returns>
-    public static string FormatAntivirusOrHerbTime(ushort antivirusTime, ushort herbTime)
-    {
-        int timeToDisplay = Math.Max(antivirusTime, herbTime);
-        return timeToDisplay > 0 ? GetStoppingVirusTimeToString(timeToDisplay) : "0:00";
-    }
+    /// <returns>The formatted time string (M:SS), or "0:00" when the timer is inactive.</returns>
+    public static string FormatHerbTime(ushort herbTime) =>
+        herbTime > 0 ? GetStoppingVirusTimeToString(herbTime) : "0:00";
 
     /// <summary>
     /// Formats the Bleed time if the conditions for its display are met.
