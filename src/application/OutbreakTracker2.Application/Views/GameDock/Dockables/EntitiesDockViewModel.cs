@@ -86,7 +86,11 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
                 .Subscribe(enabled => _dispatcherService.PostOnUI(() => UpdateFilterSetting(enabled)))
         );
 
-        RebuildFilteredEnemies();
+        // Defer the initial rebuild so the dock panel can appear immediately.
+        // ResetObservedEnemies() wires PropertyChanged handlers synchronously and is fast;
+        // RebuildFilteredEnemies() triggers CollectionChanged → Avalonia item realization
+        // which can take 1-2 s for large enemy pools and must not block the constructor.
+        _dispatcherService.PostOnUI(RebuildFilteredEnemies);
     }
 
     public void Dispose()

@@ -12,6 +12,8 @@ using OutbreakTracker2.Application.Services.Notifications;
 using OutbreakTracker2.Application.Services.Reports;
 using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGame;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies;
+using OutbreakTracker2.Application.Views.GameDock.Dockables;
 using R3;
 using Serilog;
 using Serilog.Extensions.Logging;
@@ -113,6 +115,21 @@ public sealed partial class App : Avalonia.Application
 
             DataTemplates.Add(new ViewLocator(views));
             desktop.MainWindow = views.CreateView<Views.OutbreakTracker2ViewModel>(_serviceProvider) as Window;
+
+            // Pre-warm heavy game-dock singletons during the first idle tick so their
+            // constructors run against empty collections (before game attaches).  This
+            // eliminates the 1-2 s UI-thread block that would otherwise occur the first
+            // time the Game Dock panel is opened with a running game already attached.
+            IServiceProvider warmUpProvider = _serviceProvider;
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    warmUpProvider.GetRequiredService<InGameEnemiesViewModel>();
+                    warmUpProvider.GetRequiredService<EntitiesDockViewModel>();
+                    warmUpProvider.GetRequiredService<ScenarioItemsDockViewModel>();
+                },
+                DispatcherPriority.Background
+            );
 
             // Terminate any PCSX2 process whose window surface OT2 is currently embedding
             // so the process is not left running headless when OT2 exits.

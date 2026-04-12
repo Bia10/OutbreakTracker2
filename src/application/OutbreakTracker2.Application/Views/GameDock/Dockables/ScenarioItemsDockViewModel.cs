@@ -80,7 +80,11 @@ public sealed partial class ScenarioItemsDockViewModel : ObservableObject, IDisp
                 .Subscribe(enabled => dispatcherService.PostOnUI(() => UpdateFilterSetting(enabled)))
         );
 
-        RebuildFilteredRoomGroups();
+        // Defer the initial rebuild so the dock panel can appear immediately.
+        // RebuildFilteredRoomGroups() triggers per-group CollectionChanged events that cause
+        // Avalonia to realize item controls for all room groups and their items synchronously,
+        // which can take 1-2 s for large item pools and must not block the constructor.
+        dispatcherService.PostOnUI(RebuildFilteredRoomGroups);
     }
 
     public void Dispose()
