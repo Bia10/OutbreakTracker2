@@ -3,8 +3,12 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
 
-public sealed partial class HellfireViewModel : ObservableObject
+public sealed partial class HellfireViewModel
+    : ObservableObject,
+        OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.IScenarioSpecificViewModel
 {
+    public OutbreakTracker2.Outbreak.Enums.Scenario ScenarioType => OutbreakTracker2.Outbreak.Enums.Scenario.Hellfire;
+
     [ObservableProperty]
     private string _hellfirePassDisplay = string.Empty;
 

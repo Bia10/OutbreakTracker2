@@ -3,8 +3,13 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 
-public sealed partial class EndOfTheRoadViewModel : ObservableObject
+public sealed partial class EndOfTheRoadViewModel
+    : ObservableObject,
+        OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.IScenarioSpecificViewModel
 {
+    public OutbreakTracker2.Outbreak.Enums.Scenario ScenarioType =>
+        OutbreakTracker2.Outbreak.Enums.Scenario.EndOfTheRoad;
+
     [ObservableProperty]
     private string _endOfRoadDisplay = string.Empty;
 

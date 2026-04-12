@@ -3,8 +3,12 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
 
-public sealed partial class TheHiveViewModel : ObservableObject
+public sealed partial class TheHiveViewModel
+    : ObservableObject,
+        OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.IScenarioSpecificViewModel
 {
+    public OutbreakTracker2.Outbreak.Enums.Scenario ScenarioType => OutbreakTracker2.Outbreak.Enums.Scenario.TheHive;
+
     [ObservableProperty]
     private string _passHiveDisplay = string.Empty;
 

@@ -4,8 +4,12 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 
-public sealed partial class UnderbellyViewModel : ObservableObject
+public sealed partial class UnderbellyViewModel
+    : ObservableObject,
+        OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.IScenarioSpecificViewModel
 {
+    public OutbreakTracker2.Outbreak.Enums.Scenario ScenarioType => OutbreakTracker2.Outbreak.Enums.Scenario.Underbelly;
+
     [ObservableProperty]
     private short _passUnderbelly1;
 

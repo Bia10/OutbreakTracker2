@@ -1,7 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
-using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
-using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
@@ -9,38 +7,18 @@ using OutbreakTracker2.Outbreak.Utility;
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario;
 
 /// <summary>
-/// Owns the 9 scenario-specific sub-ViewModels and routes DecodedInGameScenario
-/// updates to the correct one. All sub-ViewModels are parameterless and live for
-/// the lifetime of this router (same as InGameScenarioViewModel).
+/// Routes <see cref="DecodedInGameScenario"/> updates to the DI-registered
+/// scenario-specific view model for the active scenario.
 /// </summary>
-internal sealed class ScenarioViewModelRouter
+public sealed class ScenarioViewModelRouter
 {
-    private readonly Dictionary<Scenario, (ObservableObject Vm, Action<DecodedInGameScenario> Update)> _map;
+    private readonly Dictionary<Scenario, IScenarioSpecificViewModel> _map;
 
-    public ScenarioViewModelRouter()
+    internal ScenarioViewModelRouter(IEnumerable<IScenarioSpecificViewModel> scenarioViewModels)
     {
-        DesperateTimesViewModel desperateTimesVm = new();
-        EndOfTheRoadViewModel endOfTheRoadVm = new();
-        FlashbackViewModel flashbackVm = new();
-        UnderbellyViewModel underbellyVm = new();
-        WildThingsViewModel wildThingsVm = new();
-        HellfireViewModel hellfireVm = new();
-        TheHiveViewModel theHiveVm = new();
-        DecisionsDecisionsViewModel decisionsDecisionsVm = new();
-        BelowFreezingPointViewModel belowFreezingPointVm = new();
+        ArgumentNullException.ThrowIfNull(scenarioViewModels);
 
-        _map = new Dictionary<Scenario, (ObservableObject, Action<DecodedInGameScenario>)>
-        {
-            { Scenario.DesperateTimes, (desperateTimesVm, s => desperateTimesVm.Update(s)) },
-            { Scenario.EndOfTheRoad, (endOfTheRoadVm, s => endOfTheRoadVm.Update(s)) },
-            { Scenario.Underbelly, (underbellyVm, s => underbellyVm.Update(s)) },
-            { Scenario.WildThings, (wildThingsVm, s => wildThingsVm.Update(s)) },
-            { Scenario.Hellfire, (hellfireVm, s => hellfireVm.Update(s)) },
-            { Scenario.TheHive, (theHiveVm, s => theHiveVm.Update(s)) },
-            { Scenario.DecisionsDecisions, (decisionsDecisionsVm, s => decisionsDecisionsVm.Update(s)) },
-            { Scenario.BelowFreezingPoint, (belowFreezingPointVm, s => belowFreezingPointVm.Update(s)) },
-            { Scenario.Flashback, (flashbackVm, s => flashbackVm.Update(s)) },
-        };
+        _map = scenarioViewModels.ToDictionary(viewModel => viewModel.ScenarioType);
     }
 
     /// <summary>
@@ -61,13 +39,22 @@ internal sealed class ScenarioViewModelRouter
             return null;
         }
 
-        if (!_map.TryGetValue(scenarioType, out (ObservableObject Vm, Action<DecodedInGameScenario> Update) entry))
+        if (!_map.TryGetValue(scenarioType, out IScenarioSpecificViewModel? entry))
         {
             logger.LogTrace("No specific view configured for scenario: {ScenarioName}", scenario.ScenarioName);
             return null;
         }
 
+        if (entry is not ObservableObject viewModel)
+        {
+            logger.LogError(
+                "Scenario-specific view model {ViewModelType} does not derive from ObservableObject",
+                entry.GetType().Name
+            );
+            return null;
+        }
+
         entry.Update(scenario);
-        return entry.Vm;
+        return viewModel;
     }
 }

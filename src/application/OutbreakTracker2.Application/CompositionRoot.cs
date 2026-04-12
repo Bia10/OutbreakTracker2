@@ -34,7 +34,8 @@ using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer.Factory;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayers;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario;
-using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileOne;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
@@ -49,7 +50,9 @@ using OutbreakTracker2.Application.Views.Map.Canvas;
 using OutbreakTracker2.Application.Views.Settings;
 using OutbreakTracker2.Memory.SafeMemory;
 using OutbreakTracker2.Memory.String;
+using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Readers;
+using OutbreakTracker2.PCSX2.Client;
 using OutbreakTracker2.PCSX2.EEmem;
 using Serilog;
 using SukiUI.Dialogs;
@@ -98,6 +101,9 @@ internal static class CompositionRoot
 
     private static void ConfigureSerilog(IServiceProvider serviceProvider, IConfiguration configuration)
     {
+        // IMPORTANT: ILogDataStorageService must be resolved here — before AddSerilog — so its
+        // background task is running when the DataStoreLoggerSink starts writing entries.
+        // Do NOT reorder: the sink references the store by interface, not by DI resolution order.
         ILogDataStorageService logDataStore = serviceProvider.GetRequiredService<ILogDataStorageService>();
 
         Log.Logger = new LoggerConfiguration()
@@ -105,6 +111,9 @@ internal static class CompositionRoot
             .WriteTo.DataStoreLoggerSink(logDataStore)
             .CreateLogger();
 
+        // Adds the fully configured Serilog logger to the already-built ILoggerFactory.
+        // Must run after Log.Logger is assigned above so ILogger<T> instances created after this
+        // point forward to the correct Serilog pipeline.
         ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
         loggerFactory.AddSerilog(Log.Logger);
     }
@@ -113,18 +122,21 @@ internal static class CompositionRoot
     {
         services.AddSingleton(configuration);
 
-        AddCoreServices(services);
+        AddCoreServices(services, configuration);
         AddPlatformServices(services);
         AddDockAndViewServices(services);
-        AddDataServices(services);
+        AddDataServices(services, configuration);
 
         ServiceProviderOptions providerOptions = new() { ValidateOnBuild = true, ValidateScopes = true };
 
         return services.BuildServiceProvider(providerOptions);
     }
 
-    private static void AddCoreServices(IServiceCollection services)
+    private static void AddCoreServices(IServiceCollection services, IConfiguration configuration)
     {
+        RunReportOptions runReportOptions =
+            configuration.GetSection(RunReportOptions.SectionName).Get<RunReportOptions>() ?? new RunReportOptions();
+
         services.AddSingleton<ClipboardService>();
         services.AddSingleton<IClipboardService>(sp => sp.GetRequiredService<ClipboardService>());
         services.AddSingleton<PageNavigationService>();
@@ -133,7 +145,24 @@ internal static class CompositionRoot
 
         services.AddSingleton<IDispatcherService, DispatcherService>();
         services.AddSingleton<IToastService, ToastService>();
-        services.AddSingleton<IAppSettingsService, AppSettingsService>();
+        services.AddSingleton<ISettingsSerializer, SettingsJsonSerializer>();
+        services.AddSingleton<ISettingsValidator, SettingsValidator>();
+        services.AddSingleton<ISettingsPersistence>(_ => new FileSettingsPersistence(
+            AppSettingsFilePaths.GetUserSettingsPath()
+        ));
+        services.AddSingleton<IAppSettingsService>(serviceProvider => new AppSettingsService(
+            serviceProvider.GetRequiredService<IConfiguration>(),
+            serviceProvider.GetRequiredService<ILogger<AppSettingsService>>(),
+            serviceProvider.GetRequiredService<ISettingsSerializer>(),
+            serviceProvider.GetRequiredService<ISettingsValidator>(),
+            serviceProvider.GetRequiredService<ISettingsPersistence>()
+        ));
+        services.AddSingleton(runReportOptions);
+        services.AddSingleton<IEntityTrackerFactory, EntityTrackerFactory>();
+        services.AddSingleton<IAlertRuleProvider<DecodedEnemy>, EnemyAlertRulesProvider>();
+        services.AddSingleton<IAlertRuleProvider<DecodedDoor>, DoorAlertRulesProvider>();
+        services.AddSingleton<IAlertRuleProvider<DecodedInGamePlayer>, PlayerAlertRulesProvider>();
+        services.AddSingleton<IAlertRuleProvider<DecodedLobbySlot>, LobbySlotAlertRulesProvider>();
         services.AddSingleton<ITrackerRegistry, TrackerRegistry>();
         services.AddSingleton<INotificationService, NotificationService>();
         services.AddSingleton(TimeProvider.System);
@@ -151,6 +180,7 @@ internal static class CompositionRoot
 
         services.AddSingleton<IPcsx2Locator, Pcsx2Locator>();
         services.AddSingleton<IProcessLocator, ProcessLocator>();
+        services.AddSingleton<IGameClientFactory, GameClientFactory>();
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
     }
 
@@ -190,7 +220,7 @@ internal static class CompositionRoot
     private static void AddDockAndViewServices(IServiceCollection services)
     {
         // Game Dock: dockable instances and the factory that wires them into a layout
-        services.AddSingleton<GameScreenTool>();
+        services.AddSingleton<GameScreenDockTool>();
         services.AddSingleton<EntitiesDockViewModel>();
         services.AddSingleton<EntitiesDockTool>();
         services.AddSingleton<MapDockTool>();
@@ -202,6 +232,7 @@ internal static class CompositionRoot
         services.AddSingleton<ScenarioEnemiesDockTool>();
         services.AddSingleton<ScenarioDoorsDockTool>();
         services.AddSingleton<ScenarioEntityCommands>();
+        AddScenarioSpecificViewModels(services);
         services.AddSingleton<DockToolSet>();
         services.AddSingleton<GameDockFactory>();
 
@@ -214,14 +245,57 @@ internal static class CompositionRoot
         services.AddTransient<IScenarioImageViewModelFactory, ScenarioImageViewModelFactory>();
         services.AddTransient<ILobbySlotViewModelFactory, LobbySlotViewModelFactory>();
         services.AddTransient<IInGamePlayerViewModelFactory, InGamePlayerViewModelFactory>();
+        services.AddTransient<IInGamePlayerSubViewModelFactory, InGamePlayerSubViewModelFactory>();
         services.AddTransient<IItemSlotViewModelFactory, ItemSlotViewModelFactory>();
         services.AddTransient<IItemImageViewModelFactory, ItemImageViewModelFactory>();
 
         services.AddSingleton<LobbySlotsViewModel>();
     }
 
-    private static void AddDataServices(IServiceCollection services)
+    private static void AddScenarioSpecificViewModels(IServiceCollection services)
     {
+        services.AddSingleton<IScenarioSpecificViewModel, DesperateTimesViewModel>();
+        services.AddSingleton<IScenarioSpecificViewModel, EndOfTheRoadViewModel>();
+        services.AddSingleton<IScenarioSpecificViewModel, FlashbackViewModel>();
+        services.AddSingleton<IScenarioSpecificViewModel, UnderbellyViewModel>();
+        services.AddSingleton<IScenarioSpecificViewModel, WildThingsViewModel>();
+        services.AddSingleton<IScenarioSpecificViewModel, BelowFreezingPointViewModel>();
+        services.AddSingleton<IScenarioSpecificViewModel, DecisionsDecisionsViewModel>();
+        services.AddSingleton<IScenarioSpecificViewModel, HellfireViewModel>();
+        services.AddSingleton<IScenarioSpecificViewModel, TheHiveViewModel>();
+        services.AddSingleton(sp => new ScenarioViewModelRouter(
+            sp.GetRequiredService<IEnumerable<IScenarioSpecificViewModel>>()
+        ));
+    }
+
+    internal static TextureAtlasOptions GetTextureAtlasOptions(IConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        IConfigurationSection atlasesSection = configuration
+            .GetSection(TextureAtlasOptions.SectionName)
+            .GetSection(nameof(TextureAtlasOptions.Atlases));
+
+        List<TextureAtlasDefinition> atlases = [];
+        foreach (IConfigurationSection atlasSection in atlasesSection.GetChildren())
+        {
+            atlases.Add(
+                new TextureAtlasDefinition
+                {
+                    Name = atlasSection[nameof(TextureAtlasDefinition.Name)] ?? string.Empty,
+                    JsonPath = atlasSection[nameof(TextureAtlasDefinition.JsonPath)] ?? string.Empty,
+                    ImagePath = atlasSection[nameof(TextureAtlasDefinition.ImagePath)] ?? string.Empty,
+                }
+            );
+        }
+
+        return new TextureAtlasOptions { Atlases = atlases };
+    }
+
+    private static void AddDataServices(IServiceCollection services, IConfiguration configuration)
+    {
+        TextureAtlasOptions textureAtlasOptions = GetTextureAtlasOptions(configuration);
+
         services.AddSingleton<IEEmemMemory, EEmemMemory>();
         services.AddSingleton<IDataManager, DataManager>();
         services.AddSingleton<IDataObservableSource>(sp => sp.GetRequiredService<IDataManager>());
@@ -230,6 +304,7 @@ internal static class CompositionRoot
         services.AddSingleton<IDoorAddressProvider, FileOneDoorAddressProvider>();
         services.AddSingleton<IDoorAddressProvider, FileTwoDoorAddressProvider>();
         services.AddSingleton<ISpriteNameResolver, SpriteNameResolver>();
+        services.AddSingleton(textureAtlasOptions);
         services.AddSingleton<ITextureAtlasService, TextureAtlasService>();
         services.AddSingleton<Func<Stream, SpriteSheet, ITextureAtlas>>(serviceProvider =>
         {

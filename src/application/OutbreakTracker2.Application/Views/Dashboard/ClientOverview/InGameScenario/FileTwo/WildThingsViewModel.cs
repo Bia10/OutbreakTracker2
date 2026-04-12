@@ -4,8 +4,12 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 
-public sealed partial class WildThingsViewModel : ObservableObject
+public sealed partial class WildThingsViewModel
+    : ObservableObject,
+        OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.IScenarioSpecificViewModel
 {
+    public OutbreakTracker2.Outbreak.Enums.Scenario ScenarioType => OutbreakTracker2.Outbreak.Enums.Scenario.WildThings;
+
     // Used in "Wild Things"
     [ObservableProperty]
     private byte _coin;

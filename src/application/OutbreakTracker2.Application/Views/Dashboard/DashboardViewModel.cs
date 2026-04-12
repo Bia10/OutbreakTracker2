@@ -11,8 +11,17 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard;
 
-public sealed partial class DashboardViewModel : PageBase, IDisposable
+public sealed partial class DashboardViewModel : PageBase, IDisposable, IAsyncDisposable
 {
+    private enum ProcessViewState
+    {
+        None,
+        Monitored,
+        Unmonitored,
+    }
+
+    private readonly record struct ProcessStateSnapshot(ProcessViewState State, IReadOnlyList<int> ProcessIds);
+
     private readonly ILogger<DashboardViewModel> _logger;
     private DisposableBag _disposables;
 
@@ -44,73 +53,83 @@ public sealed partial class DashboardViewModel : PageBase, IDisposable
         _logger = logger;
 
         _disposables.Add(
-            processLauncher
-                .ProcessUpdate.ObserveOnCurrentSynchronizationContext()
-                .Subscribe(processModel =>
-                {
-                    if (processModel.IsRunning)
-                        CurrentView = ClientOverviewViewModel;
-                })
-        );
-
-        _disposables.Add(
-            processLocator
-                .IsProcessRunningPolling("pcsx2-qt")
+            Observable
+                .Merge(
+                    processLauncher.ProcessUpdate.Select(_ => ResolveProcessState(processLocator, processLauncher)),
+                    processLocator
+                        .IsProcessRunningPolling("pcsx2-qt")
+                        .Select(_ => ResolveProcessState(processLocator, processLauncher))
+                )
                 .ObserveOnCurrentSynchronizationContext()
                 .Subscribe(
-                    onNext: isRunning =>
+                    processModel =>
                     {
-                        if (isRunning)
-                        {
-                            int? clientProcessId = null;
-                            try
-                            {
-                                clientProcessId = processLauncher.ClientMonitoredProcess?.Id;
-                            }
-                            catch (InvalidOperationException)
-                            {
-                                // Process handle invalidated between null check and Id access (race with exit)
-                            }
-
-                            IReadOnlyList<int> processIds = processLocator.GetProcessIds("pcsx2-qt");
-
-                            if (clientProcessId.HasValue && processIds.Contains(clientProcessId.Value))
-                                HandleMonitoredProcess();
-                            else
-                                HandleUnmonitoredProcess(processIds);
-                        }
-                        else
-                        {
-                            HandleNoRunningProcess();
-                        }
+                        ApplyProcessState(processModel);
                     },
-                    onErrorResume: ex => _logger.LogError(ex, "Error in process polling"),
-                    onCompleted: _ => _logger.LogInformation("Process polling completed")
+                    onErrorResume: ex => _logger.LogError(ex, "Error while monitoring dashboard process state"),
+                    onCompleted: _ => _logger.LogInformation("Dashboard process state monitoring completed")
                 )
         );
     }
 
     public void Dispose() => _disposables.Dispose();
 
-    private void HandleMonitoredProcess()
+    public async ValueTask DisposeAsync()
     {
-        _logger.LogInformation("Monitored process is running");
-        IsClientRunning = true;
-        CurrentView = ClientOverviewViewModel;
+        _disposables.Dispose();
+        if (ClientOverviewViewModel is not null)
+            await ClientOverviewViewModel.DisposeAsync().ConfigureAwait(false);
     }
 
-    private void HandleUnmonitoredProcess(IReadOnlyList<int> processIds)
+    private void ApplyProcessState(ProcessStateSnapshot processState)
     {
-        _logger.LogInformation("Unmonitored process is running");
-        IsClientRunning = true;
-        ClientAlreadyRunningViewModel!.UpdateProcesses(processIds);
-        CurrentView = ClientAlreadyRunningViewModel;
+        switch (processState.State)
+        {
+            case ProcessViewState.Monitored:
+                _logger.LogInformation("Monitored process is running");
+                IsClientRunning = true;
+                CurrentView = ClientOverviewViewModel;
+                break;
+
+            case ProcessViewState.Unmonitored:
+                _logger.LogInformation("Unmonitored process is running");
+                IsClientRunning = true;
+                ClientAlreadyRunningViewModel!.UpdateProcesses(processState.ProcessIds);
+                CurrentView = ClientAlreadyRunningViewModel;
+                break;
+
+            default:
+                _logger.LogInformation("No running process found");
+                IsClientRunning = false;
+                CurrentView = ClientNotRunningViewModel;
+                break;
+        }
     }
 
-    private void HandleNoRunningProcess()
+    private static ProcessStateSnapshot ResolveProcessState(
+        IProcessLocator processLocator,
+        IProcessLauncher processLauncher
+    )
     {
-        _logger.LogInformation("No running process found");
-        IsClientRunning = false;
-        CurrentView = ClientNotRunningViewModel;
+        IReadOnlyList<int> processIds = processLocator.GetProcessIds("pcsx2-qt");
+        if (processIds.Count == 0)
+            return new ProcessStateSnapshot(ProcessViewState.None, processIds);
+
+        int? clientProcessId = null;
+        try
+        {
+            clientProcessId = processLauncher.ClientMonitoredProcess?.Id;
+        }
+        catch (InvalidOperationException)
+        {
+            // Process handle invalidated between null check and Id access (race with exit)
+        }
+
+        ProcessViewState state =
+            clientProcessId.HasValue && processIds.Contains(clientProcessId.Value)
+                ? ProcessViewState.Monitored
+                : ProcessViewState.Unmonitored;
+
+        return new ProcessStateSnapshot(state, processIds);
     }
 }

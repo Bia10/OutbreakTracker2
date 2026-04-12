@@ -5,8 +5,12 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.FileTwo;
 
-public sealed partial class DesperateTimesViewModel : ObservableObject
+public sealed partial class DesperateTimesViewModel
+    : ObservableObject,
+        OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.IScenarioSpecificViewModel
 {
+    public Scenario ScenarioType => Scenario.DesperateTimes;
+
     // Used in "Desperate Times"
     [ObservableProperty]
     private int _fightTime;

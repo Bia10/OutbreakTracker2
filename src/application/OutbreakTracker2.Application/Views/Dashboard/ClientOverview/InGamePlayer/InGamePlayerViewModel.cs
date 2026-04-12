@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using OutbreakTracker2.Application.Views.Common.Character;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer.Factory;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
-using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Character;
 using OutbreakTracker2.Outbreak.Models;
@@ -59,15 +59,15 @@ public sealed partial class InGamePlayerViewModel : ObservableObject
         string scenarioName,
         DecodedItem[] scenarioItems,
         ICharacterBustViewModelFactory characterBustViewModelFactory,
-        IItemSlotViewModelFactory itemSlotViewModelFactory
+        IInGamePlayerSubViewModelFactory subViewModelFactory
     )
     {
-        _gauges = new PlayerGaugesViewModel();
-        _statusEffects = new PlayerStatusEffectsViewModel();
-        _conditions = new PlayerConditionsViewModel();
-        _attributes = new PlayerAttributesViewModel();
-        _position = new PlayerPositionViewModel();
-        _inventory = new InventoryViewModel(player, itemSlotViewModelFactory);
+        _gauges = subViewModelFactory.CreateGauges();
+        _statusEffects = subViewModelFactory.CreateStatusEffects();
+        _conditions = subViewModelFactory.CreateConditions();
+        _attributes = subViewModelFactory.CreateAttributes();
+        _position = subViewModelFactory.CreatePosition();
+        _inventory = subViewModelFactory.CreateInventory(player);
         _playerBustViewModel = characterBustViewModelFactory.Create();
 
         Update(player, currentGameFile, scenarioName, scenarioItems);

@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
-using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
 using OutbreakTracker2.Application.Views.GameDock;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
@@ -129,34 +129,33 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         IDataObservableSource dataObservable,
         IDispatcherService dispatcherService,
         ScenarioEntitiesViewModel scenarioEntitiesViewModel,
-        ScenarioEntityCommands entityCommands
+        ScenarioEntityCommands entityCommands,
+        ScenarioViewModelRouter router
     )
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
         _entityCommands = entityCommands;
         _scenarioEntitiesVm = scenarioEntitiesViewModel;
-        _router = new ScenarioViewModelRouter();
+        _router = router;
 
         _disposables.Add(
             dataObservable
-                .InGameScenarioObservable.WithLatestFrom(
-                    dataObservable.InGamePlayersObservable,
-                    (inGameScenario, players) => (Scenario: inGameScenario, Players: players)
-                )
-                .ObserveOnThreadPool()
+                .InGameOverviewObservable.ObserveOnThreadPool()
                 .SubscribeAwait(
-                    async (data, cancellationToken) =>
+                    async (snapshot, cancellationToken) =>
                     {
-                        _logger.LogTrace("Processing inGame scenario data on thread pool");
+                        _logger.LogTrace("Processing in-game overview snapshot on thread pool");
                         try
                         {
                             await dispatcherService
                                 .InvokeOnUIAsync(
                                     () =>
                                     {
-                                        _logger.LogTrace("Updating InGameScenarioViewModel properties on UI thread");
-                                        Update(data.Scenario, data.Players);
+                                        _logger.LogTrace(
+                                            "Updating InGameScenarioViewModel and scenario entities on UI thread"
+                                        );
+                                        ApplyScenarioUpdate(snapshot);
                                     },
                                     cancellationToken
                                 )
@@ -164,75 +163,11 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
                         }
                         catch (OperationCanceledException)
                         {
-                            _logger.LogInformation("InGame scenario data processing cancelled");
+                            _logger.LogInformation("In-game overview snapshot processing cancelled");
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Error during inGame scenario data processing cycle");
-                        }
-                    },
-                    AwaitOperation.Drop
-                )
-        );
-
-        _disposables.Add(
-            dataObservable
-                .EnemiesObservable.ObserveOnThreadPool()
-                .SubscribeAwait(
-                    async (enemies, cancellationToken) =>
-                    {
-                        _logger.LogTrace("Processing enemies data on thread pool");
-                        try
-                        {
-                            await dispatcherService
-                                .InvokeOnUIAsync(
-                                    () =>
-                                    {
-                                        ScenarioEntitiesVm.UpdateEnemies(enemies);
-                                    },
-                                    cancellationToken
-                                )
-                                .ConfigureAwait(false);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            _logger.LogInformation("Enemies data processing cancelled");
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error during enemies data processing cycle");
-                        }
-                    },
-                    AwaitOperation.Drop
-                )
-        );
-
-        _disposables.Add(
-            dataObservable
-                .DoorsObservable.ObserveOnThreadPool()
-                .SubscribeAwait(
-                    async (doors, cancellationToken) =>
-                    {
-                        _logger.LogTrace("Processing doors data on thread pool");
-                        try
-                        {
-                            await dispatcherService
-                                .InvokeOnUIAsync(
-                                    () =>
-                                    {
-                                        ScenarioEntitiesVm.UpdateDoors(doors);
-                                    },
-                                    cancellationToken
-                                )
-                                .ConfigureAwait(false);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            _logger.LogInformation("Doors data processing cancelled");
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error during doors data processing cycle");
+                            _logger.LogError(ex, "Error during in-game overview snapshot processing cycle");
                         }
                     },
                     AwaitOperation.Drop
@@ -241,6 +176,13 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
     }
 
     public void Dispose() => _disposables.Dispose();
+
+    private void ApplyScenarioUpdate(InGameOverviewSnapshot snapshot)
+    {
+        Update(snapshot.Scenario, snapshot.Players);
+        ScenarioEntitiesVm.UpdateEnemies(snapshot.Enemies);
+        ScenarioEntitiesVm.UpdateDoors(snapshot.Doors);
+    }
 
     public void Update(DecodedInGameScenario scenario, DecodedInGamePlayer[] players)
     {
