@@ -244,6 +244,7 @@ public static partial class Win32WindowNativeMethods
     // ── WinEvent hook ─────────────────────────────────────────────────────────
 
     // Events
+    public const uint EVENT_SYSTEM_FOREGROUND = 0x0003;
     public const uint EVENT_OBJECT_DESTROY = 0x8001;
     public const uint EVENT_OBJECT_SHOW = 0x8002;
     public const uint EVENT_OBJECT_HIDE = 0x8003;

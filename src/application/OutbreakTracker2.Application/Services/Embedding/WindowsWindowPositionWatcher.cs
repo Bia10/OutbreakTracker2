@@ -52,11 +52,13 @@ internal sealed class WindowsWindowPositionWatcher : IWindowPositionWatcher
     private nint _visibilityHook; // container show/hide (own PID)
     private nint _snapBackHook; // embedded location change (PCSX2 PID)
     private nint _destroyHook; // embedded destroy (PCSX2 PID)
+    private nint _foregroundHook; // OT2 window gained foreground (own PID) — alt-tab return
 
     private Win32WindowNativeMethods.WinEventProc? _locationCallback;
     private Win32WindowNativeMethods.WinEventProc? _visibilityCallback;
     private Win32WindowNativeMethods.WinEventProc? _snapBackCallback;
     private Win32WindowNativeMethods.WinEventProc? _destroyCallback;
+    private Win32WindowNativeMethods.WinEventProc? _foregroundCallback;
 
     // ── Low-level mouse hook state ────────────────────────────────────────────
 
@@ -157,7 +159,27 @@ internal sealed class WindowsWindowPositionWatcher : IWindowPositionWatcher
             Win32WindowNativeMethods.WINEVENT_OUTOFCONTEXT
         );
 
-        // ── Hook 5: low-level mouse hook for instant focus routing ────────────
+        // ── Hook 5: OT2 foreground activation (own process) ──────────────────
+        // EVENT_SYSTEM_FOREGROUND fires exactly when an OT2-owned window becomes
+        // the foreground window — including every alt-tab return.  PCSX2 runs in a
+        // different process so this hook never fires for PCSX2 activity.
+        //
+        // On activation: reset the stale _focusIsOnEmbedded flag (the OS already
+        // moved focus to Avalonia), then immediately re-route focus to PCSX2 if
+        // the cursor is already inside the game area — fixing the "must wiggle the
+        // mouse to get keyboard control back" symptom.
+        _foregroundCallback = OnForegroundChanged;
+        _foregroundHook = Win32WindowNativeMethods.SetWinEventHook(
+            Win32WindowNativeMethods.EVENT_SYSTEM_FOREGROUND,
+            Win32WindowNativeMethods.EVENT_SYSTEM_FOREGROUND,
+            nint.Zero,
+            _foregroundCallback,
+            (uint)Environment.ProcessId,
+            0,
+            Win32WindowNativeMethods.WINEVENT_OUTOFCONTEXT
+        );
+
+        // ── Hook 6: low-level mouse hook for instant focus routing ────────────
         _mouseCallback = OnMouseEvent;
         nint hModule = Win32WindowNativeMethods.GetModuleHandle(null);
         _mouseHook = Win32WindowNativeMethods.SetWindowsHookEx(
@@ -192,6 +214,7 @@ internal sealed class WindowsWindowPositionWatcher : IWindowPositionWatcher
         UnhookWinEvent(ref _visibilityHook, ref _visibilityCallback);
         UnhookWinEvent(ref _snapBackHook, ref _snapBackCallback);
         UnhookWinEvent(ref _destroyHook, ref _destroyCallback);
+        UnhookWinEvent(ref _foregroundHook, ref _foregroundCallback);
 
         // ── Detach thread input ───────────────────────────────────────────────
         if (_inputAttached)
@@ -365,6 +388,46 @@ internal sealed class WindowsWindowPositionWatcher : IWindowPositionWatcher
         // Stop all hooks and notify the subscriber to re-discover the new window.
         Stop();
         EmbeddedWindowLost?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnForegroundChanged(
+        nint hWinEventHook,
+        uint @event,
+        nint hwnd,
+        int idObject,
+        int idChild,
+        uint idEventThread,
+        uint dwmsEventTime
+    )
+    {
+        // Only act when the Avalonia root window itself gains the foreground.
+        // Other OT2 windows (e.g. dialogs) produce this event too; ignore them.
+        if (hwnd != _rootWindow)
+            return;
+
+        if (!_inputAttached || _embedded == nint.Zero || _container == nint.Zero)
+            return;
+
+        // The OS already moved keyboard focus to Avalonia, so _focusIsOnEmbedded is now
+        // stale regardless of its previous value.  Resetting it here ensures the mouse
+        // hook's enter-transition fires correctly the next time the cursor enters the game
+        // area — even if the cursor never left the area during the alt-tab away.
+        _focusIsOnEmbedded = false;
+
+        // If the cursor is already inside the game area (common when the user alt-tabbed
+        // back and the mouse didn't move), restore focus to PCSX2 immediately so keyboard
+        // input reaches the game without requiring a mouse wiggle.
+        if (!Win32WindowNativeMethods.GetCursorPos(out POINT cursor))
+            return;
+
+        RECT cr = _cachedContainerRect;
+        bool cursorInGame = cr.Left <= cursor.X && cursor.X < cr.Right && cr.Top <= cursor.Y && cursor.Y < cr.Bottom;
+
+        if (cursorInGame && Win32WindowNativeMethods.IsWindowVisible(_container))
+        {
+            Win32WindowNativeMethods.SetFocus(_embedded);
+            _focusIsOnEmbedded = true;
+        }
     }
 
     // ── Low-level mouse hook callback ─────────────────────────────────────────
