@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Material.Icons;
@@ -12,10 +11,7 @@ namespace OutbreakTracker2.Application.Converters
         {
             if (value is not bool b)
             {
-                Debug.Assert(
-                    value is null,
-                    $"BoolToIconConverter expected bool but received {value?.GetType().FullName}."
-                );
+                ConverterDebugDiagnostics.ReportUnexpectedValueType(nameof(BoolToIconConverter), "bool", value);
                 return BindingOperations.DoNothing;
             }
 

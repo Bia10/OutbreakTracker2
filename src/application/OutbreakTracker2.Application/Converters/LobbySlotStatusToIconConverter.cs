@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using FastEnumUtility;
@@ -34,9 +33,10 @@ public sealed class LobbySlotStatusToIconConverter : IValueConverter
                 break;
 
             default:
-                Debug.Assert(
-                    false,
-                    $"LobbySlotStatusToIconConverter expected SlotStatus or string but received {value.GetType().FullName}."
+                ConverterDebugDiagnostics.ReportUnexpectedValueType(
+                    nameof(LobbySlotStatusToIconConverter),
+                    "SlotStatus or string",
+                    value
                 );
                 return BindingOperations.DoNothing;
         }

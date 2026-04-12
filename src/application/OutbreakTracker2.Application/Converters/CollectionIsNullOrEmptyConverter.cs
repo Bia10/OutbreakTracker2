@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
@@ -16,9 +15,10 @@ public sealed class CollectionIsNullOrEmptyConverter : IValueConverter
 
         if (value is not ICollection collection)
         {
-            Debug.Assert(
-                false,
-                $"CollectionIsNullOrEmptyConverter expected ICollection but received {value.GetType().FullName}."
+            ConverterDebugDiagnostics.ReportUnexpectedValueType(
+                nameof(CollectionIsNullOrEmptyConverter),
+                "ICollection",
+                value
             );
             return BindingOperations.DoNothing;
         }

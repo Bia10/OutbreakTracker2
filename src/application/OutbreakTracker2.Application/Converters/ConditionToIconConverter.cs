@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Material.Icons;
@@ -12,10 +11,7 @@ public sealed class ConditionToIconConverter : IValueConverter
     {
         if (value is not string rawCondition)
         {
-            Debug.Assert(
-                value is null,
-                $"ConditionToIconConverter expected string but received {value?.GetType().FullName}."
-            );
+            ConverterDebugDiagnostics.ReportUnexpectedValueType(nameof(ConditionToIconConverter), "string", value);
             return BindingOperations.DoNothing;
         }
 
