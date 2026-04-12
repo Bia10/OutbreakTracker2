@@ -14,22 +14,50 @@ public sealed class TrackerRegistry : ITrackerRegistry, IDisposable
 
     public Observable<AlertNotification> AllAlerts { get; }
 
-    public TrackerRegistry(
+    internal TrackerRegistry(
         IDataObservableSource dataObservable,
         IDataSnapshot dataSnapshot,
-        IAppSettingsService settingsService
+        IAppSettingsService settingsService,
+        IEntityTrackerFactory trackerFactory
+    )
+        : this(
+            dataObservable,
+            trackerFactory,
+            [
+                new DelegateAlertRuleProvider<DecodedEnemy>(tracker =>
+                    EnemyAlertRules.Register(tracker, settingsService, dataSnapshot)
+                ),
+            ],
+            [
+                new DelegateAlertRuleProvider<DecodedDoor>(tracker =>
+                    DefaultDoorAlertRules.Register(tracker, settingsService, dataSnapshot)
+                ),
+            ],
+            [
+                new DelegateAlertRuleProvider<DecodedInGamePlayer>(tracker =>
+                    DefaultPlayerAlertRules.Register(tracker, settingsService, dataSnapshot)
+                ),
+            ],
+            [
+                new DelegateAlertRuleProvider<DecodedLobbySlot>(tracker =>
+                    DefaultLobbySlotAlertRules.Register(tracker, settingsService)
+                ),
+            ]
+        ) { }
+
+    public TrackerRegistry(
+        IDataObservableSource dataObservable,
+        IEntityTrackerFactory trackerFactory,
+        IEnumerable<IAlertRuleProvider<DecodedEnemy>> enemyRuleProviders,
+        IEnumerable<IAlertRuleProvider<DecodedDoor>> doorRuleProviders,
+        IEnumerable<IAlertRuleProvider<DecodedInGamePlayer>> playerRuleProviders,
+        IEnumerable<IAlertRuleProvider<DecodedLobbySlot>> lobbySlotRuleProviders
     )
     {
-        Enemies = new EntityTracker<DecodedEnemy>(
-            new EntityChangeSource<DecodedEnemy>(dataObservable.EnemiesObservable)
-        );
-        Doors = new EntityTracker<DecodedDoor>(new EntityChangeSource<DecodedDoor>(dataObservable.DoorsObservable));
-        Players = new EntityTracker<DecodedInGamePlayer>(
-            new EntityChangeSource<DecodedInGamePlayer>(dataObservable.InGamePlayersObservable)
-        );
-        LobbySlots = new EntityTracker<DecodedLobbySlot>(
-            new EntityChangeSource<DecodedLobbySlot>(dataObservable.LobbySlotsObservable)
-        );
+        Enemies = trackerFactory.Create(dataObservable.EnemiesObservable);
+        Doors = trackerFactory.Create(dataObservable.DoorsObservable);
+        Players = trackerFactory.Create(dataObservable.InGamePlayersObservable);
+        LobbySlots = trackerFactory.Create(dataObservable.LobbySlotsObservable);
 
         Observable<AlertNotification> lobbySlotAlerts = LobbySlots.Alerts;
         Observable<AlertNotification> gatedLobbyAlerts = lobbySlotAlerts
@@ -40,12 +68,22 @@ public sealed class TrackerRegistry : ITrackerRegistry, IDisposable
             .Where(static state => state.IsAtLobby)
             .Select(static state => state.Alert);
 
-        DefaultPlayerAlertRules.Register(Players, settingsService, dataSnapshot);
-        DefaultEnemyAlertRules.Register(Enemies, settingsService, dataSnapshot);
-        DefaultDoorAlertRules.Register(Doors, settingsService, dataSnapshot);
-        DefaultLobbySlotAlertRules.Register(LobbySlots, settingsService);
+        RegisterProviders(Enemies, enemyRuleProviders);
+        RegisterProviders(Doors, doorRuleProviders);
+        RegisterProviders(Players, playerRuleProviders);
+        RegisterProviders(LobbySlots, lobbySlotRuleProviders);
 
         AllAlerts = Observable.Merge(Enemies.Alerts, Doors.Alerts, Players.Alerts, gatedLobbyAlerts);
+    }
+
+    private static void RegisterProviders<T>(
+        IEntityTracker<T> tracker,
+        IEnumerable<IAlertRuleProvider<T>> ruleProviders
+    )
+        where T : IHasId
+    {
+        foreach (IAlertRuleProvider<T> ruleProvider in ruleProviders)
+            ruleProvider.Register(tracker);
     }
 
     public void Dispose()

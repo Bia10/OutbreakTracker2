@@ -1,0 +1,184 @@
+﻿using OutbreakTracker2.Application.Services.Data;
+using OutbreakTracker2.Application.Services.Settings;
+using OutbreakTracker2.Application.Services.Tracking;
+using OutbreakTracker2.Outbreak.Enums;
+using OutbreakTracker2.Outbreak.Models;
+using R3;
+
+namespace OutbreakTracker2.UnitTests;
+
+public sealed class EnemyAlertRulesTests
+{
+    [Test]
+    public async Task Register_AddsExpectedEnemyRuleGroups()
+    {
+        using CapturingEnemyTracker tracker = new();
+        using FakeAppSettingsService settingsService = new();
+        FakeDataSnapshot snapshot = new();
+
+        EnemyAlertRules.Register(tracker, settingsService, snapshot);
+
+        await Assert.That(tracker.AddedRules.Count).IsEqualTo(1);
+        await Assert.That(tracker.Rules.Count).IsEqualTo(4);
+        await Assert.That(tracker.RemovedRules.Count).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task AddedSpawnRule_Triggers_ForValidEnemy()
+    {
+        using CapturingEnemyTracker tracker = new();
+        using FakeAppSettingsService settingsService = new();
+        FakeDataSnapshot snapshot = new();
+
+        EnemyAlertRules.Register(tracker, settingsService, snapshot);
+        IAlertRule<DecodedEnemy> spawnRule = tracker.AddedRules[0];
+
+        bool triggered = spawnRule.ShouldTrigger(CreateEnemy(), null);
+
+        await Assert.That(triggered).IsTrue();
+    }
+
+    [Test]
+    public async Task RemovedKilledRule_Triggers_ForDeadEnemyDuringScenario()
+    {
+        using CapturingEnemyTracker tracker = new();
+        using FakeAppSettingsService settingsService = new();
+        FakeDataSnapshot snapshot = new()
+        {
+            InGameScenario = new DecodedInGameScenario { ScenarioName = "Wild Things", Status = ScenarioStatus.InGame },
+        };
+
+        EnemyAlertRules.Register(tracker, settingsService, snapshot);
+        IAlertRule<DecodedEnemy> killedRule = tracker.RemovedRules[0];
+
+        bool triggered = killedRule.ShouldTrigger(CreateEnemy(curHp: 0), CreateEnemy(curHp: 0));
+
+        await Assert.That(triggered).IsTrue();
+    }
+
+    [Test]
+    public async Task RoomChangeRule_Triggers_WhenEnemyMovesRooms()
+    {
+        using CapturingEnemyTracker tracker = new();
+        using FakeAppSettingsService settingsService = new();
+        FakeDataSnapshot snapshot = new();
+
+        EnemyAlertRules.Register(tracker, settingsService, snapshot);
+        IAlertRule<DecodedEnemy> roomChangeRule = tracker.Rules[3];
+
+        bool triggered = roomChangeRule.ShouldTrigger(CreateEnemy(roomId: 2), CreateEnemy(roomId: 1));
+
+        await Assert.That(triggered).IsTrue();
+    }
+
+    private static DecodedEnemy CreateEnemy(byte roomId = 1, ushort curHp = 100) =>
+        new()
+        {
+            Id = Ulid.NewUlid(),
+            Enabled = 1,
+            SlotId = 1,
+            RoomId = roomId,
+            NameId = 49,
+            Name = "Hunter",
+            CurHp = curHp,
+            MaxHp = 100,
+        };
+
+    private sealed class CapturingEnemyTracker : IEntityTracker<DecodedEnemy>
+    {
+        private readonly Subject<AlertNotification> _alerts = new();
+
+        public List<IAlertRule<DecodedEnemy>> AddedRules { get; } = [];
+
+        public List<IAlertRule<DecodedEnemy>> Rules { get; } = [];
+
+        public List<IAlertRule<DecodedEnemy>> RemovedRules { get; } = [];
+
+        public IEntityChangeSource<DecodedEnemy> Changes { get; } = new FakeEntityChangeSource<DecodedEnemy>();
+
+        public Observable<AlertNotification> Alerts => _alerts;
+
+        public void AddRule(IAlertRule<DecodedEnemy> rule) => Rules.Add(rule);
+
+        public void AddAddedRule(IAlertRule<DecodedEnemy> rule) => AddedRules.Add(rule);
+
+        public void AddRemovedRule(IAlertRule<DecodedEnemy> rule) => RemovedRules.Add(rule);
+
+        public void Dispose()
+        {
+            _alerts.Dispose();
+            Changes.Dispose();
+        }
+    }
+
+    private sealed class FakeAppSettingsService : IAppSettingsService
+    {
+        private readonly ReactiveProperty<OutbreakTrackerSettings> _settings = new(new OutbreakTrackerSettings());
+
+        public string UserSettingsPath => string.Empty;
+
+        public OutbreakTrackerSettings Current => _settings.Value;
+
+        public Observable<OutbreakTrackerSettings> SettingsObservable => _settings;
+
+        public ValueTask SaveAsync(OutbreakTrackerSettings settings, CancellationToken cancellationToken = default) =>
+            ValueTask.CompletedTask;
+
+        public ValueTask ExportAsync(Stream destination, CancellationToken cancellationToken = default) =>
+            ValueTask.CompletedTask;
+
+        public ValueTask<OutbreakTrackerSettings> ImportAsync(
+            Stream source,
+            CancellationToken cancellationToken = default
+        ) => ValueTask.FromResult(Current);
+
+        public ValueTask<OutbreakTrackerSettings> ResetToDefaultsAsync(CancellationToken cancellationToken = default) =>
+            ValueTask.FromResult(new OutbreakTrackerSettings());
+
+        public void Dispose() => _settings.Dispose();
+    }
+
+    private sealed class FakeDataSnapshot : IDataSnapshot
+    {
+        public DecodedDoor[] Doors { get; init; } = [];
+
+        public DecodedEnemy[] Enemies { get; init; } = [];
+
+        public DecodedInGamePlayer[] InGamePlayers { get; init; } = [];
+
+        public DecodedInGameScenario InGameScenario { get; init; } = new();
+
+        public DecodedLobbyRoom LobbyRoom { get; init; } = new();
+
+        public DecodedLobbyRoomPlayer[] LobbyRoomPlayers { get; init; } = [];
+
+        public DecodedLobbySlot[] LobbySlots { get; init; } = [];
+
+        public bool IsAtLobby { get; init; }
+    }
+
+    private sealed class FakeEntityChangeSource<T> : IEntityChangeSource<T>
+        where T : IHasId
+    {
+        private readonly Subject<T> _added = new();
+        private readonly Subject<T> _removed = new();
+        private readonly Subject<EntityChange<T>> _updated = new();
+        private readonly Subject<CollectionDiff<T>> _diffs = new();
+
+        public Observable<T> Added => _added;
+
+        public Observable<T> Removed => _removed;
+
+        public Observable<EntityChange<T>> Updated => _updated;
+
+        public Observable<CollectionDiff<T>> Diffs => _diffs;
+
+        public void Dispose()
+        {
+            _added.Dispose();
+            _removed.Dispose();
+            _updated.Dispose();
+            _diffs.Dispose();
+        }
+    }
+}

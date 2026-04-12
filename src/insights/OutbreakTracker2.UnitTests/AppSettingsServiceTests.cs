@@ -230,6 +230,42 @@ public sealed class AppSettingsServiceTests
             );
     }
 
+    [Test]
+    public async Task CreateService_Throws_WhenUserSettingsAlertRulesSectionIsNull()
+    {
+        using TestSettingsEnvironment environment = new(
+            """
+            {
+                "OutbreakTracker": {
+                    "AlertRules": null
+                }
+            }
+            """
+        );
+
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => environment.CreateService())!;
+
+        await Assert.That(ex.Message).IsEqualTo("OutbreakTracker:AlertRules cannot be null.");
+    }
+
+    [Test]
+    public async Task CreateService_Throws_WhenUserSettingsDocumentOmitsOutbreakTrackerSection()
+    {
+        using TestSettingsEnvironment environment = new(
+            """
+            {
+                "OtherSection": {
+                    "Enabled": true
+                }
+            }
+            """
+        );
+
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => environment.CreateService())!;
+
+        await Assert.That(ex.Message).IsEqualTo("The user settings file must contain an OutbreakTracker object.");
+    }
+
     private sealed class TestSettingsEnvironment : IDisposable
     {
         private readonly string _directoryPath = Path.Combine(

@@ -10,29 +10,52 @@ public sealed class AppSettingsService : IAppSettingsService
 {
     private readonly IConfigurationRoot _configurationRoot;
     private readonly ILogger<AppSettingsService> _logger;
-    private readonly string _userSettingsPath;
+    private readonly ISettingsSerializer _settingsSerializer;
+    private readonly ISettingsValidator _settingsValidator;
+    private readonly ISettingsPersistence _settingsPersistence;
     private readonly IDisposable _reloadRegistration;
     private readonly ReactiveProperty<OutbreakTrackerSettings> _settings;
 
     public AppSettingsService(IConfiguration configuration, ILogger<AppSettingsService> logger)
-        : this(configuration, logger, AppSettingsFilePaths.GetUserSettingsPath()) { }
+        : this(
+            configuration,
+            logger,
+            new SettingsJsonSerializer(),
+            new SettingsValidator(),
+            new FileSettingsPersistence(AppSettingsFilePaths.GetUserSettingsPath())
+        ) { }
 
     public AppSettingsService(IConfiguration configuration, ILogger<AppSettingsService> logger, string userSettingsPath)
+        : this(
+            configuration,
+            logger,
+            new SettingsJsonSerializer(),
+            new SettingsValidator(),
+            new FileSettingsPersistence(userSettingsPath)
+        ) { }
+
+    internal AppSettingsService(
+        IConfiguration configuration,
+        ILogger<AppSettingsService> logger,
+        ISettingsSerializer settingsSerializer,
+        ISettingsValidator settingsValidator,
+        ISettingsPersistence settingsPersistence
+    )
     {
         _configurationRoot =
             configuration as IConfigurationRoot
             ?? throw new InvalidOperationException("App settings require an IConfigurationRoot instance.");
         _logger = logger;
-        _userSettingsPath = string.IsNullOrWhiteSpace(userSettingsPath)
-            ? throw new ArgumentException("User settings path cannot be null or whitespace.", nameof(userSettingsPath))
-            : userSettingsPath;
+        _settingsSerializer = settingsSerializer;
+        _settingsValidator = settingsValidator;
+        _settingsPersistence = settingsPersistence;
 
         OutbreakTrackerSettings currentSettings = LoadValidatedSettings();
         _settings = new ReactiveProperty<OutbreakTrackerSettings>(currentSettings);
         _reloadRegistration = ChangeToken.OnChange(_configurationRoot.GetReloadToken, ReloadSettings);
     }
 
-    public string UserSettingsPath => _userSettingsPath;
+    public string UserSettingsPath => _settingsPersistence.UserSettingsPath;
 
     public OutbreakTrackerSettings Current => _settings.Value;
 
@@ -41,16 +64,14 @@ public sealed class AppSettingsService : IAppSettingsService
     public async ValueTask SaveAsync(OutbreakTrackerSettings settings, CancellationToken cancellationToken = default)
     {
         settings = NormalizeSettings(settings);
-        Validate(settings);
+        _settingsValidator.ValidateSettings(settings);
 
-        string? directoryPath = Path.GetDirectoryName(_userSettingsPath);
-        if (!string.IsNullOrWhiteSpace(directoryPath))
-            Directory.CreateDirectory(directoryPath);
+        _settingsPersistence.EnsureDirectoryExists();
 
-        FileStream stream = new(_userSettingsPath, FileMode.Create, FileAccess.Write, FileShare.None);
+        FileStream stream = _settingsPersistence.OpenWrite();
         await using (stream.ConfigureAwait(false))
         {
-            await WriteSettingsDocumentAsync(stream, settings, cancellationToken).ConfigureAwait(false);
+            await _settingsSerializer.SerializeAsync(stream, settings, cancellationToken).ConfigureAwait(false);
         }
 
         _configurationRoot.Reload();
@@ -63,7 +84,7 @@ public sealed class AppSettingsService : IAppSettingsService
         if (!destination.CanWrite)
             throw new InvalidOperationException("The selected export destination cannot be written to.");
 
-        await WriteSettingsDocumentAsync(destination, Current, cancellationToken).ConfigureAwait(false);
+        await _settingsSerializer.SerializeAsync(destination, Current, cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask<OutbreakTrackerSettings> ImportAsync(
@@ -98,8 +119,7 @@ public sealed class AppSettingsService : IAppSettingsService
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (File.Exists(_userSettingsPath))
-            File.Delete(_userSettingsPath);
+        _settingsPersistence.Delete();
 
         _configurationRoot.Reload();
 
@@ -136,24 +156,19 @@ public sealed class AppSettingsService : IAppSettingsService
                 ?? new OutbreakTrackerSettings()
         );
 
-        if (File.Exists(_userSettingsPath))
+        if (_settingsPersistence.Exists())
         {
-            using FileStream stream = new(_userSettingsPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            UserSettingsDocument? document = JsonSerializer.Deserialize(
-                stream,
-                SettingsJsonContext.Default.UserSettingsDocument
-            );
+            using FileStream stream = _settingsPersistence.OpenRead();
+            using JsonDocument document = JsonDocument.Parse(stream);
+            JsonElement userSettingsElement = GetRequiredUserSettingsSection(document.RootElement);
+            _settingsValidator.ValidateOverridesElement(userSettingsElement, OutbreakTrackerSettings.SectionName);
 
-            settings = MergeSettings(
-                settings,
-                document?.OutbreakTracker
-                    ?? throw new InvalidOperationException(
-                        "The user settings file does not contain an OutbreakTracker section."
-                    )
-            );
+            OutbreakTrackerSettings userSettings = _settingsSerializer.DeserializeSettings(userSettingsElement);
+
+            settings = MergeSettings(settings, userSettings);
         }
 
-        Validate(settings);
+        _settingsValidator.ValidateSettings(settings);
         return settings;
     }
 
@@ -202,60 +217,31 @@ public sealed class AppSettingsService : IAppSettingsService
         };
     }
 
-    private static void Validate(OutbreakTrackerSettings settings)
-    {
-        if (!settings.TryValidate(out string? error))
-            throw new InvalidOperationException(error);
-    }
-
-    private static async ValueTask WriteSettingsDocumentAsync(
-        Stream destination,
-        OutbreakTrackerSettings settings,
-        CancellationToken cancellationToken
-    )
-    {
-        if (destination.CanSeek)
-        {
-            destination.SetLength(0);
-            destination.Position = 0;
-        }
-
-        UserSettingsDocument document = new() { OutbreakTracker = settings };
-
-        await JsonSerializer
-            .SerializeAsync(destination, document, SettingsJsonContext.Default.UserSettingsDocument, cancellationToken)
-            .ConfigureAwait(false);
-        await destination.FlushAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    private static OutbreakTrackerSettings DeserializeImportedSettings(JsonElement root)
+    private OutbreakTrackerSettings DeserializeImportedSettings(JsonElement root)
     {
         if (root.ValueKind != JsonValueKind.Object)
             throw new InvalidOperationException("The selected file must contain a JSON object at the root.");
 
-        JsonElement settingsElement = TryGetSettingsSection(root, out JsonElement section) ? section : root;
-        OutbreakTrackerSettings? settings = settingsElement.Deserialize(
-            SettingsJsonContext.Default.OutbreakTrackerSettings
-        );
-        if (settings is null)
-            throw new InvalidOperationException("The selected file does not contain valid tracker settings.");
+        JsonElement settingsElement = _settingsSerializer.TryGetSettingsSection(root, out JsonElement section)
+            ? section
+            : root;
+        _settingsValidator.ValidateOverridesElement(settingsElement, OutbreakTrackerSettings.SectionName);
 
-        Validate(settings);
+        OutbreakTrackerSettings settings = _settingsSerializer.DeserializeSettings(settingsElement);
+
+        settings = NormalizeSettings(settings);
+        _settingsValidator.ValidateSettings(settings);
         return settings;
     }
 
-    private static bool TryGetSettingsSection(JsonElement root, out JsonElement settingsSection)
+    private JsonElement GetRequiredUserSettingsSection(JsonElement root)
     {
-        foreach (JsonProperty property in root.EnumerateObject())
-        {
-            if (!string.Equals(property.Name, OutbreakTrackerSettings.SectionName, StringComparison.OrdinalIgnoreCase))
-                continue;
+        if (root.ValueKind != JsonValueKind.Object)
+            throw new InvalidOperationException("The user settings file must contain a JSON object at the root.");
 
-            settingsSection = property.Value;
-            return true;
-        }
+        if (!_settingsSerializer.TryGetSettingsSection(root, out JsonElement settingsSection))
+            throw new InvalidOperationException("The user settings file must contain an OutbreakTracker object.");
 
-        settingsSection = default;
-        return false;
+        return settingsSection;
     }
 }

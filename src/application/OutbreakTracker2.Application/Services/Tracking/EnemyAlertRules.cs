@@ -5,7 +5,7 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Services.Tracking;
 
-internal static class DefaultEnemyAlertRules
+internal static class EnemyAlertRules
 {
     public static void Register(
         IEntityTracker<DecodedEnemy> enemies,

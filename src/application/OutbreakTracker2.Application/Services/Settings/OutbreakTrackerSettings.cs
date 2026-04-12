@@ -14,6 +14,60 @@ public sealed record OutbreakTrackerSettings
 
     public bool TryValidate([NotNullWhen(false)] out string? error)
     {
+        if (Notifications is null)
+        {
+            error = "OutbreakTracker:Notifications cannot be null.";
+            return false;
+        }
+
+        if (Display is null)
+        {
+            error = "OutbreakTracker:Display cannot be null.";
+            return false;
+        }
+
+        if (Display.EntitiesDock is null)
+        {
+            error = "OutbreakTracker:Display:EntitiesDock cannot be null.";
+            return false;
+        }
+
+        if (Display.ScenarioItemsDock is null)
+        {
+            error = "OutbreakTracker:Display:ScenarioItemsDock cannot be null.";
+            return false;
+        }
+
+        if (AlertRules is null)
+        {
+            error = "OutbreakTracker:AlertRules cannot be null.";
+            return false;
+        }
+
+        if (AlertRules.Players is null)
+        {
+            error = "OutbreakTracker:AlertRules:Players cannot be null.";
+            return false;
+        }
+
+        if (AlertRules.Enemies is null)
+        {
+            error = "OutbreakTracker:AlertRules:Enemies cannot be null.";
+            return false;
+        }
+
+        if (AlertRules.Doors is null)
+        {
+            error = "OutbreakTracker:AlertRules:Doors cannot be null.";
+            return false;
+        }
+
+        if (AlertRules.Lobby is null)
+        {
+            error = "OutbreakTracker:AlertRules:Lobby cannot be null.";
+            return false;
+        }
+
         PlayerAlertRuleSettings players = AlertRules.Players;
         LobbyAlertRuleSettings lobby = AlertRules.Lobby;
 
