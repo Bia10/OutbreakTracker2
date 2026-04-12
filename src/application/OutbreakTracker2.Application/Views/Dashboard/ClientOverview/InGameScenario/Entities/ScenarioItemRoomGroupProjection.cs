@@ -4,7 +4,6 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScen
 
 public static class ScenarioItemRoomGroupProjection
 {
-    private const int MirroredStoryItemCopyCount = 4;
     private const short StoryItemTypeIdThreshold = 10_000;
 
     public static IReadOnlyList<int> GetVisibleIndices(IReadOnlyList<DecodedItem> items)
@@ -39,56 +38,48 @@ public static class ScenarioItemRoomGroupProjection
         List<int> visibleIndices
     )
     {
+        HashSet<int> collapsed = new(roomIndices.Count);
+
         for (int index = 0; index < roomIndices.Count; index++)
         {
-            if (TryGetMirroredStoryRepresentativeIndex(items, roomIndices, index, out int representativeIndex))
+            int rawIndex = roomIndices[index];
+            if (collapsed.Contains(rawIndex))
+                continue;
+
+            DecodedItem candidate = items[rawIndex];
+
+            if (!IsStoryItem(candidate.TypeId))
             {
-                visibleIndices.Add(representativeIndex);
-                index += MirroredStoryItemCopyCount - 1;
+                visibleIndices.Add(rawIndex);
                 continue;
             }
 
-            visibleIndices.Add(roomIndices[index]);
+            // Collect all matching copies of this story item anywhere in the room,
+            // regardless of their position in the raw array. This handles:
+            //   - interleaved-by-player memory layouts (non-contiguous raw indices)
+            //   - partial pickups where fewer than 4 copies remain in the room
+            List<int> copies = [rawIndex];
+            for (int j = index + 1; j < roomIndices.Count; j++)
+            {
+                int otherRawIndex = roomIndices[j];
+                if (!collapsed.Contains(otherRawIndex) && AreMirroredStoryCopies(candidate, items[otherRawIndex]))
+                    copies.Add(otherRawIndex);
+            }
+
+            visibleIndices.Add(SelectRepresentativeIndex(items, copies));
+            foreach (int ri in copies)
+                collapsed.Add(ri);
         }
-    }
-
-    private static bool TryGetMirroredStoryRepresentativeIndex(
-        IReadOnlyList<DecodedItem> items,
-        IReadOnlyList<int> roomIndices,
-        int startIndex,
-        out int representativeIndex
-    )
-    {
-        representativeIndex = -1;
-
-        if (startIndex + MirroredStoryItemCopyCount > roomIndices.Count)
-            return false;
-
-        int firstRawIndex = roomIndices[startIndex];
-        DecodedItem candidate = items[firstRawIndex];
-        if (!IsStoryItem(candidate.TypeId))
-            return false;
-
-        for (int offset = 1; offset < MirroredStoryItemCopyCount; offset++)
-        {
-            int currentRawIndex = roomIndices[startIndex + offset];
-            if (currentRawIndex != firstRawIndex + offset)
-                return false;
-
-            if (!AreMirroredStoryCopies(candidate, items[currentRawIndex]))
-                return false;
-        }
-
-        representativeIndex = SelectRepresentativeIndex(items, roomIndices, startIndex);
-        return true;
     }
 
     private static bool AreMirroredStoryCopies(in DecodedItem candidate, in DecodedItem current)
     {
+        // Present is a raw per-slot value from the pickup-space struct (not a simple 0/1 flag);
+        // it differs between player copies. Exclude it from identity — only TypeId, room,
+        // quantity, pickup state, and mix determine whether two slots are copies of the same key.
         return current.TypeId == candidate.TypeId
             && current.Quantity == candidate.Quantity
             && current.PickedUp == candidate.PickedUp
-            && current.Present == candidate.Present
             && current.Mix == candidate.Mix
             && string.Equals(
                 NormalizeRoomName(current.RoomName),
@@ -97,20 +88,15 @@ public static class ScenarioItemRoomGroupProjection
             );
     }
 
-    private static int SelectRepresentativeIndex(
-        IReadOnlyList<DecodedItem> items,
-        IReadOnlyList<int> roomIndices,
-        int startIndex
-    )
+    private static int SelectRepresentativeIndex(IReadOnlyList<DecodedItem> items, List<int> copies)
     {
-        for (int offset = 0; offset < MirroredStoryItemCopyCount; offset++)
+        foreach (int rawIndex in copies)
         {
-            int rawIndex = roomIndices[startIndex + offset];
             if (items[rawIndex].SlotIndex > 0)
                 return rawIndex;
         }
 
-        return roomIndices[startIndex];
+        return copies[0];
     }
 
     private static bool IsStoryItem(short typeId) => typeId >= StoryItemTypeIdThreshold;
