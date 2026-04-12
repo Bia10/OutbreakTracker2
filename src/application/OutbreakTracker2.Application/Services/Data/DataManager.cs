@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Launcher;
-using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Readers;
 using OutbreakTracker2.PCSX2.Client;
@@ -11,6 +10,7 @@ namespace OutbreakTracker2.Application.Services.Data;
 
 public sealed class DataManager : IDataManager, IDisposable
 {
+    private int _disposeState;
     private readonly ILogger<IDataManager> _logger;
     private readonly IEEmemMemory _eememMemory;
     private readonly IGameReaderFactory _readerFactory;
@@ -36,6 +36,7 @@ public sealed class DataManager : IDataManager, IDisposable
     public Observable<DecodedDoor[]> DoorsObservable => Store.DoorsObservable;
     public Observable<DecodedEnemy[]> EnemiesObservable => Store.EnemiesObservable;
     public Observable<DecodedInGamePlayer[]> InGamePlayersObservable => Store.InGamePlayersObservable;
+    public Observable<InGameOverviewSnapshot> InGameOverviewObservable => Store.InGameOverviewObservable;
     public Observable<DecodedInGameScenario> InGameScenarioObservable => Store.InGameScenarioObservable;
     public Observable<DecodedLobbyRoom> LobbyRoomObservable => Store.LobbyRoomObservable;
     public Observable<DecodedLobbyRoomPlayer[]> LobbyRoomPlayersObservable => Store.LobbyRoomPlayersObservable;
@@ -53,15 +54,6 @@ public sealed class DataManager : IDataManager, IDisposable
 
     private readonly TimeSpan _fastUpdateInterval = TimeSpan.FromMilliseconds(250);
     private readonly TimeSpan _slowUpdateInterval = TimeSpan.FromMilliseconds(500);
-    private static readonly IReadOnlySet<string> _activeLobbyStatuses = new HashSet<string>(StringComparer.Ordinal)
-    {
-        "Waiting",
-        "In Game",
-        "Full",
-        "Creating room",
-        "Hosting room",
-        "Launching room",
-    };
 
     public DataManager(
         ILogger<DataManager> logger,
@@ -83,30 +75,49 @@ public sealed class DataManager : IDataManager, IDisposable
 
     private void SetupObservablesLogging()
     {
-        IDisposable[] subscriptions =
-        [
-            DoorsObservable
-                .Do(doors => _logger.LogDebug("Doors data CHANGED: {Count} doors.", doors.Length))
-                .Subscribe(),
-            EnemiesObservable
-                .Do(enemies => _logger.LogDebug("Enemies data CHANGED: {Count} enemies.", enemies.Length))
-                .Subscribe(),
-            InGamePlayersObservable
-                .Do(players => _logger.LogDebug("InGamePlayers data CHANGED: {Count} players.", players.Length))
-                .Subscribe(),
-            InGameScenarioObservable
-                .Select(scenario => scenario.Status)
-                .DistinctUntilChanged()
-                .Do(status => _logger.LogInformation("InGameScenario STATUS CHANGED: {Status}", status))
-                .Subscribe(),
-            LobbyRoomObservable
-                .Select(lobbyRoom => lobbyRoom.Status)
-                .DistinctUntilChanged()
-                .Do(status => _logger.LogInformation("LobbyRoom STATUS CHANGED: {Status}", status))
-                .Subscribe(),
-        ];
-
-        _loggingSubscriptions = Disposable.Combine(subscriptions);
+        // Add subscriptions to a list incrementally so any exception during Subscribe()
+        // allows the catch block to dispose the already-registered subscriptions instead
+        // of leaking them (unlike a batch array initializer where partial failures are silent).
+        List<IDisposable> subs = new(5);
+        try
+        {
+            subs.Add(
+                DoorsObservable
+                    .Do(doors => _logger.LogDebug("Doors data CHANGED: {Count} doors.", doors.Length))
+                    .Subscribe()
+            );
+            subs.Add(
+                EnemiesObservable
+                    .Do(enemies => _logger.LogDebug("Enemies data CHANGED: {Count} enemies.", enemies.Length))
+                    .Subscribe()
+            );
+            subs.Add(
+                InGamePlayersObservable
+                    .Do(players => _logger.LogDebug("InGamePlayers data CHANGED: {Count} players.", players.Length))
+                    .Subscribe()
+            );
+            subs.Add(
+                InGameScenarioObservable
+                    .Select(scenario => scenario.Status)
+                    .DistinctUntilChanged()
+                    .Do(status => _logger.LogInformation("InGameScenario STATUS CHANGED: {Status}", status))
+                    .Subscribe()
+            );
+            subs.Add(
+                LobbyRoomObservable
+                    .Select(lobbyRoom => lobbyRoom.Status)
+                    .DistinctUntilChanged()
+                    .Do(status => _logger.LogInformation("LobbyRoom STATUS CHANGED: {Status}", status))
+                    .Subscribe()
+            );
+            _loggingSubscriptions = Disposable.Combine([.. subs]);
+        }
+        catch
+        {
+            foreach (IDisposable s in subs)
+                s.Dispose();
+            throw;
+        }
     }
 
     public async ValueTask InitializeAsync(IGameClient gameClient, CancellationToken cancellationToken)
@@ -144,6 +155,10 @@ public sealed class DataManager : IDataManager, IDisposable
         Observable<Unit> fastUpdateTrigger = Observable.Interval(_fastUpdateInterval, _updateCts.Token);
         Observable<Unit> slowUpdateTrigger = Observable.Interval(_slowUpdateInterval, _updateCts.Token);
 
+        // Each Observable.Interval emits one value at a time on the thread pool. The Subscribe
+        // callback runs synchronously per emission, so consecutive Update calls within the same
+        // loop are serialized. The fast and slow loops are on separate intervals and can overlap
+        // each other, but they write to independent parts of the store (in-game vs lobby data).
         IDisposable fastSubscription = fastUpdateTrigger
             .Where(_ => IsInScenario())
             .ObserveOnThreadPool()
@@ -174,6 +189,9 @@ public sealed class DataManager : IDataManager, IDisposable
                 }
             });
 
+        // Combine into one handle: if Subscribe() for slowSubscription throws (extremely unlikely),
+        // fastSubscription is still disposed when StopUpdateLoops() disposes _updateSubscription.
+        // Both are assigned before any exception can escape this path.
         _updateSubscription = Disposable.Combine(fastSubscription, slowSubscription);
 
         _isInitialized = true;
@@ -232,7 +250,16 @@ public sealed class DataManager : IDataManager, IDisposable
         _store.DoorsState.Value = [];
         _store.EnemiesState.Value = [];
         _store.InGamePlayersState.Value = [];
+        PublishInGameOverviewSnapshot();
     }
+
+    private void PublishInGameOverviewSnapshot() =>
+        _store.InGameOverviewState.Value = new InGameOverviewSnapshot(
+            _store.InGameScenarioState.Value,
+            _store.InGamePlayersState.Value,
+            _store.EnemiesState.Value,
+            _store.DoorsState.Value
+        );
 
     private void UpdateCoreGameData()
     {
@@ -242,6 +269,7 @@ public sealed class DataManager : IDataManager, IDisposable
         UpdateDoors();
         UpdateEnemies();
         UpdateInGamePlayer();
+        PublishInGameOverviewSnapshot();
     }
 
     private void UpdateLobbyData()
@@ -254,7 +282,7 @@ public sealed class DataManager : IDataManager, IDisposable
 
         UpdateLobbyRoom();
         DecodedLobbyRoom lobbyRoom = _lobbyRoomReader?.DecodedLobbyRoom ?? new DecodedLobbyRoom();
-        bool isAtLobby = IsLobbyActive(lobbyRoom);
+        bool isAtLobby = LobbyStatusPolicy.IsActive(lobbyRoom);
 
         _store.IsAtLobbyState.Value = isAtLobby;
         if (!isAtLobby)
@@ -264,11 +292,6 @@ public sealed class DataManager : IDataManager, IDisposable
         UpdateLobbyRoomPlayers();
         UpdateLobbySlots();
     }
-
-    private static bool IsLobbyActive(in DecodedLobbyRoom lobbyRoom) =>
-        lobbyRoom.CurPlayer is >= 0 and <= GameConstants.MaxPlayers
-        && lobbyRoom.MaxPlayer is >= 2 and <= GameConstants.MaxPlayers
-        && _activeLobbyStatuses.Contains(lobbyRoom.Status);
 
     private bool IsInScenario() => _inGameScenarioReader is not null && _inGameScenarioReader.IsInScenario();
 
@@ -297,9 +320,16 @@ public sealed class DataManager : IDataManager, IDisposable
         _lobbySlotReader?.Dispose();
         _lobbySlotReader = null;
 
-        _store.IsAtLobbyState.Value = false;
-        _wasInScenario = false;
-        ResetInGameData();
+        try
+        {
+            _store.IsAtLobbyState.Value = false;
+            _wasInScenario = false;
+            ResetInGameData();
+        }
+        catch (ObjectDisposedException) when (Volatile.Read(ref _disposeState) != 0)
+        {
+            // Ignore late stop requests racing with disposal.
+        }
 
         _isInitialized = false;
         _logger.LogInformation("DataManager update loops stopped; ready for re-initialization.");
@@ -307,6 +337,9 @@ public sealed class DataManager : IDataManager, IDisposable
 
     public void Dispose()
     {
+        if (Interlocked.Exchange(ref _disposeState, 1) != 0)
+            return;
+
         _logger.LogInformation("Disposing DataManager...");
         _processSubscription?.Dispose();
         StopUpdateLoops();

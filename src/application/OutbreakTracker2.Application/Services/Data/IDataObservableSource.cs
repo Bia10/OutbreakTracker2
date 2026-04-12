@@ -11,6 +11,7 @@ public interface IDataObservableSource
     Observable<DecodedDoor[]> DoorsObservable { get; }
     Observable<DecodedEnemy[]> EnemiesObservable { get; }
     Observable<DecodedInGamePlayer[]> InGamePlayersObservable { get; }
+    Observable<InGameOverviewSnapshot> InGameOverviewObservable { get; }
     Observable<DecodedInGameScenario> InGameScenarioObservable { get; }
     Observable<DecodedLobbyRoom> LobbyRoomObservable { get; }
     Observable<DecodedLobbyRoomPlayer[]> LobbyRoomPlayersObservable { get; }

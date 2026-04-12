@@ -17,6 +17,7 @@ internal sealed class GameStateStore : IDataObservableSource, IDataSnapshot, IDi
     internal readonly ReactiveProperty<DecodedDoor[]> DoorsState = new([]);
     internal readonly ReactiveProperty<DecodedEnemy[]> EnemiesState = new([]);
     internal readonly ReactiveProperty<DecodedInGamePlayer[]> InGamePlayersState = new([]);
+    internal readonly ReactiveProperty<InGameOverviewSnapshot> InGameOverviewState = new(new InGameOverviewSnapshot());
     internal readonly ReactiveProperty<DecodedInGameScenario> InGameScenarioState = new(new DecodedInGameScenario());
     internal readonly ReactiveProperty<DecodedLobbyRoom> LobbyRoomState = new(new DecodedLobbyRoom());
     internal readonly ReactiveProperty<DecodedLobbyRoomPlayer[]> LobbyRoomPlayersState = new([]);
@@ -27,6 +28,7 @@ internal sealed class GameStateStore : IDataObservableSource, IDataSnapshot, IDi
     private readonly Observable<DecodedDoor[]> _doorsObservable;
     private readonly Observable<DecodedEnemy[]> _enemiesObservable;
     private readonly Observable<DecodedInGamePlayer[]> _inGamePlayersObservable;
+    private readonly Observable<InGameOverviewSnapshot> _inGameOverviewObservable;
     private readonly Observable<DecodedInGameScenario> _inGameScenarioObservable;
     private readonly Observable<DecodedLobbyRoom> _lobbyRoomObservable;
     private readonly Observable<DecodedLobbyRoomPlayer[]> _lobbyRoomPlayersObservable;
@@ -40,6 +42,7 @@ internal sealed class GameStateStore : IDataObservableSource, IDataSnapshot, IDi
         _inGamePlayersObservable = InGamePlayersState.DistinctUntilChanged(
             new ArraySequenceComparer<DecodedInGamePlayer>()
         );
+        _inGameOverviewObservable = InGameOverviewState.DistinctUntilChanged();
         _inGameScenarioObservable = InGameScenarioState.DistinctUntilChanged();
         _lobbyRoomObservable = LobbyRoomState.DistinctUntilChanged();
         _lobbyRoomPlayersObservable = LobbyRoomPlayersState.DistinctUntilChanged(
@@ -53,6 +56,7 @@ internal sealed class GameStateStore : IDataObservableSource, IDataSnapshot, IDi
     Observable<DecodedDoor[]> IDataObservableSource.DoorsObservable => _doorsObservable;
     Observable<DecodedEnemy[]> IDataObservableSource.EnemiesObservable => _enemiesObservable;
     Observable<DecodedInGamePlayer[]> IDataObservableSource.InGamePlayersObservable => _inGamePlayersObservable;
+    Observable<InGameOverviewSnapshot> IDataObservableSource.InGameOverviewObservable => _inGameOverviewObservable;
     Observable<DecodedInGameScenario> IDataObservableSource.InGameScenarioObservable => _inGameScenarioObservable;
     Observable<DecodedLobbyRoom> IDataObservableSource.LobbyRoomObservable => _lobbyRoomObservable;
     Observable<DecodedLobbyRoomPlayer[]> IDataObservableSource.LobbyRoomPlayersObservable =>
@@ -75,6 +79,7 @@ internal sealed class GameStateStore : IDataObservableSource, IDataSnapshot, IDi
         DoorsState.Dispose();
         EnemiesState.Dispose();
         InGamePlayersState.Dispose();
+        InGameOverviewState.Dispose();
         InGameScenarioState.Dispose();
         LobbyRoomState.Dispose();
         LobbyRoomPlayersState.Dispose();
