@@ -8,7 +8,7 @@
 # Outbreak Tracker 2
 This is an attempt to rewrite and expand upon the old C99 Resident Evil Outbreak tracker in C#.
 
-<img width="2556" height="1397" alt="image" src="https://github.com/user-attachments/assets/a0225adc-81b6-488b-a7ec-a858425899e2" />
+<img width="2558" height="1397" alt="image" src="https://github.com/user-attachments/assets/60e0fbff-afc6-4626-ab33-0bc214683633" />
 
 # Supported Platforms
 - Windows (.NET 10) — fully supported
