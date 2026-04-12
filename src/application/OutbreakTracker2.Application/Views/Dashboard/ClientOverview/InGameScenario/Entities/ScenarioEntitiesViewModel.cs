@@ -3,7 +3,6 @@ using ObservableCollections;
 using OutbreakTracker2.Application.Services.Toasts;
 using OutbreakTracker2.Application.Views.Common.Item;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor;
-using OutbreakTracker2.Extensions;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 
@@ -81,6 +80,7 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDispo
         // Subsequent calls: update every slot in-place — no add/remove, only Replace events.
         int itemCount = Math.Min(newItems.Length, _items.Count);
         DecodedItem[] displayItems = new DecodedItem[itemCount];
+        bool anyItemChanged = false;
 
         for (int i = 0; i < itemCount; i++)
         {
@@ -90,6 +90,9 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDispo
             ScenarioItemSlotViewModel vm = _items[i];
             byte slotKey = (byte)i;
             string trackedTypeName = string.IsNullOrEmpty(vm.TypeName) ? newItem.TypeName : vm.TypeName;
+
+            if (!anyItemChanged && vm.Item != displayItem)
+                anyItemChanged = true;
 
             if (vm.IsPickupTracked && !string.IsNullOrEmpty(newItem.TypeName))
             {
@@ -110,7 +113,8 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDispo
             vm.UpdateItem(displayItem, frameCounter, gameFile, slotKey);
         }
 
-        RebuildRoomGroups(displayItems);
+        if (anyItemChanged)
+            RebuildRoomGroups(displayItems);
     }
 
     private static DecodedItem NormalizeDisplayItem(in DecodedItem item)
@@ -153,36 +157,51 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDispo
             .Select(g => new ScenarioRoomGroupViewModel(g.Key, g.ToList()))
             .ToArray();
 
-        if (HasRoomGroupsChanged(groups))
-            _roomGroups.ReplaceAll(groups);
-
+        ApplyRoomGroupChanges(groups);
         HasRoomGroups = groups.Length > 0;
     }
 
-    private bool HasRoomGroupsChanged(ScenarioRoomGroupViewModel[] newGroups)
+    /// <summary>
+    /// Incrementally patches <see cref="_roomGroups"/> so that only the positions
+    /// whose content actually changed fire collection-changed events.
+    /// This avoids a full Clear+AddRange (Reset) which tears down every
+    /// ItemsControl container and recreates all GlassCard visuals.
+    /// </summary>
+    private void ApplyRoomGroupChanges(ScenarioRoomGroupViewModel[] newGroups)
     {
-        if (_roomGroups.Count != newGroups.Length)
-            return true;
+        // Remove excess groups from the tail.
+        while (_roomGroups.Count > newGroups.Length)
+            _roomGroups.RemoveAt(_roomGroups.Count - 1);
 
         for (int i = 0; i < newGroups.Length; i++)
         {
-            ScenarioRoomGroupViewModel existing = _roomGroups[i];
-            ScenarioRoomGroupViewModel candidate = newGroups[i];
-
-            if (!string.Equals(existing.RoomName, candidate.RoomName, StringComparison.Ordinal))
-                return true;
-
-            if (existing.Items.Count != candidate.Items.Count)
-                return true;
-
-            for (int j = 0; j < existing.Items.Count; j++)
+            if (i < _roomGroups.Count)
             {
-                if (!ReferenceEquals(existing.Items[j], candidate.Items[j]))
-                    return true;
+                if (!IsSameGroup(_roomGroups[i], newGroups[i]))
+                    _roomGroups[i] = newGroups[i];
+            }
+            else
+            {
+                _roomGroups.Add(newGroups[i]);
             }
         }
+    }
 
-        return false;
+    private static bool IsSameGroup(ScenarioRoomGroupViewModel existing, ScenarioRoomGroupViewModel candidate)
+    {
+        if (!string.Equals(existing.RoomName, candidate.RoomName, StringComparison.Ordinal))
+            return false;
+
+        if (existing.Items.Count != candidate.Items.Count)
+            return false;
+
+        for (int j = 0; j < existing.Items.Count; j++)
+        {
+            if (!ReferenceEquals(existing.Items[j], candidate.Items[j]))
+                return false;
+        }
+
+        return true;
     }
 
     public void UpdateEnemies(DecodedEnemy[] newEnemies)

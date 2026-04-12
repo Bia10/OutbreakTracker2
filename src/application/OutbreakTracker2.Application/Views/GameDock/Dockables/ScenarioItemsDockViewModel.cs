@@ -5,7 +5,6 @@ using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
-using OutbreakTracker2.Extensions;
 using R3;
 
 namespace OutbreakTracker2.Application.Views.GameDock.Dockables;
@@ -132,11 +131,34 @@ public sealed partial class ScenarioItemsDockViewModel : ObservableObject, IDisp
             : _onlyShowCurrentPlayerRoom && _hasCurrentPlayerRoom ? CurrentRoomEmptyMessage
             : DefaultEmptyMessage;
 
-        if (!HasSameGroupSequence(filteredGroups))
-            _roomGroups.ReplaceAll(filteredGroups);
+        ApplyFilteredGroupChanges(filteredGroups);
 
         HasRoomGroups = hasRoomGroups;
         EmptyMessage = emptyMessage;
+    }
+
+    /// <summary>
+    /// Incrementally patches <see cref="_roomGroups"/> so only changed positions
+    /// fire collection-changed events, avoiding a full Reset that rebuilds the
+    /// entire ItemsControl visual tree.
+    /// </summary>
+    private void ApplyFilteredGroupChanges(List<ScenarioRoomGroupViewModel> filteredGroups)
+    {
+        while (_roomGroups.Count > filteredGroups.Count)
+            _roomGroups.RemoveAt(_roomGroups.Count - 1);
+
+        for (int i = 0; i < filteredGroups.Count; i++)
+        {
+            if (i < _roomGroups.Count)
+            {
+                if (!ReferenceEquals(_roomGroups[i], filteredGroups[i]))
+                    _roomGroups[i] = filteredGroups[i];
+            }
+            else
+            {
+                _roomGroups.Add(filteredGroups[i]);
+            }
+        }
     }
 
     private bool ShouldInclude(ScenarioRoomGroupViewModel roomGroup)
@@ -151,23 +173,6 @@ public sealed partial class ScenarioItemsDockViewModel : ObservableObject, IDisp
         }
 
         return false;
-    }
-
-    private bool HasSameGroupSequence(List<ScenarioRoomGroupViewModel> filteredGroups)
-    {
-        if (_roomGroups.Count != filteredGroups.Count)
-            return false;
-
-        int index = 0;
-        foreach (ScenarioRoomGroupViewModel roomGroup in _roomGroups)
-        {
-            if (!ReferenceEquals(roomGroup, filteredGroups[index]))
-                return false;
-
-            index++;
-        }
-
-        return true;
     }
 
     private static ScenarioItemsDockSettings GetScenarioItemsDockSettings(OutbreakTrackerSettings settings) =>

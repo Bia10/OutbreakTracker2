@@ -101,9 +101,14 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemS
         if (glowColor.HasValue)
             GlowTriggered?.Invoke(this, new GlowEventArgs(glowColor.Value));
 
+        bool wasEmpty = IsEmpty;
+        string previousTypeName = TypeName;
+
         Item = newItem;
         PositionIndex = positionIndex;
-        RefreshImage(gameFile);
+
+        if (IsEmpty != wasEmpty || !string.Equals(TypeName, previousTypeName, StringComparison.Ordinal))
+            RefreshImage(gameFile);
     }
 
     private static Color? DetermineGlowColor(in DecodedItem previousItem, in DecodedItem newItem)
