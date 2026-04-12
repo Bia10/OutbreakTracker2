@@ -6,18 +6,14 @@ namespace OutbreakTracker2.Application.Services.Atlas;
 
 public sealed class TextureAtlasService(
     ILogger<TextureAtlasService> logger,
-    Func<Stream, SpriteSheet, ITextureAtlas> textureAtlasFactory
+    Func<Stream, SpriteSheet, ITextureAtlas> textureAtlasFactory,
+    TextureAtlasOptions options
 ) : ITextureAtlasService
 {
     private readonly ILogger<TextureAtlasService> _logger = logger;
     private readonly Func<Stream, SpriteSheet, ITextureAtlas> _textureAtlasFactory = textureAtlasFactory;
-    private readonly List<(string jsonPath, string imagePath, string name)> _atlasConfigs =
-    [
-        // TODO: maybe load from appsettings.json?
-        ("Assets/uiFramesData.json", "Assets/ui.png", AtlasName.UI),
-        ("Assets/itemsFramesData.json", "Assets/items.png", AtlasName.Items),
-    ];
-    private readonly Dictionary<string, ITextureAtlas> _loadedAtlases = [];
+    private readonly IReadOnlyList<TextureAtlasDefinition> _atlasConfigs = ValidateOptions(options);
+    private readonly Dictionary<string, ITextureAtlas> _loadedAtlases = new(StringComparer.OrdinalIgnoreCase);
 
     public ITextureAtlas GetAtlas(string name)
     {
@@ -29,6 +25,31 @@ public sealed class TextureAtlasService(
     }
 
     public IReadOnlyDictionary<string, ITextureAtlas> GetAllAtlases() => _loadedAtlases;
+
+    private static IReadOnlyList<TextureAtlasDefinition> ValidateOptions(TextureAtlasOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (options.Atlases.Count == 0)
+            throw new InvalidOperationException("At least one texture atlas must be configured.");
+
+        List<TextureAtlasDefinition> validatedAtlases = [];
+        HashSet<string> seenNames = new(StringComparer.OrdinalIgnoreCase);
+
+        foreach (TextureAtlasDefinition atlas in options.Atlases)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(atlas.Name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(atlas.JsonPath);
+            ArgumentException.ThrowIfNullOrWhiteSpace(atlas.ImagePath);
+
+            if (!seenNames.Add(atlas.Name))
+                throw new InvalidOperationException($"Duplicate texture atlas configuration '{atlas.Name}'.");
+
+            validatedAtlases.Add(atlas);
+        }
+
+        return validatedAtlases;
+    }
 
     private async Task LoadAtlasesCore()
     {
@@ -42,14 +63,14 @@ public sealed class TextureAtlasService(
 
         try
         {
-            foreach ((string jsonPath, string imagePath, string name) in _atlasConfigs)
+            foreach (TextureAtlasDefinition atlas in _atlasConfigs)
             {
-                string fullJsonPath = Path.Combine(baseDirectory, jsonPath);
-                string fullImagePath = Path.Combine(baseDirectory, imagePath);
+                string fullJsonPath = Path.Combine(baseDirectory, atlas.JsonPath);
+                string fullImagePath = Path.Combine(baseDirectory, atlas.ImagePath);
 
                 _logger.LogInformation(
                     "Loading sprite sheet and image for atlas '{AtlasName}' from: JSON='{JsonPath}', Image='{ImagePath}'",
-                    name,
+                    atlas.Name,
                     fullJsonPath,
                     fullImagePath
                 );
@@ -58,7 +79,7 @@ public sealed class TextureAtlasService(
 
                 if (!File.Exists(fullImagePath))
                     throw new FileNotFoundException(
-                        $"Image file not found at '{fullImagePath}' for TextureAtlas '{name}'. Ensure '{imagePath}' is copied to output directory."
+                        $"Image file not found at '{fullImagePath}' for TextureAtlas '{atlas.Name}'. Ensure '{atlas.ImagePath}' is copied to output directory."
                     );
 
                 using Stream imageStream = new FileStream(
@@ -67,8 +88,8 @@ public sealed class TextureAtlasService(
                     FileAccess.Read,
                     FileShare.Read
                 );
-                _loadedAtlases.Add(name, _textureAtlasFactory(imageStream, sheet));
-                _logger.LogInformation("TextureAtlas '{AtlasName}' loaded successfully", name);
+                _loadedAtlases.Add(atlas.Name, _textureAtlasFactory(imageStream, sheet));
+                _logger.LogInformation("TextureAtlas '{AtlasName}' loaded successfully", atlas.Name);
             }
         }
         catch (FileNotFoundException ex)

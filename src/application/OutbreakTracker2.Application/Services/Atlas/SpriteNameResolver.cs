@@ -49,6 +49,8 @@ public sealed class SpriteNameResolver(ILogger<SpriteNameResolver> logger) : ISp
 
     public string GetSpriteNameFromItemName(string itemName)
     {
+        ArgumentException.ThrowIfNullOrEmpty(itemName);
+
         string spriteName = itemName;
 
         // TODO: the format is a bit weird (GameFile/ItemTypeName)
