@@ -14,7 +14,7 @@ public sealed class EnemyAlertRulesTests
     {
         using CapturingEnemyTracker tracker = new();
         using FakeAppSettingsService settingsService = new();
-        FakeDataSnapshot snapshot = new();
+        FakeCurrentScenarioState snapshot = new();
 
         EnemyAlertRules.Register(tracker, settingsService, snapshot);
 
@@ -28,7 +28,7 @@ public sealed class EnemyAlertRulesTests
     {
         using CapturingEnemyTracker tracker = new();
         using FakeAppSettingsService settingsService = new();
-        FakeDataSnapshot snapshot = new();
+        FakeCurrentScenarioState snapshot = new();
 
         EnemyAlertRules.Register(tracker, settingsService, snapshot);
         IAlertRule<DecodedEnemy> spawnRule = tracker.AddedRules[0];
@@ -43,10 +43,7 @@ public sealed class EnemyAlertRulesTests
     {
         using CapturingEnemyTracker tracker = new();
         using FakeAppSettingsService settingsService = new();
-        FakeDataSnapshot snapshot = new()
-        {
-            InGameScenario = new DecodedInGameScenario { ScenarioName = "Wild Things", Status = ScenarioStatus.InGame },
-        };
+        FakeCurrentScenarioState snapshot = new() { ScenarioName = "Wild Things", Status = ScenarioStatus.InGame };
 
         EnemyAlertRules.Register(tracker, settingsService, snapshot);
         IAlertRule<DecodedEnemy> killedRule = tracker.RemovedRules[0];
@@ -61,7 +58,7 @@ public sealed class EnemyAlertRulesTests
     {
         using CapturingEnemyTracker tracker = new();
         using FakeAppSettingsService settingsService = new();
-        FakeDataSnapshot snapshot = new();
+        FakeCurrentScenarioState snapshot = new();
 
         EnemyAlertRules.Register(tracker, settingsService, snapshot);
         IAlertRule<DecodedEnemy> roomChangeRule = tracker.Rules[3];
@@ -138,23 +135,11 @@ public sealed class EnemyAlertRulesTests
         public void Dispose() => _settings.Dispose();
     }
 
-    private sealed class FakeDataSnapshot : IDataSnapshot
+    private sealed class FakeCurrentScenarioState : ICurrentScenarioState
     {
-        public DecodedDoor[] Doors { get; init; } = [];
+        public string ScenarioName { get; init; } = string.Empty;
 
-        public DecodedEnemy[] Enemies { get; init; } = [];
-
-        public DecodedInGamePlayer[] InGamePlayers { get; init; } = [];
-
-        public DecodedInGameScenario InGameScenario { get; init; } = new();
-
-        public DecodedLobbyRoom LobbyRoom { get; init; } = new();
-
-        public DecodedLobbyRoomPlayer[] LobbyRoomPlayers { get; init; } = [];
-
-        public DecodedLobbySlot[] LobbySlots { get; init; } = [];
-
-        public bool IsAtLobby { get; init; }
+        public ScenarioStatus Status { get; init; } = ScenarioStatus.None;
     }
 
     private sealed class FakeEntityChangeSource<T> : IEntityChangeSource<T>

@@ -1,0 +1,720 @@
+﻿using Microsoft.Extensions.Logging.Abstractions;
+using OutbreakTracker2.Application.Services.Data;
+using OutbreakTracker2.Application.Services.Reports;
+using OutbreakTracker2.Application.Services.Reports.Events;
+using OutbreakTracker2.Application.Services.Tracking;
+using OutbreakTracker2.Outbreak.Enums;
+using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.PCSX2.Client;
+using R3;
+
+namespace OutbreakTracker2.UnitTests;
+
+public sealed class RunReportServiceTests
+{
+    // ── helpers ─────────────────────────────────────────────────────────────
+
+    private static RunReportService CreateService(
+        FakeTrackerRegistry registry,
+        FakeDataSource dataSource,
+        FakeRunReportWriter? writer = null,
+        TimeProvider? time = null
+    ) =>
+        new(
+            registry,
+            dataSource,
+            writer ?? new FakeRunReportWriter(),
+            time ?? TimeProvider.System,
+            NullLogger<RunReportService>.Instance
+        );
+
+    private static DecodedInGamePlayer InGamePlayer(Ulid id, short hp = 100, short maxHp = 100) =>
+        new()
+        {
+            Id = id,
+            IsEnabled = true,
+            IsInGame = true,
+            Name = "Kevin",
+            CurHealth = hp,
+            MaxHealth = maxHp,
+            VirusPercentage = 0.0,
+            Status = "Alive",
+            Condition = "normal",
+            RoomId = 1,
+        };
+
+    private static DecodedEnemy AliveEnemy(Ulid id, ushort maxHp = 200) =>
+        new()
+        {
+            Id = id,
+            Enabled = 1,
+            InGame = 1,
+            SlotId = 0,
+            NameId = 1, // non-zero: required by entity-identity kill guard; parses to unknown EnemyType (not invulnerable)
+            RoomId = 1,
+            Name = "Zombie",
+            CurHp = maxHp,
+            MaxHp = maxHp,
+        };
+
+    private static DecodedEnemy DeadEnemy(Ulid id, ushort maxHp = 200) => AliveEnemy(id, maxHp) with { CurHp = 0 };
+
+    private static CollectionDiff<T> Added<T>(params T[] items)
+        where T : IHasId => new(items, [], []);
+
+    private static CollectionDiff<T> Removed<T>(params T[] items)
+        where T : IHasId => new([], items, []);
+
+    private static CollectionDiff<T> Changed<T>(T previous, T current)
+        where T : IHasId => new([], [], [new EntityChange<T>(previous, current)]);
+
+    private static CollectionDiff<T> Empty<T>()
+        where T : IHasId => new([], [], []);
+
+    // ── IsRunning ────────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task IsRunning_IsFalse_Initially()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        using RunReportService svc = CreateService(registry, dataSource);
+
+        await Assert.That(svc.IsRunning).IsFalse();
+    }
+
+    // ── Session auto-start via player diff ──────────────────────────────────
+
+    [Test]
+    public async Task Session_IsStarted_WhenPlayersJoin_AndScenarioIsInGame()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        using RunReportService svc = CreateService(registry, dataSource);
+
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(Ulid.NewUlid())));
+
+        await Assert.That(svc.IsRunning).IsTrue();
+    }
+
+    [Test]
+    public async Task Session_IsNotStarted_WhenPlayersJoin_AndScenarioIsNotInGame()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        using RunReportService svc = CreateService(registry, dataSource);
+
+        // Status stays ScenarioStatus.None (default)
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(Ulid.NewUlid())));
+
+        await Assert.That(svc.IsRunning).IsFalse();
+    }
+
+    [Test]
+    public async Task Session_IsNotStarted_WhenNonInGamePlayerJoins()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        using RunReportService svc = CreateService(registry, dataSource);
+
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+
+        DecodedInGamePlayer lobbyPlayer = new()
+        {
+            Id = Ulid.NewUlid(),
+            IsEnabled = true,
+            IsInGame = false,
+            Name = "Idle",
+        };
+        registry.PlayerTracker.ChangesSource.Push(Added(lobbyPlayer));
+
+        await Assert.That(svc.IsRunning).IsFalse();
+    }
+
+    // ── Session auto-start via scenario diff ────────────────────────────────
+
+    [Test]
+    public async Task Session_IsStarted_WhenScenarioBecomesInGame_AndPlayersAlreadyPresent()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        using RunReportService svc = CreateService(registry, dataSource);
+
+        // Players join while status is None → no session start
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(Ulid.NewUlid())));
+        await Assert.That(svc.IsRunning).IsFalse();
+
+        // Status becomes InGame → session starts because players are present
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+
+        await Assert.That(svc.IsRunning).IsTrue();
+    }
+
+    // ── Session auto-stop ────────────────────────────────────────────────────
+
+    [Test]
+    public async Task Session_IsStopped_WhenAllPlayersLeave_AndStatusIsNotTransitional()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        using RunReportService svc = CreateService(registry, dataSource);
+
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        Ulid playerId = Ulid.NewUlid();
+        DecodedInGamePlayer player = InGamePlayer(playerId);
+        registry.PlayerTracker.ChangesSource.Push(Added(player));
+
+        await Assert.That(svc.IsRunning).IsTrue();
+
+        registry.PlayerTracker.ChangesSource.Push(Removed(player));
+
+        await Assert.That(svc.IsRunning).IsFalse();
+    }
+
+    [Test]
+    public async Task Session_IsNotStopped_WhenPlayersLeave_DuringTransitionalStatus()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        using RunReportService svc = CreateService(registry, dataSource);
+
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        Ulid playerId = Ulid.NewUlid();
+        DecodedInGamePlayer player = InGamePlayer(playerId);
+        registry.PlayerTracker.ChangesSource.Push(Added(player));
+
+        // Transition to loading state
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.TransitionLoading });
+
+        // Players disappear during loading
+        registry.PlayerTracker.ChangesSource.Push(Removed(player));
+
+        await Assert.That(svc.IsRunning).IsTrue();
+    }
+
+    [Test]
+    public async Task Session_IsStopped_WhenScenarioBecomesGameFinished()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        using RunReportService svc = CreateService(registry, dataSource);
+
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(Ulid.NewUlid())));
+
+        await Assert.That(svc.IsRunning).IsTrue();
+
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.GameFinished });
+
+        await Assert.That(svc.IsRunning).IsFalse();
+    }
+
+    [Test]
+    public async Task Session_IsStopped_WhenScenarioBecomesNone_WhileRunning()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        using RunReportService svc = CreateService(registry, dataSource);
+
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(Ulid.NewUlid())));
+
+        await Assert.That(svc.IsRunning).IsTrue();
+
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.None });
+
+        await Assert.That(svc.IsRunning).IsFalse();
+    }
+
+    // ── Event emission ───────────────────────────────────────────────────────
+
+    [Test]
+    public async Task PlayerJoinedEvent_IsEmitted_WhenInGamePlayerJoins_DuringActiveSession()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(Ulid.NewUlid(), hp: 100, maxHp: 100)));
+
+        await Assert.That(received.OfType<PlayerJoinedEvent>().Count()).IsEqualTo(1);
+
+        PlayerJoinedEvent join = received.OfType<PlayerJoinedEvent>().Single();
+        await Assert.That(join.PlayerName).IsEqualTo("Kevin");
+        await Assert.That((int)join.InitialHealth).IsEqualTo(100);
+    }
+
+    [Test]
+    public async Task PlayerLeftEvent_IsEmitted_WhenActivePlayerLeaves()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        Ulid id = Ulid.NewUlid();
+        DecodedInGamePlayer player = InGamePlayer(id);
+        registry.PlayerTracker.ChangesSource.Push(Added(player));
+        registry.PlayerTracker.ChangesSource.Push(Removed(player));
+
+        await Assert.That(received.OfType<PlayerLeftEvent>().Count()).IsEqualTo(1);
+        await Assert.That(received.OfType<PlayerLeftEvent>().Single().PlayerName).IsEqualTo("Kevin");
+    }
+
+    [Test]
+    public async Task PlayerHealthChangedEvent_IsEmitted_OnHealthDecrease()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid id = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(id, hp: 100, maxHp: 100)));
+        registry.PlayerTracker.ChangesSource.Push(
+            Changed(InGamePlayer(id, hp: 100, maxHp: 100), InGamePlayer(id, hp: 60, maxHp: 100))
+        );
+
+        PlayerHealthChangedEvent? dmg = received.OfType<PlayerHealthChangedEvent>().FirstOrDefault();
+        await Assert.That(dmg).IsNotNull();
+        await Assert.That(dmg!.IsDamage).IsTrue();
+        await Assert.That((int)(dmg.OldHealth - dmg.NewHealth)).IsEqualTo(40);
+    }
+
+    [Test]
+    public async Task EnemySpawnedEvent_IsEmitted_WhenEnemyAdded_DuringInGame()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(playerId)));
+
+        registry.EnemyTracker.ChangesSource.Push(Added(AliveEnemy(Ulid.NewUlid(), maxHp: 150)));
+
+        await Assert.That(received.OfType<EnemySpawnedEvent>().Count()).IsEqualTo(1);
+        await Assert.That((int)received.OfType<EnemySpawnedEvent>().Single().MaxHp).IsEqualTo(150);
+    }
+
+    [Test]
+    public async Task EnemySpawnedEvent_IsNotEmitted_WhenNotInGame()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        // Status is None (default) — enemy diffs should be ignored
+        registry.EnemyTracker.ChangesSource.Push(Added(AliveEnemy(Ulid.NewUlid())));
+
+        await Assert.That(received.OfType<EnemySpawnedEvent>().Count()).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task EnemyKilledEvent_IsEmitted_WhenEnemyRemovedWithZeroHp()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(playerId)));
+
+        Ulid enemyId = Ulid.NewUlid();
+        registry.EnemyTracker.ChangesSource.Push(Removed(DeadEnemy(enemyId, maxHp: 200)));
+
+        await Assert.That(received.OfType<EnemyKilledEvent>().Count()).IsEqualTo(1);
+        await Assert.That(received.OfType<EnemyKilledEvent>().Single().EnemyName).IsEqualTo("Zombie");
+    }
+
+    [Test]
+    public async Task EnemyDespawnedEvent_IsEmitted_WhenEnemyRemovedWithHighHp()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(playerId)));
+
+        Ulid enemyId = Ulid.NewUlid();
+        DecodedEnemy highHpEnemy = AliveEnemy(enemyId, maxHp: 500) with { CurHp = 300 };
+        registry.EnemyTracker.ChangesSource.Push(Removed(highHpEnemy));
+
+        await Assert.That(received.OfType<EnemyDespawnedEvent>().Count()).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task DoorStateChangedEvent_IsEmitted_OnDoorStatusChange_DuringInGame()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(playerId)));
+
+        Ulid doorId = Ulid.NewUlid();
+        DecodedDoor closedDoor = new()
+        {
+            Id = doorId,
+            Status = "Locked",
+            Hp = 100,
+            Flag = 0,
+        };
+        DecodedDoor openDoor = closedDoor with { Status = "Open" };
+        registry.DoorTracker.ChangesSource.Push(Changed(closedDoor, openDoor));
+
+        await Assert.That(received.OfType<DoorStateChangedEvent>().Count()).IsEqualTo(1);
+
+        DoorStateChangedEvent evt = received.OfType<DoorStateChangedEvent>().Single();
+        await Assert.That(evt.OldStatus).IsEqualTo("Locked");
+        await Assert.That(evt.NewStatus).IsEqualTo("Open");
+    }
+
+    // ── CompletedReports ─────────────────────────────────────────────────────
+
+    [Test]
+    public async Task CompletedReport_IsEmitted_WhenSessionStops()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        FakeRunReportWriter writer = new();
+        List<RunReport> reports = [];
+        using RunReportService svc = CreateService(registry, dataSource, writer);
+        using IDisposable sub = svc.CompletedReports.Subscribe(reports.Add);
+
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        Ulid playerId = Ulid.NewUlid();
+        DecodedInGamePlayer player = InGamePlayer(playerId);
+        registry.PlayerTracker.ChangesSource.Push(Added(player));
+        registry.PlayerTracker.ChangesSource.Push(Removed(player));
+
+        await Assert.That(reports.Count).IsEqualTo(1);
+        await Assert.That(reports[0].Events.Count).IsGreaterThan(0);
+    }
+
+    [Test]
+    public async Task CompletedReport_ContainsPlayerJoinedAndLeftEvents()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunReport> reports = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.CompletedReports.Subscribe(reports.Add);
+
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        Ulid playerId = Ulid.NewUlid();
+        DecodedInGamePlayer player = InGamePlayer(playerId);
+        registry.PlayerTracker.ChangesSource.Push(Added(player));
+        registry.PlayerTracker.ChangesSource.Push(Removed(player));
+
+        await Assert.That(reports.Count).IsEqualTo(1);
+        IReadOnlyList<RunEvent> events = reports[0].Events;
+        await Assert.That(events.OfType<PlayerJoinedEvent>().Count()).IsEqualTo(1);
+        await Assert.That(events.OfType<PlayerLeftEvent>().Count()).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task CompletedReport_WriterIsCalled_AfterSessionStop()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        FakeRunReportWriter writer = new();
+        using RunReportService svc = CreateService(registry, dataSource, writer);
+
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        Ulid playerId = Ulid.NewUlid();
+        DecodedInGamePlayer player = InGamePlayer(playerId);
+        registry.PlayerTracker.ChangesSource.Push(Added(player));
+        registry.PlayerTracker.ChangesSource.Push(Removed(player));
+
+        // Give the ContinueWith fire-and-forget a moment to execute
+        await Task.Delay(50);
+
+        await Assert.That(writer.Written.Count).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task EnemyKilledEvent_IsEmitted_WhenEnemyHpDropsToZero_ViaChanged()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(playerId)));
+
+        // Enemy is alive, then HP drops to 0x0 — arrives as Changed, not Removed.
+        Ulid enemyId = Ulid.NewUlid();
+        DecodedEnemy alive = AliveEnemy(enemyId, maxHp: 200);
+        DecodedEnemy dead = alive with { CurHp = 0 };
+        registry.EnemyTracker.ChangesSource.Push(Changed(alive, dead));
+
+        await Assert.That(received.OfType<EnemyKilledEvent>().Count()).IsEqualTo(1);
+        await Assert.That(received.OfType<EnemyKilledEvent>().Single().EnemyName).IsEqualTo("Zombie");
+    }
+
+    [Test]
+    public async Task EnemyKilledEvent_IsEmitted_WhenCurHpBecomesDeadRange_0xffff_ViaChanged()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(playerId)));
+
+        // The game's most common death state is CurHp = 0xffff (>= 0x8000), not 0.
+        Ulid enemyId = Ulid.NewUlid();
+        DecodedEnemy alive = AliveEnemy(enemyId, maxHp: 1800);
+        DecodedEnemy dead = alive with { CurHp = 0xffff };
+        registry.EnemyTracker.ChangesSource.Push(Changed(alive, dead));
+
+        await Assert.That(received.OfType<EnemyKilledEvent>().Count()).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task EnemyKilledEvent_IsNotEmitted_WhenEntityChanges_ViaDifferentNameId()
+    {
+        // During in-game room loads, the 80-slot enemy array retains the same Ulids but
+        // different enemies load into the slots. A slot going from alive-NameId-A to
+        // dead-NameId-B must NOT emit a kill (the guard: prev.NameId == curr.NameId).
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(playerId)));
+
+        Ulid slotId = Ulid.NewUlid();
+        DecodedEnemy entityA = AliveEnemy(slotId, maxHp: 500) with { NameId = 5 };
+        DecodedEnemy entityB = entityA with { NameId = 7, CurHp = 0xffff }; // different entity in same slot
+        registry.EnemyTracker.ChangesSource.Push(Changed(entityA, entityB));
+
+        await Assert.That(received.OfType<EnemyKilledEvent>().Count()).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task EnemyDespawnedEvent_IsEmitted_WhenEnemyDisabled_WithPositiveHp_ViaChanged()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(playerId)));
+
+        Ulid enemyId = Ulid.NewUlid();
+        DecodedEnemy alive = AliveEnemy(enemyId, maxHp: 500) with { CurHp = 300 };
+        DecodedEnemy despawned = alive with { Enabled = 0 };
+        registry.EnemyTracker.ChangesSource.Push(Changed(alive, despawned));
+
+        await Assert.That(received.OfType<EnemyDespawnedEvent>().Count()).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task Session_IsNotStopped_WhenPlayersLeave_DuringUnknown8To11Status()
+    {
+        foreach (
+            ScenarioStatus unknownStatus in new[]
+            {
+                ScenarioStatus.Unknown8,
+                ScenarioStatus.Unknown9,
+                ScenarioStatus.Unknown10,
+                ScenarioStatus.Unknown11,
+            }
+        )
+        {
+            using FakeTrackerRegistry registry = new();
+            using FakeDataSource dataSource = new();
+            using RunReportService svc = CreateService(registry, dataSource);
+
+            dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+            Ulid playerId = Ulid.NewUlid();
+            DecodedInGamePlayer player = InGamePlayer(playerId);
+            registry.PlayerTracker.ChangesSource.Push(Added(player));
+
+            // Transition to online-specific unknown status
+            dataSource.SetScenario(new DecodedInGameScenario { Status = unknownStatus });
+
+            // Players temporarily disappear during this status
+            registry.PlayerTracker.ChangesSource.Push(Removed(player));
+
+            await Assert.That(svc.IsRunning).IsTrue().Because($"{unknownStatus} should be treated as transitional");
+        }
+    }
+
+    // ── Dispose ──────────────────────────────────────────────────────────────
+
+    [Test]
+    public void Dispose_DoesNotThrow()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        RunReportService svc = CreateService(registry, dataSource);
+        svc.Dispose();
+    }
+
+    // ── Fakes ────────────────────────────────────────────────────────────────
+
+    private sealed class FakeTrackerRegistry : ITrackerRegistry, IDisposable
+    {
+        public FakeEntityTracker<DecodedEnemy> EnemyTracker { get; } = new();
+        public FakeEntityTracker<DecodedDoor> DoorTracker { get; } = new();
+        public FakeEntityTracker<DecodedInGamePlayer> PlayerTracker { get; } = new();
+        public FakeEntityTracker<DecodedLobbySlot> LobbySlotTracker { get; } = new();
+
+        public IEntityTracker<DecodedEnemy> Enemies => EnemyTracker;
+        public IEntityTracker<DecodedDoor> Doors => DoorTracker;
+        public IEntityTracker<DecodedInGamePlayer> Players => PlayerTracker;
+        public IEntityTracker<DecodedLobbySlot> LobbySlots => LobbySlotTracker;
+
+        private readonly Subject<AlertNotification> _allAlerts = new();
+        public Observable<AlertNotification> AllAlerts => _allAlerts;
+
+        public void Dispose()
+        {
+            EnemyTracker.Dispose();
+            DoorTracker.Dispose();
+            PlayerTracker.Dispose();
+            LobbySlotTracker.Dispose();
+            _allAlerts.Dispose();
+        }
+    }
+
+    private sealed class FakeEntityTracker<T> : IEntityTracker<T>, IDisposable
+        where T : IHasId
+    {
+        private readonly Subject<AlertNotification> _alerts = new();
+        public FakeEntityChangeSource<T> ChangesSource { get; } = new();
+
+        public IEntityChangeSource<T> Changes => ChangesSource;
+        public Observable<AlertNotification> Alerts => _alerts;
+
+        public void AddRule(IAlertRule<T> rule) { }
+
+        public void AddAddedRule(IAlertRule<T> rule) { }
+
+        public void AddRemovedRule(IAlertRule<T> rule) { }
+
+        public void Dispose()
+        {
+            _alerts.Dispose();
+            ChangesSource.Dispose();
+        }
+    }
+
+    private sealed class FakeEntityChangeSource<T> : IEntityChangeSource<T>, IDisposable
+        where T : IHasId
+    {
+        private readonly Subject<CollectionDiff<T>> _diffs = new();
+
+        public Observable<T> Added => _diffs.SelectMany(d => d.Added.ToObservable());
+        public Observable<T> Removed => _diffs.SelectMany(d => d.Removed.ToObservable());
+        public Observable<EntityChange<T>> Updated => _diffs.SelectMany(d => d.Changed.ToObservable());
+        public Observable<CollectionDiff<T>> Diffs => _diffs;
+
+        public void Push(CollectionDiff<T> diff) => _diffs.OnNext(diff);
+
+        public void Dispose() => _diffs.Dispose();
+    }
+
+    private sealed class FakeDataSource : IDataManager, IDisposable
+    {
+        private readonly ReactiveProperty<DecodedInGameScenario> _scenario = new(new DecodedInGameScenario());
+
+        private readonly ReactiveProperty<DecodedDoor[]> _doors = new([]);
+        private readonly ReactiveProperty<DecodedEnemy[]> _enemies = new([]);
+        private readonly ReactiveProperty<DecodedInGamePlayer[]> _players = new([]);
+        private readonly ReactiveProperty<InGameOverviewSnapshot> _overview = new(new InGameOverviewSnapshot());
+        private readonly ReactiveProperty<DecodedLobbyRoom> _lobbyRoom = new(new DecodedLobbyRoom());
+        private readonly ReactiveProperty<DecodedLobbyRoomPlayer[]> _lobbyPlayers = new([]);
+        private readonly ReactiveProperty<DecodedLobbySlot[]> _lobbySlots = new([]);
+        private readonly ReactiveProperty<bool> _isAtLobby = new(false);
+
+        // IDataObservableSource
+        Observable<DecodedDoor[]> IDataObservableSource.DoorsObservable => _doors;
+        Observable<DecodedEnemy[]> IDataObservableSource.EnemiesObservable => _enemies;
+        Observable<DecodedInGamePlayer[]> IDataObservableSource.InGamePlayersObservable => _players;
+        Observable<InGameOverviewSnapshot> IDataObservableSource.InGameOverviewObservable => _overview;
+        Observable<DecodedInGameScenario> IDataObservableSource.InGameScenarioObservable => _scenario;
+        Observable<DecodedLobbyRoom> IDataObservableSource.LobbyRoomObservable => _lobbyRoom;
+        Observable<DecodedLobbyRoomPlayer[]> IDataObservableSource.LobbyRoomPlayersObservable => _lobbyPlayers;
+        Observable<DecodedLobbySlot[]> IDataObservableSource.LobbySlotsObservable => _lobbySlots;
+        Observable<bool> IDataObservableSource.IsAtLobbyObservable => _isAtLobby;
+
+        // IDataSnapshot
+        DecodedDoor[] IDataSnapshot.Doors => _doors.Value;
+        DecodedEnemy[] IDataSnapshot.Enemies => _enemies.Value;
+        DecodedInGamePlayer[] IDataSnapshot.InGamePlayers => _players.Value;
+        DecodedInGameScenario IDataSnapshot.InGameScenario => _scenario.Value;
+        DecodedLobbyRoom IDataSnapshot.LobbyRoom => _lobbyRoom.Value;
+        DecodedLobbyRoomPlayer[] IDataSnapshot.LobbyRoomPlayers => _lobbyPlayers.Value;
+        DecodedLobbySlot[] IDataSnapshot.LobbySlots => _lobbySlots.Value;
+        bool IDataSnapshot.IsAtLobby => _isAtLobby.Value;
+
+        public ValueTask InitializeAsync(IGameClient gameClient, CancellationToken cancellationToken) =>
+            ValueTask.CompletedTask;
+
+        public void SetScenario(DecodedInGameScenario scenario) => _scenario.Value = scenario;
+
+        public void Dispose()
+        {
+            _scenario.Dispose();
+            _doors.Dispose();
+            _enemies.Dispose();
+            _players.Dispose();
+            _overview.Dispose();
+            _lobbyRoom.Dispose();
+            _lobbyPlayers.Dispose();
+            _lobbySlots.Dispose();
+            _isAtLobby.Dispose();
+        }
+    }
+
+    private sealed class FakeRunReportWriter : IRunReportWriter
+    {
+        public List<RunReport> Written { get; } = [];
+
+        public Task WriteAsync(RunReport report, CancellationToken cancellationToken = default)
+        {
+            Written.Add(report);
+            return Task.CompletedTask;
+        }
+    }
+}

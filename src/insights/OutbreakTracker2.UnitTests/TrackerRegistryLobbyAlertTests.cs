@@ -2,6 +2,7 @@
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Services.Tracking;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.PCSX2.Client;
 using R3;
@@ -16,6 +17,7 @@ public sealed class TrackerRegistryLobbyAlertTests
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
         using TrackerRegistry trackerRegistry = new(
+            dataManager,
             dataManager,
             dataManager,
             settingsService,
@@ -43,6 +45,7 @@ public sealed class TrackerRegistryLobbyAlertTests
         using TrackerRegistry trackerRegistry = new(
             dataManager,
             dataManager,
+            dataManager,
             settingsService,
             new EntityTrackerFactory(NullLoggerFactory.Instance)
         );
@@ -64,6 +67,7 @@ public sealed class TrackerRegistryLobbyAlertTests
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
         using TrackerRegistry trackerRegistry = new(
+            dataManager,
             dataManager,
             dataManager,
             settingsService,
@@ -101,6 +105,7 @@ public sealed class TrackerRegistryLobbyAlertTests
         using TrackerRegistry trackerRegistry = new(
             dataManager,
             dataManager,
+            dataManager,
             settingsService,
             new EntityTrackerFactory(NullLoggerFactory.Instance)
         );
@@ -132,6 +137,7 @@ public sealed class TrackerRegistryLobbyAlertTests
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
         using TrackerRegistry trackerRegistry = new(
+            dataManager,
             dataManager,
             dataManager,
             settingsService,
@@ -173,6 +179,7 @@ public sealed class TrackerRegistryLobbyAlertTests
         using TrackerRegistry trackerRegistry = new(
             dataManager,
             dataManager,
+            dataManager,
             settingsService,
             new EntityTrackerFactory(NullLoggerFactory.Instance)
         );
@@ -212,6 +219,7 @@ public sealed class TrackerRegistryLobbyAlertTests
         using TrackerRegistry trackerRegistry = new(
             dataManager,
             dataManager,
+            dataManager,
             settingsService,
             new EntityTrackerFactory(NullLoggerFactory.Instance)
         );
@@ -249,6 +257,7 @@ public sealed class TrackerRegistryLobbyAlertTests
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
         using TrackerRegistry trackerRegistry = new(
+            dataManager,
             dataManager,
             dataManager,
             settingsService,
@@ -300,6 +309,7 @@ public sealed class TrackerRegistryLobbyAlertTests
         using TrackerRegistry trackerRegistry = new(
             dataManager,
             dataManager,
+            dataManager,
             settingsService,
             new EntityTrackerFactory(NullLoggerFactory.Instance)
         );
@@ -336,6 +346,7 @@ public sealed class TrackerRegistryLobbyAlertTests
         using TrackerRegistry trackerRegistry = new(
             dataManager,
             dataManager,
+            dataManager,
             settingsService,
             new EntityTrackerFactory(NullLoggerFactory.Instance)
         );
@@ -369,6 +380,7 @@ public sealed class TrackerRegistryLobbyAlertTests
             }
         );
         using TrackerRegistry trackerRegistry = new(
+            dataManager,
             dataManager,
             dataManager,
             settingsService,
@@ -428,7 +440,7 @@ public sealed class TrackerRegistryLobbyAlertTests
         };
     }
 
-    private sealed class FakeDataManager : IDataManager, IDisposable
+    private sealed class FakeDataManager : IDataManager, ICurrentScenarioState, IDisposable
     {
         private readonly ReactiveProperty<DecodedDoor[]> _doors = new([]);
         private readonly ReactiveProperty<DecodedEnemy[]> _enemies = new([]);
@@ -448,6 +460,10 @@ public sealed class TrackerRegistryLobbyAlertTests
         public DecodedLobbyRoomPlayer[] LobbyRoomPlayers => _lobbyPlayers.Value;
         public DecodedLobbySlot[] LobbySlots => _lobbySlots.Value;
         public bool IsAtLobby => _isAtLobby.Value;
+
+        // ICurrentScenarioState
+        string ICurrentScenarioState.ScenarioName => _inGameScenario.Value.ScenarioName;
+        ScenarioStatus ICurrentScenarioState.Status => _inGameScenario.Value.Status;
 
         public Observable<DecodedDoor[]> DoorsObservable => _doors;
         public Observable<DecodedEnemy[]> EnemiesObservable => _enemies;
