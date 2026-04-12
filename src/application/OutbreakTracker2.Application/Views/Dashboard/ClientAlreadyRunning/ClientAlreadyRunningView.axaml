@@ -37,11 +37,11 @@ mc:Ignorable="d">
                             VerticalAlignment="Center"
                             Spacing="5">
                                 <Button
-                                Command="{Binding $parent[UserControl].DataContext.AttachToProcessCommand}"
+                                Command="{Binding #Root.((clientAlreadyRunning1:ClientAlreadyRunningViewModel)DataContext).AttachToProcessCommand}"
                                 CommandParameter="{Binding Id}"
                                 Content="Attach to Process" />
                                 <Button
-                                Command="{Binding $parent[UserControl].DataContext.TerminateProcessCommand}"
+                                Command="{Binding #Root.((clientAlreadyRunning1:ClientAlreadyRunningViewModel)DataContext).TerminateProcessCommand}"
                                 CommandParameter="{Binding Id}"
                                 Content="Terminate Process" />
                             </StackPanel>
