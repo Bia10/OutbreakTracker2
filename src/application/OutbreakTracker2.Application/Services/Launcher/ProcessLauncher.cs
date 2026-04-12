@@ -8,9 +8,12 @@ using R3;
 
 namespace OutbreakTracker2.Application.Services.Launcher;
 
-public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessLauncher, IDisposable
+public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClientFactory gameClientFactory)
+    : IProcessLauncher,
+        IDisposable
 {
     private readonly ILogger<ProcessLauncher> _logger = logger;
+    private readonly IGameClientFactory _gameClientFactory = gameClientFactory;
     private readonly Subject<string> _processErrors = new();
     private readonly Subject<ProcessModel> _processUpdate = new();
     private readonly Subject<bool> _isCancelling = new();
@@ -56,7 +59,7 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessL
         );
     }
 
-    public Task<IGameClient> LaunchAsync(
+    public async Task<IGameClient> LaunchAsync(
         string fileName,
         string? arguments,
         CancellationToken cancellationToken = default
@@ -67,11 +70,10 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessL
         (Process process, ProcessAsyncEnumerable stdOut, ProcessAsyncEnumerable stdError) =
             ProcessX.GetDualAsyncEnumerable(processStartInfo);
 
-        RegisterProcess(process);
+        IGameClient attachedGameClient = await ReplaceAttachedGameClientAsync(process, cancellationToken)
+            .ConfigureAwait(false);
 
-        GameClient gameClient = new();
-        gameClient.Attach(process);
-        AttachedGameClient = gameClient;
+        RegisterProcess(process);
 
         _logger.LogInformation(
             "PCSX2 process launched (ID: {ProcessId}). DataManager initialization deferred",
@@ -80,7 +82,7 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessL
 
         _ = HandleProcessOutputAsync(process, stdOut, stdError, cancellationToken);
 
-        return Task.FromResult(AttachedGameClient);
+        return attachedGameClient;
     }
 
     public IGameClient? GetActiveGameClient() => AttachedGameClient;
@@ -206,7 +208,7 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessL
         await process.WaitForExitAsync().ConfigureAwait(false);
     }
 
-    public Task<IGameClient> AttachAsync(int processId)
+    public async Task<IGameClient> AttachAsync(int processId)
     {
         Process? monitoredProcess = ClientMonitoredProcess;
         int? monitoredProcessId = null;
@@ -242,13 +244,11 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessL
                         StartTime = monitoredProcess.GetSafeStartTime(),
                     }
                 );
-                return Task.FromResult(AttachedGameClient);
+                return AttachedGameClient;
             }
 
-            GameClient reAttached = new();
-            reAttached.Attach(Process.GetProcessById(processId));
-            AttachedGameClient?.Dispose();
-            AttachedGameClient = reAttached;
+            IGameClient reAttached = await ReplaceAttachedGameClientAsync(monitoredProcess, CancellationToken.None)
+                .ConfigureAwait(false);
 
             _processUpdate.OnNext(
                 new ProcessModel
@@ -260,25 +260,36 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger) : IProcessL
                 }
             );
 
-            return Task.FromResult(AttachedGameClient);
+            return reAttached;
         }
 
         Process process = Process.GetProcessById(processId);
         if (process.HasExited)
             throw new InvalidOperationException($"Process {processId} has already exited.");
 
-        RegisterProcess(process);
+        IGameClient freshAttached = await ReplaceAttachedGameClientAsync(process, CancellationToken.None)
+            .ConfigureAwait(false);
 
-        AttachedGameClient?.Dispose();
-        GameClient freshAttached = new();
-        freshAttached.Attach(process);
-        AttachedGameClient = freshAttached;
+        RegisterProcess(process);
 
         _logger.LogInformation(
             "Attached to existing process ID: {ProcessId}. DataManager initialization deferred",
             processId
         );
-        return Task.FromResult(AttachedGameClient);
+        return freshAttached;
+    }
+
+    private async Task<IGameClient> ReplaceAttachedGameClientAsync(Process process, CancellationToken cancellationToken)
+    {
+        IGameClient newClient = await _gameClientFactory
+            .CreateAndAttachGameClientAsync(process, cancellationToken)
+            .ConfigureAwait(false);
+
+        IGameClient? previousClient = AttachedGameClient;
+        AttachedGameClient = newClient;
+        previousClient?.Dispose();
+
+        return newClient;
     }
 
     public Observable<string> GetErrorObservable() => _processErrors.AsObservable();

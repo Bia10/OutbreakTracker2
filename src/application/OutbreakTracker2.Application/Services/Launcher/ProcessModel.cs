@@ -10,5 +10,5 @@ public sealed record ProcessModel
 
     public DateTime StartTime { get; init; }
 
-    public int ExitCode { get; set; }
+    public int ExitCode { get; init; }
 }
