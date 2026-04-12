@@ -272,6 +272,7 @@ public sealed class EntitiesDockViewModelTests
         private readonly ReactiveProperty<DecodedDoor[]> _doors = new([]);
         private readonly ReactiveProperty<DecodedEnemy[]> _enemies = new([]);
         private readonly ReactiveProperty<DecodedInGamePlayer[]> _inGamePlayers = new([]);
+        private readonly ReactiveProperty<InGameOverviewSnapshot> _inGameOverview = new(new InGameOverviewSnapshot());
         private readonly ReactiveProperty<DecodedInGameScenario> _inGameScenario = new(new DecodedInGameScenario());
         private readonly ReactiveProperty<DecodedLobbyRoom> _lobbyRoom = new(new DecodedLobbyRoom());
         private readonly ReactiveProperty<DecodedLobbyRoomPlayer[]> _lobbyRoomPlayers = new([]);
@@ -290,6 +291,7 @@ public sealed class EntitiesDockViewModelTests
         public Observable<DecodedDoor[]> DoorsObservable => _doors;
         public Observable<DecodedEnemy[]> EnemiesObservable => _enemies;
         public Observable<DecodedInGamePlayer[]> InGamePlayersObservable => _inGamePlayers;
+        public Observable<InGameOverviewSnapshot> InGameOverviewObservable => _inGameOverview;
         public Observable<DecodedInGameScenario> InGameScenarioObservable => _inGameScenario;
         public Observable<DecodedLobbyRoom> LobbyRoomObservable => _lobbyRoom;
         public Observable<DecodedLobbyRoomPlayer[]> LobbyRoomPlayersObservable => _lobbyRoomPlayers;
@@ -305,6 +307,7 @@ public sealed class EntitiesDockViewModelTests
             _doors.Dispose();
             _enemies.Dispose();
             _inGamePlayers.Dispose();
+            _inGameOverview.Dispose();
             _inGameScenario.Dispose();
             _lobbyRoom.Dispose();
             _lobbyRoomPlayers.Dispose();

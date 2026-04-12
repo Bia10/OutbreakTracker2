@@ -1,6 +1,6 @@
 ﻿using OutbreakTracker2.Outbreak.Models;
 
-namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
+namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
 
 public static class ScenarioItemRoomGroupProjection
 {

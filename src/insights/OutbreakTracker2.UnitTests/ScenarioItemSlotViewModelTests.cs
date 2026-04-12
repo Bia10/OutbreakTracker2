@@ -8,7 +8,7 @@ using OutbreakTracker2.Application.Services.Atlas;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Views.Common;
 using OutbreakTracker2.Application.Views.Common.Item;
-using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 

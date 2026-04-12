@@ -28,6 +28,8 @@ public partial class InGameEnemyView : UserControl, IDisposable
 
         _disposed = true;
 
+        DataContextChanged -= OnDataContextChanged;
+
         if (_currentViewModel is not null)
             _currentViewModel.GlowTriggered -= OnGlowTriggered;
 
@@ -49,7 +51,15 @@ public partial class InGameEnemyView : UserControl, IDisposable
 
     private void OnGlowTriggered(object? sender, GlowEventArgs e)
     {
-        Dispatcher.UIThread.Post(() => StartGlowAnimation(e.Color));
+        Color color = e.Color;
+        // Capture color before the Post so the closure does not hold the event args alive.
+        // Check _disposed inside the closure: the View may be disposed between the event
+        // firing and the Render pass executing.
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (!_disposed)
+                StartGlowAnimation(color);
+        });
     }
 
     private void StartGlowAnimation(Color color)

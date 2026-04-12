@@ -7,7 +7,7 @@ using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
 
-namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
+namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
 
 public partial class ScenarioItemSlotView : UserControl, IDisposable
 {
@@ -29,6 +29,8 @@ public partial class ScenarioItemSlotView : UserControl, IDisposable
             return;
 
         _disposed = true;
+
+        DataContextChanged -= OnDataContextChanged;
 
         if (_currentViewModel is not null)
             _currentViewModel.GlowTriggered -= OnGlowTriggered;
@@ -63,7 +65,15 @@ public partial class ScenarioItemSlotView : UserControl, IDisposable
 
     private void OnGlowTriggered(object? sender, GlowEventArgs e)
     {
-        Dispatcher.UIThread.Post(() => StartGlowAnimation(e.Color));
+        Color color = e.Color;
+        // Capture color before the Post so the closure does not hold the event args alive.
+        // Check _disposed inside the closure: the View may be disposed between the event
+        // firing and the Render pass executing.
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (!_disposed)
+                StartGlowAnimation(color);
+        });
     }
 
     private void StartGlowAnimation(Color color)

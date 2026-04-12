@@ -1,4 +1,4 @@
-﻿using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
+﻿using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
 using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.UnitTests;

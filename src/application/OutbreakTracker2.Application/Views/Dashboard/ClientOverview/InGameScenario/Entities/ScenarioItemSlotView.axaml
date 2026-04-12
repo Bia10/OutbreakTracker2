@@ -1,14 +1,14 @@
 <UserControl
-x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites.ScenarioItemSlotView"
+x:Class="OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities.ScenarioItemSlotView"
 xmlns="https://github.com/avaloniaui"
 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 xmlns:item="clr-namespace:OutbreakTracker2.Application.Views.Common.Item"
-xmlns:entitites="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites"
+xmlns:Entities="clr-namespace:OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities"
 d:DesignHeight="100"
 d:DesignWidth="100"
-x:DataType="entitites:ScenarioItemSlotViewModel"
+x:DataType="Entities:ScenarioItemSlotViewModel"
 mc:Ignorable="d">
 
     <Grid x:Name="ItemCard" Width="58" Height="50" Margin="3">

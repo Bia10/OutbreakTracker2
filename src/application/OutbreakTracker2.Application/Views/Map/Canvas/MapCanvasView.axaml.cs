@@ -5,6 +5,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
 
@@ -48,21 +49,7 @@ public partial class MapCanvasView : UserControl
     {
         InitializeComponent();
 
-        DataContextChanged += (_, _) =>
-        {
-            _playersSubscription?.Dispose();
-
-            if (DataContext is MapCanvasViewModel viewModel)
-            {
-                _playersSubscription = viewModel
-                    .PlayersObservable.ObserveOn(SynchronizationContext.Current)
-                    .Subscribe(players =>
-                    {
-                        _lastPlayers = players;
-                        Redraw();
-                    });
-            }
-        };
+        DataContextChanged += OnDataContextChanged;
 
         GameMapCanvas.SizeChanged += (_, _) => Redraw();
 
@@ -104,6 +91,55 @@ public partial class MapCanvasView : UserControl
                 Redraw();
             }
         };
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        ResubscribeToPlayers();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _playersSubscription?.Dispose();
+        _playersSubscription = null;
+        _lastPlayers = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    // Zoom via mouse wheel
+
+    private void OnDataContextChanged(object? sender, EventArgs e) => ResubscribeToPlayers();
+
+    private void ResubscribeToPlayers()
+    {
+        _playersSubscription?.Dispose();
+        _playersSubscription = null;
+
+        if (DataContext is not MapCanvasViewModel viewModel)
+        {
+            _lastPlayers = null;
+            Redraw();
+            return;
+        }
+
+        if (SynchronizationContext.Current is { } synchronizationContext)
+        {
+            _playersSubscription = viewModel
+                .PlayersObservable.ObserveOn(synchronizationContext)
+                .Subscribe(OnPlayersChanged);
+            return;
+        }
+
+        _playersSubscription = viewModel.PlayersObservable.Subscribe(players =>
+            Dispatcher.UIThread.Post(() => OnPlayersChanged(players))
+        );
+    }
+
+    private void OnPlayersChanged(DecodedInGamePlayer[] players)
+    {
+        _lastPlayers = players;
+        Redraw();
     }
 
     // ── Zoom / pan event handlers ────────────────────────────────────────────

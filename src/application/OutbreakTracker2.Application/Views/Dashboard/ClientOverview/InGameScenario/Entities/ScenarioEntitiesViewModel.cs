@@ -7,7 +7,7 @@ using OutbreakTracker2.Extensions;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 
-namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
+namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
 
 public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDisposable
 {
