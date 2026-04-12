@@ -25,6 +25,9 @@ public sealed class ItemImageViewModel : ObservableObject
 
     public ValueTask ClearImageAsync()
     {
+        if (_currentSpriteName.Length == 0)
+            return ValueTask.CompletedTask;
+
         _currentSpriteName = string.Empty;
         return ImageViewModel.ClearImageAsync();
     }

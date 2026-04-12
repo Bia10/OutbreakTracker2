@@ -83,6 +83,10 @@ public sealed partial class DashboardViewModel : PageBase, IDisposable, IAsyncDi
 
     private void ApplyProcessState(ProcessStateSnapshot processState)
     {
+        // Clear stale items before any view switch so that DataTemplate.Build()
+        // never materializes item templates while DataContext is still null.
+        ClientAlreadyRunningViewModel!.RunningProcesses.Clear();
+
         switch (processState.State)
         {
             case ProcessViewState.Monitored:
@@ -94,8 +98,8 @@ public sealed partial class DashboardViewModel : PageBase, IDisposable, IAsyncDi
             case ProcessViewState.Unmonitored:
                 _logger.LogInformation("Unmonitored process is running");
                 IsClientRunning = true;
-                ClientAlreadyRunningViewModel!.UpdateProcesses(processState.ProcessIds);
                 CurrentView = ClientAlreadyRunningViewModel;
+                ClientAlreadyRunningViewModel.UpdateProcesses(processState.ProcessIds);
                 break;
 
             default:
