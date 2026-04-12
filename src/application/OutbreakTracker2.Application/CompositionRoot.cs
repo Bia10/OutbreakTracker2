@@ -300,6 +300,9 @@ internal static class CompositionRoot
         services.AddSingleton<IDataManager, DataManager>();
         services.AddSingleton<IDataObservableSource>(sp => sp.GetRequiredService<IDataManager>());
         services.AddSingleton<IDataSnapshot>(sp => sp.GetRequiredService<IDataManager>());
+        services.AddSingleton<ICurrentScenarioState>(sp =>
+            (ICurrentScenarioState)sp.GetRequiredService<IDataManager>()
+        );
         services.AddSingleton<IGameReaderFactory, GameReaderFactory>();
         services.AddSingleton<IDoorAddressProvider, FileOneDoorAddressProvider>();
         services.AddSingleton<IDoorAddressProvider, FileTwoDoorAddressProvider>();
@@ -308,11 +311,8 @@ internal static class CompositionRoot
         services.AddSingleton<ITextureAtlasService, TextureAtlasService>();
         services.AddSingleton<Func<Stream, SpriteSheet, ITextureAtlas>>(serviceProvider =>
         {
-            return (imageStream, spriteSheet) =>
-            {
-                ILogger<TextureAtlas> logger = serviceProvider.GetRequiredService<ILogger<TextureAtlas>>();
-                return new TextureAtlas(imageStream, spriteSheet, logger);
-            };
+            ILogger<TextureAtlas> logger = serviceProvider.GetRequiredService<ILogger<TextureAtlas>>();
+            return (imageStream, spriteSheet) => new TextureAtlas(imageStream, spriteSheet, logger);
         });
     }
 }

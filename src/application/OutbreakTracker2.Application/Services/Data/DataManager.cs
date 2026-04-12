@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Launcher;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Readers;
 using OutbreakTracker2.PCSX2.Client;
@@ -8,7 +9,7 @@ using R3;
 
 namespace OutbreakTracker2.Application.Services.Data;
 
-public sealed class DataManager : IDataManager, IDisposable
+public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposable
 {
     private int _disposeState;
     private readonly ILogger<IDataManager> _logger;
@@ -51,6 +52,10 @@ public sealed class DataManager : IDataManager, IDisposable
     public DecodedLobbyRoomPlayer[] LobbyRoomPlayers => _store.LobbyRoomPlayersState.Value;
     public DecodedLobbySlot[] LobbySlots => _store.LobbySlotsState.Value;
     public bool IsAtLobby => _store.IsAtLobbyState.Value;
+
+    // ICurrentScenarioState — narrow pull contract for alert rules
+    string ICurrentScenarioState.ScenarioName => _store.InGameScenarioState.Value.ScenarioName;
+    ScenarioStatus ICurrentScenarioState.Status => _store.InGameScenarioState.Value.Status;
 
     private readonly TimeSpan _fastUpdateInterval = TimeSpan.FromMilliseconds(250);
     private readonly TimeSpan _slowUpdateInterval = TimeSpan.FromMilliseconds(500);
@@ -272,18 +277,37 @@ public sealed class DataManager : IDataManager, IDisposable
         PublishInGameOverviewSnapshot();
     }
 
+    // Lobby statuses that unambiguously indicate the game has ended and the room browser is
+    // active. "Launching room" and "In Game" are intentionally excluded: they persist for the
+    // entire match (including in-game area-load transitions where ScenarioStatus briefly
+    // becomes non-InGame) and must never trigger a premature ResetInGameData.
+    private static readonly IReadOnlySet<string> _postGameLobbyStatuses = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "Waiting",
+        "Hosting room",
+        "Creating room",
+        "Full",
+    };
+
     private void UpdateLobbyData()
     {
+        UpdateLobbyRoom();
+        DecodedLobbyRoom lobbyRoom = _lobbyRoomReader?.DecodedLobbyRoom ?? new DecodedLobbyRoom();
+
         if (_wasInScenario)
         {
+            // Defer the data reset until the lobby confirms we have truly returned to the
+            // room browser. During in-game area loads LobbyRoom stays at "Launching room",
+            // so the early return here prevents those transient non-InGame intervals from
+            // creating spurious session splits in RunReportService.
+            if (!_postGameLobbyStatuses.Contains(lobbyRoom.Status))
+                return;
+
             _wasInScenario = false;
             ResetInGameData();
         }
 
-        UpdateLobbyRoom();
-        DecodedLobbyRoom lobbyRoom = _lobbyRoomReader?.DecodedLobbyRoom ?? new DecodedLobbyRoom();
         bool isAtLobby = LobbyStatusPolicy.IsActive(lobbyRoom);
-
         _store.IsAtLobbyState.Value = isAtLobby;
         if (!isAtLobby)
             return;

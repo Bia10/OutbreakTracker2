@@ -4,12 +4,12 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Services.Tracking;
 
-internal sealed class PlayerAlertRulesProvider(IAppSettingsService settingsService, IDataSnapshot dataSnapshot)
+internal sealed class PlayerAlertRulesProvider(IAppSettingsService settingsService, ICurrentScenarioState scenarioState)
     : IAlertRuleProvider<DecodedInGamePlayer>
 {
     private readonly IAppSettingsService _settingsService = settingsService;
-    private readonly IDataSnapshot _dataSnapshot = dataSnapshot;
+    private readonly ICurrentScenarioState _scenarioState = scenarioState;
 
     public void Register(IEntityTracker<DecodedInGamePlayer> tracker) =>
-        DefaultPlayerAlertRules.Register(tracker, _settingsService, _dataSnapshot);
+        DefaultPlayerAlertRules.Register(tracker, _settingsService, _scenarioState);
 }

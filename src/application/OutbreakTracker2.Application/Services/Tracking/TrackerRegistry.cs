@@ -17,6 +17,7 @@ public sealed class TrackerRegistry : ITrackerRegistry, IDisposable
     internal TrackerRegistry(
         IDataObservableSource dataObservable,
         IDataSnapshot dataSnapshot,
+        ICurrentScenarioState scenarioState,
         IAppSettingsService settingsService,
         IEntityTrackerFactory trackerFactory
     )
@@ -25,7 +26,7 @@ public sealed class TrackerRegistry : ITrackerRegistry, IDisposable
             trackerFactory,
             [
                 new DelegateAlertRuleProvider<DecodedEnemy>(tracker =>
-                    EnemyAlertRules.Register(tracker, settingsService, dataSnapshot)
+                    EnemyAlertRules.Register(tracker, settingsService, scenarioState)
                 ),
             ],
             [
@@ -35,7 +36,7 @@ public sealed class TrackerRegistry : ITrackerRegistry, IDisposable
             ],
             [
                 new DelegateAlertRuleProvider<DecodedInGamePlayer>(tracker =>
-                    DefaultPlayerAlertRules.Register(tracker, settingsService, dataSnapshot)
+                    DefaultPlayerAlertRules.Register(tracker, settingsService, scenarioState)
                 ),
             ],
             [
