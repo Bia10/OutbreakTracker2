@@ -148,13 +148,8 @@ public static class TimeUtility
     /// <returns>The formatted time string (M:SS) if displayed, otherwise null.</returns>
     public static string FormatBleedTime(ushort bleedTime, string status)
     {
-        bool isBleedStatus = status is "Bleed" or "Poison+Bleed" or "Gas+Bleed";
-
-        if (bleedTime > 0 && isBleedStatus)
+        if (bleedTime > 0 && status is "Bleed" or "Poison+Bleed" or "Gas+Bleed")
             return GetBleedingTimeToString(bleedTime);
-
-        if (isBleedStatus)
-            return "Active";
 
         return "0:00";
     }

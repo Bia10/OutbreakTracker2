@@ -44,7 +44,7 @@ public sealed partial class PlayerStatusEffectsViewModel : ObservableObject
         byte currentGameFile
     )
     {
-        IsBleedActive = bleedTimeValue > 0 || status is "Bleed" or "Poison+Bleed" or "Gas+Bleed";
+        IsBleedActive = bleedTimeValue > 0;
         IsAntivirusActive = antiVirusTimeValue > 0;
         IsAntivirusGActive = antiVirusGTimeValue > 0;
         IsHerbActive = herbTimeValue > 0;
