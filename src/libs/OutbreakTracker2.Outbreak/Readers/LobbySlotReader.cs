@@ -13,14 +13,17 @@ namespace OutbreakTracker2.Outbreak.Readers;
 
 public sealed class LobbySlotReader : ReaderBase, ILobbySlotReader
 {
-    public DecodedLobbySlot[] DecodedLobbySlots { get; private set; }
+    // Volatile ensures that reader threads on other thread-pool threads always see the latest
+    // array reference after UpdateLobbySlots() replaces it.
+    private volatile DecodedLobbySlot[] _decodedLobbySlots;
+    public DecodedLobbySlot[] DecodedLobbySlots => _decodedLobbySlots;
 
     public LobbySlotReader(IGameClient gameClient, IEEmemAddressReader memory, ILogger logger)
         : base(gameClient, memory, logger)
     {
-        DecodedLobbySlots = new DecodedLobbySlot[GameConstants.MaxLobbySlots];
+        _decodedLobbySlots = new DecodedLobbySlot[GameConstants.MaxLobbySlots];
         for (int i = 0; i < GameConstants.MaxLobbySlots; i++)
-            DecodedLobbySlots[i] = new DecodedLobbySlot();
+            _decodedLobbySlots[i] = new DecodedLobbySlot();
     }
 
     private short GetIndex(int slotIndex) =>
@@ -94,7 +97,7 @@ public sealed class LobbySlotReader : ReaderBase, ILobbySlotReader
             }
         }
 
-        DecodedLobbySlots = newLobbySlotsData;
+        _decodedLobbySlots = newLobbySlotsData;
     }
 
     private readonly ConcurrentDictionary<int, Ulid> _lobbySlotUlids = [];

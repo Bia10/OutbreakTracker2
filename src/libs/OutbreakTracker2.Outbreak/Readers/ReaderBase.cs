@@ -22,16 +22,21 @@ public abstract class ReaderBase : IDisposable
     private readonly ISafeMemoryReader _memoryReader;
     private readonly IStringReader _stringReader;
 
-    private volatile GameFile _detectedFile;
+    // Backing field uses int so Interlocked.CompareExchange can guarantee atomic lazy-init.
+    // Two threads racing through CurrentFile will both call GetGameFile() but only one write wins;
+    // the final value is always consistent.
+    private volatile int _detectedFileRaw = (int)GameFile.Unknown;
 
     protected GameFile CurrentFile
     {
         get
         {
-            if (_detectedFile is not GameFile.Unknown)
-                return _detectedFile;
-            _detectedFile = GetGameFile();
-            return _detectedFile;
+            int raw = _detectedFileRaw;
+            if (raw != (int)GameFile.Unknown)
+                return (GameFile)raw;
+            GameFile detected = GetGameFile();
+            Interlocked.CompareExchange(ref _detectedFileRaw, (int)detected, (int)GameFile.Unknown);
+            return (GameFile)_detectedFileRaw;
         }
     }
 
@@ -96,46 +101,39 @@ public abstract class ReaderBase : IDisposable
         }
     }
 
-    private string ReadString(nint address, Encoding? encoding = null, [CallerMemberName] string methodName = "")
+    private bool TryReadString(
+        nint address,
+        [NotNullWhen(true)] out string? result,
+        Encoding? encoding = null,
+        [CallerMemberName] string methodName = ""
+    )
     {
         if (address == nint.Zero)
         {
             Logger.LogWarning("[{MethodName}] Attempted to read string from a null address.", methodName);
-            return string.Empty;
+            result = null;
+            return false;
         }
 
-        try
+        if (_stringReader.TryRead(_gameClient.Handle, address, out string readResult, encoding))
         {
-            string result = _stringReader.Read(_gameClient.Handle, address, encoding);
             Logger.LogTrace(
                 "[{MethodName}] Successfully read string from address 0x{Address:X}. Value: '{Result}'",
                 methodName,
                 address,
-                result
+                readResult
             );
-            return result;
+            result = readResult;
+            return true;
         }
-        catch (AccessViolationException ex)
-        {
-            Logger.LogError(
-                ex,
-                "[{MethodName}] Access violation reading string from address 0x{Address:X}",
-                methodName,
-                address
-            );
-            return string.Empty;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(
-                ex,
-                "[{MethodName}] Unexpected error reading string from address 0x{Address:X}",
-                methodName,
-                address
-            );
-            return string.Empty;
-        }
+
+        Logger.LogDebug("[{MethodName}] String read failed at address 0x{Address:X}.", methodName, address);
+        result = null;
+        return false;
     }
+
+    private string ReadString(nint address, Encoding? encoding = null, [CallerMemberName] string methodName = "") =>
+        TryReadString(address, out string? result, encoding, methodName) ? result : string.Empty;
 
     private GameFile GetGameFile()
     {
@@ -515,7 +513,8 @@ public abstract class ReaderBase : IDisposable
             offsetsFile1,
             offsetsFile2,
             errorValue,
-            readOperation: address => ReadString(address, encoding: null, methodName),
+            readOperation: address =>
+                TryReadString(address, out string? result, encoding: null, methodName) ? result : errorValue,
             methodName
         );
 
@@ -597,7 +596,8 @@ public abstract class ReaderBase : IDisposable
             offsetsFile1,
             offsetsFile2,
             errorValue,
-            readOperation: address => ReadString(address, encoding: null, methodName),
+            readOperation: address =>
+                TryReadString(address, out string? result, encoding: null, methodName) ? result : errorValue,
             methodName
         );
 

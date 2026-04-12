@@ -30,12 +30,16 @@ public sealed class LinuxStringReader : IStringReader
         _logger = logger;
     }
 
-    public string Read(nint hProcess, nint address, Encoding? encoding = null)
+    public string Read(nint hProcess, nint address, Encoding? encoding = null) =>
+        TryRead(hProcess, address, out string result, encoding) ? result : string.Empty;
+
+    public bool TryRead(nint hProcess, nint address, out string result, Encoding? encoding = null)
     {
         if (address == nint.Zero)
         {
             _logger.LogWarning("Attempted to read string from NULL pointer");
-            return string.Empty;
+            result = string.Empty;
+            return true;
         }
 
         encoding ??= Encoding.GetEncoding(932); // Default: Shift-JIS (same as Windows impl)
@@ -54,7 +58,15 @@ public sealed class LinuxStringReader : IStringReader
 
                 int bytesRead = ReadChunk(pid, address + bytes.Count, chunk, readSize);
                 if (bytesRead <= 0)
+                {
+                    if (bytes.Count == 0)
+                    {
+                        result = string.Empty;
+                        return false;
+                    }
+
                     break;
+                }
 
                 for (int i = 0; i < bytesRead; i++)
                 {
@@ -68,16 +80,20 @@ public sealed class LinuxStringReader : IStringReader
                 }
             }
             if (bytes.Count == 0)
-                return string.Empty;
+            {
+                result = string.Empty;
+                return true;
+            }
 
-            string result = encoding.GetString([.. bytes]);
+            result = encoding.GetString([.. bytes]);
             _logger.LogDebug("Read {Count} bytes: \"{Result}\"", bytes.Count, result);
-            return result;
+            return true;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Critical error during string read at 0x{Address:X}: {Message}", address, ex.Message);
-            return string.Empty;
+            result = string.Empty;
+            return false;
         }
     }
 

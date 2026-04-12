@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
-using OutbreakTracker2.Outbreak.Enums.Enemy;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Offsets;
 using OutbreakTracker2.Outbreak.Utility;
@@ -23,41 +22,10 @@ public sealed class EnemiesReader : ReaderBase, IEnemiesReader
             DecodedEnemies2[i] = new DecodedEnemy();
     }
 
-    private static byte GetBossType(byte nameId, ushort maxHp)
-    {
-        if (!EnumUtility.TryParseByValueOrMember(nameId, out EnemyType enemyType))
-            return 0;
+    private static byte GetBossType(byte nameId, ushort maxHp) => EnemyTypeDisplay.GetBossType(nameId, maxHp);
 
-        return enemyType switch
-        {
-            EnemyType.Thanatos or EnemyType.Nyx or EnemyType.NyxTyrant or EnemyType.Tyrant => 2,
-            EnemyType.GLeech
-            or EnemyType.Leechman
-            or EnemyType.GMutant
-            or EnemyType.Titan
-            or EnemyType.Lion
-            or EnemyType.TyrantQuestion
-            or EnemyType.NyxCore
-            or EnemyType.Axeman
-            or EnemyType.Gigabyte => 1,
-            _ => 0,
-        };
-    }
-
-    private static string GetEnemyName(byte nameId) => EnumUtility.GetEnumString(nameId, EnemyType.Unknown);
-
-    private static string GetZombieName(byte typeId) => EnumUtility.GetEnumString(typeId, ZombieType.Unknown0);
-
-    private static string GetDogName(byte typeId) => EnumUtility.GetEnumString(typeId, DogType.Unknown0);
-
-    private static string GetScissorTailName(byte typeId) =>
-        EnumUtility.GetEnumString(typeId, ScissorTailType.ScissorTail);
-
-    private static string GetLionName(byte typeId) => EnumUtility.GetEnumString(typeId, LionType.Stalker);
-
-    private static string GetThanatosName(byte typeId) => EnumUtility.GetEnumString(typeId, ThanatosType.Thanatos);
-
-    private static string GetTyrantName(byte typeId) => EnumUtility.GetEnumString(typeId, TyrantType.Tyrant);
+    private static string ResolveEnemyDisplayName(byte nameId, byte typeId) =>
+        EnemyTypeDisplay.ResolveDisplayName(nameId, typeId);
 
     public void UpdateEnemies2()
     {
@@ -125,29 +93,6 @@ public sealed class EnemiesReader : ReaderBase, IEnemiesReader
         }
 
         DecodedEnemies2 = newDecodedEnemies2;
-    }
-
-    private static string ResolveEnemyDisplayName(byte nameId, byte typeId)
-    {
-        if (typeId <= 1)
-            return GetEnemyName(nameId);
-
-        if (!EnumUtility.TryParseByValueOrMember(nameId, out EnemyType enemyType))
-            return GetEnemyName(nameId);
-
-        string enemyName = GetEnemyName(nameId);
-        static string Prefer(string variant, string fallback) => string.IsNullOrEmpty(variant) ? fallback : variant;
-
-        return enemyType switch
-        {
-            EnemyType.Zombie => Prefer(GetZombieName(typeId), enemyName),
-            EnemyType.Dog => Prefer(GetDogName(typeId), enemyName),
-            EnemyType.ScissorTail => Prefer(GetScissorTailName(typeId), enemyName),
-            EnemyType.Lion => Prefer(GetLionName(typeId), enemyName),
-            EnemyType.Tyrant => Prefer(GetTyrantName(typeId), enemyName),
-            EnemyType.Thanatos => Prefer(GetThanatosName(typeId), enemyName),
-            _ => enemyName,
-        };
     }
 
     private readonly ConcurrentDictionary<int, Ulid> _enemies2SlotUlids = [];

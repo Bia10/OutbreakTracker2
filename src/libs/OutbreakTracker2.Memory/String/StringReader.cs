@@ -21,8 +21,11 @@ public sealed class StringReader : IStringReader
         _logger = logger;
     }
 
+    public string Read(nint hProcess, nint address, Encoding? encoding = null) =>
+        TryRead(hProcess, address, out string result, encoding) ? result : string.Empty;
+
     // This has to be a bit overcomplicated as Outbreak supports multiple char widths like halfwidth and fullwidth character forms
-    public string Read(nint hProcess, nint address, Encoding? encoding = null)
+    public bool TryRead(nint hProcess, nint address, out string result, Encoding? encoding = null)
     {
         // Under some bizzare scenario, if the null terminator is not found, we can read up to MAX of 1MB of data
         const int maxSafeLength = 1048576;
@@ -32,7 +35,8 @@ public sealed class StringReader : IStringReader
         if (address == nint.Zero)
         {
             _logger.LogWarning("Attempted to read from NULL pointer");
-            return string.Empty;
+            result = string.Empty;
+            return true;
         }
 
         // Default to Shift-JIS for Japanese games with fullwidth Latin
@@ -40,8 +44,6 @@ public sealed class StringReader : IStringReader
         List<byte> bytes = new(chunkSize);
         byte[] chunk = new byte[chunkSize];
         int consecutiveFails = 0;
-        string result;
-
         try
         {
             while (bytes.Count < maxSafeLength)
@@ -70,6 +72,13 @@ public sealed class StringReader : IStringReader
                     if (consecutiveFails >= 3)
                     {
                         _logger.LogError("Aborting read after 3 consecutive failures");
+
+                        if (bytes.Count == 0)
+                        {
+                            result = string.Empty;
+                            return false;
+                        }
+
                         break;
                     }
 
@@ -96,14 +105,14 @@ public sealed class StringReader : IStringReader
             }
 
             result = ProcessFinalBytes(bytes, encoding);
+            return true;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Critical error during memory read: {ExMessage}", ex.Message);
             result = string.Empty;
+            return false;
         }
-
-        return result;
     }
 
     private void LogByteDetails(byte @byte, int offset, List<byte> bytes, Encoding encoding)

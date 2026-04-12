@@ -33,6 +33,16 @@ public sealed class DoorReader : ReaderBase, IDoorReader
     {
         _addressProviders = addressProviders.ToDictionary(p => p.SupportedFile);
 
+        // Fail at startup if any expected file variant is missing rather than silently
+        // returning error values at gameplay time.
+        GameFile[] required = [GameFile.FileOne, GameFile.FileTwo];
+        GameFile[] missing = required.Where(f => !_addressProviders.ContainsKey(f)).ToArray();
+        if (missing.Length > 0)
+            throw new InvalidOperationException(
+                $"DoorReader: no IDoorAddressProvider registered for: {string.Join(", ", missing)}. "
+                    + "Ensure both FileOneDoorAddressProvider and FileTwoDoorAddressProvider are registered in DI."
+            );
+
         DecodedDoors = new DecodedDoor[GameConstants.MaxDoors];
         Array.Fill(DecodedDoors, new DecodedDoor());
     }

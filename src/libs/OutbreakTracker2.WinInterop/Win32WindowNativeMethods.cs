@@ -167,15 +167,15 @@ public static partial class Win32WindowNativeMethods
     /// Retrieves the name of the class to which the specified window belongs.
     /// Returns the number of characters copied (excluding the null terminator), or 0 on failure.
     /// </summary>
-    [DllImport("user32.dll", EntryPoint = "GetClassNameW", CharSet = CharSet.Unicode, ExactSpelling = true)]
-    public static extern int GetClassName(nint hWnd, System.Text.StringBuilder lpClassName, int nMaxCount);
+    [LibraryImport("user32.dll", EntryPoint = "GetClassNameW", StringMarshalling = StringMarshalling.Utf16)]
+    public static partial int GetClassName(nint hWnd, [Out] char[] lpClassName, int nMaxCount);
 
     /// <summary>
     /// Copies the text of the specified window's title bar into a buffer.
     /// Returns the number of characters copied (excluding the null terminator), or 0 on failure.
     /// </summary>
-    [DllImport("user32.dll", EntryPoint = "GetWindowTextW", CharSet = CharSet.Unicode, ExactSpelling = true)]
-    public static extern int GetWindowText(nint hWnd, System.Text.StringBuilder lpString, int nMaxCount);
+    [LibraryImport("user32.dll", EntryPoint = "GetWindowTextW", StringMarshalling = StringMarshalling.Utf16)]
+    public static partial int GetWindowText(nint hWnd, [Out] char[] lpString, int nMaxCount);
 
     /// <summary>
     /// Adds an invalidation region to the window so the next <c>WM_PAINT</c> covers it.

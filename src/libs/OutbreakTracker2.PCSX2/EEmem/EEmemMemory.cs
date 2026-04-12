@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Memory.SafeMemory;
@@ -24,6 +25,10 @@ public sealed class EEmemMemory(ISafeMemoryReader memoryReader, IStringReader st
     public async ValueTask<bool> InitializeAsync(IGameClient gameClient, CancellationToken cancellationToken)
     {
         _gameClient = gameClient ?? throw new ArgumentNullException(nameof(gameClient));
+
+        // EEmem pointers are read as 64-bit values and cast to nint. On a 32-bit process
+        // this silently truncates. Assert early so misuse is caught at initialization time.
+        Debug.Assert(nint.Size == 8, "EEmemMemory requires a 64-bit process (nint must be 8 bytes).");
 
         const int maxAttempts = 20;
         const int delayBetweenAttemptsMs = 100;
