@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
+using OutbreakTracker2.Application.Utilities;
 using OutbreakTracker2.Application.Views.Common.ScenarioImg;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoomPlayer;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoomPlayer.Factory;
@@ -19,6 +20,9 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
     private readonly ILogger<LobbyRoomViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
     private readonly IDisposable _subscription;
+
+    // Keyed by the decoded player's stable Ulid so VMs are reused by slot identity,
+    // not by their own transient object identity.
     private readonly Dictionary<Ulid, LobbyRoomPlayerViewModel> _viewModelCache = [];
     private readonly ObservableList<LobbyRoomPlayerViewModel> _playersInternal = [];
     private byte _currentRoomMasterId = 255;
@@ -124,128 +128,30 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
 
                     try
                     {
-                        List<LobbyRoomPlayerViewModel> desiredViewModels = new(filteredIncomingPlayers.Count);
-                        HashSet<Ulid> desiredVmUlids = [];
-                        // AwaitOperation.Drop guarantees this callback does not overlap with the previous
-                        // callback, so the thread-pool snapshot is taken after the previous UI mutation completed.
-                        List<LobbyRoomPlayerViewModel> currentListSnapshot = [.. _playersInternal];
-
-                        for (int i = 0; i < filteredIncomingPlayers.Count; i++)
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            DecodedLobbyRoomPlayer incomingData = filteredIncomingPlayers[i];
-                            LobbyRoomPlayerViewModel vmToAddToList;
-
-                            if (
-                                i < currentListSnapshot.Count
-                                && _viewModelCache.TryGetValue(
-                                    currentListSnapshot[i].ViewModelId,
-                                    out LobbyRoomPlayerViewModel? existingAndCachedVm
-                                )
-                            )
-                            {
-                                vmToAddToList = existingAndCachedVm;
-                            }
-                            else
-                            {
-                                vmToAddToList = playerVmFactory.Create(incomingData);
-                            }
-
-                            desiredViewModels.Add(vmToAddToList);
-                            desiredVmUlids.Add(vmToAddToList.ViewModelId);
-                        }
-
-                        List<Ulid> vmUlidsToRemoveFromCache = [.. _viewModelCache.Keys.Except(desiredVmUlids)];
+                        OrderedObservableListReconcilePlan<
+                            DecodedLobbyRoomPlayer,
+                            LobbyRoomPlayerViewModel,
+                            Ulid
+                        > plan = OrderedObservableListReconciler.BuildPlan(
+                            filteredIncomingPlayers,
+                            _viewModelCache,
+                            static player => player.Id,
+                            playerVmFactory.Create
+                        );
 
                         await _dispatcherService
                             .InvokeOnUIAsync(
                                 () =>
                                 {
-                                    foreach (Ulid ulidToRemove in vmUlidsToRemoveFromCache)
-                                        _viewModelCache.Remove(ulidToRemove, out LobbyRoomPlayerViewModel? _);
+                                    OrderedObservableListReconciler.ApplyPlan(
+                                        plan,
+                                        _playersInternal,
+                                        _viewModelCache,
+                                        static vm => vm.ViewModelId,
+                                        (vm, player) => vm.Update(player, _currentRoomMasterId)
+                                    );
 
-                                    if (desiredViewModels.Count != filteredIncomingPlayers.Count)
-                                    {
-                                        _logger.LogError(
-                                            "Internal error: desiredViewModels count ({DesiredCount}) does not match incomingPlayersSnapshot length ({SnapshotLength})."
-                                                + " Cannot update properties reliably",
-                                            desiredViewModels.Count,
-                                            incomingPlayersSnapshot.Length
-                                        );
-                                    }
-                                    else
-                                    {
-                                        for (int i = 0; i < desiredViewModels.Count; i++)
-                                        {
-                                            LobbyRoomPlayerViewModel vm = desiredViewModels[i];
-                                            DecodedLobbyRoomPlayer playerData = filteredIncomingPlayers[i];
-                                            _viewModelCache.TryAdd(vm.ViewModelId, vm);
-                                            vm.Update(playerData, _currentRoomMasterId);
-                                        }
-                                    }
-
-                                    for (int i = 0; i < desiredViewModels.Count; i++)
-                                    {
-                                        LobbyRoomPlayerViewModel desiredVm = desiredViewModels[i];
-                                        int currentIndexInList = -1;
-
-                                        for (int j = 0; j < _playersInternal.Count; j++)
-                                        {
-                                            if (_playersInternal[j].ViewModelId == desiredVm.ViewModelId)
-                                            {
-                                                currentIndexInList = j;
-                                                break;
-                                            }
-                                        }
-
-                                        if (currentIndexInList is -1)
-                                        {
-                                            if (i <= _playersInternal.Count)
-                                                _playersInternal.Insert(i, desiredVm);
-                                            else
-                                            {
-                                                _logger.LogError(
-                                                    "Internal error: Attempted to insert VM ULID {Ulid} at index {Index} which is out of bounds for list count {Count}",
-                                                    desiredVm.ViewModelId,
-                                                    i,
-                                                    _playersInternal.Count
-                                                );
-                                                _playersInternal.Add(desiredVm);
-                                            }
-                                        }
-                                        else if (currentIndexInList != i)
-                                        {
-                                            if (i >= 0 && i < _playersInternal.Count)
-                                            {
-                                                _playersInternal.Move(currentIndexInList, i);
-                                            }
-                                            else
-                                            {
-                                                _logger.LogError(
-                                                    "Internal error: Attempted to move VM ULID {Ulid} from index {FromIndex} to invalid target index {ToIndex} for list count {Count}",
-                                                    desiredVm.ViewModelId,
-                                                    currentIndexInList,
-                                                    i,
-                                                    _playersInternal.Count
-                                                );
-                                            }
-                                        }
-                                    }
-
-                                    for (int i = _playersInternal.Count - 1; i >= 0; i--)
-                                    {
-                                        LobbyRoomPlayerViewModel currentVmInList = _playersInternal[i];
-                                        if (!desiredVmUlids.Contains(currentVmInList.ViewModelId))
-                                            _playersInternal.RemoveAt(i);
-                                    }
-
-                                    if (_playersInternal.Count != desiredViewModels.Count)
-                                        _logger.LogWarning(
-                                            "_playersInternal count ({InternalCount}) differs from desiredViewModels count ({DesiredCount}) after sync. This indicates a potential sync logic error",
-                                            _playersInternal.Count,
-                                            desiredViewModels.Count
-                                        );
+                                    _logger.LogDebug("Lobby room players updated: {Count}", _playersInternal.Count);
                                 },
                                 cancellationToken
                             )
@@ -301,21 +207,16 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
         }
     }
 
-    private void TrackScenarioImageUpdate(ValueTask updateTask, string scenarioName)
+    private async void TrackScenarioImageUpdate(ValueTask updateTask, string scenarioName)
     {
-        _ = updateTask
-            .AsTask()
-            .ContinueWith(
-                task =>
-                    _logger.LogError(
-                        task.Exception,
-                        "Failed to update scenario image for lobby room {ScenarioName}",
-                        scenarioName
-                    ),
-                CancellationToken.None,
-                TaskContinuationOptions.OnlyOnFaulted,
-                TaskScheduler.Default
-            );
+        try
+        {
+            await updateTask.ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update scenario image for lobby room {ScenarioName}", scenarioName);
+        }
     }
 
     public async ValueTask DisposeAsync()

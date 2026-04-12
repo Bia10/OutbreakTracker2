@@ -9,7 +9,7 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoomP
 public sealed partial class LobbyRoomPlayerViewModel : ObservableObject
 {
     [ObservableProperty]
-    private Ulid _id = Ulid.NewUlid();
+    private Ulid _id;
 
     [ObservableProperty]
     private byte _nameId;
@@ -64,6 +64,7 @@ public sealed partial class LobbyRoomPlayerViewModel : ObservableObject
 
     public void Update(DecodedLobbyRoomPlayer model, byte roomMasterId)
     {
+        Id = model.Id;
         IsEnabled = model.IsEnabled;
         NameId = model.NameId;
         NpcType = model.NpcType;
