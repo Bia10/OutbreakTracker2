@@ -53,10 +53,6 @@ public sealed record DecodedEnemy : IHasId
     public byte Status { get; init; }
 
     [JsonInclude]
-    [JsonPropertyName(nameof(RoomName))]
-    public string RoomName { get; init; } = string.Empty;
-
-    [JsonInclude]
     [JsonPropertyName(nameof(PositionX))]
     public float PositionX { get; init; }
 

@@ -216,7 +216,7 @@ public static class EnumUtility
     public static string GetRoomName(this Scenario scenarioName, int roomId) =>
         scenarioName switch
         {
-            Scenario.Unknown => $"Unknown roomName for id: {roomId}",
+            Scenario.Unknown => $"Room {roomId}",
             Scenario.TrainingGround => GetEnumString(roomId, TrainingGroundRooms.Spawning),
             Scenario.EndOfTheRoad => GetEnumString(roomId, EndOfTheRoadRooms.Spawning),
             Scenario.Underbelly => GetEnumString(roomId, UnderbellyRooms.Spawning),
