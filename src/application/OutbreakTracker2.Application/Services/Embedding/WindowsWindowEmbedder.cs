@@ -242,8 +242,8 @@ internal sealed class WindowsWindowEmbedder : IWindowEmbedder
     {
         var sb = new System.Text.StringBuilder();
         int total = 0;
-        var cls = new System.Text.StringBuilder(256);
-        var title = new System.Text.StringBuilder(256);
+        char[] cls = new char[256];
+        char[] title = new char[256];
 
         Win32WindowNativeMethods.EnumWindows(
             (hwnd, _) =>
@@ -256,15 +256,15 @@ internal sealed class WindowsWindowEmbedder : IWindowEmbedder
                 bool visible = Win32WindowNativeMethods.IsWindowVisible(hwnd);
                 Win32WindowNativeMethods.GetWindowRect(hwnd, out RECT r);
 
-                cls.Clear();
-                Win32WindowNativeMethods.GetClassName(hwnd, cls, cls.Capacity);
+                int clsLen = Win32WindowNativeMethods.GetClassName(hwnd, cls, cls.Length);
+                string clsStr = new string(cls, 0, Math.Max(0, clsLen));
 
-                title.Clear();
-                Win32WindowNativeMethods.GetWindowText(hwnd, title, title.Capacity);
+                int titleLen = Win32WindowNativeMethods.GetWindowText(hwnd, title, title.Length);
+                string titleStr = new string(title, 0, Math.Max(0, titleLen));
 
                 sb.Append(
                     System.FormattableString.Invariant(
-                        $"  0x{hwnd:X8}  {cls, -32}  {r.Width, 5}x{r.Height, -5}  visible={visible}  \"{title}\"\n"
+                        $"  0x{hwnd:X8}  {clsStr, -32}  {r.Width, 5}x{r.Height, -5}  visible={visible}  \"{titleStr}\"\n"
                     )
                 );
                 return true;
@@ -291,13 +291,13 @@ internal sealed class WindowsWindowEmbedder : IWindowEmbedder
                     {
                         bool childVisible = Win32WindowNativeMethods.IsWindowVisible(child);
                         Win32WindowNativeMethods.GetWindowRect(child, out RECT cr);
-                        cls.Clear();
-                        Win32WindowNativeMethods.GetClassName(child, cls, cls.Capacity);
-                        title.Clear();
-                        Win32WindowNativeMethods.GetWindowText(child, title, title.Capacity);
+                        int clsLen = Win32WindowNativeMethods.GetClassName(child, cls, cls.Length);
+                        string clsStr = new string(cls, 0, Math.Max(0, clsLen));
+                        int titleLen = Win32WindowNativeMethods.GetWindowText(child, title, title.Length);
+                        string titleStr = new string(title, 0, Math.Max(0, titleLen));
                         sb.Append(
                             System.FormattableString.Invariant(
-                                $"    0x{child:X8}  {cls, -32}  {cr.Width, 5}x{cr.Height, -5}  visible={childVisible}  \"{title}\"\n"
+                                $"    0x{child:X8}  {clsStr, -32}  {cr.Width, 5}x{cr.Height, -5}  visible={childVisible}  \"{titleStr}\"\n"
                             )
                         );
                         return true;

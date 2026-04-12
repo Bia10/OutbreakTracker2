@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 using Bia.LogViewer.Core;
+using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.Application.Services.Dispatcher;
 
@@ -8,6 +8,7 @@ namespace OutbreakTracker2.Application.Services.LogStorage;
 
 public sealed class LogDataStorageService : ILogDataStorageService, IAsyncDisposable
 {
+    private readonly ILogger<LogDataStorageService> _logger;
     private readonly IDispatcherService _dispatcher;
     private readonly Channel<LogModel> _logChannel = Channel.CreateUnbounded<LogModel>();
     private readonly Task _processingTask;
@@ -23,8 +24,9 @@ public sealed class LogDataStorageService : ILogDataStorageService, IAsyncDispos
 
     public int MaxCapacity => 1000;
 
-    public LogDataStorageService(IDispatcherService dispatcher)
+    public LogDataStorageService(ILogger<LogDataStorageService> logger, IDispatcherService dispatcher)
     {
+        _logger = logger;
         _dispatcher = dispatcher;
         _entriesView = new(_entries);
         _processingTask = Task.Run(() => ProcessLogChannelAsync(_cts.Token), _cts.Token);
@@ -51,11 +53,11 @@ public sealed class LogDataStorageService : ILogDataStorageService, IAsyncDispos
         }
         catch (OperationCanceledException)
         {
-            Trace.TraceInformation("LogDataStorageService background task was canceled.");
+            _logger.LogInformation("LogDataStorageService background task was canceled.");
         }
         catch (Exception ex)
         {
-            Trace.TraceError($"Error in LogDataStorageService background task: {ex}");
+            _logger.LogError(ex, "Error in LogDataStorageService background task");
         }
     }
 
@@ -74,11 +76,11 @@ public sealed class LogDataStorageService : ILogDataStorageService, IAsyncDispos
         }
         catch (OperationCanceledException)
         {
-            Trace.TraceInformation("Log processing task was canceled during DisposeAsync.");
+            _logger.LogInformation("Log processing task was canceled during DisposeAsync.");
         }
         catch (Exception ex)
         {
-            Trace.TraceError($"Error awaiting log processing task completion during DisposeAsync: {ex}");
+            _logger.LogError(ex, "Error awaiting log processing task completion during DisposeAsync");
         }
         finally
         {

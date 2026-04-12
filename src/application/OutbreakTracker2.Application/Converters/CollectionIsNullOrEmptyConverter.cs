@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
@@ -9,8 +10,18 @@ public sealed class CollectionIsNullOrEmptyConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
+        // Treat null explicitly as empty — a null collection is null-or-empty.
+        if (value is null)
+            return parameter as string is "Inverse" ? false : (object)true;
+
         if (value is not ICollection collection)
+        {
+            Debug.Assert(
+                false,
+                $"CollectionIsNullOrEmptyConverter expected ICollection but received {value.GetType().FullName}."
+            );
             return BindingOperations.DoNothing;
+        }
 
         if (parameter as string is "Inverse")
             return collection.Count > 0;

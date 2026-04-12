@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Material.Icons;
@@ -9,7 +10,16 @@ public sealed class LobbyVersionToIconConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is not string versionString || string.IsNullOrWhiteSpace(versionString))
+        if (value is not string versionString)
+        {
+            Debug.Assert(
+                value is null,
+                $"LobbyVersionToIconConverter expected string but received {value?.GetType().FullName}."
+            );
+            return BindingOperations.DoNothing;
+        }
+
+        if (string.IsNullOrWhiteSpace(versionString))
             return BindingOperations.DoNothing;
 
         return versionString.ToLower(CultureInfo.InvariantCulture) switch

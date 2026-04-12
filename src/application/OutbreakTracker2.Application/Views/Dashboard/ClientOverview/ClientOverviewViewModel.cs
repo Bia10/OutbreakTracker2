@@ -17,7 +17,7 @@ public sealed class ClientOverviewViewModel(
     InGameEnemiesViewModel inGameEnemiesViewModel,
     InGameDoorsViewModel inGameDoorsViewModel,
     EmbeddedGameViewModel embeddedGameViewModel
-) : ObservableObject
+) : ObservableObject, IAsyncDisposable
 {
     public LobbySlotsViewModel LobbySlotsViewModel { get; } =
         lobbySlotsViewModel ?? throw new ArgumentNullException(nameof(lobbySlotsViewModel));
@@ -39,4 +39,18 @@ public sealed class ClientOverviewViewModel(
 
     public EmbeddedGameViewModel EmbeddedGameViewModel { get; } =
         embeddedGameViewModel ?? throw new ArgumentNullException(nameof(embeddedGameViewModel));
+
+    public async ValueTask DisposeAsync()
+    {
+        // IAsyncDisposable children
+        await LobbySlotsViewModel.DisposeAsync().ConfigureAwait(false);
+        await LobbyRoomViewModel.DisposeAsync().ConfigureAwait(false);
+        await InGamePlayersViewModel.DisposeAsync().ConfigureAwait(false);
+        await InGameDoorsViewModel.DisposeAsync().ConfigureAwait(false);
+
+        // IDisposable children
+        InGameScenarioViewModel.Dispose();
+        InGameEnemiesViewModel.Dispose();
+        EmbeddedGameViewModel.Dispose();
+    }
 }

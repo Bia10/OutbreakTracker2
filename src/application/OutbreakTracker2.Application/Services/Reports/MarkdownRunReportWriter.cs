@@ -12,10 +12,16 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
     private readonly ILogger<MarkdownRunReportWriter> _logger;
     private readonly string _outputDirectory;
 
-    public MarkdownRunReportWriter(ILogger<MarkdownRunReportWriter> logger)
+    public MarkdownRunReportWriter(ILogger<MarkdownRunReportWriter> logger, RunReportOptions options)
     {
         _logger = logger;
-        _outputDirectory = Path.Combine(AppContext.BaseDirectory, "reports");
+        string configuredDirectory = string.IsNullOrWhiteSpace(options.OutputDirectory)
+            ? RunReportOptions.DefaultOutputDirectory
+            : options.OutputDirectory;
+        _outputDirectory = Path.IsPathRooted(configuredDirectory)
+            ? configuredDirectory
+            : Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, configuredDirectory));
+
         Directory.CreateDirectory(_outputDirectory);
         _logger.LogInformation("Run reports will be saved to: {ReportsDirectory}", _outputDirectory);
     }

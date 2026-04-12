@@ -19,6 +19,8 @@ public sealed class EitherNotNullConverter : IMultiValueConverter
                 return value;
         }
 
-        return values;
+        // All values are null — return null rather than the input array so Avalonia
+        // does not attempt to coerce object[] to the target binding type.
+        return null;
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Reports.Events;
 using OutbreakTracker2.Application.Services.Tracking;
@@ -19,12 +20,14 @@ public sealed class RunReportService : IRunReportService
     private readonly Subject<RunReport> _completedReports = new();
     private readonly IDisposable _subscription;
 
-    // Player state remains polling-thread owned, but scenario status is read across two
-    // ObserveOnThreadPool subscriptions, so the enum field below is volatile.
-    private readonly Dictionary<Ulid, DecodedInGamePlayer> _activePlayers = [];
+    // _activePlayers and _lastScenario/_lastScenarioId are accessed from two independent
+    // thread-pool polling loops (player diffs vs. scenario diffs). ConcurrentDictionary
+    // handles concurrent reads/writes/clears on _activePlayers. volatile on the reference
+    // fields ensures the latest write is visible across threads.
+    private readonly ConcurrentDictionary<Ulid, DecodedInGamePlayer> _activePlayers = new();
     private readonly DecodedInGamePlayer?[] _activePlayersBySlot = new DecodedInGamePlayer?[GameConstants.MaxPlayers];
-    private string _lastScenarioId = string.Empty;
-    private DecodedInGameScenario _lastScenario = new();
+    private volatile string _lastScenarioId = string.Empty;
+    private volatile DecodedInGameScenario? _lastScenario;
     private volatile ScenarioStatus _lastScenarioStatus = ScenarioStatus.None;
     private DecodedItem[]? _prevItems;
 
@@ -117,8 +120,8 @@ public sealed class RunReportService : IRunReportService
 
         _logger.LogInformation(
             "Scenario tracking started. Scenario: {ScenarioName} | Difficulty: {Difficulty} | Players ({PlayerCount}): {Players}",
-            string.IsNullOrEmpty(_lastScenario.ScenarioName) ? _currentScenarioId : _lastScenario.ScenarioName,
-            string.IsNullOrEmpty(_lastScenario.Difficulty) ? "unknown" : _lastScenario.Difficulty,
+            string.IsNullOrEmpty(_lastScenario?.ScenarioName) ? _currentScenarioId : _lastScenario.ScenarioName,
+            string.IsNullOrEmpty(_lastScenario?.Difficulty) ? "unknown" : _lastScenario.Difficulty,
             _activePlayers.Count,
             playerSummary
         );
@@ -128,7 +131,7 @@ public sealed class RunReportService : IRunReportService
     {
         List<RunEvent> events;
         string scenarioId;
-        string scenarioName = _lastScenario.ScenarioName;
+        string scenarioName = _lastScenario?.ScenarioName ?? string.Empty;
         DateTimeOffset startedAt;
         DateTimeOffset endedAt = _timeProvider.GetUtcNow();
 
@@ -181,7 +184,7 @@ public sealed class RunReportService : IRunReportService
 
     private void Emit(RunEvent evt)
     {
-        RunEvent annotated = evt with { ScenarioFrame = _lastScenario.FrameCounter };
+        RunEvent annotated = evt with { ScenarioFrame = _lastScenario?.FrameCounter ?? 0 };
         lock (_sessionLock)
             _sessionEvents?.Add(annotated);
 
@@ -233,7 +236,7 @@ public sealed class RunReportService : IRunReportService
             }
             else
             {
-                _activePlayers.Remove(change.Current.Id);
+                _activePlayers.TryRemove(change.Current.Id, out _);
                 _activePlayersBySlot[change.Current.SlotIndex] = null;
             }
         }
@@ -246,7 +249,7 @@ public sealed class RunReportService : IRunReportService
         if (!isTransitional)
             foreach (DecodedInGamePlayer player in diff.Removed)
             {
-                if (_activePlayers.Remove(player.Id))
+                if (_activePlayers.TryRemove(player.Id, out _))
                 {
                     _activePlayersBySlot[player.SlotIndex] = null;
                     removedActiveIds ??= [];

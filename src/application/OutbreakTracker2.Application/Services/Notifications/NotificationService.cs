@@ -5,26 +5,31 @@ using R3;
 
 namespace OutbreakTracker2.Application.Services.Notifications;
 
-public sealed class NotificationService(
-    IToastService toastService,
-    ITrackerRegistry trackerRegistry,
-    IAppSettingsService settingsService
-) : INotificationService
+public sealed class NotificationService : INotificationService
 {
-    private readonly IDisposable _alertSubscription = trackerRegistry.AllAlerts.Subscribe(alert =>
-    {
-        if (!settingsService.Current.Notifications.EnableToastAlerts)
-            return;
+    private readonly IDisposable _alertSubscription;
 
-        _ = alert.Level switch
+    public NotificationService(
+        IToastService toastService,
+        ITrackerRegistry trackerRegistry,
+        IAppSettingsService settingsService
+    )
+    {
+        _alertSubscription = trackerRegistry.AllAlerts.Subscribe(alert =>
         {
-            AlertLevel.Info => toastService.InvokeInfoToastAsync(alert.Message, alert.Title),
-            AlertLevel.Warning => toastService.InvokeWarningToastAsync(alert.Message, alert.Title),
-            AlertLevel.Error => toastService.InvokeErrorToastAsync(alert.Message, alert.Title),
-            AlertLevel.Success => toastService.InvokeSuccessToastAsync(alert.Message, alert.Title),
-            _ => toastService.InvokeInfoToastAsync(alert.Message, alert.Title),
-        };
-    });
+            if (!settingsService.Current.Notifications.EnableToastAlerts)
+                return;
+
+            _ = alert.Level switch
+            {
+                AlertLevel.Info => toastService.InvokeInfoToastAsync(alert.Message, alert.Title),
+                AlertLevel.Warning => toastService.InvokeWarningToastAsync(alert.Message, alert.Title),
+                AlertLevel.Error => toastService.InvokeErrorToastAsync(alert.Message, alert.Title),
+                AlertLevel.Success => toastService.InvokeSuccessToastAsync(alert.Message, alert.Title),
+                _ => toastService.InvokeInfoToastAsync(alert.Message, alert.Title),
+            };
+        });
+    }
 
     public void Dispose() => _alertSubscription.Dispose();
 }

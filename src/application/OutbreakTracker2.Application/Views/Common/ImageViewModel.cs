@@ -29,17 +29,15 @@ public sealed partial class ImageViewModel : ObservableObject
 
         _uiAtlas = textureAtlasService.GetAtlas(AtlasName.UI);
         if (_uiAtlas is null)
-        {
-            _logger.LogError("UI Texture Atlas could not be retrieved by ImageViewModel");
-            throw new InvalidOperationException("UI Texture Atlas could not be retrieved by ImageViewModel");
-        }
+            _logger.LogWarning(
+                "UI Texture Atlas is unavailable during ImageViewModel construction; images will remain empty until atlases are loaded."
+            );
 
         _itemsAtlas = textureAtlasService.GetAtlas(AtlasName.Items);
         if (_itemsAtlas is null)
-        {
-            _logger.LogError("Items Texture Atlas could not be retrieved by ImageViewModel");
-            throw new InvalidOperationException("Items Texture Atlas could not be retrieved by ImageViewModel");
-        }
+            _logger.LogWarning(
+                "Items Texture Atlas is unavailable during ImageViewModel construction; images will remain empty until atlases are loaded."
+            );
     }
 
     public async ValueTask ClearImageAsync()
@@ -54,11 +52,18 @@ public sealed partial class ImageViewModel : ObservableObject
 
     public async ValueTask UpdateImageAsync(string spriteName, string debugContext = "")
     {
-        ITextureAtlas? selectedAtlas = spriteName.StartsWith("File", StringComparison.Ordinal) ? _itemsAtlas : _uiAtlas;
+        bool isItemSprite = spriteName.StartsWith("File", StringComparison.Ordinal);
+        ITextureAtlas? selectedAtlas = isItemSprite ? _itemsAtlas : _uiAtlas;
 
         if (selectedAtlas is null)
         {
-            _logger.LogError("Cannot update image: UI Texture Atlas is null. Context: {DebugContext}", debugContext);
+            _logger.LogWarning(
+                "Cannot update image because the {AtlasName} texture atlas is unavailable. Context: {DebugContext}",
+                isItemSprite ? AtlasName.Items : AtlasName.UI,
+                debugContext
+            );
+
+            await ClearImageAsync().ConfigureAwait(true);
             return;
         }
 

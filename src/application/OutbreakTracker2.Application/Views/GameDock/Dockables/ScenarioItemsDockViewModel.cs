@@ -4,7 +4,7 @@ using ObservableCollections;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Services.Settings;
-using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
 using OutbreakTracker2.Extensions;
 using R3;
 

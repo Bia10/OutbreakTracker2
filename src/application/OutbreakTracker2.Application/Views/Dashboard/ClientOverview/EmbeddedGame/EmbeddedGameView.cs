@@ -106,6 +106,7 @@ public sealed class EmbeddedGameView : NativeControlHost
                 vm.StatusMessage = System.FormattableString.Invariant(
                     $"Embedded HWND 0x{found:X8} (PID {vm.TrackedPid})."
                 );
+                vm.PropertyChanged -= OnViewModelPropertyChanged;
                 vm.PropertyChanged += OnViewModelPropertyChanged;
 
                 // The container HWND was just created and hasn't been positioned by
@@ -123,6 +124,7 @@ public sealed class EmbeddedGameView : NativeControlHost
 
         // Listen for the user clicking Embed (IsEmbedRequested → true) so we can start the
         // search even when the container was created before the button was pressed.
+        vm.PropertyChanged -= OnViewModelPropertyChanged;
         vm.PropertyChanged += OnViewModelPropertyChanged;
 
         return new PlatformHandle(_containerHandle, parent.HandleDescriptor);

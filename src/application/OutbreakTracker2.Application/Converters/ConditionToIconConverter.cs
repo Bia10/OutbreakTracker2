@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Material.Icons;
@@ -10,7 +11,13 @@ public sealed class ConditionToIconConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is not string rawCondition)
+        {
+            Debug.Assert(
+                value is null,
+                $"ConditionToIconConverter expected string but received {value?.GetType().FullName}."
+            );
             return BindingOperations.DoNothing;
+        }
 
         return rawCondition.ToLower(CultureInfo.InvariantCulture) switch
         {

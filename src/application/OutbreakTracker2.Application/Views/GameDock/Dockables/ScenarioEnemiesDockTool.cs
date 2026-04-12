@@ -1,5 +1,5 @@
 ﻿using Dock.Model.Mvvm.Controls;
-using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entitites;
+using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
 
 namespace OutbreakTracker2.Application.Views.GameDock.Dockables;
 

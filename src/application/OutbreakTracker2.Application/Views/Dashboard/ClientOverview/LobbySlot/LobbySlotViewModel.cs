@@ -93,21 +93,16 @@ public sealed partial class LobbySlotViewModel : ObservableObject
         }
     }
 
-    private void TrackScenarioImageUpdate(ValueTask updateTask, string scenarioId)
+    private async void TrackScenarioImageUpdate(ValueTask updateTask, string scenarioId)
     {
-        _ = updateTask
-            .AsTask()
-            .ContinueWith(
-                task =>
-                    _logger.LogError(
-                        task.Exception,
-                        "Failed to update scenario image for lobby slot {ScenarioId}",
-                        scenarioId
-                    ),
-                CancellationToken.None,
-                TaskContinuationOptions.OnlyOnFaulted,
-                TaskScheduler.Default
-            );
+        try
+        {
+            await updateTask.ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update scenario image for lobby slot {ScenarioId}", scenarioId);
+        }
     }
 
     public override bool Equals(object? obj) => obj is LobbySlotViewModel viewModel && Id == viewModel.Id;

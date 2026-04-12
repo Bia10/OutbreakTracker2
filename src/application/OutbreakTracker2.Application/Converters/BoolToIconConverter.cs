@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Material.Icons;
@@ -10,7 +11,13 @@ namespace OutbreakTracker2.Application.Converters
         public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is not bool b)
+            {
+                Debug.Assert(
+                    value is null,
+                    $"BoolToIconConverter expected bool but received {value?.GetType().FullName}."
+                );
                 return BindingOperations.DoNothing;
+            }
 
             return b ? trueIcon : falseIcon;
         }
