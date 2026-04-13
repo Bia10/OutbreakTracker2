@@ -94,6 +94,23 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
         return TimeSpan.FromMilliseconds(intervalMilliseconds);
     }
 
+    private static void CancelAndDispose(CancellationTokenSource? cancellationTokenSource)
+    {
+        if (cancellationTokenSource is null)
+            return;
+
+        try
+        {
+            cancellationTokenSource.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Another teardown path already won the race and disposed the CTS.
+        }
+
+        cancellationTokenSource.Dispose();
+    }
+
     private void SetupObservablesLogging()
     {
         // Add subscriptions to a list incrementally so any exception during Subscribe()
@@ -181,12 +198,11 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
             _updateSubscription?.Dispose();
             _updateSubscription = null;
 
-            _updateCts?.Cancel();
-            _updateCts?.Dispose();
-            _updateCts = new CancellationTokenSource();
+            CancellationTokenSource updateCts = new();
+            CancelAndDispose(Interlocked.Exchange(ref _updateCts, updateCts));
 
-            Observable<Unit> fastUpdateTrigger = Observable.Interval(_fastUpdateInterval, _updateCts.Token);
-            Observable<Unit> slowUpdateTrigger = Observable.Interval(_slowUpdateInterval, _updateCts.Token);
+            Observable<Unit> fastUpdateTrigger = Observable.Interval(_fastUpdateInterval, updateCts.Token);
+            Observable<Unit> slowUpdateTrigger = Observable.Interval(_slowUpdateInterval, updateCts.Token);
 
             // Each Observable.Interval emits one value at a time on the thread pool. The Subscribe
             // callback runs synchronously per emission, so consecutive Update calls within the same
@@ -234,9 +250,10 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
                 fastSubscription?.Dispose();
                 slowSubscription?.Dispose();
 
-                _updateCts.Cancel();
-                _updateCts.Dispose();
-                _updateCts = null;
+                CancellationTokenSource? activeUpdateCts = Interlocked.CompareExchange(ref _updateCts, null, updateCts);
+                if (ReferenceEquals(activeUpdateCts, updateCts))
+                    CancelAndDispose(updateCts);
+
                 throw;
             }
 
@@ -381,17 +398,19 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
         UpdateLobbySlots();
     }
 
-    private bool IsInScenario() => _inGameScenarioReader is not null && _inGameScenarioReader.IsInScenario();
+    private bool IsInScenario()
+    {
+        IInGameScenarioReader? reader = Volatile.Read(ref _inGameScenarioReader);
+        return reader is not null && reader.IsInScenario();
+    }
 
     private void StopUpdateLoops()
     {
-        _updateCts?.Cancel();
+        CancellationTokenSource? updateCts = Interlocked.Exchange(ref _updateCts, null);
+        CancelAndDispose(updateCts);
 
         _updateSubscription?.Dispose();
         _updateSubscription = null;
-
-        _updateCts?.Dispose();
-        _updateCts = null;
 
         _doorReader?.Dispose();
         _doorReader = null;

@@ -85,7 +85,7 @@ public sealed class LinuxStringReader : IStringReader
                 return true;
             }
 
-            result = encoding.GetString([.. bytes]);
+            result = ProcessFinalBytes(bytes, encoding);
             _logger.LogDebug("Read {Count} bytes: \"{Result}\"", bytes.Count, result);
             return true;
         }
@@ -95,6 +95,58 @@ public sealed class LinuxStringReader : IStringReader
             result = string.Empty;
             return false;
         }
+    }
+
+    private string ProcessFinalBytes(List<byte> bytes, Encoding encoding)
+    {
+        byte[] rawBytes = [.. bytes];
+        string result = encoding.GetString(rawBytes);
+
+        if (!result.Contains('\ufffd', StringComparison.Ordinal))
+            return result;
+
+        _logger.LogWarning("Encoding issues detected. Trying fallback encodings...");
+        string? fallbackResult = TryFallbackEncodings(rawBytes, encoding.CodePage);
+        return fallbackResult ?? result;
+    }
+
+    private string? TryFallbackEncodings(byte[] bytes, int primaryCodePage)
+    {
+        int[] fallbackCodePages = [Encoding.UTF8.CodePage, 932, 1252, 54936];
+        HashSet<int> attemptedCodePages = [primaryCodePage];
+
+        foreach (int codePage in fallbackCodePages)
+        {
+            if (!attemptedCodePages.Add(codePage))
+                continue;
+
+            try
+            {
+                Encoding fallbackEncoding = Encoding.GetEncoding(codePage);
+                string decoded = fallbackEncoding.GetString(bytes);
+                _logger.LogTrace(
+                    "Fallback {EncodingName}: {Decoded} | Bytes: {Bytes}",
+                    fallbackEncoding.EncodingName,
+                    decoded,
+                    BitConverter.ToString(bytes)
+                );
+
+                if (decoded.Contains('\ufffd', StringComparison.Ordinal))
+                    continue;
+
+                _logger.LogDebug(
+                    "Recovered string using fallback encoding {EncodingName}",
+                    fallbackEncoding.EncodingName
+                );
+                return decoded;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace(ex, "Fallback code page {CodePage} failed: {Message}", codePage, ex.Message);
+            }
+        }
+
+        return null;
     }
 
     private unsafe int ReadChunk(int pid, nint address, byte[] buffer, int size)

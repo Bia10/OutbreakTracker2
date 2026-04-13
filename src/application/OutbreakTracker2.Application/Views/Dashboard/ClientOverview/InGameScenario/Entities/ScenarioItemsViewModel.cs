@@ -12,11 +12,12 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
 
-public sealed partial class ScenarioItemsViewModel : ObservableObject, IDisposable
+public sealed partial class ScenarioItemsViewModel : ObservableObject, IDisposable, IAsyncDisposable
 {
     private const string ClearedRoomName = "Spawning/Scenario Cleared";
 
     private readonly ILogger<ScenarioItemsViewModel> _logger;
+    private readonly IDispatcherService _dispatcherService;
     private readonly IToastService _toastService;
     private readonly IItemImageViewModelFactory _itemImageViewModelFactory;
     private readonly Dictionary<short, InvalidPickedUpWarning> _lastInvalidPickedUpWarnings = [];
@@ -26,6 +27,7 @@ public sealed partial class ScenarioItemsViewModel : ObservableObject, IDisposab
     private readonly List<ScenarioRoomGroupViewModel> _roomGroupBuffer = [];
     private readonly ObservableList<ScenarioItemSlotViewModel> _items = [];
     private readonly ObservableList<ScenarioRoomGroupViewModel> _roomGroups = [];
+    private int _disposeState;
     private DisposableBag _disposables;
 
     public NotifyCollectionChangedSynchronizedViewList<ScenarioItemSlotViewModel> Items { get; }
@@ -43,6 +45,7 @@ public sealed partial class ScenarioItemsViewModel : ObservableObject, IDisposab
     )
     {
         _logger = logger;
+        _dispatcherService = dispatcherService;
         _toastService = toastService;
         _itemImageViewModelFactory = itemImageViewModelFactory;
 
@@ -77,10 +80,32 @@ public sealed partial class ScenarioItemsViewModel : ObservableObject, IDisposab
 
     public void Dispose()
     {
+        if (Interlocked.Exchange(ref _disposeState, 1) != 0)
+            return;
+
         _disposables.Dispose();
-        ClearItems();
-        Items.Dispose();
-        RoomGroups.Dispose();
+
+        if (_dispatcherService.IsOnUIThread())
+            DisposeCollectionsOnUiThread();
+        else
+            _dispatcherService.InvokeOnUIAsync(DisposeCollectionsOnUiThread).GetAwaiter().GetResult();
+
+        GC.SuppressFinalize(this);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposeState, 1) != 0)
+            return;
+
+        _disposables.Dispose();
+
+        if (_dispatcherService.IsOnUIThread())
+            DisposeCollectionsOnUiThread();
+        else
+            await _dispatcherService.InvokeOnUIAsync(DisposeCollectionsOnUiThread).ConfigureAwait(false);
+
+        GC.SuppressFinalize(this);
     }
 
     public void ClearItems()
@@ -360,6 +385,13 @@ public sealed partial class ScenarioItemsViewModel : ObservableObject, IDisposab
     {
         foreach (ScenarioItemSlotViewModel item in _items)
             item.Dispose();
+    }
+
+    private void DisposeCollectionsOnUiThread()
+    {
+        ClearItems();
+        Items.Dispose();
+        RoomGroups.Dispose();
     }
 
     private readonly record struct InvalidPickedUpWarning(

@@ -67,15 +67,28 @@ public sealed class AppSettingsService : IAppSettingsService
         _settingsValidator.ValidateSettings(settings);
 
         _settingsPersistence.EnsureDirectoryExists();
+        string temporarySettingsPath = CreateTemporarySettingsPath();
 
-        FileStream stream = _settingsPersistence.OpenWrite();
-        await using (stream.ConfigureAwait(false))
+        try
         {
-            await _settingsSerializer.SerializeAsync(stream, settings, cancellationToken).ConfigureAwait(false);
-        }
+            {
+                FileStream stream = new(temporarySettingsPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                await using (stream.ConfigureAwait(false))
+                {
+                    await _settingsSerializer.SerializeAsync(stream, settings, cancellationToken).ConfigureAwait(false);
+                }
+            }
 
-        _configurationRoot.Reload();
-        _settings.Value = LoadValidatedSettings();
+            OutbreakTrackerSettings persistedSettings = LoadValidatedPersistedSettings(temporarySettingsPath);
+            ReplaceUserSettingsFile(temporarySettingsPath);
+
+            _settings.Value = persistedSettings;
+            ReloadConfigurationRootAfterSave();
+        }
+        finally
+        {
+            DeleteTemporarySettingsFile(temporarySettingsPath);
+        }
     }
 
     public async ValueTask ExportAsync(Stream destination, CancellationToken cancellationToken = default)
@@ -147,6 +160,60 @@ public sealed class AppSettingsService : IAppSettingsService
         {
             _logger.LogWarning(ex, "Ignoring invalid application settings reload.");
         }
+    }
+
+    private string CreateTemporarySettingsPath()
+    {
+        string fileName = Path.GetFileName(UserSettingsPath);
+        string temporaryFileName = string.Concat(fileName, ".", Guid.NewGuid().ToString("N"), ".tmp");
+        string? directoryPath = Path.GetDirectoryName(UserSettingsPath);
+
+        return string.IsNullOrWhiteSpace(directoryPath)
+            ? temporaryFileName
+            : Path.Combine(directoryPath, temporaryFileName);
+    }
+
+    private void ReplaceUserSettingsFile(string temporarySettingsPath)
+    {
+        if (_settingsPersistence.Exists())
+        {
+            File.Replace(temporarySettingsPath, UserSettingsPath, null);
+            return;
+        }
+
+        File.Move(temporarySettingsPath, UserSettingsPath);
+    }
+
+    private void ReloadConfigurationRootAfterSave()
+    {
+        try
+        {
+            _configurationRoot.Reload();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Saved application settings but failed to reload the configuration root.");
+        }
+    }
+
+    private OutbreakTrackerSettings LoadValidatedPersistedSettings(string userSettingsPath)
+    {
+        using FileStream stream = new(userSettingsPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using JsonDocument document = JsonDocument.Parse(stream);
+        JsonElement userSettingsElement = GetRequiredUserSettingsSection(document.RootElement);
+        _settingsValidator.ValidateOverridesElement(userSettingsElement, OutbreakTrackerSettings.SectionName);
+
+        OutbreakTrackerSettings settings = NormalizeSettings(
+            _settingsSerializer.DeserializeSettings(userSettingsElement)
+        );
+        _settingsValidator.ValidateSettings(settings);
+        return settings;
+    }
+
+    private static void DeleteTemporarySettingsFile(string temporarySettingsPath)
+    {
+        if (File.Exists(temporarySettingsPath))
+            File.Delete(temporarySettingsPath);
     }
 
     private OutbreakTrackerSettings LoadValidatedSettings()

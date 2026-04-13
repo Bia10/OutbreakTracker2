@@ -54,7 +54,7 @@ public sealed partial class LobbySlotsViewModel : ObservableObject, IAsyncDispos
             );
 
         IDisposable lobbySlotDiffSubscription = trackerRegistry
-            .LobbySlots.Changes.Diffs.WithLatestFrom(
+            .LobbySlotChanges.Diffs.WithLatestFrom(
                 dataObservable.IsAtLobbyObservable,
                 (diff, isAtLobby) => (Diff: diff, IsAtLobby: isAtLobby)
             )

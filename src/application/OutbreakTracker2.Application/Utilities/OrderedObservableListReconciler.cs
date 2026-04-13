@@ -77,6 +77,20 @@ internal static class OrderedObservableListReconciler
         ReconcileList(currentList, plan.DesiredViewModels, viewModelKeySelector);
     }
 
+    public static void ApplyViewModels<TViewModel, TKey>(
+        ObservableList<TViewModel> currentList,
+        IReadOnlyList<TViewModel> desiredViewModels,
+        Func<TViewModel, TKey> viewModelKeySelector
+    )
+        where TKey : notnull
+    {
+        ArgumentNullException.ThrowIfNull(currentList);
+        ArgumentNullException.ThrowIfNull(desiredViewModels);
+        ArgumentNullException.ThrowIfNull(viewModelKeySelector);
+
+        ReconcileList(currentList, desiredViewModels, viewModelKeySelector);
+    }
+
     private static void ReconcileList<TViewModel, TKey>(
         ObservableList<TViewModel> currentList,
         IReadOnlyList<TViewModel> desiredViewModels,

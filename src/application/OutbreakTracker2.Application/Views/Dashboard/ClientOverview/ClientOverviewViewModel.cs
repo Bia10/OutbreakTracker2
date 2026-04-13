@@ -46,12 +46,12 @@ public sealed class ClientOverviewViewModel(
                 LobbySlotsViewModel.DisposeAsync().AsTask(),
                 LobbyRoomViewModel.DisposeAsync().AsTask(),
                 InGamePlayersViewModel.DisposeAsync().AsTask(),
+                InGameEnemiesViewModel.DisposeAsync().AsTask(),
                 InGameDoorsViewModel.DisposeAsync().AsTask()
             )
             .ConfigureAwait(false);
 
         InGameScenarioViewModel.Dispose();
-        InGameEnemiesViewModel.Dispose();
         EmbeddedGameViewModel.Dispose();
     }
 }

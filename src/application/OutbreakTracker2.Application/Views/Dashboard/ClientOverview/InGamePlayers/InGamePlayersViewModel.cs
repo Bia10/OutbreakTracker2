@@ -54,7 +54,7 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
         PlayersView = _players.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
         _subscription = trackerRegistry
-            .Players.Changes.Diffs.WithLatestFrom(
+            .PlayerChanges.Diffs.WithLatestFrom(
                 dataObservable.InGameScenarioObservable,
                 (diff, scenario) =>
                     (
@@ -214,7 +214,11 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
         {
             _players.Add(vm);
             _logger.LogDebug("Added player VM {Id}", id);
+            return;
         }
+
+        vm.Dispose();
+        _logger.LogDebug("Discarded duplicate player VM {Id}", id);
     }
 
     private void RemovePlayer(Ulid id)

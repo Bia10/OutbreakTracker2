@@ -47,7 +47,7 @@ public sealed partial class InGameDoorsViewModel : ObservableObject, IAsyncDispo
         DoorsView = Doors.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
         _subscription = trackerRegistry
-            .Doors.Changes.Diffs.ObserveOnThreadPool()
+            .DoorChanges.Diffs.ObserveOnThreadPool()
             .SubscribeAwait(
                 async (diff, ct) =>
                 {
