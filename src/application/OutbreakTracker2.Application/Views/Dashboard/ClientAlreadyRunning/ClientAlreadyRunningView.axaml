@@ -16,7 +16,7 @@ mc:Ignorable="d">
         Margin="0,0,0,10"
         FontSize="16"
         Text="Existing PCSX2 Processes Found" />
-        <ItemsControl x:Name="ProcessesItemsControl" ItemsSource="{Binding RunningProcesses}">
+        <ItemsControl x:Name="ProcessesItemsControl" ItemsSource="{Binding RunningProcessesView}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="launcher:ProcessModel">
                     <Border

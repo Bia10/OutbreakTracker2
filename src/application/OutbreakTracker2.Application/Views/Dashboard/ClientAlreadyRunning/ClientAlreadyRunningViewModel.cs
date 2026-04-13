@@ -9,20 +9,33 @@ using OutbreakTracker2.Application.Utilities;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientAlreadyRunning;
 
-public sealed partial class ClientAlreadyRunningViewModel(
-    IProcessLauncher processLauncher,
-    IGameClientConnectionService gameClientConnectionService,
-    IToastService toastService,
-    ILogger<ClientAlreadyRunningViewModel> logger
-) : ObservableObject
+public sealed partial class ClientAlreadyRunningViewModel : ObservableObject
 {
-    private readonly ILogger<ClientAlreadyRunningViewModel> _logger = logger;
-    private readonly IProcessLauncher _processLauncher = processLauncher;
-    private readonly IGameClientConnectionService _gameClientConnectionService = gameClientConnectionService;
-    private readonly IToastService _toastService = toastService;
+    private readonly ILogger<ClientAlreadyRunningViewModel> _logger;
+    private readonly IProcessLauncher _processLauncher;
+    private readonly IGameClientConnectionService _gameClientConnectionService;
+    private readonly IToastService _toastService;
+    private readonly ObservableList<ProcessModel> _runningProcesses = [];
 
-    [ObservableProperty]
-    private ObservableList<ProcessModel> _runningProcesses = [];
+    public NotifyCollectionChangedSynchronizedViewList<ProcessModel> RunningProcessesView { get; }
+
+    public ObservableList<ProcessModel> RunningProcesses => _runningProcesses;
+
+    public ClientAlreadyRunningViewModel(
+        IProcessLauncher processLauncher,
+        IGameClientConnectionService gameClientConnectionService,
+        IToastService toastService,
+        ILogger<ClientAlreadyRunningViewModel> logger
+    )
+    {
+        _logger = logger;
+        _processLauncher = processLauncher;
+        _gameClientConnectionService = gameClientConnectionService;
+        _toastService = toastService;
+        RunningProcessesView = _runningProcesses.ToNotifyCollectionChanged(
+            SynchronizationContextCollectionEventDispatcher.Current
+        );
+    }
 
     public void UpdateProcesses(IReadOnlyList<int> processIds)
     {
