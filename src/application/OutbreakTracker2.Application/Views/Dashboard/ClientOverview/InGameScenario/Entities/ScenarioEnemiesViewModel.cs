@@ -10,10 +10,12 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
 
-public sealed partial class ScenarioEnemiesViewModel : ObservableObject, IDisposable
+public sealed partial class ScenarioEnemiesViewModel : ObservableObject, IDisposable, IAsyncDisposable
 {
     private readonly ILogger<ScenarioEnemiesViewModel> _logger;
+    private readonly IDispatcherService _dispatcherService;
     private readonly ObservableList<DecodedEnemy> _enemies = [];
+    private int _disposeState;
     private ScenarioStatus _scenarioStatus;
     private bool _showGameplayUiDuringTransitions;
     private DisposableBag _disposables;
@@ -31,6 +33,7 @@ public sealed partial class ScenarioEnemiesViewModel : ObservableObject, IDispos
     )
     {
         _logger = logger;
+        _dispatcherService = dispatcherService;
         _showGameplayUiDuringTransitions = GetDisplaySettings(settingsService.Current).ShowGameplayUiDuringTransitions;
         Enemies = _enemies.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
@@ -71,9 +74,32 @@ public sealed partial class ScenarioEnemiesViewModel : ObservableObject, IDispos
 
     public void Dispose()
     {
+        if (Interlocked.Exchange(ref _disposeState, 1) != 0)
+            return;
+
         _disposables.Dispose();
-        ClearEnemies();
-        Enemies.Dispose();
+
+        if (_dispatcherService.IsOnUIThread())
+            DisposeCollectionsOnUiThread();
+        else
+            _dispatcherService.InvokeOnUIAsync(DisposeCollectionsOnUiThread).GetAwaiter().GetResult();
+
+        GC.SuppressFinalize(this);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposeState, 1) != 0)
+            return;
+
+        _disposables.Dispose();
+
+        if (_dispatcherService.IsOnUIThread())
+            DisposeCollectionsOnUiThread();
+        else
+            await _dispatcherService.InvokeOnUIAsync(DisposeCollectionsOnUiThread).ConfigureAwait(false);
+
+        GC.SuppressFinalize(this);
     }
 
     public void ClearEnemies()
@@ -116,6 +142,12 @@ public sealed partial class ScenarioEnemiesViewModel : ObservableObject, IDispos
 
         _showGameplayUiDuringTransitions = showGameplayUiDuringTransitions;
         HasEnemies = _scenarioStatus.ShouldShowGameplayUi(_showGameplayUiDuringTransitions) && _enemies.Count > 0;
+    }
+
+    private void DisposeCollectionsOnUiThread()
+    {
+        ClearEnemies();
+        Enemies.Dispose();
     }
 
     private static DisplaySettings GetDisplaySettings(OutbreakTrackerSettings settings) =>

@@ -1,6 +1,7 @@
 ﻿using OutbreakTracker2.Application.Services.Tracking;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies;
 
@@ -185,13 +186,8 @@ internal sealed class EnemyDiffPlanner
     }
 
     private static bool IsDead(DecodedEnemy enemy) =>
-        InGameEnemyViewModel.IsDeadStatus(
-            InGameEnemyViewModel.GetEnemiesHealthStatusStringForFileTwo(
-                enemy.SlotId,
-                enemy.NameId,
-                enemy.CurHp,
-                enemy.MaxHp
-            )
+        EnemyStatusUtility.IsDeadStatus(
+            EnemyStatusUtility.GetHealthStatusForFileTwo(enemy.SlotId, enemy.NameId, enemy.CurHp, enemy.MaxHp)
         );
 
     private static bool IsEnemyBasicallyValid(DecodedEnemy enemy) =>

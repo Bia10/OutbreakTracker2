@@ -6,6 +6,7 @@ using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Services.Tracking;
+using OutbreakTracker2.Application.Utilities;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
@@ -13,7 +14,11 @@ using R3;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies;
 
-public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposable, IEnemyCardCollectionSource
+public sealed partial class InGameEnemiesViewModel
+    : ObservableObject,
+        IDisposable,
+        IAsyncDisposable,
+        IEnemyCardCollectionSource
 {
     private readonly ILogger<InGameEnemiesViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
@@ -24,6 +29,7 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
     private readonly EnemyDiffPlanner _enemyDiffPlanner = new();
     private readonly Dictionary<Ulid, InGameEnemyViewModel> _viewModelCache = [];
     private readonly ObservableList<InGameEnemyViewModel> _enemies = [];
+    private int _disposeState;
     private ScenarioStatus _scenarioStatus;
     private bool _showGameplayUiDuringTransitions;
 
@@ -49,7 +55,7 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
         EnemiesView = _enemies.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
         _subscription = trackerRegistry
-            .Enemies.Changes.Diffs.WithLatestFrom(
+            .EnemyChanges.Diffs.WithLatestFrom(
                 dataObservable.InGameScenarioObservable,
                 (diff, scenario) => (Diff: diff, ScenarioName: scenario.ScenarioName, ScenarioStatus: scenario.Status)
             )
@@ -76,7 +82,7 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
                         .InvokeOnUIAsync(
                             () =>
                             {
-                                EnemyListReconciler.Apply(plan, _enemies, _viewModelCache);
+                                ApplyEnemyPlan(plan);
                                 _scenarioStatus = scenarioStatus;
 
                                 HasEnemies =
@@ -112,21 +118,104 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
 
     public void Dispose()
     {
+        if (Interlocked.Exchange(ref _disposeState, 1) != 0)
+            return;
+
         _logger.LogDebug("Disposing InGameEnemiesViewModel");
+        DisposeSubscriptions();
+
+        if (_dispatcherService.IsOnUIThread())
+            DisposeCollectionsOnUiThread();
+        else
+            _dispatcherService.InvokeOnUIAsync(DisposeCollectionsOnUiThread).GetAwaiter().GetResult();
+
+        GC.SuppressFinalize(this);
+        _logger.LogDebug("InGameEnemiesViewModel synchronous disposal complete");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposeState, 1) != 0)
+            return;
+
+        _logger.LogDebug("Disposing InGameEnemiesViewModel asynchronously");
+        DisposeSubscriptions();
+
+        if (_dispatcherService.IsOnUIThread())
+            DisposeCollectionsOnUiThread();
+        else
+            await _dispatcherService.InvokeOnUIAsync(DisposeCollectionsOnUiThread).ConfigureAwait(false);
+
+        GC.SuppressFinalize(this);
+        _logger.LogDebug("InGameEnemiesViewModel asynchronous disposal complete");
+    }
+
+    private void DisposeSubscriptions()
+    {
         _subscription.Dispose();
         _scenarioStatusSubscription.Dispose();
         _settingsSubscription.Dispose();
         _enemyDiffPlanner.Clear();
+    }
 
-        _dispatcherService.PostOnUI(() =>
+    private void DisposeCollectionsOnUiThread()
+    {
+        _enemies.Clear();
+        _viewModelCache.Clear();
+        HasEnemies = false;
+        EnemiesView.Dispose();
+        _logger.LogDebug("InGameEnemiesViewModel collections cleared on UI thread during dispose");
+    }
+
+    private void ApplyEnemyPlan(EnemyListUpdatePlan plan)
+    {
+        HashSet<Ulid> removedIds = [.. plan.RemovedIds];
+
+        foreach (Ulid removedId in removedIds)
+            _viewModelCache.Remove(removedId);
+
+        foreach (EntityChange<DecodedEnemy> change in plan.UpdatedEnemies)
         {
-            _enemies.Clear();
-            _viewModelCache.Clear();
-            EnemiesView.Dispose();
-            _logger.LogDebug("InGameEnemiesViewModel collections cleared on UI thread during dispose");
-        });
+            if (_viewModelCache.TryGetValue(change.Current.Id, out InGameEnemyViewModel? viewModel))
+                viewModel.Update(change.Current, plan.ScenarioName);
+        }
 
-        _logger.LogDebug("InGameEnemiesViewModel disposed");
+        foreach (InGameEnemyViewModel viewModel in plan.NewViewModels)
+            _viewModelCache[viewModel.UniqueId] = viewModel;
+
+        OrderedObservableListReconciler.ApplyViewModels(
+            _enemies,
+            BuildDesiredEnemyViewModels(plan.NewViewModels, removedIds),
+            static viewModel => viewModel.UniqueId
+        );
+    }
+
+    private List<InGameEnemyViewModel> BuildDesiredEnemyViewModels(
+        IReadOnlyList<InGameEnemyViewModel> newViewModels,
+        IReadOnlySet<Ulid> removedIds
+    )
+    {
+        List<InGameEnemyViewModel> desiredViewModels = new(_enemies.Count + newViewModels.Count);
+        HashSet<Ulid> seenIds = [];
+
+        foreach (InGameEnemyViewModel viewModel in _enemies)
+        {
+            if (removedIds.Contains(viewModel.UniqueId) || !seenIds.Add(viewModel.UniqueId))
+                continue;
+
+            if (_viewModelCache.TryGetValue(viewModel.UniqueId, out InGameEnemyViewModel? cachedViewModel))
+                desiredViewModels.Add(cachedViewModel);
+        }
+
+        foreach (InGameEnemyViewModel viewModel in newViewModels)
+        {
+            if (!seenIds.Add(viewModel.UniqueId))
+                continue;
+
+            desiredViewModels.Add(viewModel);
+        }
+
+        return desiredViewModels;
     }
 
     private void UpdateVisibleState(ScenarioStatus scenarioStatus)

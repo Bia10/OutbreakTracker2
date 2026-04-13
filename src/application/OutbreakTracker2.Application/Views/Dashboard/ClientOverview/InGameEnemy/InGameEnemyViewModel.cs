@@ -1,6 +1,7 @@
 ﻿using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using CommunityToolkit.Mvvm.ComponentModel;
+using OutbreakTracker2.Application.Views.Common;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Enums.Enemy;
@@ -90,8 +91,13 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
         Name = $"{enemy.Name}({enemy.SlotId})";
         CurrentHp = enemy.CurHp;
         MaxHp = enemy.MaxHp;
-        HealthStatus = GetEnemiesHealthStatusStringForFileTwo(enemy.SlotId, enemy.NameId, enemy.CurHp, enemy.MaxHp);
-        IsDead = IsDeadStatus(HealthStatus);
+        HealthStatus = EnemyStatusUtility.GetHealthStatusForFileTwo(
+            enemy.SlotId,
+            enemy.NameId,
+            enemy.CurHp,
+            enemy.MaxHp
+        );
+        IsDead = EnemyStatusUtility.IsDeadStatus(HealthStatus);
         IsInvincible = HealthStatus is "Invincible";
         HealthPercentage = IsDead || enemy.MaxHp == 0 ? 0.0 : PercentageUtility.GetPercentage(enemy.CurHp, enemy.MaxHp);
         BossType = ConvertBossType(enemy.BossType);
@@ -148,75 +154,6 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
             3 => "Dead",
             _ => "Unknown",
         };
-
-    public static string GetEnemyHealthStatusStringForFileOne(int slotId, byte nameId, ushort curHp, ushort maxHp)
-    {
-        if (slotId is < 0 or >= GameConstants.MaxEnemies1)
-            return $"Invalid enemy SlotId({slotId})";
-
-        bool enemyTypeParsed = EnumUtility.TryParseByValueOrMember(nameId, out EnemyType enemyType);
-        if (!enemyTypeParsed)
-            return $"Failed to parse enemyType for nameId {nameId}";
-
-        string healthString = $"{curHp}";
-
-        if (
-            curHp == 0x7fff
-            || (enemyType is EnemyType.Megabytes && maxHp == 1)
-            || enemyType is EnemyType.Drainer11
-            || enemyType is EnemyType.Drainer12
-            || enemyType is EnemyType.Drainer14
-            || enemyType is EnemyType.Neptune
-            || enemyType is EnemyType.Tentacles
-            || enemyType is EnemyType.LeechTentacles
-        )
-            return "Invincible";
-
-        return curHp switch
-        {
-            0x0 or 0xffff or >= 0x8000 when enemyType is not (EnemyType.Mine or EnemyType.GasolineTank) => "Dead",
-            0xffff when maxHp is 0x1 && enemyType is EnemyType.Mine => "Destroyed",
-            0x0 when enemyType is EnemyType.GasolineTank => "Exploded",
-            _ => healthString,
-        };
-    }
-
-    public static string GetEnemiesHealthStatusStringForFileTwo(int slotId, byte nameId, ushort curHp, ushort maxHp)
-    {
-        //if (slotId is < 0 or >= GameConstants.MaxEnemies2)
-        //return $"Invalid enemy SlotId({slotId})";
-
-        if (nameId == 0)
-            return "Empty";
-
-        bool enemyTypeParsed = EnumUtility.TryParseByValueOrMember(nameId, out EnemyType enemyType);
-        if (!enemyTypeParsed)
-            return $"Failed to parse enemyType for nameId {nameId}";
-
-        string healthString = $"{curHp}";
-
-        if (
-            curHp is 0x7fff
-            || (enemyType is EnemyType.Megabytes && maxHp == 1)
-            || enemyType is EnemyType.Drainer11
-            || enemyType is EnemyType.Drainer12
-            || enemyType is EnemyType.Drainer14
-            || enemyType is EnemyType.Neptune
-            || enemyType is EnemyType.Tentacles
-            || enemyType is EnemyType.LeechTentacles
-        )
-            return "Invincible";
-
-        return curHp switch
-        {
-            0x0 or 0xffff or >= 0x8000 when enemyType is not (EnemyType.Mine or EnemyType.GasolineTank) => "Dead",
-            0xffff when maxHp is 0x1 && enemyType is EnemyType.Mine => "Destroyed",
-            0x0 when enemyType is EnemyType.GasolineTank => "Exploded",
-            _ => healthString,
-        };
-    }
-
-    public static bool IsDeadStatus(string healthStatus) => healthStatus is "Dead" or "Destroyed" or "Exploded";
 
     public static Color GetEnemyColorForFileOne(int slotId, byte nameId)
     {
