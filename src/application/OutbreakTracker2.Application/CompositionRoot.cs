@@ -137,8 +137,7 @@ internal static class CompositionRoot
         RunReportOptions runReportOptions =
             configuration.GetSection(RunReportOptions.SectionName).Get<RunReportOptions>() ?? new RunReportOptions();
 
-        services.AddSingleton<ClipboardService>();
-        services.AddSingleton<IClipboardService>(sp => sp.GetRequiredService<ClipboardService>());
+        services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<PageNavigationService>();
         services.AddSingleton<ISukiToastManager, SukiToastManager>();
         services.AddSingleton<ISukiDialogManager, SukiDialogManager>();
@@ -167,7 +166,9 @@ internal static class CompositionRoot
         services.AddSingleton<INotificationService, NotificationService>();
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IRunReportService, RunReportService>();
-        services.AddSingleton<IRunReportWriter, MarkdownRunReportWriter>();
+        services.AddSingleton<MarkdownRunReportWriter>();
+        services.AddSingleton<HtmlRunReportWriter>();
+        services.AddSingleton<IRunReportWriter, CompositeRunReportWriter>();
 
         services.AddSingleton<ILogDataStorageService, LogDataStorageService>();
         services.AddSingleton<ILogEntrySource>(sp => sp.GetRequiredService<ILogDataStorageService>());
@@ -182,6 +183,7 @@ internal static class CompositionRoot
         services.AddSingleton<IProcessLocator, ProcessLocator>();
         services.AddSingleton<IGameClientFactory, GameClientFactory>();
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
+        services.AddSingleton<IGameClientConnectionService, GameClientConnectionService>();
     }
 
     private static void AddPlatformServices(IServiceCollection services)

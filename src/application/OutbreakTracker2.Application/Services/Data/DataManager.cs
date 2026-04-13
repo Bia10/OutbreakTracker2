@@ -11,7 +11,11 @@ namespace OutbreakTracker2.Application.Services.Data;
 
 public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposable
 {
+    private const int InitializeStateIdle = 0;
+    private const int InitializeStateInitializing = 1;
+    private const int InitializeStateInitialized = 2;
     private int _disposeState;
+    private int _initializeState;
     private readonly ILogger<IDataManager> _logger;
     private readonly IEEmemMemory _eememMemory;
     private readonly IGameReaderFactory _readerFactory;
@@ -30,7 +34,6 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
 
     private readonly GameStateStore _store = new();
 
-    private volatile bool _isInitialized;
     private volatile bool _wasInScenario;
 
     private IDataObservableSource Store => _store;
@@ -129,78 +132,109 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
     {
         ArgumentNullException.ThrowIfNull(gameClient);
 
-        if (_isInitialized)
+        if (
+            Interlocked.CompareExchange(ref _initializeState, InitializeStateInitializing, InitializeStateIdle)
+            != InitializeStateIdle
+        )
         {
-            _logger.LogWarning("DataManager is already initialized. Skipping re-initialization.");
+            _logger.LogWarning(
+                "DataManager is already initialized or initialization is in progress. Skipping re-initialization."
+            );
             return;
         }
 
-        _logger.LogInformation("Attempting to initialize DataManager and EEmemory connection");
-
-        bool eememInitialized = await _eememMemory.InitializeAsync(gameClient, cancellationToken).ConfigureAwait(false);
-        if (!eememInitialized)
+        try
         {
-            throw new InvalidOperationException(
-                $"Failed to initialize EEmemory for process '{gameClient.Process?.ProcessName}' (PID: {gameClient.Process?.Id})."
-            );
+            _logger.LogInformation("Attempting to initialize DataManager and EEmemory connection");
+
+            bool eememInitialized = await _eememMemory
+                .InitializeAsync(gameClient, cancellationToken)
+                .ConfigureAwait(false);
+            if (!eememInitialized)
+            {
+                throw new InvalidOperationException(
+                    $"Failed to initialize EEmemory for process '{gameClient.Process?.ProcessName}' (PID: {gameClient.Process?.Id})."
+                );
+            }
+
+            _doorReader = _readerFactory.CreateDoorReader(gameClient, _eememMemory);
+            _enemiesReader = _readerFactory.CreateEnemiesReader(gameClient, _eememMemory);
+            _inGamePlayerReader = _readerFactory.CreateInGamePlayerReader(gameClient, _eememMemory);
+            _inGameScenarioReader = _readerFactory.CreateInGameScenarioReader(gameClient, _eememMemory);
+            _lobbyRoomPlayerReader = _readerFactory.CreateLobbyRoomPlayerReader(gameClient, _eememMemory);
+            _lobbyRoomReader = _readerFactory.CreateLobbyRoomReader(gameClient, _eememMemory);
+            _lobbySlotReader = _readerFactory.CreateLobbySlotReader(gameClient, _eememMemory);
+
+            _updateSubscription?.Dispose();
+            _updateSubscription = null;
+
+            _updateCts?.Cancel();
+            _updateCts?.Dispose();
+            _updateCts = new CancellationTokenSource();
+
+            Observable<Unit> fastUpdateTrigger = Observable.Interval(_fastUpdateInterval, _updateCts.Token);
+            Observable<Unit> slowUpdateTrigger = Observable.Interval(_slowUpdateInterval, _updateCts.Token);
+
+            // Each Observable.Interval emits one value at a time on the thread pool. The Subscribe
+            // callback runs synchronously per emission, so consecutive Update calls within the same
+            // loop are serialized. The fast and slow loops are on separate intervals and can overlap
+            // each other, but they write to independent parts of the store (in-game vs lobby data).
+            IDisposable? fastSubscription = null;
+            IDisposable? slowSubscription = null;
+
+            try
+            {
+                fastSubscription = fastUpdateTrigger
+                    .Where(_ => IsInScenario())
+                    .ObserveOnThreadPool()
+                    .Subscribe(_ =>
+                    {
+                        try
+                        {
+                            UpdateCoreGameData();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error during fast update cycle");
+                        }
+                    });
+
+                slowSubscription = slowUpdateTrigger
+                    .Where(_ => !IsInScenario())
+                    .ObserveOnThreadPool()
+                    .Subscribe(_ =>
+                    {
+                        try
+                        {
+                            UpdateLobbyData();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error during slow update cycle");
+                        }
+                    });
+
+                _updateSubscription = Disposable.Combine(fastSubscription, slowSubscription);
+            }
+            catch
+            {
+                fastSubscription?.Dispose();
+                slowSubscription?.Dispose();
+
+                _updateCts.Cancel();
+                _updateCts.Dispose();
+                _updateCts = null;
+                throw;
+            }
+
+            Volatile.Write(ref _initializeState, InitializeStateInitialized);
+            _logger.LogInformation("Data manager has been initialized and update loop started");
         }
-
-        _doorReader = _readerFactory.CreateDoorReader(gameClient, _eememMemory);
-        _enemiesReader = _readerFactory.CreateEnemiesReader(gameClient, _eememMemory);
-        _inGamePlayerReader = _readerFactory.CreateInGamePlayerReader(gameClient, _eememMemory);
-        _inGameScenarioReader = _readerFactory.CreateInGameScenarioReader(gameClient, _eememMemory);
-        _lobbyRoomPlayerReader = _readerFactory.CreateLobbyRoomPlayerReader(gameClient, _eememMemory);
-        _lobbyRoomReader = _readerFactory.CreateLobbyRoomReader(gameClient, _eememMemory);
-        _lobbySlotReader = _readerFactory.CreateLobbySlotReader(gameClient, _eememMemory);
-
-        _updateCts?.Cancel();
-        _updateCts?.Dispose();
-        _updateCts = new CancellationTokenSource();
-
-        Observable<Unit> fastUpdateTrigger = Observable.Interval(_fastUpdateInterval, _updateCts.Token);
-        Observable<Unit> slowUpdateTrigger = Observable.Interval(_slowUpdateInterval, _updateCts.Token);
-
-        // Each Observable.Interval emits one value at a time on the thread pool. The Subscribe
-        // callback runs synchronously per emission, so consecutive Update calls within the same
-        // loop are serialized. The fast and slow loops are on separate intervals and can overlap
-        // each other, but they write to independent parts of the store (in-game vs lobby data).
-        IDisposable fastSubscription = fastUpdateTrigger
-            .Where(_ => IsInScenario())
-            .ObserveOnThreadPool()
-            .Subscribe(_ =>
-            {
-                try
-                {
-                    UpdateCoreGameData();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error during fast update cycle");
-                }
-            });
-
-        IDisposable slowSubscription = slowUpdateTrigger
-            .Where(_ => !IsInScenario())
-            .ObserveOnThreadPool()
-            .Subscribe(_ =>
-            {
-                try
-                {
-                    UpdateLobbyData();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error during slow update cycle");
-                }
-            });
-
-        // Combine into one handle: if Subscribe() for slowSubscription throws (extremely unlikely),
-        // fastSubscription is still disposed when StopUpdateLoops() disposes _updateSubscription.
-        // Both are assigned before any exception can escape this path.
-        _updateSubscription = Disposable.Combine(fastSubscription, slowSubscription);
-
-        _isInitialized = true;
-        _logger.LogInformation("Data manager has been initialized and update loop started");
+        catch
+        {
+            StopUpdateLoops();
+            throw;
+        }
     }
 
     private void UpdateDoors()
@@ -355,7 +389,7 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
             // Ignore late stop requests racing with disposal.
         }
 
-        _isInitialized = false;
+        Volatile.Write(ref _initializeState, InitializeStateIdle);
         _logger.LogInformation("DataManager update loops stopped; ready for re-initialization.");
     }
 

@@ -12,18 +12,45 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
     : IProcessLauncher,
         IDisposable
 {
+    private sealed class ProcessOutputRegistration(Task task, CancellationTokenSource cancellationTokenSource)
+    {
+        public Task Task { get; } = task;
+
+        public CancellationTokenSource CancellationTokenSource { get; } = cancellationTokenSource;
+    }
+
+    private static readonly TimeSpan ProcessOutputShutdownTimeout = TimeSpan.FromSeconds(2);
     private readonly ILogger<ProcessLauncher> _logger = logger;
     private readonly IGameClientFactory _gameClientFactory = gameClientFactory;
     private readonly Subject<string> _processErrors = new();
     private readonly Subject<ProcessModel> _processUpdate = new();
     private readonly Subject<bool> _isCancelling = new();
+    private readonly Lock _clientStateLock = new();
     private readonly ConcurrentDictionary<int, Process> _processes = new();
     private readonly ConcurrentDictionary<int, byte> _clientProcessIds = new();
+    private readonly ConcurrentDictionary<int, ProcessOutputRegistration> _processOutputRegistrations = new();
+    private Process? _clientMonitoredProcess;
+    private IGameClient? _attachedGameClient;
 
     public Observable<bool> IsCancelling => _isCancelling.AsObservable();
     public Observable<ProcessModel> ProcessUpdate => _processUpdate.AsObservable();
-    public Process? ClientMonitoredProcess { get; private set; }
-    public IGameClient? AttachedGameClient { get; private set; }
+    public Process? ClientMonitoredProcess
+    {
+        get
+        {
+            lock (_clientStateLock)
+                return _clientMonitoredProcess;
+        }
+    }
+
+    public IGameClient? AttachedGameClient
+    {
+        get
+        {
+            lock (_clientStateLock)
+                return _attachedGameClient;
+        }
+    }
 
     private static ProcessStartInfo CreateProcessStartInfo(string fileName, string? arguments) =>
         new()
@@ -37,6 +64,141 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
             CreateNoWindow = true,
         };
 
+    private (Process? MonitoredProcess, IGameClient? AttachedGameClient) GetClientStateSnapshot()
+    {
+        lock (_clientStateLock)
+            return (_clientMonitoredProcess, _attachedGameClient);
+    }
+
+    private void SetClientMonitoredProcess(Process? process)
+    {
+        lock (_clientStateLock)
+            _clientMonitoredProcess = process;
+    }
+
+    private IGameClient? ReplaceAttachedGameClient(IGameClient newClient)
+    {
+        lock (_clientStateLock)
+        {
+            IGameClient? previousClient = _attachedGameClient;
+            _attachedGameClient = newClient;
+            return previousClient;
+        }
+    }
+
+    private IGameClient? ClearClientStateIfMonitoredProcessMatches(Process process)
+    {
+        lock (_clientStateLock)
+        {
+            if (!ReferenceEquals(_clientMonitoredProcess, process))
+                return null;
+
+            _clientMonitoredProcess = null;
+
+            IGameClient? attachedGameClient = _attachedGameClient;
+            _attachedGameClient = null;
+            return attachedGameClient;
+        }
+    }
+
+    private IGameClient? ClearClientState()
+    {
+        lock (_clientStateLock)
+        {
+            IGameClient? attachedGameClient = _attachedGameClient;
+            _attachedGameClient = null;
+            _clientMonitoredProcess = null;
+            return attachedGameClient;
+        }
+    }
+
+    private void RegisterProcessOutputReader(
+        Process process,
+        ProcessAsyncEnumerable stdOut,
+        ProcessAsyncEnumerable stdError,
+        CancellationToken cancellationToken
+    )
+    {
+        CancellationTokenSource outputCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        Task outputTask = HandleProcessOutputAsync(process, stdOut, stdError, outputCts);
+
+        if (!_processOutputRegistrations.TryAdd(process.Id, new ProcessOutputRegistration(outputTask, outputCts)))
+        {
+            outputCts.Cancel();
+            outputCts.Dispose();
+            _logger.LogWarning(
+                "Process output reader registration already exists for PID {ProcessId}; skipping duplicate registration",
+                process.Id
+            );
+        }
+    }
+
+    private void RemoveProcessOutputRegistration(int processId, CancellationTokenSource cancellationTokenSource)
+    {
+        if (
+            _processOutputRegistrations.TryGetValue(processId, out ProcessOutputRegistration? registration)
+            && ReferenceEquals(registration.CancellationTokenSource, cancellationTokenSource)
+            && _processOutputRegistrations.TryRemove(processId, out _)
+        )
+        {
+            cancellationTokenSource.Dispose();
+        }
+    }
+
+    private static bool AllInnerExceptionsAreCancellation(AggregateException aggregateException)
+    {
+        if (aggregateException.InnerExceptions.Count == 0)
+            return false;
+
+        foreach (Exception innerException in aggregateException.InnerExceptions)
+        {
+            if (innerException is not OperationCanceledException)
+                return false;
+        }
+
+        return true;
+    }
+
+    private void StopProcessOutputReaders()
+    {
+        KeyValuePair<int, ProcessOutputRegistration>[] registrations = [.. _processOutputRegistrations];
+        if (registrations.Length == 0)
+            return;
+
+        foreach (KeyValuePair<int, ProcessOutputRegistration> registration in registrations)
+            registration.Value.CancellationTokenSource.Cancel();
+
+        Task[] shutdownTasks = new Task[registrations.Length];
+        for (int index = 0; index < registrations.Length; index++)
+            shutdownTasks[index] = registrations[index].Value.Task;
+
+        try
+        {
+            if (!Task.WhenAll(shutdownTasks).Wait(ProcessOutputShutdownTimeout))
+            {
+                _logger.LogWarning(
+                    "Timed out waiting for {Count} process output reader(s) to stop during launcher disposal",
+                    shutdownTasks.Length
+                );
+            }
+        }
+        catch (AggregateException ex) when (AllInnerExceptionsAreCancellation(ex)) { }
+        catch (AggregateException ex)
+        {
+            _logger.LogWarning(ex, "Process output reader shutdown completed with unexpected exceptions.");
+        }
+        finally
+        {
+            foreach (KeyValuePair<int, ProcessOutputRegistration> registration in registrations)
+            {
+                if (_processOutputRegistrations.TryRemove(registration.Key, out _))
+                    registration.Value.CancellationTokenSource.Dispose();
+            }
+        }
+    }
+
+    private void PublishCancellationState(bool isCancelling) => _isCancelling.OnNext(isCancelling);
+
     private void RegisterProcess(Process process)
     {
         process.EnableRaisingEvents = true;
@@ -46,15 +208,15 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
         _processes.TryAdd(process.Id, process);
         _clientProcessIds.TryAdd(process.Id, 0);
 
-        ClientMonitoredProcess = process;
+        SetClientMonitoredProcess(process);
 
         _processUpdate.OnNext(
             new ProcessModel
             {
                 IsRunning = true,
-                Id = ClientMonitoredProcess.Id,
-                Name = ClientMonitoredProcess.ProcessName,
-                StartTime = ClientMonitoredProcess.GetSafeStartTime(),
+                Id = process.Id,
+                Name = process.ProcessName,
+                StartTime = process.GetSafeStartTime(),
             }
         );
     }
@@ -80,38 +242,43 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
             process.Id
         );
 
-        _ = HandleProcessOutputAsync(process, stdOut, stdError, cancellationToken);
+        RegisterProcessOutputReader(process, stdOut, stdError, cancellationToken);
 
         return attachedGameClient;
     }
 
-    public IGameClient? GetActiveGameClient() => AttachedGameClient;
+    public IGameClient? GetActiveGameClient()
+    {
+        lock (_clientStateLock)
+            return _attachedGameClient;
+    }
 
     private async Task HandleProcessOutputAsync(
         Process process,
         ProcessAsyncEnumerable stdOut,
         ProcessAsyncEnumerable stdError,
-        CancellationToken ct
+        CancellationTokenSource outputCts
     )
     {
-        using CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        WeakReference<CancellationTokenSource> weakCts = new(cts);
+        WeakReference<CancellationTokenSource> weakCts = new(outputCts);
 
         process.Exited += ExitHandler;
 
         try
         {
-            Task[] processingTasks = CreateProcessingTasks(stdOut, stdError, cts.Token);
-            _ = await Task.WhenAny(Task.WhenAll(processingTasks), process.WaitForExitAsync(cts.Token))
+            Task[] processingTasks = CreateProcessingTasks(stdOut, stdError, outputCts.Token);
+            _ = await Task.WhenAny(Task.WhenAll(processingTasks), process.WaitForExitAsync(outputCts.Token))
                 .ConfigureAwait(false);
         }
         catch (ProcessErrorException ex)
         {
             HandleProcessError(ex, process.Id);
         }
+        catch (OperationCanceledException) when (outputCts.IsCancellationRequested) { }
         finally
         {
             process.Exited -= ExitHandler;
+            RemoveProcessOutputRegistration(process.Id, outputCts);
         }
 
         return;
@@ -172,8 +339,8 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
         _processes.TryRemove(process.Id, out _);
         _clientProcessIds.TryRemove(process.Id, out _);
 
-        if (ReferenceEquals(ClientMonitoredProcess, process))
-            ClientMonitoredProcess = null;
+        IGameClient? exitedGameClient = ClearClientStateIfMonitoredProcessMatches(process);
+        exitedGameClient?.Dispose();
 
         _processUpdate.OnNext(
             new ProcessModel
@@ -187,30 +354,59 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
 
     public async Task TerminateAsync(int? processId = null)
     {
-        if (processId.HasValue && _processes.TryGetValue(processId.Value, out Process? process))
-        {
-            process.Kill();
-            await process.WaitForExitAsync().ConfigureAwait(false);
-            return;
-        }
+        bool cancellationStarted = false;
 
-        foreach (Process proc in _processes.Values)
+        try
         {
-            proc.Kill();
-            await proc.WaitForExitAsync().ConfigureAwait(false);
+            if (processId.HasValue && _processes.TryGetValue(processId.Value, out Process? process))
+            {
+                PublishCancellationState(true);
+                cancellationStarted = true;
+
+                process.Kill();
+                await process.WaitForExitAsync().ConfigureAwait(false);
+                return;
+            }
+
+            Process[] trackedProcesses = [.. _processes.Values];
+            if (trackedProcesses.Length == 0)
+                return;
+
+            PublishCancellationState(true);
+            cancellationStarted = true;
+
+            foreach (Process proc in trackedProcesses)
+            {
+                proc.Kill();
+                await proc.WaitForExitAsync().ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            if (cancellationStarted)
+                PublishCancellationState(false);
         }
     }
 
     public async Task KillAsync(int processId)
     {
         Process process = Process.GetProcessById(processId);
-        process.Kill();
-        await process.WaitForExitAsync().ConfigureAwait(false);
+        PublishCancellationState(true);
+
+        try
+        {
+            process.Kill();
+            await process.WaitForExitAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            PublishCancellationState(false);
+        }
     }
 
     public async Task<IGameClient> AttachAsync(int processId)
     {
-        Process? monitoredProcess = ClientMonitoredProcess;
+        (Process? monitoredProcess, IGameClient? attachedGameClient) = GetClientStateSnapshot();
         int? monitoredProcessId = null;
         try
         {
@@ -224,15 +420,23 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
                 "ClientMonitoredProcess handle invalid for PID {ProcessId}; clearing stale reference",
                 processId
             );
-            ClientMonitoredProcess = null;
+
+            if (monitoredProcess is not null)
+            {
+                IGameClient? staleGameClient = ClearClientStateIfMonitoredProcessMatches(monitoredProcess);
+                staleGameClient?.Dispose();
+            }
+
             monitoredProcess = null;
+            attachedGameClient = null;
+            monitoredProcessId = null;
         }
 
         if (monitoredProcessId == processId && monitoredProcess is not null)
         {
             _logger.LogInformation("Already attached to process {ProcessId}", processId);
 
-            if (AttachedGameClient is { IsAttached: true })
+            if (attachedGameClient is { IsAttached: true })
             {
                 // Re-broadcast so late subscribers (e.g. EmbeddedGameViewModel) receive the PID.
                 _processUpdate.OnNext(
@@ -244,7 +448,7 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
                         StartTime = monitoredProcess.GetSafeStartTime(),
                     }
                 );
-                return AttachedGameClient;
+                return attachedGameClient;
             }
 
             IGameClient reAttached = await ReplaceAttachedGameClientAsync(monitoredProcess, CancellationToken.None)
@@ -285,8 +489,7 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
             .CreateAndAttachGameClientAsync(process, cancellationToken)
             .ConfigureAwait(false);
 
-        IGameClient? previousClient = AttachedGameClient;
-        AttachedGameClient = newClient;
+        IGameClient? previousClient = ReplaceAttachedGameClient(newClient);
         previousClient?.Dispose();
 
         return newClient;
@@ -294,21 +497,29 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
 
     public Observable<string> GetErrorObservable() => _processErrors.AsObservable();
 
-    public bool HasExited(int processId) => !_processes.ContainsKey(processId) || _processes[processId].HasExited;
+    public bool HasExited(int processId) =>
+        !_processes.TryGetValue(processId, out Process? process) || process.HasExited;
 
     public int GetExitCode(int processId) =>
         _processes.TryGetValue(processId, out Process? process) ? process.ExitCode : -1;
 
     public void Dispose()
     {
+        StopProcessOutputReaders();
+
+        foreach (KeyValuePair<int, Process> processEntry in _processes)
+        {
+            if (_processes.TryRemove(processEntry.Key, out Process? process))
+                process.Dispose();
+        }
+
+        _clientProcessIds.Clear();
+
+        IGameClient? attachedGameClient = ClearClientState();
+        attachedGameClient?.Dispose();
+
+        _isCancelling.Dispose();
         _processErrors.Dispose();
-
         _processUpdate.Dispose();
-
-        foreach (Process process in _processes.Values)
-            process.Dispose();
-
-        AttachedGameClient?.Dispose();
-        AttachedGameClient = null;
     }
 }
