@@ -10,6 +10,7 @@ This is an attempt to rewrite and expand upon the old C99 Resident Evil Outbreak
 
 <img width="2558" height="1397" alt="image" src="https://github.com/user-attachments/assets/60e0fbff-afc6-4626-ab33-0bc214683633" />
 <img width="2560" height="1397" alt="image" src="https://github.com/user-attachments/assets/7be1ceaf-1fec-47f2-b327-4115cf2cba7e" />
+<img width="1223" height="1063" alt="image" src="https://github.com/user-attachments/assets/5d999108-b976-47b4-a289-806b1492d05e" />
 
 # Supported Platforms
 - Windows (.NET 10) — fully supported
