@@ -7,4 +7,10 @@ public sealed record EnemyRoomChangedEvent(
     short SlotId,
     byte OldRoomId,
     byte NewRoomId
-) : RunEvent(OccurredAt);
+) : RunEvent(OccurredAt)
+{
+    public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
+        Invariant(
+            $"Enemy **{EnemyName}** (Slot {SlotId}) moved room: {RoomName(scenario, OldRoomId)} → **{RoomName(scenario, NewRoomId)}**"
+        );
+}

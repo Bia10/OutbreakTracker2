@@ -12,4 +12,10 @@ public sealed record EnemyDespawnedEvent(
     byte RoomId,
     ushort RemainingHp,
     ushort MaxHp
-) : RunEvent(OccurredAt);
+) : RunEvent(OccurredAt)
+{
+    public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
+        Invariant(
+            $"Enemy **{EnemyName}** despawned ({RoomName(scenario, RoomId)}, Slot {SlotId}, HP remaining: {RemainingHp}/{MaxHp})"
+        );
+}

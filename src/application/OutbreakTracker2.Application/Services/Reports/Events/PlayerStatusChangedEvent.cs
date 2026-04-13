@@ -9,4 +9,8 @@ public sealed record PlayerStatusChangedEvent(
     string PlayerName,
     string OldStatus,
     string NewStatus
-) : RunEvent(OccurredAt);
+) : RunEvent(OccurredAt)
+{
+    public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
+        Invariant($"Player **{PlayerName}** status: {OldStatus} → **{NewStatus}**");
+}

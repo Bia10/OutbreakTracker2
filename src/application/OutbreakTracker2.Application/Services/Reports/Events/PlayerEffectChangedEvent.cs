@@ -10,4 +10,10 @@ public sealed record PlayerEffectChangedEvent(
     string PlayerName,
     string EffectName,
     bool IsApplied
-) : RunEvent(OccurredAt);
+) : RunEvent(OccurredAt)
+{
+    public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
+        IsApplied
+            ? Invariant($"Player **{PlayerName}** effect **{EffectName}** applied")
+            : Invariant($"Player **{PlayerName}** effect **{EffectName}** expired");
+}

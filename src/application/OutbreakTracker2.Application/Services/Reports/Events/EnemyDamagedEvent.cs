@@ -13,4 +13,9 @@ public sealed record EnemyDamagedEvent(
 ) : RunEvent(OccurredAt)
 {
     public ushort Damage => (ushort)(OldHp - NewHp);
+
+    public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
+        Invariant(
+            $"Enemy **{EnemyName}** damaged: {OldHp} → {NewHp}/{MaxHp} (-{Damage}) ({RoomName(scenario, RoomId)}){FormatContributions(ContributingPlayers)}"
+        );
 }

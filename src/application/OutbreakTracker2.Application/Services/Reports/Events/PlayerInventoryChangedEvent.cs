@@ -12,4 +12,8 @@ public sealed record PlayerInventoryChangedEvent(
     int SlotIndex,
     string OldItemName,
     string NewItemName
-) : RunEvent(OccurredAt);
+) : RunEvent(OccurredAt)
+{
+    public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
+        Invariant($"Player **{PlayerName}** {Kind} slot {SlotIndex}: {OldItemName} → **{NewItemName}**");
+}

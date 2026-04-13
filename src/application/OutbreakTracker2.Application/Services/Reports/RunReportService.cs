@@ -29,6 +29,7 @@ public sealed class RunReportService : IRunReportService
     private volatile string _lastScenarioId = string.Empty;
     private volatile DecodedInGameScenario? _lastScenario;
     private volatile ScenarioStatus _lastScenarioStatus = ScenarioStatus.None;
+    private volatile Scenario _currentScenario = Scenario.Unknown;
     private DecodedItem[]? _prevItems;
 
     // Protected by _sessionLock — may be read from external threads via IsRunning.
@@ -93,6 +94,13 @@ public sealed class RunReportService : IRunReportService
             _sessionEvents = [];
         }
 
+        _currentScenario = EnumUtility.TryParseByValueOrMember<Scenario>(
+            _lastScenario?.ScenarioName ?? string.Empty,
+            out Scenario parsedScenario
+        )
+            ? parsedScenario
+            : Scenario.Unknown;
+
         string playerSummary;
         if (_activePlayers.Count == 0)
         {
@@ -146,11 +154,7 @@ public sealed class RunReportService : IRunReportService
             _sessionEvents = null;
         }
 
-        Scenario scenario = EnumUtility.TryParseByValueOrMember<Scenario>(scenarioName, out Scenario parsed)
-            ? parsed
-            : Scenario.Unknown;
-
-        RunReport report = new(Ulid.NewUlid(), scenarioId, scenarioName, scenario, startedAt, endedAt, events);
+        RunReport report = new(Ulid.NewUlid(), scenarioId, scenarioName, _currentScenario, startedAt, endedAt, events);
 
         RunReportStats stats = report.ComputeStats();
         _logger.LogInformation(
@@ -167,19 +171,23 @@ public sealed class RunReportService : IRunReportService
         _completedReports.OnNext(report);
 
         // Fire-and-forget — do not block the polling thread.
-        _ = _writer
-            .WriteAsync(report)
-            .ContinueWith(
-                t =>
-                    _logger.LogError(
-                        t.Exception,
-                        "Failed to persist run report for session {SessionId}",
-                        report.SessionId
-                    ),
-                CancellationToken.None,
-                TaskContinuationOptions.OnlyOnFaulted,
-                TaskScheduler.Default
+        _ = WriteReportSafeAsync(report);
+    }
+
+    private async Task WriteReportSafeAsync(RunReport report)
+    {
+        try
+        {
+            await _writer.WriteAsync(report).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Failed to persist one or more run report artifacts for session {SessionId}",
+                report.SessionId
             );
+        }
     }
 
     private void Emit(RunEvent evt)
@@ -352,7 +360,7 @@ public sealed class RunReportService : IRunReportService
                 return player.Name;
         }
 
-        return $"P{pickedUp}";
+        return $"Player {pickedUp}";
     }
 
     private void EmitEffectChange(
@@ -593,12 +601,12 @@ public sealed class RunReportService : IRunReportService
             if (p.PickedUp == 0 && c.PickedUp > 0)
             {
                 string holderName = ResolvePickupHolderName(c.PickedUp);
-                Emit(new ItemPickedUpEvent(now, c.TypeName, c.RoomId, holderName));
+                Emit(new ItemPickedUpEvent(now, c.TypeName, c.SlotIndex, c.RoomId, holderName));
             }
             else if (p.PickedUp > 0 && c.PickedUp == 0)
             {
                 string prevHolderName = ResolvePickupHolderName(p.PickedUp);
-                Emit(new ItemDroppedEvent(now, c.TypeName, c.RoomId, prevHolderName));
+                Emit(new ItemDroppedEvent(now, c.TypeName, c.SlotIndex, c.RoomId, prevHolderName));
             }
 
             if (p.Quantity != c.Quantity)

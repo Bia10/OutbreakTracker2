@@ -6,4 +6,7 @@ public sealed record ScenarioStatusChangedEvent(
     DateTimeOffset OccurredAt,
     ScenarioStatus OldStatus,
     ScenarioStatus NewStatus
-) : RunEvent(OccurredAt);
+) : RunEvent(OccurredAt)
+{
+    public override string Describe(Scenario scenario) => Invariant($"Scenario status: {OldStatus} → **{NewStatus}**");
+}

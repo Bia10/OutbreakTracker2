@@ -7,4 +7,10 @@ public sealed record EnemyKilledEvent(
     short SlotId,
     byte RoomId,
     IReadOnlyList<(Ulid PlayerId, string PlayerName, float Power)> ContributingPlayers
-) : RunEvent(OccurredAt);
+) : RunEvent(OccurredAt)
+{
+    public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
+        Invariant(
+            $"Enemy **{EnemyName}** killed ({RoomName(scenario, RoomId)}, Slot {SlotId}){FormatContributions(ContributingPlayers)}"
+        );
+}

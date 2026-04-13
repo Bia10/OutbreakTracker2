@@ -6,4 +6,10 @@ public sealed record PlayerRoomChangedEvent(
     string PlayerName,
     short OldRoomId,
     short NewRoomId
-) : RunEvent(OccurredAt);
+) : RunEvent(OccurredAt)
+{
+    public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
+        Invariant(
+            $"Player **{PlayerName}** moved room: {RoomName(scenario, OldRoomId)} → **{RoomName(scenario, NewRoomId)}**"
+        );
+}

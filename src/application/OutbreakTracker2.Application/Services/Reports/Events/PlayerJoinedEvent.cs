@@ -1,4 +1,6 @@
-﻿namespace OutbreakTracker2.Application.Services.Reports.Events;
+﻿using OutbreakTracker2.Outbreak.Enums;
+
+namespace OutbreakTracker2.Application.Services.Reports.Events;
 
 public sealed record PlayerJoinedEvent(
     DateTimeOffset OccurredAt,
@@ -7,4 +9,10 @@ public sealed record PlayerJoinedEvent(
     short InitialHealth,
     short MaxHealth,
     double InitialVirusPercentage
-) : RunEvent(OccurredAt);
+) : RunEvent(OccurredAt)
+{
+    public override string Describe(Scenario scenario) =>
+        Invariant(
+            $"Player **{PlayerName}** joined (HP: {InitialHealth}/{MaxHealth}, Virus: {InitialVirusPercentage:F3}%)"
+        );
+}

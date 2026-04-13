@@ -7,4 +7,8 @@ public sealed record EnemySpawnedEvent(
     short SlotId,
     byte RoomId,
     ushort MaxHp
-) : RunEvent(OccurredAt);
+) : RunEvent(OccurredAt)
+{
+    public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
+        Invariant($"Enemy **{EnemyName}** spawned ({RoomName(scenario, RoomId)}, Slot {SlotId}, HP: {MaxHp})");
+}

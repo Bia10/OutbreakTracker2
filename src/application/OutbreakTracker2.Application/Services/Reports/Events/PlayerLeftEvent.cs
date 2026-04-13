@@ -1,4 +1,6 @@
-﻿namespace OutbreakTracker2.Application.Services.Reports.Events;
+﻿using OutbreakTracker2.Outbreak.Enums;
+
+namespace OutbreakTracker2.Application.Services.Reports.Events;
 
 public sealed record PlayerLeftEvent(
     DateTimeOffset OccurredAt,
@@ -6,4 +8,8 @@ public sealed record PlayerLeftEvent(
     string PlayerName,
     short FinalHealth,
     double FinalVirusPercentage
-) : RunEvent(OccurredAt);
+) : RunEvent(OccurredAt)
+{
+    public override string Describe(Scenario scenario) =>
+        Invariant($"Player **{PlayerName}** left (HP: {FinalHealth}, Virus: {FinalVirusPercentage:F3}%)");
+}

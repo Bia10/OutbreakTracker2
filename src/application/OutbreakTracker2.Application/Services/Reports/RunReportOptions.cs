@@ -6,4 +6,8 @@ public sealed record RunReportOptions
     public const string DefaultOutputDirectory = "reports";
 
     public string OutputDirectory { get; init; } = DefaultOutputDirectory;
+
+    public bool WriteMarkdown { get; init; } = true;
+
+    public bool WriteHtml { get; init; } = true;
 }

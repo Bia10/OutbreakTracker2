@@ -20,4 +20,13 @@ public sealed record EnemyStatusChangedEvent(
 {
     /// <summary>True when the status changed from 0x00 (inactive/idle) to a non-zero value.</summary>
     public bool IsActivation => OldStatus == 0x00 && NewStatus != 0x00;
+
+    public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
+        IsActivation
+            ? Invariant(
+                $"Enemy **{EnemyName}** activated 0x{OldStatus:X2} → 0x{NewStatus:X2} ({RoomName(scenario, RoomId)}){FormatContributions(ContributingPlayers)}"
+            )
+            : Invariant(
+                $"Enemy **{EnemyName}** status: 0x{OldStatus:X2} → 0x{NewStatus:X2} ({RoomName(scenario, RoomId)}){FormatContributions(ContributingPlayers)}"
+            );
 }

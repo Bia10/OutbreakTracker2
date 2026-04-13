@@ -6,4 +6,8 @@ public sealed record DoorStateChangedEvent(
     int SlotId,
     string OldStatus,
     string NewStatus
-) : RunEvent(OccurredAt);
+) : RunEvent(OccurredAt)
+{
+    public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
+        Invariant($"Door #{SlotId} status changed: {OldStatus} → **{NewStatus}**");
+}

@@ -4,4 +4,7 @@ public sealed record DoorDamagedEvent(DateTimeOffset OccurredAt, Ulid DoorId, in
     : RunEvent(OccurredAt)
 {
     public ushort Damage => (ushort)(OldHp - NewHp);
+
+    public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
+        Invariant($"Door #{SlotId} damaged: {OldHp} → {NewHp} HP (-{Damage})");
 }
