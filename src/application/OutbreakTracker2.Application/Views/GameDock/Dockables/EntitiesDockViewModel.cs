@@ -9,6 +9,7 @@ using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy;
 using OutbreakTracker2.Extensions;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
 
@@ -28,6 +29,8 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
     private bool _onlyShowCurrentPlayerRoom;
     private bool _hasCurrentPlayerRoom;
     private short _currentPlayerRoomId;
+    private ScenarioStatus _scenarioStatus;
+    private bool _showGameplayUiDuringTransitions;
 
     public NotifyCollectionChangedSynchronizedViewList<InGameEnemyViewModel> EnemiesView { get; }
 
@@ -53,6 +56,8 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
         EnemiesView = _enemies.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
         _onlyShowCurrentPlayerRoom = GetEntitiesDockSettings(settingsService.Current).OnlyShowCurrentPlayerRoom;
+        _showGameplayUiDuringTransitions = GetDisplaySettings(settingsService.Current).ShowGameplayUiDuringTransitions;
+        _scenarioStatus = dataSnapshot.InGameScenario.Status;
 
         (bool hasRoom, short roomId) currentPlayerRoom = ResolveCurrentPlayerRoom(
             dataSnapshot.InGamePlayers,
@@ -95,12 +100,32 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
         _disposables.Add(
             settingsService
                 .SettingsObservable.Select(static settings =>
-                    GetEntitiesDockSettings(settings).OnlyShowCurrentPlayerRoom
+                    (
+                        OnlyShowCurrentPlayerRoom: GetEntitiesDockSettings(settings).OnlyShowCurrentPlayerRoom,
+                        ShowGameplayUiDuringTransitions: GetDisplaySettings(settings).ShowGameplayUiDuringTransitions
+                    )
                 )
                 .Subscribe(
-                    onNext: enabled => _dispatcherService.PostOnUI(() => UpdateFilterSetting(enabled)),
+                    onNext: state =>
+                        _dispatcherService.PostOnUI(() =>
+                            UpdateDisplaySettings(
+                                state.OnlyShowCurrentPlayerRoom,
+                                state.ShowGameplayUiDuringTransitions
+                            )
+                        ),
                     onErrorResume: ex => _logger.LogError(ex, "Error while monitoring entities-dock settings"),
                     onCompleted: _ => _logger.LogInformation("Entities-dock settings stream completed")
+                )
+        );
+
+        _disposables.Add(
+            dataObservable
+                .InGameScenarioObservable.Select(static scenario => scenario.Status)
+                .DistinctUntilChanged()
+                .Subscribe(
+                    onNext: status => _dispatcherService.PostOnUI(() => UpdateScenarioStatus(status)),
+                    onErrorResume: ex => _logger.LogError(ex, "Error while monitoring entities-dock scenario status"),
+                    onCompleted: _ => _logger.LogInformation("Entities-dock scenario-status stream completed")
                 )
         );
 
@@ -179,12 +204,16 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
             enemy.PropertyChanged -= OnEnemyPropertyChanged;
     }
 
-    private void UpdateFilterSetting(bool onlyShowCurrentPlayerRoom)
+    private void UpdateDisplaySettings(bool onlyShowCurrentPlayerRoom, bool showGameplayUiDuringTransitions)
     {
-        if (_onlyShowCurrentPlayerRoom == onlyShowCurrentPlayerRoom)
+        if (
+            _onlyShowCurrentPlayerRoom == onlyShowCurrentPlayerRoom
+            && _showGameplayUiDuringTransitions == showGameplayUiDuringTransitions
+        )
             return;
 
         _onlyShowCurrentPlayerRoom = onlyShowCurrentPlayerRoom;
+        _showGameplayUiDuringTransitions = showGameplayUiDuringTransitions;
         RebuildFilteredEnemies();
     }
 
@@ -201,6 +230,15 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
         RebuildFilteredEnemies();
     }
 
+    private void UpdateScenarioStatus(ScenarioStatus scenarioStatus)
+    {
+        if (_scenarioStatus == scenarioStatus)
+            return;
+
+        _scenarioStatus = scenarioStatus;
+        RebuildFilteredEnemies();
+    }
+
     private void RebuildFilteredEnemies()
     {
         List<InGameEnemyViewModel> filteredEnemies = [];
@@ -211,10 +249,11 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
                 filteredEnemies.Add(enemy);
         }
 
-        bool hasEnemies = filteredEnemies.Count > 0;
+        bool isGameplayActive = _scenarioStatus.ShouldShowGameplayUi(_showGameplayUiDuringTransitions);
+        bool hasEnemies = isGameplayActive && filteredEnemies.Count > 0;
         string emptyMessage =
             hasEnemies ? string.Empty
-            : _onlyShowCurrentPlayerRoom && _hasCurrentPlayerRoom ? CurrentRoomEmptyMessage
+            : isGameplayActive && _onlyShowCurrentPlayerRoom && _hasCurrentPlayerRoom ? CurrentRoomEmptyMessage
             : DefaultEmptyMessage;
 
         if (!HasSameEnemySequence(filteredEnemies))
@@ -251,6 +290,9 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
 
     private static EntitiesDockSettings GetEntitiesDockSettings(OutbreakTrackerSettings settings) =>
         (settings.Display ?? new DisplaySettings()).EntitiesDock ?? new EntitiesDockSettings();
+
+    private static DisplaySettings GetDisplaySettings(OutbreakTrackerSettings settings) =>
+        settings.Display ?? new DisplaySettings();
 
     private static (bool HasRoom, short RoomId) ResolveCurrentPlayerRoom(
         DecodedInGamePlayer[] players,

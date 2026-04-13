@@ -3,8 +3,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
-using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
+using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Views.GameDock;
+using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Utility;
@@ -18,7 +19,6 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
     private readonly IDispatcherService _dispatcherService;
     private readonly ScenarioEntityCommands _entityCommands;
     private readonly ScenarioViewModelRouter _router;
-    private readonly Dictionary<short, InvalidPickedUpWarning> _lastInvalidPickedUpWarnings = [];
     private DisposableBag _disposables;
 
     public ICommand ShowItemsCommand => _entityCommands.ShowItems;
@@ -30,11 +30,14 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
     private byte _currentFile;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsScenarioActive))]
+    [NotifyPropertyChangedFor(nameof(IsScenarioNotActive))]
+    private bool _showGameplayUiDuringTransitions;
+
+    [ObservableProperty]
     private string _scenarioName = string.Empty;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsScenarioActive))]
-    [NotifyPropertyChangedFor(nameof(IsScenarioNotActive))]
     private int _frameCounter;
 
     [ObservableProperty]
@@ -55,6 +58,8 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
     // 14 = intro scenario cinematic sequence
     // 15 = after save to memory card
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsScenarioActive))]
+    [NotifyPropertyChangedFor(nameof(IsScenarioNotActive))]
     private ScenarioStatus _status;
 
     [ObservableProperty]
@@ -118,17 +123,14 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
     [ObservableProperty]
     private ObservableObject? _currentScenarioSpecificViewModel;
 
-    [ObservableProperty]
-    private ScenarioEntitiesViewModel _scenarioEntitiesVm;
-
-    public bool IsScenarioActive => FrameCounter > 0;
-    public bool IsScenarioNotActive => FrameCounter <= 0;
+    public bool IsScenarioActive => Status.ShouldShowGameplayUi(ShowGameplayUiDuringTransitions);
+    public bool IsScenarioNotActive => !IsScenarioActive;
 
     public InGameScenarioViewModel(
         ILogger<InGameScenarioViewModel> logger,
         IDataObservableSource dataObservable,
         IDispatcherService dispatcherService,
-        ScenarioEntitiesViewModel scenarioEntitiesViewModel,
+        IAppSettingsService settingsService,
         ScenarioEntityCommands entityCommands,
         ScenarioViewModelRouter router
     )
@@ -136,8 +138,8 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         _logger = logger;
         _dispatcherService = dispatcherService;
         _entityCommands = entityCommands;
-        _scenarioEntitiesVm = scenarioEntitiesViewModel;
         _router = router;
+        ShowGameplayUiDuringTransitions = GetDisplaySettings(settingsService.Current).ShowGameplayUiDuringTransitions;
 
         _disposables.Add(
             dataObservable
@@ -152,10 +154,8 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
                                 .InvokeOnUIAsync(
                                     () =>
                                     {
-                                        _logger.LogTrace(
-                                            "Updating InGameScenarioViewModel and scenario entities on UI thread"
-                                        );
-                                        ApplyScenarioUpdate(snapshot);
+                                        _logger.LogTrace("Updating InGameScenarioViewModel on UI thread");
+                                        Update(snapshot.Scenario, snapshot.Players);
                                     },
                                     cancellationToken
                                 )
@@ -173,32 +173,28 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
                     AwaitOperation.Drop
                 )
         );
+
+        _disposables.Add(
+            settingsService
+                .SettingsObservable.Select(static settings =>
+                    GetDisplaySettings(settings).ShowGameplayUiDuringTransitions
+                )
+                .DistinctUntilChanged()
+                .Subscribe(show => _dispatcherService.PostOnUI(() => ShowGameplayUiDuringTransitions = show))
+        );
     }
 
     public void Dispose() => _disposables.Dispose();
 
-    private void ApplyScenarioUpdate(InGameOverviewSnapshot snapshot)
-    {
-        Update(snapshot.Scenario, snapshot.Players);
-        ScenarioEntitiesVm.UpdateEnemies(snapshot.Enemies);
-        ScenarioEntitiesVm.UpdateDoors(snapshot.Doors);
-    }
-
     public void Update(DecodedInGameScenario scenario, DecodedInGamePlayer[] players)
     {
-        if (scenario.CurrentFile is < 1 or > 2)
-        {
-            FrameCounter = 0;
-            ScenarioEntitiesVm.ClearItems();
-            return;
-        }
-
         CurrentFile = scenario.CurrentFile;
         ScenarioName = scenario.ScenarioName;
         FrameCounter = scenario.FrameCounter;
         Difficulty = scenario.Difficulty;
         Status = scenario.Status;
         PlayerCount = GetTrackedPlayerCount(players);
+        PlayerCountDisplay = $"{PlayerCount}/{GameConstants.MaxPlayers}";
         ItemRandom = scenario.ItemRandom;
         ItemRandom2 = scenario.ItemRandom2;
         PuzzleRandom = scenario.PuzzleRandom;
@@ -214,20 +210,9 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         Pass5 = scenario.Pass5;
         Pass6 = scenario.Pass6;
 
-        GameTimeDisplay = GetGameTime();
-        GasRandomOrderDisplay = CalculateGasRandomOrderDisplay();
+        GameTimeDisplay = scenario.GetGameTimeDisplay();
+        GasRandomOrderDisplay = scenario.GetGasRandomOrderDisplay();
         IsCleared = GetClearedDisplay();
-
-        Scenario scenarioEnum = EnumUtility.TryParseByValueOrMember(scenario.ScenarioName, out Scenario parsedScenario)
-            ? parsedScenario
-            : Scenario.Unknown;
-
-        ScenarioEntitiesVm.UpdateItems(
-            scenario.Items,
-            item => ProjectDisplayItem(item, players, scenarioEnum),
-            scenario.FrameCounter,
-            (GameFile)scenario.CurrentFile
-        );
 
         UpdateScenarioSpecificViewModel(scenario);
     }
@@ -248,82 +233,6 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         return count;
     }
 
-    private DecodedItem ProjectDisplayItem(DecodedItem item, DecodedInGamePlayer[] players, Scenario scenario)
-    {
-        string roomName = scenario.GetRoomName(item.RoomId);
-        string pickedUpByName = ResolvePickedUpByName(item, players);
-
-        return item with
-        {
-            RoomName = roomName,
-            PickedUpByName = pickedUpByName,
-        };
-    }
-
-    private string ResolvePickedUpByName(in DecodedItem item, DecodedInGamePlayer[] players)
-    {
-        if (item.PickedUp == 0)
-        {
-            _lastInvalidPickedUpWarnings.Remove(item.Id);
-            return "None";
-        }
-
-        int slotIndex = item.PickedUp - 1;
-        if (slotIndex >= 0 && slotIndex < players.Length)
-        {
-            _lastInvalidPickedUpWarnings.Remove(item.Id);
-            DecodedInGamePlayer player = players[slotIndex];
-            return player.IsEnabled && !string.IsNullOrEmpty(player.Name) ? player.Name : $"P{item.PickedUp}";
-        }
-
-        if (ShouldWarnInvalidPickedUp(item, players.Length))
-        {
-            InvalidPickedUpWarning warning = new(
-                item.SlotIndex,
-                item.TypeName,
-                item.PickedUp,
-                item.Present,
-                item.Quantity,
-                players.Length
-            );
-
-            if (
-                !_lastInvalidPickedUpWarnings.TryGetValue(item.Id, out InvalidPickedUpWarning lastWarning)
-                || lastWarning != warning
-            )
-            {
-                _lastInvalidPickedUpWarnings[item.Id] = warning;
-                _logger.LogWarning(
-                    "Item slot={Slot} type={Type} has PickedUp={PickedUp} which is out of valid player range [1,{Max}]; Present={Present} Qty={Qty}",
-                    item.SlotIndex,
-                    item.TypeName,
-                    item.PickedUp,
-                    players.Length,
-                    item.Present,
-                    item.Quantity
-                );
-            }
-        }
-        else
-        {
-            _lastInvalidPickedUpWarnings.Remove(item.Id);
-        }
-
-        return $"P{item.PickedUp}";
-    }
-
-    private static bool ShouldWarnInvalidPickedUp(DecodedItem item, int playerCount) =>
-        playerCount > 0 && item.Present != 0;
-
-    private readonly record struct InvalidPickedUpWarning(
-        byte SlotIndex,
-        string TypeName,
-        short PickedUp,
-        int Present,
-        short Quantity,
-        int MaxPlayers
-    );
-
     private void UpdateScenarioSpecificViewModel(DecodedInGameScenario scenario)
     {
         CurrentScenarioSpecificViewModel = _router.Route(scenario, _logger);
@@ -334,14 +243,6 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
             ? "Yes"
             : "No";
 
-    private string GetGameTime() => TimeUtility.GetTimeFromFrames(FrameCounter);
-
-    private int CalculateGasRandomOrderDisplay() =>
-        GasRandom switch
-        {
-            0 => -1,
-            > 0 and < 240 => (GasRandom / 10) + 1,
-            >= 240 and < 255 => 25,
-            _ => -1,
-        };
+    private static DisplaySettings GetDisplaySettings(OutbreakTrackerSettings settings) =>
+        settings.Display ?? new DisplaySettings();
 }

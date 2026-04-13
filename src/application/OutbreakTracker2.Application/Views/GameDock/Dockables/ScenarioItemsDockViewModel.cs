@@ -5,6 +5,7 @@ using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
+using OutbreakTracker2.Outbreak.Enums;
 using R3;
 
 namespace OutbreakTracker2.Application.Views.GameDock.Dockables;
@@ -14,12 +15,14 @@ public sealed partial class ScenarioItemsDockViewModel : ObservableObject, IDisp
     private const string DefaultEmptyMessage = "No items - not in-game";
     private const string CurrentRoomEmptyMessage = "No items in your room";
 
-    private readonly ScenarioEntitiesViewModel _source;
+    private readonly ScenarioItemsViewModel _source;
     private readonly ObservableList<ScenarioRoomGroupViewModel> _roomGroups = [];
     private DisposableBag _disposables;
     private bool _onlyShowCurrentPlayerRoom;
     private bool _hasCurrentPlayerRoom;
     private short _currentPlayerRoomId;
+    private ScenarioStatus _scenarioStatus;
+    private bool _showGameplayUiDuringTransitions;
 
     public NotifyCollectionChangedSynchronizedViewList<ScenarioRoomGroupViewModel> RoomGroups { get; }
 
@@ -30,7 +33,7 @@ public sealed partial class ScenarioItemsDockViewModel : ObservableObject, IDisp
     private string _emptyMessage = DefaultEmptyMessage;
 
     public ScenarioItemsDockViewModel(
-        ScenarioEntitiesViewModel source,
+        ScenarioItemsViewModel source,
         IDataObservableSource dataObservable,
         IDataSnapshot dataSnapshot,
         IAppSettingsService settingsService,
@@ -42,6 +45,8 @@ public sealed partial class ScenarioItemsDockViewModel : ObservableObject, IDisp
         RoomGroups = _roomGroups.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
         _onlyShowCurrentPlayerRoom = GetScenarioItemsDockSettings(settingsService.Current).OnlyShowCurrentPlayerRoom;
+        _showGameplayUiDuringTransitions = GetDisplaySettings(settingsService.Current).ShowGameplayUiDuringTransitions;
+        _scenarioStatus = dataSnapshot.InGameScenario.Status;
 
         (bool hasRoom, short roomId) currentPlayerRoom = CurrentPlayerRoomResolver.Resolve(
             dataSnapshot.InGamePlayers,
@@ -75,9 +80,23 @@ public sealed partial class ScenarioItemsDockViewModel : ObservableObject, IDisp
         _disposables.Add(
             settingsService
                 .SettingsObservable.Select(static settings =>
-                    GetScenarioItemsDockSettings(settings).OnlyShowCurrentPlayerRoom
+                    (
+                        OnlyShowCurrentPlayerRoom: GetScenarioItemsDockSettings(settings).OnlyShowCurrentPlayerRoom,
+                        ShowGameplayUiDuringTransitions: GetDisplaySettings(settings).ShowGameplayUiDuringTransitions
+                    )
                 )
-                .Subscribe(enabled => dispatcherService.PostOnUI(() => UpdateFilterSetting(enabled)))
+                .Subscribe(state =>
+                    dispatcherService.PostOnUI(() =>
+                        UpdateDisplaySettings(state.OnlyShowCurrentPlayerRoom, state.ShowGameplayUiDuringTransitions)
+                    )
+                )
+        );
+
+        _disposables.Add(
+            dataObservable
+                .InGameScenarioObservable.Select(static scenario => scenario.Status)
+                .DistinctUntilChanged()
+                .Subscribe(status => dispatcherService.PostOnUI(() => UpdateScenarioStatus(status)))
         );
 
         // Defer the initial rebuild so the dock panel can appear immediately.
@@ -97,12 +116,16 @@ public sealed partial class ScenarioItemsDockViewModel : ObservableObject, IDisp
     private void OnSourceRoomGroupsChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
         RebuildFilteredRoomGroups();
 
-    private void UpdateFilterSetting(bool onlyShowCurrentPlayerRoom)
+    private void UpdateDisplaySettings(bool onlyShowCurrentPlayerRoom, bool showGameplayUiDuringTransitions)
     {
-        if (_onlyShowCurrentPlayerRoom == onlyShowCurrentPlayerRoom)
+        if (
+            _onlyShowCurrentPlayerRoom == onlyShowCurrentPlayerRoom
+            && _showGameplayUiDuringTransitions == showGameplayUiDuringTransitions
+        )
             return;
 
         _onlyShowCurrentPlayerRoom = onlyShowCurrentPlayerRoom;
+        _showGameplayUiDuringTransitions = showGameplayUiDuringTransitions;
         RebuildFilteredRoomGroups();
     }
 
@@ -119,6 +142,15 @@ public sealed partial class ScenarioItemsDockViewModel : ObservableObject, IDisp
         RebuildFilteredRoomGroups();
     }
 
+    private void UpdateScenarioStatus(ScenarioStatus scenarioStatus)
+    {
+        if (_scenarioStatus == scenarioStatus)
+            return;
+
+        _scenarioStatus = scenarioStatus;
+        RebuildFilteredRoomGroups();
+    }
+
     private void RebuildFilteredRoomGroups()
     {
         List<ScenarioRoomGroupViewModel> filteredGroups = [];
@@ -129,10 +161,11 @@ public sealed partial class ScenarioItemsDockViewModel : ObservableObject, IDisp
                 filteredGroups.Add(roomGroup);
         }
 
-        bool hasRoomGroups = filteredGroups.Count > 0;
+        bool isGameplayActive = _scenarioStatus.ShouldShowGameplayUi(_showGameplayUiDuringTransitions);
+        bool hasRoomGroups = isGameplayActive && filteredGroups.Count > 0;
         string emptyMessage =
             hasRoomGroups ? string.Empty
-            : _onlyShowCurrentPlayerRoom && _hasCurrentPlayerRoom ? CurrentRoomEmptyMessage
+            : isGameplayActive && _onlyShowCurrentPlayerRoom && _hasCurrentPlayerRoom ? CurrentRoomEmptyMessage
             : DefaultEmptyMessage;
 
         ApplyFilteredGroupChanges(filteredGroups);
@@ -181,4 +214,7 @@ public sealed partial class ScenarioItemsDockViewModel : ObservableObject, IDisp
 
     private static ScenarioItemsDockSettings GetScenarioItemsDockSettings(OutbreakTrackerSettings settings) =>
         (settings.Display ?? new DisplaySettings()).ScenarioItemsDock ?? new ScenarioItemsDockSettings();
+
+    private static DisplaySettings GetDisplaySettings(OutbreakTrackerSettings settings) =>
+        settings.Display ?? new DisplaySettings();
 }

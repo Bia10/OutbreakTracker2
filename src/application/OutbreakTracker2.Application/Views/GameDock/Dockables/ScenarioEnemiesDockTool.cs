@@ -7,7 +7,7 @@ namespace OutbreakTracker2.Application.Views.GameDock.Dockables;
 /// Floating dock tool that shows the in-game enemy list for the active scenario.
 /// Opened on demand via the "Enemies" button in the scenario info panel.
 /// </summary>
-public sealed class ScenarioEnemiesDockTool(ScenarioEntitiesViewModel scenarioEntitiesViewModel) : Tool
+public sealed class ScenarioEnemiesDockTool(ScenarioEnemiesViewModel scenarioEnemiesViewModel) : Tool
 {
-    public ScenarioEntitiesViewModel ScenarioEntitiesViewModel { get; } = scenarioEntitiesViewModel;
+    public ScenarioEnemiesViewModel ScenarioEnemiesViewModel { get; } = scenarioEnemiesViewModel;
 }
