@@ -10,10 +10,18 @@ public sealed record PlayerInventoryChangedEvent(
     string PlayerName,
     InventoryKind Kind,
     int SlotIndex,
+    byte OldItemId,
     string OldItemName,
+    byte NewItemId,
     string NewItemName
 ) : RunEvent(OccurredAt)
 {
     public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
-        Invariant($"Player **{PlayerName}** {Kind} slot {SlotIndex}: {OldItemName} → **{NewItemName}**");
+        Invariant(
+            $"Player **{PlayerName}** {Kind} slot {SlotIndex} changed from {FormatItemValue(OldItemName, OldItemId)} to **{FormatItemValue(NewItemName, NewItemId)}**."
+        );
+
+    private static string FormatItemValue(string itemName, byte itemId) => $"{itemName} ({FormatRawValue(itemId)})";
+
+    private static string FormatRawValue(byte itemId) => $"0x{itemId:X2} | {itemId}";
 }

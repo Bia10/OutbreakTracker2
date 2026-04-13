@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Reports.Events;
 using OutbreakTracker2.Application.Services.Tracking;
+using OutbreakTracker2.Application.Utilities;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
@@ -251,7 +252,7 @@ public sealed class RunReportService : IRunReportService
 
         // During room transitions the game clears player memory temporarily.
         // Keep stale player data rather than evicting and restarting the session.
-        bool isTransitional = IsTransitionalStatus(currentScenarioStatus);
+        bool isTransitional = currentScenarioStatus.IsTransitional();
 
         HashSet<Ulid>? removedActiveIds = null;
         if (!isTransitional)
@@ -380,20 +381,33 @@ public sealed class RunReportService : IRunReportService
     private void EmitInventoryChanges(
         DateTimeOffset now,
         DecodedInGamePlayer player,
-        byte[] prev,
-        byte[] curr,
+        InventorySnapshot prev,
+        InventorySnapshot curr,
         InventoryKind kind
     )
     {
-        int count = Math.Min(prev.Length, curr.Length);
-        for (int i = 0; i < count; i++)
+        DecodedItem[] scenarioItems = _lastScenario?.Items ?? [];
+
+        for (int i = 0; i < InventorySnapshot.SlotCount; i++)
         {
             if (prev[i] == curr[i])
                 continue;
 
-            string oldName = EnumUtility.GetEnumString(prev[i], ItemType.Unknown);
-            string newName = EnumUtility.GetEnumString(curr[i], ItemType.Unknown);
-            Emit(new PlayerInventoryChangedEvent(now, player.Id, player.Name, kind, i, oldName, newName));
+            ResolvedInventorySlotValue oldItem = InventorySlotValueResolver.Resolve(prev[i], scenarioItems);
+            ResolvedInventorySlotValue newItem = InventorySlotValueResolver.Resolve(curr[i], scenarioItems);
+            Emit(
+                new PlayerInventoryChangedEvent(
+                    now,
+                    player.Id,
+                    player.Name,
+                    kind,
+                    i,
+                    oldItem.ItemId,
+                    oldItem.Name,
+                    newItem.ItemId,
+                    newItem.Name
+                )
+            );
         }
     }
 
@@ -520,21 +534,6 @@ public sealed class RunReportService : IRunReportService
         ScenarioStatus.Unknown10,
         ScenarioStatus.Unknown11,
     };
-
-    // Statuses where player memory is being reloaded and data reads are unreliable.
-    // During these states we preserve the last known player snapshot instead of evicting.
-    // Unknown8-11 are observed in online sessions between room transitions; they must be
-    // treated as transitional to prevent spurious session splits.
-    private static bool IsTransitionalStatus(ScenarioStatus status) =>
-        status
-            is ScenarioStatus.TransitionLoading
-                or ScenarioStatus.CinematicPlaying
-                or ScenarioStatus.GenericLoading
-                or ScenarioStatus.PostIntroLoading
-                or ScenarioStatus.Unknown8
-                or ScenarioStatus.Unknown9
-                or ScenarioStatus.Unknown10
-                or ScenarioStatus.Unknown11;
 
     private void ProcessScenarioDiff(DecodedInGameScenario scenario)
     {

@@ -622,7 +622,17 @@ public sealed class HtmlRunReportWriter : IRunReportWriter
                 AddDetail(details, "Inventory", playerInventoryChanged.Kind.ToString());
                 AddDetail(details, "Slot Index", playerInventoryChanged.SlotIndex);
                 AddDetail(details, "Old Item", playerInventoryChanged.OldItemName);
+                AddDetail(
+                    details,
+                    "Old Slot Value",
+                    $"0x{playerInventoryChanged.OldItemId:X2} | {playerInventoryChanged.OldItemId}"
+                );
                 AddDetail(details, "New Item", playerInventoryChanged.NewItemName);
+                AddDetail(
+                    details,
+                    "New Slot Value",
+                    $"0x{playerInventoryChanged.NewItemId:X2} | {playerInventoryChanged.NewItemId}"
+                );
                 break;
             case PlayerJoinedEvent playerJoined:
                 AddIdDetail(details, "Player Id", playerJoined.PlayerId);
