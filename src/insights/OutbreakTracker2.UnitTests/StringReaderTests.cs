@@ -48,7 +48,7 @@ public sealed class StringReaderTests
                 ?? throw new InvalidOperationException("Linux string reader type could not be loaded.");
             Type loggerType = typeof(NullLogger<>).MakeGenericType(readerType);
             object logger =
-                loggerType.GetProperty("Instance")?.GetValue(null)
+                Activator.CreateInstance(loggerType)
                 ?? throw new InvalidOperationException("Linux string reader logger could not be created.");
 
             return (IStringReader)(

@@ -352,7 +352,7 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
             {
                 IsRunning = false,
                 Id = process.Id,
-                ExitCode = process.ExitCode,
+                ExitCode = process.GetSafeExitCode(),
             }
         );
     }

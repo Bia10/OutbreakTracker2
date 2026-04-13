@@ -20,4 +20,20 @@ internal static class ProcessExtensions
             return DateTime.MinValue;
         }
     }
+
+    /// <summary>
+    /// Returns <see cref="Process.ExitCode"/> or <c>-1</c> when the exit code is unavailable
+    /// (e.g. the process was not started by this object, or the caller lacks permission).
+    /// </summary>
+    internal static int GetSafeExitCode(this Process process)
+    {
+        try
+        {
+            return process.ExitCode;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or Win32Exception or NotSupportedException)
+        {
+            return -1;
+        }
+    }
 }
