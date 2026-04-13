@@ -15,7 +15,7 @@ public class OutbreakTracker2Views
     public OutbreakTracker2Views AddView<
         TView,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel
-    >(ServiceCollection services, bool registerViewModel = true)
+    >(IServiceCollection services, bool registerViewModel = true)
         where TView : ContentControl, new()
         where TViewModel : ObservableObject
     {

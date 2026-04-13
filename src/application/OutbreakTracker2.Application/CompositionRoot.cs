@@ -66,7 +66,7 @@ namespace OutbreakTracker2.Application;
 
 internal static class CompositionRoot
 {
-    internal static OutbreakTracker2Views ConfigureViews(ServiceCollection services) =>
+    internal static OutbreakTracker2Views ConfigureViews(IServiceCollection services) =>
         new OutbreakTracker2Views()
             // Add main view
             .AddView<Views.OutbreakTracker2View, Views.OutbreakTracker2ViewModel>(services)
@@ -228,7 +228,8 @@ internal static class CompositionRoot
         services.AddSingleton<MapDockTool>();
         services.AddSingleton<PlayersDockTool>();
         services.AddSingleton<ScenarioInfoDockTool>();
-        services.AddSingleton<ScenarioEntitiesViewModel>();
+        services.AddSingleton<ScenarioItemsViewModel>();
+        services.AddSingleton<ScenarioEnemiesViewModel>();
         services.AddSingleton<ScenarioItemsDockViewModel>();
         services.AddSingleton<ScenarioItemsDockTool>();
         services.AddSingleton<ScenarioEnemiesDockTool>();
@@ -296,9 +297,13 @@ internal static class CompositionRoot
 
     private static void AddDataServices(IServiceCollection services, IConfiguration configuration)
     {
+        DataManagerOptions dataManagerOptions =
+            configuration.GetSection(DataManagerOptions.SectionName).Get<DataManagerOptions>()
+            ?? new DataManagerOptions();
         TextureAtlasOptions textureAtlasOptions = GetTextureAtlasOptions(configuration);
 
         services.AddSingleton<IEEmemMemory, EEmemMemory>();
+        services.AddSingleton(dataManagerOptions);
         services.AddSingleton<IDataManager, DataManager>();
         services.AddSingleton<IDataObservableSource>(sp => sp.GetRequiredService<IDataManager>());
         services.AddSingleton<IDataSnapshot>(sp => sp.GetRequiredService<IDataManager>());

@@ -60,25 +60,38 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
     string ICurrentScenarioState.ScenarioName => _store.InGameScenarioState.Value.ScenarioName;
     ScenarioStatus ICurrentScenarioState.Status => _store.InGameScenarioState.Value.Status;
 
-    private readonly TimeSpan _fastUpdateInterval = TimeSpan.FromMilliseconds(250);
-    private readonly TimeSpan _slowUpdateInterval = TimeSpan.FromMilliseconds(500);
+    private readonly TimeSpan _fastUpdateInterval;
+    private readonly TimeSpan _slowUpdateInterval;
 
     public DataManager(
         ILogger<DataManager> logger,
         IEEmemMemory eememMemory,
         IProcessLauncher processLauncher,
-        IGameReaderFactory readerFactory
+        IGameReaderFactory readerFactory,
+        DataManagerOptions options
     )
     {
         _logger = logger;
         _eememMemory = eememMemory;
         _readerFactory = readerFactory;
+        ArgumentNullException.ThrowIfNull(options);
+
+        _fastUpdateInterval = CreateUpdateInterval(options.FastUpdateIntervalMs, nameof(options.FastUpdateIntervalMs));
+        _slowUpdateInterval = CreateUpdateInterval(options.SlowUpdateIntervalMs, nameof(options.SlowUpdateIntervalMs));
 
         _processSubscription = processLauncher
             .ProcessUpdate.Where(model => !model.IsRunning)
             .Subscribe(_ => StopUpdateLoops());
 
         SetupObservablesLogging();
+    }
+
+    private static TimeSpan CreateUpdateInterval(int intervalMilliseconds, string optionName)
+    {
+        if (intervalMilliseconds <= 0)
+            throw new InvalidOperationException($"DataManager option '{optionName}' must be greater than zero.");
+
+        return TimeSpan.FromMilliseconds(intervalMilliseconds);
     }
 
     private void SetupObservablesLogging()
@@ -91,17 +104,17 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
         {
             subs.Add(
                 DoorsObservable
-                    .Do(doors => _logger.LogDebug("Doors data CHANGED: {Count} doors.", doors.Length))
+                    .Do(doors => _logger.LogTrace("Doors data changed: {Count} doors.", doors.Length))
                     .Subscribe()
             );
             subs.Add(
                 EnemiesObservable
-                    .Do(enemies => _logger.LogDebug("Enemies data CHANGED: {Count} enemies.", enemies.Length))
+                    .Do(enemies => _logger.LogTrace("Enemies data changed: {Count} enemies.", enemies.Length))
                     .Subscribe()
             );
             subs.Add(
                 InGamePlayersObservable
-                    .Do(players => _logger.LogDebug("InGamePlayers data CHANGED: {Count} players.", players.Length))
+                    .Do(players => _logger.LogTrace("InGamePlayers data changed: {Count} players.", players.Length))
                     .Subscribe()
             );
             subs.Add(
@@ -286,10 +299,15 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
         // while _lastScenarioStatus is still InGame, causing ghost kill events for every
         // dead slot (CurHp <= 1) in the fixed 80-slot enemy array.
         _store.InGameScenarioState.Value = new DecodedInGameScenario();
+        ClearLiveGameplayData();
+        PublishInGameOverviewSnapshot();
+    }
+
+    private void ClearLiveGameplayData()
+    {
         _store.DoorsState.Value = [];
         _store.EnemiesState.Value = [];
         _store.InGamePlayersState.Value = [];
-        PublishInGameOverviewSnapshot();
     }
 
     private void PublishInGameOverviewSnapshot() =>
@@ -305,9 +323,21 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
         _wasInScenario = true;
         _store.IsAtLobbyState.Value = false;
         UpdateInGameScenario();
-        UpdateDoors();
-        UpdateEnemies();
-        UpdateInGamePlayer();
+
+        ScenarioStatus scenarioStatus = _store.InGameScenarioState.Value.Status;
+        if (scenarioStatus.IsGameplayActive())
+        {
+            UpdateDoors();
+            UpdateEnemies();
+            UpdateInGamePlayer();
+        }
+        else if (!scenarioStatus.IsTransitional())
+        {
+            // Transition states keep the last stable gameplay snapshot alive because the
+            // underlying player/enemy/item reads are temporarily unreliable.
+            ClearLiveGameplayData();
+        }
+
         PublishInGameOverviewSnapshot();
     }
 

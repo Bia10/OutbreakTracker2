@@ -34,7 +34,7 @@ RequestedThemeVariant="Default">
             <Entities:ScenarioItemsView DataContext="{Binding ScenarioItemsDockViewModel}" />
         </DataTemplate>
         <DataTemplate DataType="{x:Type dockables:ScenarioEnemiesDockTool}">
-            <Entities:ScenarioEnemiesView DataContext="{Binding ScenarioEntitiesViewModel}" />
+            <Entities:ScenarioEnemiesView DataContext="{Binding ScenarioEnemiesViewModel}" />
         </DataTemplate>
         <DataTemplate DataType="{x:Type dockables:ScenarioDoorsDockTool}">
             <inGameDoors:InGameDoorsView DataContext="{Binding InGameDoorsViewModel}" />
