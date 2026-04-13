@@ -69,11 +69,10 @@ public sealed partial class ImageViewModel : ObservableObject
 
         CroppedBitmap? newImage = null;
 
-        Rect sourceRect = selectedAtlas.GetSourceRectangle(spriteName);
-        if (sourceRect.Width <= 0 || sourceRect.Height <= 0)
+        if (!selectedAtlas.TryGetSourceRectangle(spriteName, out Rect sourceRect))
         {
             _logger.LogWarning(
-                "Sprite '{SpriteName}' not found in atlas or rectangle is invalid for context '{DebugContext}'. Using fallback image",
+                "Sprite '{SpriteName}' could not be resolved from the atlas for context '{DebugContext}'. Using fallback image",
                 spriteName,
                 debugContext
             );

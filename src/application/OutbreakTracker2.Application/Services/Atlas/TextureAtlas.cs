@@ -23,25 +23,47 @@ public sealed class TextureAtlas : ITextureAtlas, IDisposable
 
     public Bitmap? Texture { get; private set; }
 
-    public Rect GetSourceRectangle(string name)
+    public bool TryGetSourceRectangle(string name, out Rect rect)
     {
         if (_spriteSheet is null)
         {
             _logger.LogWarning("SpriteSheet is null. Cannot get source rectangle for '{Name}'", name);
-            return new Rect();
+            rect = default;
+            return false;
         }
 
         if (_spriteSheet.FrameLookup.Count == 0)
         {
             _logger.LogWarning("FrameLookup is empty. Cannot get source rectangle for '{Name}'", name);
-            return new Rect();
+            rect = default;
+            return false;
         }
+
+        if (_spriteSheet.FrameLookup.TryGetValue(name, out Frame? frame))
+        {
+            rect = frame.ToRect();
+            return true;
+        }
+
+        _logger.LogWarning("Frame '{Name}' not found in FrameLookup", name);
+        rect = default;
+        return false;
+    }
+
+    public Rect GetSourceRectangle(string name)
+    {
+        if (_spriteSheet is null)
+            throw new InvalidOperationException(
+                "Texture atlas is unavailable because the sprite sheet has been released."
+            );
+
+        if (_spriteSheet.FrameLookup.Count == 0)
+            throw new InvalidOperationException("Texture atlas does not contain any frame metadata.");
 
         if (_spriteSheet.FrameLookup.TryGetValue(name, out Frame? frame))
             return frame.ToRect();
 
-        _logger.LogWarning("Frame '{Name}' not found in FrameLookup", name);
-        return new Rect();
+        throw new KeyNotFoundException($"Frame '{name}' was not found in the texture atlas.");
     }
 
     public void Dispose()

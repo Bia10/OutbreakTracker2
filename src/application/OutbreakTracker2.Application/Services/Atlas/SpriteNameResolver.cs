@@ -55,7 +55,7 @@ public sealed class SpriteNameResolver(ILogger<SpriteNameResolver> logger) : ISp
 
         // TODO: the format is a bit weird (GameFile/ItemTypeName)
         if (!itemName.StartsWith("File Two/", StringComparison.OrdinalIgnoreCase))
-            spriteName = $"FileTwo/{itemName}";
+            spriteName = $"File Two/{itemName}";
 
         _logger.LogDebug("Obtained sprite name '{SpriteName}' for item id '{ItemId}'", spriteName, itemName);
         return spriteName;

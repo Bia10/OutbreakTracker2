@@ -60,6 +60,7 @@ public sealed class TextureAtlasService(
         }
 
         string baseDirectory = AppContext.BaseDirectory;
+        Dictionary<string, ITextureAtlas> stagedAtlases = new(StringComparer.OrdinalIgnoreCase);
 
         try
         {
@@ -88,27 +89,42 @@ public sealed class TextureAtlasService(
                     FileAccess.Read,
                     FileShare.Read
                 );
-                _loadedAtlases.Add(atlas.Name, _textureAtlasFactory(imageStream, sheet));
+                stagedAtlases.Add(atlas.Name, _textureAtlasFactory(imageStream, sheet));
                 _logger.LogInformation("TextureAtlas '{AtlasName}' loaded successfully", atlas.Name);
             }
+
+            foreach ((string atlasName, ITextureAtlas atlas) in stagedAtlases)
+                _loadedAtlases.Add(atlasName, atlas);
         }
         catch (FileNotFoundException ex)
         {
+            DisposeAtlases(stagedAtlases.Values);
             _logger.LogCritical(ex, "One or more texture atlas files not found. Application cannot start!");
             throw;
         }
         catch (JsonException ex)
         {
+            DisposeAtlases(stagedAtlases.Values);
             _logger.LogCritical(ex, "Error deserializing JSON data for texture atlas. Application cannot start!");
             throw;
         }
         catch (Exception ex)
         {
+            DisposeAtlases(stagedAtlases.Values);
             _logger.LogCritical(
                 ex,
                 "An unexpected error occurred while loading TextureAtlas. Application cannot start!"
             );
             throw;
+        }
+    }
+
+    private static void DisposeAtlases(IEnumerable<ITextureAtlas> atlases)
+    {
+        foreach (ITextureAtlas atlas in atlases)
+        {
+            if (atlas is IDisposable disposable)
+                disposable.Dispose();
         }
     }
 

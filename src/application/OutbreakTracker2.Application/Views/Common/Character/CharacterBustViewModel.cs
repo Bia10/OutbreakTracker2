@@ -7,6 +7,10 @@ using OutbreakTracker2.Outbreak.Enums.Character;
 
 namespace OutbreakTracker2.Application.Views.Common.Character;
 
+/// <summary>
+/// Wraps bust-image loading for a character card. Dispose the view model when its owner is removed
+/// so the inner image-view-model property-changed subscription is released.
+/// </summary>
 public sealed class CharacterBustViewModel : ObservableObject, IDisposable
 {
     private readonly ILogger<CharacterBustViewModel> _logger;

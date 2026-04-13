@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace OutbreakTracker2.Application.Views.Common.Item;
 
-public sealed class ItemImageViewModel : ObservableObject
+public sealed class ItemImageViewModel : ObservableObject, IDisposable
 {
     private readonly ILogger<ItemImageViewModel> _logger;
 
@@ -42,6 +42,8 @@ public sealed class ItemImageViewModel : ObservableObject
 
         return ImageViewModel.UpdateImageAsync(itemName, $"Item Image for {itemName}");
     }
+
+    public void Dispose() => ImageViewModel.PropertyChanged -= OnImageViewModelSourceImageChanged;
 
     private void OnImageViewModelSourceImageChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
