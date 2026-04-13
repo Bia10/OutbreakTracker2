@@ -42,6 +42,7 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDispo
 
     public void Dispose()
     {
+        DisposeItemViewModels();
         Items.Dispose();
         Enemies.Dispose();
         Doors.Dispose();
@@ -50,43 +51,47 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDispo
 
     public void ClearItems()
     {
+        DisposeItemViewModels();
         _items.Clear();
         _roomGroups.Clear();
         _previousPickedUpStates.Clear();
         HasRoomGroups = false;
     }
 
-    public void UpdateItems(DecodedItem[] newItems, int frameCounter, GameFile gameFile)
+    public void UpdateItems(
+        DecodedItem[] newItems,
+        Func<DecodedItem, DecodedItem> projectDisplayItem,
+        int frameCounter,
+        GameFile gameFile
+    )
     {
-        // First call: retain the raw 255-slot decode, then project a filtered room-group view.
+        ArgumentNullException.ThrowIfNull(newItems);
+        ArgumentNullException.ThrowIfNull(projectDisplayItem);
+
         if (_items.Count == 0)
         {
-            DecodedItem[] initialDisplayItems = new DecodedItem[newItems.Length];
             ScenarioItemSlotViewModel[] vms = new ScenarioItemSlotViewModel[newItems.Length];
             for (int i = 0; i < newItems.Length; i++)
             {
-                DecodedItem displayItem = NormalizeDisplayItem(newItems[i]);
-                initialDisplayItems[i] = displayItem;
+                DecodedItem displayItem = NormalizeDisplayItem(projectDisplayItem(newItems[i]));
                 ItemImageViewModel imageVm = _itemImageViewModelFactory.Create();
                 vms[i] = new ScenarioItemSlotViewModel(displayItem, imageVm, gameFile, (byte)i);
                 _previousPickedUpStates[(byte)i] = newItems[i].PickedUp;
             }
             _items.AddRange(vms);
 
-            RebuildRoomGroups(initialDisplayItems);
+            RebuildRoomGroups();
             return;
         }
 
-        // Subsequent calls: update every slot in-place — no add/remove, only Replace events.
         int itemCount = Math.Min(newItems.Length, _items.Count);
-        DecodedItem[] displayItems = new DecodedItem[itemCount];
         bool anyItemChanged = false;
 
         for (int i = 0; i < itemCount; i++)
         {
             DecodedItem newItem = newItems[i];
-            DecodedItem displayItem = NormalizeDisplayItem(newItem);
-            displayItems[i] = displayItem;
+            DecodedItem projectedItem = projectDisplayItem(newItem);
+            DecodedItem displayItem = NormalizeDisplayItem(projectedItem);
             ScenarioItemSlotViewModel vm = _items[i];
             byte slotKey = (byte)i;
             string trackedTypeName = string.IsNullOrEmpty(vm.TypeName) ? newItem.TypeName : vm.TypeName;
@@ -100,10 +105,10 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDispo
                 if (previousPickedUp == 0 && newItem.PickedUp > 0)
                 {
                     string holder =
-                        string.IsNullOrEmpty(newItem.PickedUpByName)
-                        || string.Equals(newItem.PickedUpByName, "None", StringComparison.Ordinal)
+                        string.IsNullOrEmpty(projectedItem.PickedUpByName)
+                        || string.Equals(projectedItem.PickedUpByName, "None", StringComparison.Ordinal)
                             ? $"P{newItem.PickedUp}"
-                            : newItem.PickedUpByName;
+                            : projectedItem.PickedUpByName;
                     _ = _toastService.InvokeInfoToastAsync($"{holder} picked up {trackedTypeName}", "Item Picked Up");
                     vm.IsPickupTracked = false;
                 }
@@ -114,7 +119,7 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDispo
         }
 
         if (anyItemChanged)
-            RebuildRoomGroups(displayItems);
+            RebuildRoomGroups();
     }
 
     private static DecodedItem NormalizeDisplayItem(in DecodedItem item)
@@ -138,13 +143,12 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDispo
         };
     }
 
-    private void RebuildRoomGroups(IReadOnlyList<DecodedItem> items)
+    private void RebuildRoomGroups()
     {
-        HashSet<int> visibleIndices = [.. ScenarioItemRoomGroupProjection.GetVisibleIndices(items)];
+        HashSet<int> visibleIndices = [.. ScenarioItemRoomGroupProjection.GetVisibleIndices(_items)];
         List<ScenarioItemSlotViewModel> visibleItems = [];
-        int itemCount = Math.Min(items.Count, _items.Count);
 
-        for (int i = 0; i < itemCount; i++)
+        for (int i = 0; i < _items.Count; i++)
         {
             if (visibleIndices.Contains(i))
                 visibleItems.Add(_items[i]);
@@ -202,6 +206,12 @@ public sealed partial class ScenarioEntitiesViewModel : ObservableObject, IDispo
         }
 
         return true;
+    }
+
+    private void DisposeItemViewModels()
+    {
+        foreach (ScenarioItemSlotViewModel item in _items)
+            item.Dispose();
     }
 
     public void UpdateEnemies(DecodedEnemy[] newEnemies)

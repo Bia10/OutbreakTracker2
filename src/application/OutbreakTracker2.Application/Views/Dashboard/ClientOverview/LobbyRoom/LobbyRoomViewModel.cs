@@ -19,7 +19,7 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
 {
     private readonly ILogger<LobbyRoomViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
-    private readonly IDisposable _subscription;
+    private DisposableBag _subscriptions;
     private readonly CancellationTokenSource _imageUpdateCts = new();
 
     // Keyed by the decoded player's stable Ulid so VMs are reused by slot identity,
@@ -73,110 +73,147 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
             SynchronizationContextCollectionEventDispatcher.Current
         );
 
-        IDisposable lobbyPresenceSubscription = dataObservable
-            .IsAtLobbyObservable.ObserveOnThreadPool()
-            .SubscribeAwait(
-                async (isAtLobby, cancellationToken) =>
-                {
-                    await _dispatcherService
-                        .InvokeOnUIAsync(() => IsAtLobby = isAtLobby, cancellationToken)
-                        .ConfigureAwait(false);
-                },
-                AwaitOperation.Drop
+        try
+        {
+            _subscriptions.Add(
+                dataObservable
+                    .IsAtLobbyObservable.ObserveOnThreadPool()
+                    .SubscribeAwait(
+                        async (isAtLobby, cancellationToken) =>
+                        {
+                            await _dispatcherService
+                                .InvokeOnUIAsync(() => IsAtLobby = isAtLobby, cancellationToken)
+                                .ConfigureAwait(false);
+                        },
+                        AwaitOperation.Drop
+                    )
             );
 
-        IDisposable lobbyRoomDataSubscription = dataObservable
-            .LobbyRoomObservable.WithLatestFrom(
-                dataObservable.IsAtLobbyObservable,
-                (lobbyData, isAtLobby) => (LobbyData: lobbyData, IsAtLobby: isAtLobby)
-            )
-            .Where(static state => state.IsAtLobby)
-            .Select(static state => state.LobbyData)
-            .ObserveOnThreadPool()
-            .SubscribeAwait(
-                async (lobbyData, cancellationToken) =>
-                {
-                    try
-                    {
-                        await _dispatcherService
-                            .InvokeOnUIAsync(() => UpdateLobbyProperties(lobbyData), cancellationToken)
-                            .ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException) { }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error during lobby room data processing cycle");
-                    }
-                },
-                AwaitOperation.Drop
+            _subscriptions.Add(
+                dataObservable
+                    .LobbyRoomObservable.WithLatestFrom(
+                        dataObservable.IsAtLobbyObservable,
+                        (lobbyData, isAtLobby) => (LobbyData: lobbyData, IsAtLobby: isAtLobby)
+                    )
+                    .Where(static state => state.IsAtLobby)
+                    .Select(static state => state.LobbyData)
+                    .ObserveOnThreadPool()
+                    .SubscribeAwait(
+                        async (lobbyData, cancellationToken) =>
+                        {
+                            try
+                            {
+                                await _dispatcherService
+                                    .InvokeOnUIAsync(() => UpdateLobbyProperties(lobbyData), cancellationToken)
+                                    .ConfigureAwait(false);
+                            }
+                            catch (OperationCanceledException) { }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Error during lobby room data processing cycle");
+                            }
+                        },
+                        AwaitOperation.Drop
+                    )
             );
 
-        IDisposable lobbyRoomPlayersSubscription = dataObservable
-            .LobbyRoomPlayersObservable.WithLatestFrom(
-                dataObservable.IsAtLobbyObservable,
-                (players, isAtLobby) => (Players: players, IsAtLobby: isAtLobby)
-            )
-            .Where(static state => state.IsAtLobby)
-            .Select(static state => state.Players)
-            .ObserveOnThreadPool()
-            .SubscribeAwait(
-                async (incomingPlayersSnapshot, cancellationToken) =>
-                {
-                    List<DecodedLobbyRoomPlayer> filteredIncomingPlayers = incomingPlayersSnapshot
-                        .AsValueEnumerable()
-                        .Where(IsPlayerActive)
-                        .ToList();
+            _subscriptions.Add(
+                dataObservable
+                    .LobbyRoomPlayersObservable.WithLatestFrom(
+                        dataObservable.IsAtLobbyObservable,
+                        (players, isAtLobby) => (Players: players, IsAtLobby: isAtLobby)
+                    )
+                    .Where(static state => state.IsAtLobby)
+                    .Select(static state => state.Players)
+                    .ObserveOnThreadPool()
+                    .SubscribeAwait(
+                        async (incomingPlayersSnapshot, cancellationToken) =>
+                        {
+                            List<DecodedLobbyRoomPlayer> filteredIncomingPlayers = incomingPlayersSnapshot
+                                .AsValueEnumerable()
+                                .Where(IsPlayerActive)
+                                .ToList();
 
-                    try
-                    {
-                        OrderedObservableListReconcilePlan<
-                            DecodedLobbyRoomPlayer,
-                            LobbyRoomPlayerViewModel,
-                            Ulid
-                        > plan = OrderedObservableListReconciler.BuildPlan(
-                            filteredIncomingPlayers,
-                            _viewModelCache,
-                            static player => player.Id,
-                            playerVmFactory.Create
-                        );
+                            try
+                            {
+                                OrderedObservableListReconcilePlan<
+                                    DecodedLobbyRoomPlayer,
+                                    LobbyRoomPlayerViewModel,
+                                    Ulid
+                                > plan = OrderedObservableListReconciler.BuildPlan(
+                                    filteredIncomingPlayers,
+                                    _viewModelCache,
+                                    static player => player.Id,
+                                    playerVmFactory.Create
+                                );
 
-                        await _dispatcherService
-                            .InvokeOnUIAsync(
-                                () =>
-                                {
-                                    OrderedObservableListReconciler.ApplyPlan(
-                                        plan,
-                                        _playersInternal,
-                                        _viewModelCache,
-                                        static vm => vm.ViewModelId,
-                                        (vm, player) => vm.Update(player, _currentRoomMasterId)
-                                    );
+                                await _dispatcherService
+                                    .InvokeOnUIAsync(
+                                        () =>
+                                        {
+                                            List<LobbyRoomPlayerViewModel> removedViewModels =
+                                                GetRemovedPlayerViewModels(plan.CacheKeysToRemove);
 
-                                    _logger.LogDebug("Lobby room players updated: {Count}", _playersInternal.Count);
-                                },
-                                cancellationToken
-                            )
-                            .ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException) { }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error during lobby room players snapshot processing cycle");
-                    }
-                },
-                AwaitOperation.Drop
+                                            OrderedObservableListReconciler.ApplyPlan(
+                                                plan,
+                                                _playersInternal,
+                                                _viewModelCache,
+                                                static vm => vm.ViewModelId,
+                                                (vm, player) => vm.Update(player, _currentRoomMasterId)
+                                            );
+
+                                            DisposePlayerViewModels(removedViewModels);
+
+                                            _logger.LogDebug(
+                                                "Lobby room players updated: {Count}",
+                                                _playersInternal.Count
+                                            );
+                                        },
+                                        cancellationToken
+                                    )
+                                    .ConfigureAwait(false);
+                            }
+                            catch (OperationCanceledException) { }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Error during lobby room players snapshot processing cycle");
+                            }
+                        },
+                        AwaitOperation.Drop
+                    )
             );
-
-        _subscription = Disposable.Combine(
-            lobbyPresenceSubscription,
-            lobbyRoomDataSubscription,
-            lobbyRoomPlayersSubscription
-        );
+        }
+        catch
+        {
+            _subscriptions.Dispose();
+            PlayersView.Dispose();
+            ScenarioImageViewModel.Dispose();
+            throw;
+        }
     }
 
     private static bool IsPlayerActive(DecodedLobbyRoomPlayer player) =>
         !string.IsNullOrEmpty(player.CharacterName)
         || (!string.IsNullOrEmpty(player.NpcName) && player is { IsEnabled: true });
+
+    private List<LobbyRoomPlayerViewModel> GetRemovedPlayerViewModels(IReadOnlyList<Ulid> removedKeys)
+    {
+        List<LobbyRoomPlayerViewModel> removedViewModels = [];
+
+        foreach (Ulid removedKey in removedKeys)
+        {
+            if (_viewModelCache.TryGetValue(removedKey, out LobbyRoomPlayerViewModel? removedViewModel))
+                removedViewModels.Add(removedViewModel);
+        }
+
+        return removedViewModels;
+    }
+
+    private static void DisposePlayerViewModels(IEnumerable<LobbyRoomPlayerViewModel> playerViewModels)
+    {
+        foreach (LobbyRoomPlayerViewModel playerViewModel in playerViewModels)
+            playerViewModel.Dispose();
+    }
 
     private void UpdateLobbyProperties(in DecodedLobbyRoom model)
     {
@@ -239,11 +276,13 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
 
         _imageUpdateCts.Cancel();
         _imageUpdateCts.Dispose();
-        _subscription.Dispose();
+        _subscriptions.Dispose();
+        ScenarioImageViewModel.Dispose();
 
         await _dispatcherService
             .InvokeOnUIAsync(() =>
             {
+                DisposePlayerViewModels(_viewModelCache.Values);
                 _playersInternal.Clear();
                 _viewModelCache.Clear();
                 PlayersView.Dispose();

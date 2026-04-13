@@ -6,15 +6,25 @@ public static class ScenarioItemRoomGroupProjection
 {
     private const short StoryItemTypeIdThreshold = 10_000;
 
-    public static IReadOnlyList<int> GetVisibleIndices(IReadOnlyList<DecodedItem> items)
+    public static IReadOnlyList<int> GetVisibleIndices(IReadOnlyList<DecodedItem> items) =>
+        GetVisibleIndicesCore(items, static item => item);
+
+    public static IReadOnlyList<int> GetVisibleIndices(IReadOnlyList<ScenarioItemSlotViewModel> items) =>
+        GetVisibleIndicesCore(items, static item => item.Item);
+
+    private static IReadOnlyList<int> GetVisibleIndicesCore<TItem>(
+        IReadOnlyList<TItem> items,
+        Func<TItem, DecodedItem> getItem
+    )
     {
         ArgumentNullException.ThrowIfNull(items);
+        ArgumentNullException.ThrowIfNull(getItem);
 
         Dictionary<string, List<int>> roomIndices = new(StringComparer.Ordinal);
 
         for (int index = 0; index < items.Count; index++)
         {
-            string roomName = NormalizeRoomName(items[index].RoomName);
+            string roomName = NormalizeRoomName(getItem(items[index]).RoomName);
             if (!roomIndices.TryGetValue(roomName, out List<int>? indices))
             {
                 indices = [];
@@ -26,16 +36,17 @@ public static class ScenarioItemRoomGroupProjection
 
         List<int> visibleIndices = new(items.Count);
         foreach (List<int> indices in roomIndices.Values)
-            AddVisibleIndicesForRoom(items, indices, visibleIndices);
+            AddVisibleIndicesForRoom(items, indices, visibleIndices, getItem);
 
         visibleIndices.Sort();
         return visibleIndices;
     }
 
-    private static void AddVisibleIndicesForRoom(
-        IReadOnlyList<DecodedItem> items,
+    private static void AddVisibleIndicesForRoom<TItem>(
+        IReadOnlyList<TItem> items,
         IReadOnlyList<int> roomIndices,
-        List<int> visibleIndices
+        List<int> visibleIndices,
+        Func<TItem, DecodedItem> getItem
     )
     {
         HashSet<int> collapsed = new(roomIndices.Count);
@@ -46,7 +57,7 @@ public static class ScenarioItemRoomGroupProjection
             if (collapsed.Contains(rawIndex))
                 continue;
 
-            DecodedItem candidate = items[rawIndex];
+            DecodedItem candidate = getItem(items[rawIndex]);
 
             if (!IsStoryItem(candidate.TypeId))
             {
@@ -62,11 +73,14 @@ public static class ScenarioItemRoomGroupProjection
             for (int j = index + 1; j < roomIndices.Count; j++)
             {
                 int otherRawIndex = roomIndices[j];
-                if (!collapsed.Contains(otherRawIndex) && AreMirroredStoryCopies(candidate, items[otherRawIndex]))
+                if (
+                    !collapsed.Contains(otherRawIndex)
+                    && AreMirroredStoryCopies(candidate, getItem(items[otherRawIndex]))
+                )
                     copies.Add(otherRawIndex);
             }
 
-            visibleIndices.Add(SelectRepresentativeIndex(items, copies));
+            visibleIndices.Add(SelectRepresentativeIndex(items, copies, getItem));
             foreach (int ri in copies)
                 collapsed.Add(ri);
         }
@@ -88,11 +102,15 @@ public static class ScenarioItemRoomGroupProjection
             );
     }
 
-    private static int SelectRepresentativeIndex(IReadOnlyList<DecodedItem> items, List<int> copies)
+    private static int SelectRepresentativeIndex<TItem>(
+        IReadOnlyList<TItem> items,
+        List<int> copies,
+        Func<TItem, DecodedItem> getItem
+    )
     {
         foreach (int rawIndex in copies)
         {
-            if (items[rawIndex].SlotIndex > 0)
+            if (getItem(items[rawIndex]).SlotIndex > 0)
                 return rawIndex;
         }
 

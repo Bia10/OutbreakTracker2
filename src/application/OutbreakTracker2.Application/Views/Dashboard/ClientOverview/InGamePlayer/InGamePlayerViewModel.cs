@@ -9,7 +9,7 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer;
 
-public sealed partial class InGamePlayerViewModel : ObservableObject
+public sealed partial class InGamePlayerViewModel : ObservableObject, IDisposable
 {
     [ObservableProperty]
     private short _nameId;
@@ -144,4 +144,10 @@ public sealed partial class InGamePlayerViewModel : ObservableObject
     }
 
     public override int GetHashCode() => System.StringComparer.Ordinal.GetHashCode(UniqueNameId);
+
+    public void Dispose()
+    {
+        Inventory.Dispose();
+        PlayerBustViewModel.Dispose();
+    }
 }

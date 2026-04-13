@@ -1,6 +1,7 @@
 ﻿using System.Collections.Specialized;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
@@ -18,6 +19,7 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
     private const string DefaultEmptyMessage = "No active enemies - not in-game";
     private const string CurrentRoomEmptyMessage = "No entities in your room";
 
+    private readonly ILogger<EntitiesDockViewModel> _logger;
     private readonly IEnemyCardCollectionSource _source;
     private readonly IDispatcherService _dispatcherService;
     private readonly ObservableList<InGameEnemyViewModel> _enemies = [];
@@ -40,9 +42,11 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
         IDataObservableSource dataObservable,
         IDataSnapshot dataSnapshot,
         IAppSettingsService settingsService,
-        IDispatcherService dispatcherService
+        IDispatcherService dispatcherService,
+        ILogger<EntitiesDockViewModel> logger
     )
     {
+        _logger = logger;
         _source = source;
         _dispatcherService = dispatcherService;
 
@@ -66,7 +70,12 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
                     dataObservable.InGameScenarioObservable,
                     static (players, scenario) => ResolveCurrentPlayerRoom(players, scenario.LocalPlayerSlotIndex)
                 )
-                .Subscribe(roomState => _dispatcherService.PostOnUI(() => UpdateCurrentPlayerRoom(roomState)))
+                .Subscribe(
+                    onNext: roomState => _dispatcherService.PostOnUI(() => UpdateCurrentPlayerRoom(roomState)),
+                    onErrorResume: ex =>
+                        _logger.LogError(ex, "Error while monitoring entities-dock player room updates"),
+                    onCompleted: _ => _logger.LogInformation("Entities-dock player-room stream completed")
+                )
         );
 
         _disposables.Add(
@@ -75,7 +84,12 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
                     dataObservable.InGamePlayersObservable,
                     static (scenario, players) => ResolveCurrentPlayerRoom(players, scenario.LocalPlayerSlotIndex)
                 )
-                .Subscribe(roomState => _dispatcherService.PostOnUI(() => UpdateCurrentPlayerRoom(roomState)))
+                .Subscribe(
+                    onNext: roomState => _dispatcherService.PostOnUI(() => UpdateCurrentPlayerRoom(roomState)),
+                    onErrorResume: ex =>
+                        _logger.LogError(ex, "Error while monitoring entities-dock scenario room updates"),
+                    onCompleted: _ => _logger.LogInformation("Entities-dock scenario-room stream completed")
+                )
         );
 
         _disposables.Add(
@@ -83,7 +97,11 @@ public sealed partial class EntitiesDockViewModel : ObservableObject, IDisposabl
                 .SettingsObservable.Select(static settings =>
                     GetEntitiesDockSettings(settings).OnlyShowCurrentPlayerRoom
                 )
-                .Subscribe(enabled => _dispatcherService.PostOnUI(() => UpdateFilterSetting(enabled)))
+                .Subscribe(
+                    onNext: enabled => _dispatcherService.PostOnUI(() => UpdateFilterSetting(enabled)),
+                    onErrorResume: ex => _logger.LogError(ex, "Error while monitoring entities-dock settings"),
+                    onCompleted: _ => _logger.LogInformation("Entities-dock settings stream completed")
+                )
         );
 
         // Defer the initial rebuild so the dock panel can appear immediately.

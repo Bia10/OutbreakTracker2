@@ -32,11 +32,19 @@ public sealed class LogDataStorageService : ILogDataStorageService, IAsyncDispos
         _processingTask = Task.Run(() => ProcessLogChannelAsync(_cts.Token), _cts.Token);
     }
 
-    public ValueTask AddEntryAsync(LogModel logModel, CancellationToken cancellationToken)
+    public async ValueTask AddEntryAsync(LogModel logModel, CancellationToken cancellationToken)
     {
         if (_isDisposed)
-            return ValueTask.CompletedTask;
-        return _logChannel.Writer.WriteAsync(logModel, cancellationToken);
+            return;
+
+        try
+        {
+            await _logChannel.Writer.WriteAsync(logModel, cancellationToken).ConfigureAwait(false);
+        }
+        catch (ChannelClosedException)
+        {
+            _logger.LogDebug("Skipping log entry because the storage channel was closed during shutdown.");
+        }
     }
 
     private async Task ProcessLogChannelAsync(CancellationToken cancellationToken)
@@ -68,7 +76,7 @@ public sealed class LogDataStorageService : ILogDataStorageService, IAsyncDispos
 
         await _cts.CancelAsync().ConfigureAwait(false);
 
-        _logChannel.Writer.Complete();
+        _logChannel.Writer.TryComplete();
 
         try
         {

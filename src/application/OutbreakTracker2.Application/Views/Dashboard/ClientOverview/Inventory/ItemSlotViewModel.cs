@@ -11,7 +11,7 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
 public sealed partial class ItemSlotViewModel(
     ILogger<ItemSlotViewModel> logger,
     IItemImageViewModelFactory itemImageViewModelFactory
-) : ObservableObject, IItemSlotDisplay
+) : ObservableObject, IItemSlotDisplay, IDisposable
 {
     private readonly ILogger<ItemSlotViewModel> _logger = logger;
 
@@ -125,4 +125,6 @@ public sealed partial class ItemSlotViewModel(
 
         return null;
     }
+
+    public void Dispose() => ItemImageViewModel.Dispose();
 }

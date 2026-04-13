@@ -2,6 +2,7 @@
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Styling;
 using Avalonia.Threading;
 
@@ -9,6 +10,8 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor
 
 public partial class InGameDoorView : UserControl, IDisposable
 {
+    private static readonly Dictionary<Color, ISolidColorBrush> GlowBrushCache = [];
+
     private Border? _glowBorder;
     private CancellationTokenSource? _glowCts;
     private InGameDoorViewModel? _currentViewModel;
@@ -71,7 +74,7 @@ public partial class InGameDoorView : UserControl, IDisposable
         if (_glowBorder is null)
             return;
 
-        _glowBorder.BorderBrush = new SolidColorBrush(color);
+        _glowBorder.BorderBrush = GetGlowBrush(color);
         _glowBorder.Opacity = 1.0;
 
         var animation = new Animation
@@ -87,5 +90,16 @@ public partial class InGameDoorView : UserControl, IDisposable
         };
 
         _ = animation.RunAsync(_glowBorder, _glowCts.Token);
+    }
+
+    private static ISolidColorBrush GetGlowBrush(Color color)
+    {
+        if (!GlowBrushCache.TryGetValue(color, out ISolidColorBrush? brush))
+        {
+            brush = new ImmutableSolidColorBrush(color);
+            GlowBrushCache[color] = brush;
+        }
+
+        return brush;
     }
 }

@@ -202,6 +202,7 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
         if (_viewModelCache.Remove(id, out InGamePlayerViewModel? vm))
         {
             _players.Remove(vm);
+            vm.Dispose();
             _logger.LogDebug("Removed player VM {Id}", id);
         }
     }
@@ -231,6 +232,9 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
         await _dispatcherService
             .InvokeOnUIAsync(() =>
             {
+                foreach (InGamePlayerViewModel player in _viewModelCache.Values)
+                    player.Dispose();
+
                 _players.Clear();
                 _viewModelCache.Clear();
                 PlayersView.Dispose();

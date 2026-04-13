@@ -6,7 +6,7 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
 
-public sealed partial class InventoryViewModel : ObservableObject
+public sealed partial class InventoryViewModel : ObservableObject, IDisposable
 {
     private readonly IItemSlotViewModelFactory _itemSlotViewModelFactory;
 
@@ -107,4 +107,20 @@ public sealed partial class InventoryViewModel : ObservableObject
     }
 
     private static bool IsValidItem(DecodedItem item) => item is not { SlotIndex: 0, PickedUp: 0 };
+
+    public void Dispose()
+    {
+        DisposeSlots(EquippedItems);
+        DisposeSlots(MainSlots);
+        DisposeSlots(SpecialItems);
+        DisposeSlots(SpecialSlots);
+        DisposeSlots(DeadSlots);
+        DisposeSlots(SpecialDeadSlots);
+    }
+
+    private static void DisposeSlots(IEnumerable<ItemSlotViewModel> slots)
+    {
+        foreach (ItemSlotViewModel slot in slots)
+            slot.Dispose();
+    }
 }

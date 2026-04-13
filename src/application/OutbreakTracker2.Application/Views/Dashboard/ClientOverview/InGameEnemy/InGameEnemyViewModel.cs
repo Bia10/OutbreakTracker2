@@ -93,7 +93,7 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
         HealthStatus = GetEnemiesHealthStatusStringForFileTwo(enemy.SlotId, enemy.NameId, enemy.CurHp, enemy.MaxHp);
         IsDead = IsDeadStatus(HealthStatus);
         IsInvincible = HealthStatus is "Invincible";
-        HealthPercentage = IsDead ? 0.0 : PercentageUtility.GetPercentage(enemy.CurHp, enemy.MaxHp);
+        HealthPercentage = IsDead || enemy.MaxHp == 0 ? 0.0 : PercentageUtility.GetPercentage(enemy.CurHp, enemy.MaxHp);
         BossType = ConvertBossType(enemy.BossType);
         Status = ConvertStatus(enemy.Status);
         RoomId = enemy.RoomId;

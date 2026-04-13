@@ -9,7 +9,7 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameScenario.Entities;
 
-public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemSlotDisplay
+public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemSlotDisplay, IDisposable
 {
     private static readonly Color SlotChangedGlowColor = Colors.Orange;
     private static readonly Color SlotEmptiedGlowColor = Colors.Red;
@@ -17,22 +17,11 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemS
     public ItemImageViewModel ItemImageViewModel { get; }
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(TypeName))]
-    [NotifyPropertyChangedFor(nameof(Quantity))]
-    [NotifyPropertyChangedFor(nameof(QuantityText))]
-    [NotifyPropertyChangedFor(nameof(SlotIndex))]
-    [NotifyPropertyChangedFor(nameof(PickedUp))]
-    [NotifyPropertyChangedFor(nameof(PickedUpByName))]
-    [NotifyPropertyChangedFor(nameof(RoomName))]
-    [NotifyPropertyChangedFor(nameof(RoomId))]
-    [NotifyPropertyChangedFor(nameof(Mix))]
-    [NotifyPropertyChangedFor(nameof(Present))]
-    [NotifyPropertyChangedFor(nameof(PickedUpDisplay))]
-    [NotifyPropertyChangedFor(nameof(IsHeldByPlayer))]
-    [NotifyPropertyChangedFor(nameof(IsEmpty))]
-    [NotifyPropertyChangedFor(nameof(DisplayName))]
-    [NotifyPropertyChangedFor(nameof(DebugInfo))]
     private DecodedItem _item;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SlotNumber))]
+    private byte _positionIndex;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TrackingMenuHeader))]
@@ -41,8 +30,6 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemS
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PickedUpAtDisplay))]
     private int? _pickedUpAtFrame;
-
-    public byte PositionIndex { get; private set; }
 
     public string TypeName => Item.TypeName;
     public short Quantity => Item.Quantity;
@@ -54,19 +41,16 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemS
     public byte Mix => Item.Mix;
     public int Present => Item.Present;
 
-    private bool UsesInventoryEmptyStyle => Item is { TypeId: 0, Quantity: 0, PickedUp: 0, Present: 0 };
+    private bool UsesInventoryEmptyStyle => UsesInventoryEmptyStyleCore(Item);
 
-    public bool IsEmpty =>
-        UsesInventoryEmptyStyle
-        || string.IsNullOrEmpty(Item.TypeName)
-        || string.Equals(Item.TypeName, "Unknown", StringComparison.Ordinal);
-    public string DisplayName => IsEmpty ? "Empty" : Item.TypeName;
+    public bool IsEmpty => IsItemEmpty(Item);
+    public string DisplayName => GetDisplayName(Item);
     public string QuantityText => Quantity.ToString(CultureInfo.InvariantCulture);
     public int SlotNumber => PositionIndex;
-    public string DebugInfo => UsesInventoryEmptyStyle ? "0x00 | 0" : $"0x{Item.Id:X2} | {Item.Id}";
+    public string DebugInfo => GetDebugInfo(Item);
 
-    public string PickedUpDisplay => Item.PickedUp > 0 ? $"P{Item.PickedUp}" : string.Empty;
-    public bool IsHeldByPlayer => Item.PickedUp > 0;
+    public string PickedUpDisplay => GetPickedUpDisplay(Item);
+    public bool IsHeldByPlayer => IsItemHeldByPlayer(Item);
     public string TrackingMenuHeader => IsPickupTracked ? "Stop Tracking Pickup" : "Track Pickup";
     public string PickedUpAtDisplay =>
         PickedUpAtFrame.HasValue ? TimeUtility.GetTimeFromFrames(PickedUpAtFrame.Value) : "--:--:--.–";
@@ -111,10 +95,34 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemS
             RefreshImage(gameFile);
     }
 
+    partial void OnItemChanged(DecodedItem oldValue, DecodedItem newValue)
+    {
+        RaiseIfChanged(oldValue.TypeName, newValue.TypeName, nameof(TypeName));
+
+        if (oldValue.Quantity != newValue.Quantity)
+        {
+            OnPropertyChanged(nameof(Quantity));
+            OnPropertyChanged(nameof(QuantityText));
+        }
+
+        RaiseIfChanged(oldValue.SlotIndex, newValue.SlotIndex, nameof(SlotIndex));
+        RaiseIfChanged(oldValue.PickedUp, newValue.PickedUp, nameof(PickedUp));
+        RaiseIfChanged(oldValue.PickedUpByName, newValue.PickedUpByName, nameof(PickedUpByName));
+        RaiseIfChanged(oldValue.RoomName, newValue.RoomName, nameof(RoomName));
+        RaiseIfChanged(oldValue.RoomId, newValue.RoomId, nameof(RoomId));
+        RaiseIfChanged(oldValue.Mix, newValue.Mix, nameof(Mix));
+        RaiseIfChanged(oldValue.Present, newValue.Present, nameof(Present));
+        RaiseIfChanged(GetPickedUpDisplay(oldValue), GetPickedUpDisplay(newValue), nameof(PickedUpDisplay));
+        RaiseIfChanged(IsItemHeldByPlayer(oldValue), IsItemHeldByPlayer(newValue), nameof(IsHeldByPlayer));
+        RaiseIfChanged(IsItemEmpty(oldValue), IsItemEmpty(newValue), nameof(IsEmpty));
+        RaiseIfChanged(GetDisplayName(oldValue), GetDisplayName(newValue), nameof(DisplayName));
+        RaiseIfChanged(GetDebugInfo(oldValue), GetDebugInfo(newValue), nameof(DebugInfo));
+    }
+
     private static Color? DetermineGlowColor(in DecodedItem previousItem, in DecodedItem newItem)
     {
-        bool wasEmpty = IsDisplayEmpty(previousItem);
-        bool isEmpty = IsDisplayEmpty(newItem);
+        bool wasEmpty = IsItemEmpty(previousItem);
+        bool isEmpty = IsItemEmpty(newItem);
 
         if (!wasEmpty && isEmpty)
             return SlotEmptiedGlowColor;
@@ -135,10 +143,29 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemS
         return null;
     }
 
-    private static bool IsDisplayEmpty(in DecodedItem item) =>
-        item is { TypeId: 0, Quantity: 0, PickedUp: 0, Present: 0 }
+    private static bool UsesInventoryEmptyStyleCore(in DecodedItem item) =>
+        item is { TypeId: 0, Quantity: 0, PickedUp: 0, Present: 0 };
+
+    private static bool IsItemEmpty(in DecodedItem item) =>
+        UsesInventoryEmptyStyleCore(item)
         || string.IsNullOrEmpty(item.TypeName)
         || string.Equals(item.TypeName, "Unknown", StringComparison.Ordinal);
+
+    private static string GetDisplayName(in DecodedItem item) => IsItemEmpty(item) ? "Empty" : item.TypeName;
+
+    private static string GetDebugInfo(in DecodedItem item) =>
+        UsesInventoryEmptyStyleCore(item) ? "0x00 | 0" : $"0x{item.Id:X2} | {item.Id}";
+
+    private static string GetPickedUpDisplay(in DecodedItem item) =>
+        item.PickedUp > 0 ? $"P{item.PickedUp}" : string.Empty;
+
+    private static bool IsItemHeldByPlayer(in DecodedItem item) => item.PickedUp > 0;
+
+    private void RaiseIfChanged<T>(T oldValue, T newValue, string propertyName)
+    {
+        if (!EqualityComparer<T>.Default.Equals(oldValue, newValue))
+            OnPropertyChanged(propertyName);
+    }
 
     private void RefreshImage(GameFile gameFile)
     {
@@ -152,4 +179,6 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemS
         string spriteLookupName = currentFile + "/" + Item.TypeName;
         _ = ItemImageViewModel.UpdateImageAsync(spriteLookupName);
     }
+
+    public void Dispose() => ItemImageViewModel.Dispose();
 }

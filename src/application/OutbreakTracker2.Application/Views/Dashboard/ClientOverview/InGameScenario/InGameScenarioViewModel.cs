@@ -218,8 +218,16 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         GasRandomOrderDisplay = CalculateGasRandomOrderDisplay();
         IsCleared = GetClearedDisplay();
 
-        ResolveItemDisplayFields(scenario, players);
-        ScenarioEntitiesVm.UpdateItems(scenario.Items, scenario.FrameCounter, (GameFile)scenario.CurrentFile);
+        Scenario scenarioEnum = EnumUtility.TryParseByValueOrMember(scenario.ScenarioName, out Scenario parsedScenario)
+            ? parsedScenario
+            : Scenario.Unknown;
+
+        ScenarioEntitiesVm.UpdateItems(
+            scenario.Items,
+            item => ProjectDisplayItem(item, players, scenarioEnum),
+            scenario.FrameCounter,
+            (GameFile)scenario.CurrentFile
+        );
 
         UpdateScenarioSpecificViewModel(scenario);
     }
@@ -240,73 +248,68 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         return count;
     }
 
-    private void ResolveItemDisplayFields(DecodedInGameScenario scenario, DecodedInGamePlayer[] players)
+    private DecodedItem ProjectDisplayItem(DecodedItem item, DecodedInGamePlayer[] players, Scenario scenario)
     {
-        bool scenarioParsed = EnumUtility.TryParseByValueOrMember(ScenarioName, out Scenario scenarioEnum);
+        string roomName = scenario.GetRoomName(item.RoomId);
+        string pickedUpByName = ResolvePickedUpByName(item, players);
 
-        for (int i = 0; i < scenario.Items.Length; i++)
+        return item with
         {
-            DecodedItem item = scenario.Items[i];
+            RoomName = roomName,
+            PickedUpByName = pickedUpByName,
+        };
+    }
 
-            string roomName = scenarioParsed ? scenarioEnum.GetRoomName(item.RoomId) : $"Room {item.RoomId}";
-
-            string pickedUpByName;
-            if (item.PickedUp == 0)
-            {
-                _lastInvalidPickedUpWarnings.Remove(item.Id);
-                pickedUpByName = "None";
-            }
-            else
-            {
-                int slotIndex = item.PickedUp - 1;
-                if (slotIndex >= 0 && slotIndex < players.Length)
-                {
-                    _lastInvalidPickedUpWarnings.Remove(item.Id);
-                    DecodedInGamePlayer player = players[slotIndex];
-                    pickedUpByName =
-                        player.IsEnabled && !string.IsNullOrEmpty(player.Name) ? player.Name : $"P{item.PickedUp}";
-                }
-                else
-                {
-                    if (ShouldWarnInvalidPickedUp(item, players.Length))
-                    {
-                        InvalidPickedUpWarning warning = new(
-                            item.SlotIndex,
-                            item.TypeName,
-                            item.PickedUp,
-                            item.Present,
-                            item.Quantity,
-                            players.Length
-                        );
-
-                        if (
-                            !_lastInvalidPickedUpWarnings.TryGetValue(item.Id, out InvalidPickedUpWarning lastWarning)
-                            || lastWarning != warning
-                        )
-                        {
-                            _lastInvalidPickedUpWarnings[item.Id] = warning;
-                            _logger.LogWarning(
-                                "Item slot={Slot} type={Type} has PickedUp={PickedUp} which is out of valid player range [1,{Max}]; Present={Present} Qty={Qty}",
-                                item.SlotIndex,
-                                item.TypeName,
-                                item.PickedUp,
-                                players.Length,
-                                item.Present,
-                                item.Quantity
-                            );
-                        }
-                    }
-                    else
-                    {
-                        _lastInvalidPickedUpWarnings.Remove(item.Id);
-                    }
-
-                    pickedUpByName = $"P{item.PickedUp}";
-                }
-            }
-
-            scenario.Items[i] = item with { RoomName = roomName, PickedUpByName = pickedUpByName };
+    private string ResolvePickedUpByName(in DecodedItem item, DecodedInGamePlayer[] players)
+    {
+        if (item.PickedUp == 0)
+        {
+            _lastInvalidPickedUpWarnings.Remove(item.Id);
+            return "None";
         }
+
+        int slotIndex = item.PickedUp - 1;
+        if (slotIndex >= 0 && slotIndex < players.Length)
+        {
+            _lastInvalidPickedUpWarnings.Remove(item.Id);
+            DecodedInGamePlayer player = players[slotIndex];
+            return player.IsEnabled && !string.IsNullOrEmpty(player.Name) ? player.Name : $"P{item.PickedUp}";
+        }
+
+        if (ShouldWarnInvalidPickedUp(item, players.Length))
+        {
+            InvalidPickedUpWarning warning = new(
+                item.SlotIndex,
+                item.TypeName,
+                item.PickedUp,
+                item.Present,
+                item.Quantity,
+                players.Length
+            );
+
+            if (
+                !_lastInvalidPickedUpWarnings.TryGetValue(item.Id, out InvalidPickedUpWarning lastWarning)
+                || lastWarning != warning
+            )
+            {
+                _lastInvalidPickedUpWarnings[item.Id] = warning;
+                _logger.LogWarning(
+                    "Item slot={Slot} type={Type} has PickedUp={PickedUp} which is out of valid player range [1,{Max}]; Present={Present} Qty={Qty}",
+                    item.SlotIndex,
+                    item.TypeName,
+                    item.PickedUp,
+                    players.Length,
+                    item.Present,
+                    item.Quantity
+                );
+            }
+        }
+        else
+        {
+            _lastInvalidPickedUpWarnings.Remove(item.Id);
+        }
+
+        return $"P{item.PickedUp}";
     }
 
     private static bool ShouldWarnInvalidPickedUp(DecodedItem item, int playerCount) =>

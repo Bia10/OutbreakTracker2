@@ -6,7 +6,7 @@ using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.LobbyRoomPlayer;
 
-public sealed partial class LobbyRoomPlayerViewModel : ObservableObject
+public sealed partial class LobbyRoomPlayerViewModel : ObservableObject, IDisposable
 {
     [ObservableProperty]
     private Ulid _id;
@@ -81,6 +81,8 @@ public sealed partial class LobbyRoomPlayerViewModel : ObservableObject
         if (EnumUtility.TryParseByValueOrMember(DisplayName, out CharacterBaseType charType))
             _ = PlayerBustViewModel.UpdateBustAsync(charType);
     }
+
+    public void Dispose() => PlayerBustViewModel.Dispose();
 
     public override bool Equals(object? obj) => obj is LobbyRoomPlayerViewModel viewModel && Id == viewModel.Id;
 
