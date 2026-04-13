@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using OutbreakTracker2.Application.Services.Atlas;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
+using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Services.Toasts;
 using OutbreakTracker2.Application.Views.Common;
 using OutbreakTracker2.Application.Views.Common.Item;
@@ -25,17 +26,27 @@ public sealed class InGameScenarioViewModelTests
     public async Task CombinedUpdateBurst_MarshalsToUiOnce_AndAppliesLatestSnapshot()
     {
         using FakeScenarioDataSource dataSource = new();
+        using FakeAppSettingsService settingsService = new();
         using TestSynchronizationContextScope scope = new();
-        using ScenarioEntitiesViewModel scenarioEntities = new(
+        using ScenarioItemsViewModel scenarioItems = new(
+            NullLogger<ScenarioItemsViewModel>.Instance,
+            dataSource,
+            new ImmediateDispatcherService(),
             new NullToastService(),
             new StubItemImageViewModelFactory()
+        );
+        using ScenarioEnemiesViewModel scenarioEnemies = new(
+            NullLogger<ScenarioEnemiesViewModel>.Instance,
+            dataSource,
+            settingsService,
+            new ImmediateDispatcherService()
         );
         CountingDispatcherService dispatcher = new();
         using InGameScenarioViewModel viewModel = new(
             NullLogger<InGameScenarioViewModel>.Instance,
             dataSource,
             dispatcher,
-            scenarioEntities,
+            settingsService,
             new ScenarioEntityCommands(),
             new ScenarioViewModelRouter([])
         );
@@ -83,10 +94,10 @@ public sealed class InGameScenarioViewModelTests
                 MaxHealth = 100,
                 RoomId = 1,
                 RoomName = "Warehouse",
-                Inventory = new byte[4],
-                SpecialInventory = new byte[4],
-                DeadInventory = new byte[4],
-                SpecialDeadInventory = new byte[4],
+                Inventory = InventorySnapshot.Empty,
+                SpecialInventory = InventorySnapshot.Empty,
+                DeadInventory = InventorySnapshot.Empty,
+                SpecialDeadInventory = InventorySnapshot.Empty,
             },
         ];
 
@@ -98,8 +109,9 @@ public sealed class InGameScenarioViewModelTests
         await Assert.That(dispatcher.InvocationCount).IsEqualTo(1);
         await Assert.That(viewModel.FrameCounter).IsEqualTo(120);
         await Assert.That((int)viewModel.PlayerCount).IsEqualTo(1);
-        await Assert.That(viewModel.ScenarioEntitiesVm.Enemies.Count).IsEqualTo(1);
-        await Assert.That(viewModel.ScenarioEntitiesVm.Doors.Count).IsEqualTo(1);
+        await Assert.That(viewModel.PlayerCountDisplay).IsEqualTo($"1/{GameConstants.MaxPlayers}");
+        await Assert.That(scenarioItems.Items.Count).IsEqualTo(GameConstants.MaxItems);
+        await Assert.That(scenarioEnemies.Enemies.Count).IsEqualTo(1);
     }
 
     [Test]
@@ -107,7 +119,11 @@ public sealed class InGameScenarioViewModelTests
     {
         using TestSynchronizationContextScope scope = new();
         using FakeScenarioDataSource dataSource = new();
-        using ScenarioEntitiesViewModel scenarioEntities = new(
+        using FakeAppSettingsService settingsService = new();
+        using ScenarioItemsViewModel scenarioItems = new(
+            NullLogger<ScenarioItemsViewModel>.Instance,
+            dataSource,
+            new ImmediateDispatcherService(),
             new NullToastService(),
             new StubItemImageViewModelFactory()
         );
@@ -115,7 +131,7 @@ public sealed class InGameScenarioViewModelTests
             NullLogger<InGameScenarioViewModel>.Instance,
             dataSource,
             new ImmediateDispatcherService(),
-            scenarioEntities,
+            settingsService,
             new ScenarioEntityCommands(),
             new ScenarioViewModelRouter([])
         );
@@ -142,12 +158,161 @@ public sealed class InGameScenarioViewModelTests
             Items = items,
         };
 
-        viewModel.Update(scenario, []);
+        dataSource.PublishOverview(new InGameOverviewSnapshot(scenario, [], [], []));
+        await Task.Delay(100);
 
         await Assert.That(scenario.Items[0].RoomName).IsEqualTo(string.Empty);
         await Assert.That(scenario.Items[0].PickedUpByName).IsEqualTo(string.Empty);
-        await Assert.That(viewModel.ScenarioEntitiesVm.Items[0].RoomName).IsEqualTo(Scenario.Unknown.GetRoomName(3));
-        await Assert.That(viewModel.ScenarioEntitiesVm.Items[0].PickedUpByName).IsEqualTo("None");
+        await Assert.That(scenarioItems.Items[0].RoomName).IsEqualTo(Scenario.Unknown.GetRoomName(3));
+        await Assert.That(scenarioItems.Items[0].PickedUpByName).IsEqualTo("None");
+    }
+
+    [Test]
+    public async Task Update_TracksTerminalScenarioStatus_WhileKeepingScenarioUiInactive()
+    {
+        using TestSynchronizationContextScope scope = new();
+        using FakeScenarioDataSource dataSource = new();
+        using FakeAppSettingsService settingsService = new();
+        using InGameScenarioViewModel viewModel = new(
+            NullLogger<InGameScenarioViewModel>.Instance,
+            dataSource,
+            new ImmediateDispatcherService(),
+            settingsService,
+            new ScenarioEntityCommands(),
+            new ScenarioViewModelRouter([])
+        );
+
+        dataSource.PublishOverview(
+            new InGameOverviewSnapshot(
+                new DecodedInGameScenario
+                {
+                    CurrentFile = (byte)GameFile.FileTwo,
+                    ScenarioName = "Wild Things",
+                    FrameCounter = 120,
+                    Status = ScenarioStatus.GameFinished,
+                },
+                [],
+                [],
+                []
+            )
+        );
+        await Task.Delay(100);
+
+        await Assert.That(viewModel.Status).IsEqualTo(ScenarioStatus.GameFinished);
+        await Assert.That(viewModel.FrameCounter).IsEqualTo(120);
+        await Assert.That(viewModel.IsCleared).IsEqualTo("Yes");
+        await Assert.That(viewModel.IsScenarioActive).IsFalse();
+        await Assert.That(viewModel.IsScenarioNotActive).IsTrue();
+    }
+
+    [Test]
+    public async Task TransitionVisibilitySetting_RevealsScenarioUi_WhenEnabledAtRuntime()
+    {
+        using TestSynchronizationContextScope scope = new();
+        using FakeScenarioDataSource dataSource = new();
+        using FakeAppSettingsService settingsService = new();
+        using InGameScenarioViewModel viewModel = new(
+            NullLogger<InGameScenarioViewModel>.Instance,
+            dataSource,
+            new ImmediateDispatcherService(),
+            settingsService,
+            new ScenarioEntityCommands(),
+            new ScenarioViewModelRouter([])
+        );
+
+        dataSource.PublishOverview(
+            new InGameOverviewSnapshot(
+                new DecodedInGameScenario
+                {
+                    CurrentFile = (byte)GameFile.FileTwo,
+                    ScenarioName = "Wild Things",
+                    FrameCounter = 120,
+                    Status = ScenarioStatus.TransitionLoading,
+                },
+                [],
+                [],
+                []
+            )
+        );
+        await Task.Delay(100);
+
+        await Assert.That(viewModel.IsScenarioActive).IsFalse();
+        await Assert.That(viewModel.IsScenarioNotActive).IsTrue();
+
+        settingsService.SetCurrent(
+            new OutbreakTrackerSettings { Display = new DisplaySettings { ShowGameplayUiDuringTransitions = true } }
+        );
+        await Task.Delay(100);
+
+        await Assert.That(viewModel.IsScenarioActive).IsTrue();
+        await Assert.That(viewModel.IsScenarioNotActive).IsFalse();
+    }
+
+    [Test]
+    public async Task ScenarioItemsViewModel_KeepsLastStableItems_DuringTransitionalSnapshots()
+    {
+        using TestSynchronizationContextScope scope = new();
+        using FakeScenarioDataSource dataSource = new();
+        using ScenarioItemsViewModel scenarioItems = new(
+            NullLogger<ScenarioItemsViewModel>.Instance,
+            dataSource,
+            new ImmediateDispatcherService(),
+            new NullToastService(),
+            new StubItemImageViewModelFactory()
+        );
+
+        DecodedItem[] stableItems = new DecodedItem[GameConstants.MaxItems];
+        stableItems[0] = new DecodedItem
+        {
+            Id = 1,
+            SlotIndex = 1,
+            TypeId = 10,
+            TypeName = "Green Herb",
+            Quantity = 1,
+            PickedUp = 0,
+            Present = 1,
+            RoomId = 3,
+        };
+
+        dataSource.PublishOverview(
+            new InGameOverviewSnapshot(
+                new DecodedInGameScenario
+                {
+                    CurrentFile = (byte)GameFile.FileTwo,
+                    ScenarioName = nameof(Scenario.Unknown),
+                    FrameCounter = 120,
+                    Status = ScenarioStatus.InGame,
+                    Items = stableItems,
+                },
+                [],
+                [],
+                []
+            )
+        );
+        await Task.Delay(100);
+
+        await Assert.That(scenarioItems.Items[0].DisplayName).IsEqualTo("Green Herb");
+        await Assert.That(scenarioItems.Items[0].RoomName).IsEqualTo(Scenario.Unknown.GetRoomName(3));
+
+        dataSource.PublishOverview(
+            new InGameOverviewSnapshot(
+                new DecodedInGameScenario
+                {
+                    CurrentFile = 0,
+                    ScenarioName = nameof(Scenario.Unknown),
+                    FrameCounter = 120,
+                    Status = ScenarioStatus.TransitionLoading,
+                    Items = new DecodedItem[GameConstants.MaxItems],
+                },
+                [],
+                [],
+                []
+            )
+        );
+        await Task.Delay(100);
+
+        await Assert.That(scenarioItems.Items[0].DisplayName).IsEqualTo("Green Herb");
+        await Assert.That(scenarioItems.Items[0].RoomName).IsEqualTo(Scenario.Unknown.GetRoomName(3));
     }
 
     private sealed class FakeScenarioDataSource : IDataObservableSource, IDataSnapshot, IDisposable
@@ -202,6 +367,44 @@ public sealed class InGameScenarioViewModelTests
             _lobbySlots.Dispose();
             _isAtLobby.Dispose();
         }
+    }
+
+    private sealed class FakeAppSettingsService : IAppSettingsService
+    {
+        private readonly ReactiveProperty<OutbreakTrackerSettings> _settings;
+
+        public FakeAppSettingsService(OutbreakTrackerSettings? settings = null)
+        {
+            _settings = new ReactiveProperty<OutbreakTrackerSettings>(settings ?? new OutbreakTrackerSettings());
+        }
+
+        public string UserSettingsPath { get; } =
+            Path.Combine(Path.GetTempPath(), "outbreaktracker2-test-settings.json");
+
+        public OutbreakTrackerSettings Current => _settings.Value;
+
+        public Observable<OutbreakTrackerSettings> SettingsObservable => _settings;
+
+        public void SetCurrent(OutbreakTrackerSettings settings) => _settings.Value = settings;
+
+        public ValueTask SaveAsync(OutbreakTrackerSettings settings, CancellationToken cancellationToken = default)
+        {
+            _settings.Value = settings;
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask ExportAsync(Stream destination, CancellationToken cancellationToken = default) =>
+            ValueTask.CompletedTask;
+
+        public ValueTask<OutbreakTrackerSettings> ImportAsync(
+            Stream source,
+            CancellationToken cancellationToken = default
+        ) => ValueTask.FromResult(Current);
+
+        public ValueTask<OutbreakTrackerSettings> ResetToDefaultsAsync(CancellationToken cancellationToken = default) =>
+            ValueTask.FromResult(Current);
+
+        public void Dispose() => _settings.Dispose();
     }
 
     private sealed class CountingDispatcherService : IDispatcherService

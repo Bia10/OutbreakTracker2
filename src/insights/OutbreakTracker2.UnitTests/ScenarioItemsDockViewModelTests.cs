@@ -32,9 +32,9 @@ public sealed class ScenarioItemsDockViewModelTests
             }
         );
         using TestSynchronizationContextScope scope = new();
-        using ScenarioEntitiesViewModel source = new(new NullToastService(), new StubItemImageViewModelFactory());
+        using ScenarioItemsViewModel source = CreateSource();
 
-        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
+        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0, Status = ScenarioStatus.InGame });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1), CreatePlayer(slotIndex: 1, roomId: 3)]);
 
         source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
@@ -70,9 +70,9 @@ public sealed class ScenarioItemsDockViewModelTests
             }
         );
         using TestSynchronizationContextScope scope = new();
-        using ScenarioEntitiesViewModel source = new(new NullToastService(), new StubItemImageViewModelFactory());
+        using ScenarioItemsViewModel source = CreateSource();
 
-        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
+        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0, Status = ScenarioStatus.InGame });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
 
         source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
@@ -95,6 +95,41 @@ public sealed class ScenarioItemsDockViewModelTests
     }
 
     [Test]
+    public async Task HidesRoomGroups_WhenScenarioStatusIsNotGameplayActive()
+    {
+        using FakeDataSource dataSource = new();
+        using FakeAppSettingsService settingsService = new(
+            new OutbreakTrackerSettings
+            {
+                Display = new DisplaySettings
+                {
+                    ScenarioItemsDock = new ScenarioItemsDockSettings { OnlyShowCurrentPlayerRoom = false },
+                },
+            }
+        );
+        using TestSynchronizationContextScope scope = new();
+        using ScenarioItemsViewModel source = CreateSource();
+
+        dataSource.SetScenario(
+            new DecodedInGameScenario { LocalPlayerSlotIndex = 0, Status = ScenarioStatus.GameFinished }
+        );
+        dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
+
+        source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
+
+        using ScenarioItemsDockViewModel viewModel = new(
+            source,
+            dataSource,
+            dataSource,
+            settingsService,
+            new ImmediateDispatcherService()
+        );
+
+        await Assert.That(viewModel.HasRoomGroups).IsFalse();
+        await Assert.That(viewModel.EmptyMessage).IsEqualTo("No items - not in-game");
+    }
+
+    [Test]
     public async Task ShowsAllRoomGroups_WhenSettingIsDisabledAtRuntime()
     {
         using FakeDataSource dataSource = new();
@@ -108,9 +143,9 @@ public sealed class ScenarioItemsDockViewModelTests
             }
         );
         using TestSynchronizationContextScope scope = new();
-        using ScenarioEntitiesViewModel source = new(new NullToastService(), new StubItemImageViewModelFactory());
+        using ScenarioItemsViewModel source = CreateSource();
 
-        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
+        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0, Status = ScenarioStatus.InGame });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
 
         source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
@@ -152,9 +187,9 @@ public sealed class ScenarioItemsDockViewModelTests
             }
         );
         using TestSynchronizationContextScope scope = new();
-        using ScenarioEntitiesViewModel source = new(new NullToastService(), new StubItemImageViewModelFactory());
+        using ScenarioItemsViewModel source = CreateSource();
 
-        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
+        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0, Status = ScenarioStatus.InGame });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
 
         source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
@@ -199,9 +234,9 @@ public sealed class ScenarioItemsDockViewModelTests
             }
         );
         using TestSynchronizationContextScope scope = new();
-        using ScenarioEntitiesViewModel source = new(new NullToastService(), new StubItemImageViewModelFactory());
+        using ScenarioItemsViewModel source = CreateSource();
 
-        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
+        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0, Status = ScenarioStatus.InGame });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
 
         source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
@@ -232,7 +267,7 @@ public sealed class ScenarioItemsDockViewModelTests
     public async Task DisablesTracking_WhenTrackedItemPickedUpWithoutExchange()
     {
         using TestSynchronizationContextScope scope = new();
-        using ScenarioEntitiesViewModel source = new(new NullToastService(), new StubItemImageViewModelFactory());
+        using ScenarioItemsViewModel source = CreateSource();
 
         source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
 
@@ -266,9 +301,9 @@ public sealed class ScenarioItemsDockViewModelTests
             }
         );
         using TestSynchronizationContextScope scope = new();
-        using ScenarioEntitiesViewModel source = new(new NullToastService(), new StubItemImageViewModelFactory());
+        using ScenarioItemsViewModel source = CreateSource();
 
-        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
+        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0, Status = ScenarioStatus.InGame });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
 
         source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
@@ -392,6 +427,15 @@ public sealed class ScenarioItemsDockViewModelTests
 
     private static DecodedItem IdentityProjection(DecodedItem item) => item;
 
+    private static ScenarioItemsViewModel CreateSource() =>
+        new(
+            NullLogger<ScenarioItemsViewModel>.Instance,
+            new SilentOverviewDataSource(),
+            new ImmediateDispatcherService(),
+            new NullToastService(),
+            new StubItemImageViewModelFactory()
+        );
+
     private static List<ScenarioRoomGroupViewModel> ReadVisibleGroups(ScenarioItemsDockViewModel viewModel)
     {
         List<ScenarioRoomGroupViewModel> visibleGroups = [];
@@ -449,6 +493,29 @@ public sealed class ScenarioItemsDockViewModelTests
             _lobbySlots.Dispose();
             _isAtLobby.Dispose();
         }
+    }
+
+    private sealed class SilentOverviewDataSource : IDataObservableSource
+    {
+        private readonly Subject<DecodedDoor[]> _doors = new();
+        private readonly Subject<DecodedEnemy[]> _enemies = new();
+        private readonly Subject<DecodedInGamePlayer[]> _inGamePlayers = new();
+        private readonly Subject<InGameOverviewSnapshot> _inGameOverview = new();
+        private readonly Subject<DecodedInGameScenario> _inGameScenario = new();
+        private readonly Subject<DecodedLobbyRoom> _lobbyRoom = new();
+        private readonly Subject<DecodedLobbyRoomPlayer[]> _lobbyPlayers = new();
+        private readonly Subject<DecodedLobbySlot[]> _lobbySlots = new();
+        private readonly Subject<bool> _isAtLobby = new();
+
+        public Observable<DecodedDoor[]> DoorsObservable => _doors;
+        public Observable<DecodedEnemy[]> EnemiesObservable => _enemies;
+        public Observable<DecodedInGamePlayer[]> InGamePlayersObservable => _inGamePlayers;
+        public Observable<InGameOverviewSnapshot> InGameOverviewObservable => _inGameOverview;
+        public Observable<DecodedInGameScenario> InGameScenarioObservable => _inGameScenario;
+        public Observable<DecodedLobbyRoom> LobbyRoomObservable => _lobbyRoom;
+        public Observable<DecodedLobbyRoomPlayer[]> LobbyRoomPlayersObservable => _lobbyPlayers;
+        public Observable<DecodedLobbySlot[]> LobbySlotsObservable => _lobbySlots;
+        public Observable<bool> IsAtLobbyObservable => _isAtLobby;
     }
 
     private sealed class FakeAppSettingsService : IAppSettingsService

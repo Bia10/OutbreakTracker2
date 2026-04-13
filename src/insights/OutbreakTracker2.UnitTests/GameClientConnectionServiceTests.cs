@@ -48,7 +48,27 @@ public sealed class GameClientConnectionServiceTests
         await Assert.That(ReferenceEquals(result, attachedClient)).IsTrue();
         await Assert.That(ReferenceEquals(dataManager.LastInitializedClient, attachedClient)).IsTrue();
         await Assert.That(launcher.AttachedProcessId).IsEqualTo(1234);
+        await Assert.That(launcher.LastAttachCancellationToken).IsEqualTo(CancellationToken.None);
         await Assert.That(dataManager.InitializeCallCount).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task AttachAndInitializeAsync_ForwardsCancellationTokenToAttachAndInitialize()
+    {
+        FakeGameClient attachedClient = new();
+        FakeProcessLauncher launcher = new() { AttachResult = attachedClient };
+        RecordingDataManager dataManager = new();
+        GameClientConnectionService service = new(
+            NullLogger<GameClientConnectionService>.Instance,
+            launcher,
+            dataManager
+        );
+        using CancellationTokenSource cancellationTokenSource = new();
+
+        await service.AttachAndInitializeAsync(5678, cancellationTokenSource.Token);
+
+        await Assert.That(launcher.LastAttachCancellationToken).IsEqualTo(cancellationTokenSource.Token);
+        await Assert.That(dataManager.LastInitializeCancellationToken).IsEqualTo(cancellationTokenSource.Token);
     }
 
     private sealed class FakeProcessLauncher : IProcessLauncher
@@ -75,6 +95,8 @@ public sealed class GameClientConnectionServiceTests
 
         public int? AttachedProcessId { get; private set; }
 
+        public CancellationToken LastAttachCancellationToken { get; private set; }
+
         public Task<IGameClient> LaunchAsync(
             string fileName,
             string? arguments,
@@ -87,9 +109,10 @@ public sealed class GameClientConnectionServiceTests
             return Task.FromResult<IGameClient>(LaunchResult);
         }
 
-        public Task<IGameClient> AttachAsync(int processId)
+        public Task<IGameClient> AttachAsync(int processId, CancellationToken cancellationToken = default)
         {
             AttachedProcessId = processId;
+            LastAttachCancellationToken = cancellationToken;
             AttachedGameClient = AttachResult;
             return Task.FromResult<IGameClient>(AttachResult);
         }
@@ -122,6 +145,8 @@ public sealed class GameClientConnectionServiceTests
         public int InitializeCallCount { get; private set; }
 
         public IGameClient? LastInitializedClient { get; private set; }
+
+        public CancellationToken LastInitializeCancellationToken { get; private set; }
 
         public Observable<DecodedDoor[]> DoorsObservable => _doors;
 
@@ -161,6 +186,7 @@ public sealed class GameClientConnectionServiceTests
         {
             InitializeCallCount++;
             LastInitializedClient = gameClient;
+            LastInitializeCancellationToken = cancellationToken;
             return ValueTask.CompletedTask;
         }
 

@@ -36,13 +36,13 @@ public sealed class NotificationServiceTests
     {
         private readonly Subject<AlertNotification> _alerts = new();
 
-        public IEntityTracker<DecodedEnemy> Enemies => null!;
+        public IReadOnlyEntityTracker<DecodedEnemy> Enemies => null!;
 
-        public IEntityTracker<DecodedDoor> Doors => null!;
+        public IReadOnlyEntityTracker<DecodedDoor> Doors => null!;
 
-        public IEntityTracker<DecodedInGamePlayer> Players => null!;
+        public IReadOnlyEntityTracker<DecodedInGamePlayer> Players => null!;
 
-        public IEntityTracker<DecodedLobbySlot> LobbySlots => null!;
+        public IReadOnlyEntityTracker<DecodedLobbySlot> LobbySlots => null!;
 
         public Observable<AlertNotification> AllAlerts => _alerts;
 

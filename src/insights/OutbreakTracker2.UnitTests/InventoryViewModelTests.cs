@@ -45,11 +45,11 @@ public sealed class InventoryViewModelTests
         viewModel.UpdateFromPlayerData(
             "Fine",
             equippedItem: 1,
-            mainInventory: [1, 2, 0, 0],
+            mainInventory: new InventorySnapshot(1, 2, 0, 0),
             specialItem: 0,
-            specialInventory: [0, 0, 0, 0],
-            deadInventory: [0, 0, 0, 0],
-            specialDeadInventory: [0, 0, 0, 0],
+            specialInventory: InventorySnapshot.Empty,
+            deadInventory: InventorySnapshot.Empty,
+            specialDeadInventory: InventorySnapshot.Empty,
             GameFile.FileOne,
             scenarioItems
         );
@@ -57,11 +57,11 @@ public sealed class InventoryViewModelTests
         viewModel.UpdateFromPlayerData(
             "Fine",
             equippedItem: 2,
-            mainInventory: [2, 1, 0, 0],
+            mainInventory: new InventorySnapshot(2, 1, 0, 0),
             specialItem: 0,
-            specialInventory: [0, 0, 0, 0],
-            deadInventory: [0, 0, 0, 0],
-            specialDeadInventory: [0, 0, 0, 0],
+            specialInventory: InventorySnapshot.Empty,
+            deadInventory: InventorySnapshot.Empty,
+            specialDeadInventory: InventorySnapshot.Empty,
             GameFile.FileOne,
             scenarioItems
         );

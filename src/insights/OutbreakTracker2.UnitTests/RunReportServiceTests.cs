@@ -3,6 +3,7 @@ using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Reports;
 using OutbreakTracker2.Application.Services.Reports.Events;
 using OutbreakTracker2.Application.Services.Tracking;
+using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.PCSX2.Client;
@@ -287,6 +288,38 @@ public sealed class RunReportServiceTests
         await Assert.That(dmg).IsNotNull();
         await Assert.That(dmg!.IsDamage).IsTrue();
         await Assert.That((int)(dmg.OldHealth - dmg.NewHealth)).IsEqualTo(40);
+    }
+
+    [Test]
+    public async Task PlayerInventoryChangedEvent_UsesEmptyAndUnknownSlotResolution()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(
+            new DecodedInGameScenario
+            {
+                Status = ScenarioStatus.InGame,
+                Items = new DecodedItem[GameConstants.MaxItems],
+            }
+        );
+
+        DecodedInGamePlayer previous = InGamePlayer(playerId) with { Inventory = InventorySnapshot.Empty };
+        DecodedInGamePlayer current = previous with { Inventory = new InventorySnapshot(0x21, 0, 0, 0) };
+
+        registry.PlayerTracker.ChangesSource.Push(Added(previous));
+        registry.PlayerTracker.ChangesSource.Push(Changed(previous, current));
+
+        PlayerInventoryChangedEvent? evt = received.OfType<PlayerInventoryChangedEvent>().FirstOrDefault();
+        await Assert.That(evt).IsNotNull();
+        await Assert.That(evt!.OldItemName).IsEqualTo("Empty");
+        await Assert.That((int)evt.OldItemId).IsEqualTo(0);
+        await Assert.That(evt.NewItemName).IsEqualTo("Unknown");
+        await Assert.That((int)evt.NewItemId).IsEqualTo(0x21);
     }
 
     [Test]
@@ -599,10 +632,10 @@ public sealed class RunReportServiceTests
         public FakeEntityTracker<DecodedInGamePlayer> PlayerTracker { get; } = new();
         public FakeEntityTracker<DecodedLobbySlot> LobbySlotTracker { get; } = new();
 
-        public IEntityTracker<DecodedEnemy> Enemies => EnemyTracker;
-        public IEntityTracker<DecodedDoor> Doors => DoorTracker;
-        public IEntityTracker<DecodedInGamePlayer> Players => PlayerTracker;
-        public IEntityTracker<DecodedLobbySlot> LobbySlots => LobbySlotTracker;
+        public IReadOnlyEntityTracker<DecodedEnemy> Enemies => EnemyTracker;
+        public IReadOnlyEntityTracker<DecodedDoor> Doors => DoorTracker;
+        public IReadOnlyEntityTracker<DecodedInGamePlayer> Players => PlayerTracker;
+        public IReadOnlyEntityTracker<DecodedLobbySlot> LobbySlots => LobbySlotTracker;
 
         private readonly Subject<AlertNotification> _allAlerts = new();
         public Observable<AlertNotification> AllAlerts => _allAlerts;

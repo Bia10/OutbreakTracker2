@@ -178,6 +178,43 @@ public sealed class MarkdownRunReportWriterTests
     }
 
     [Test]
+    public async Task WriteAsync_ContentContainsPrecisePlayerInventoryChange()
+    {
+        (MarkdownRunReportWriter writer, string outputDirectory, IDisposable cleanup) = CreateWriterWithTempDir();
+        using (cleanup)
+        {
+            DateTimeOffset start = new(2025, 1, 15, 10, 0, 0, TimeSpan.Zero);
+            PlayerInventoryChangedEvent inventoryEvent = new(
+                start.AddSeconds(5),
+                Ulid.NewUlid(),
+                "Kevin",
+                InventoryKind.Main,
+                SlotIndex: 0,
+                OldItemId: 0x00,
+                OldItemName: "Empty",
+                NewItemId: 0x21,
+                NewItemName: "Unknown"
+            );
+
+            RunReport report = new(
+                Ulid.NewUlid(),
+                "training-ground",
+                "Training Ground",
+                Scenario.TrainingGround,
+                start,
+                start.AddMinutes(5),
+                [inventoryEvent]
+            );
+
+            await writer.WriteAsync(report);
+            string content = await ReadSingleFileAsync(outputDirectory);
+
+            await Assert.That(content.Contains("changed from Empty (0x00 | 0)", StringComparison.Ordinal)).IsTrue();
+            await Assert.That(content.Contains("Unknown (0x21 | 33)", StringComparison.Ordinal)).IsTrue();
+        }
+    }
+
+    [Test]
     public async Task WriteAsync_ContentContainsEnemyKilledEvent_WithContributors()
     {
         (MarkdownRunReportWriter writer, string outputDirectory, IDisposable cleanup) = CreateWriterWithTempDir();

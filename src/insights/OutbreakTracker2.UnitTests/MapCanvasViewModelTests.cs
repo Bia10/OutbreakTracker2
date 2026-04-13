@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
+using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Views.Map.Canvas;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
 
@@ -13,13 +15,16 @@ public sealed class MapCanvasViewModelTests
     public async Task InGamePlayersSubscription_ResumesAfterDispatcherFailure()
     {
         using FakeDataSource dataSource = new();
+        using FakeAppSettingsService settingsService = new();
         FlakyDispatcherService dispatcherService = new();
         using MapCanvasViewModel viewModel = new(
             dataSource,
             dispatcherService,
+            settingsService,
             NullLogger<MapCanvasViewModel>.Instance
         );
 
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
         dataSource.SetInGamePlayers([]);
 
         bool failureObserved = SpinWait.SpinUntil(
@@ -32,6 +37,31 @@ public sealed class MapCanvasViewModelTests
 
         bool resumed = SpinWait.SpinUntil(() => viewModel.IsInGame, TimeSpan.FromSeconds(2));
         await Assert.That(resumed).IsTrue();
+    }
+
+    [Test]
+    public async Task TransitionVisibilitySetting_ShowsMap_WhenEnabledAtRuntime()
+    {
+        using FakeDataSource dataSource = new();
+        using FakeAppSettingsService settingsService = new();
+        using MapCanvasViewModel viewModel = new(
+            dataSource,
+            new ImmediateDispatcherService(),
+            settingsService,
+            NullLogger<MapCanvasViewModel>.Instance
+        );
+
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.TransitionLoading });
+        dataSource.SetInGamePlayers([new DecodedInGamePlayer { IsEnabled = true, IsInGame = true }]);
+
+        await Assert.That(viewModel.IsInGame).IsFalse();
+
+        settingsService.SetCurrent(
+            new OutbreakTrackerSettings { Display = new DisplaySettings { ShowGameplayUiDuringTransitions = true } }
+        );
+
+        bool becameVisible = SpinWait.SpinUntil(() => viewModel.IsInGame, TimeSpan.FromSeconds(2));
+        await Assert.That(becameVisible).IsTrue();
     }
 
     private sealed class FakeDataSource : IDataObservableSource, IDisposable
@@ -66,6 +96,8 @@ public sealed class MapCanvasViewModelTests
 
         public void SetInGamePlayers(DecodedInGamePlayer[] players) => _inGamePlayers.Value = players;
 
+        public void SetScenario(DecodedInGameScenario scenario) => _inGameScenario.Value = scenario;
+
         public void Dispose()
         {
             _doors.Dispose();
@@ -77,6 +109,67 @@ public sealed class MapCanvasViewModelTests
             _lobbyRoomPlayers.Dispose();
             _lobbySlots.Dispose();
             _isAtLobby.Dispose();
+        }
+    }
+
+    private sealed class FakeAppSettingsService : IAppSettingsService
+    {
+        private readonly ReactiveProperty<OutbreakTrackerSettings> _settings;
+
+        public FakeAppSettingsService(OutbreakTrackerSettings? settings = null)
+        {
+            _settings = new ReactiveProperty<OutbreakTrackerSettings>(settings ?? new OutbreakTrackerSettings());
+        }
+
+        public string UserSettingsPath { get; } =
+            Path.Combine(Path.GetTempPath(), "outbreaktracker2-test-settings.json");
+
+        public OutbreakTrackerSettings Current => _settings.Value;
+
+        public Observable<OutbreakTrackerSettings> SettingsObservable => _settings;
+
+        public void SetCurrent(OutbreakTrackerSettings settings) => _settings.Value = settings;
+
+        public ValueTask SaveAsync(OutbreakTrackerSettings settings, CancellationToken cancellationToken = default)
+        {
+            _settings.Value = settings;
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask ExportAsync(Stream destination, CancellationToken cancellationToken = default) =>
+            ValueTask.CompletedTask;
+
+        public ValueTask<OutbreakTrackerSettings> ImportAsync(
+            Stream source,
+            CancellationToken cancellationToken = default
+        ) => ValueTask.FromResult(Current);
+
+        public ValueTask<OutbreakTrackerSettings> ResetToDefaultsAsync(CancellationToken cancellationToken = default) =>
+            ValueTask.FromResult(Current);
+
+        public void Dispose() => _settings.Dispose();
+    }
+
+    private sealed class ImmediateDispatcherService : IDispatcherService
+    {
+        public bool IsOnUIThread() => true;
+
+        public void PostOnUI(Action action) => action();
+
+        public Task InvokeOnUIAsync(Action action, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            action();
+            return Task.CompletedTask;
+        }
+
+        public Task<TResult?> InvokeOnUIAsync<TResult>(
+            Func<TResult> action,
+            CancellationToken cancellationToken = default
+        )
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult<TResult?>(action());
         }
     }
 

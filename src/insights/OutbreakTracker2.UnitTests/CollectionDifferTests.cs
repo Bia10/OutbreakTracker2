@@ -41,5 +41,32 @@ public sealed class CollectionDifferTests
         await Assert.That(diff.Changed.Count).IsEqualTo(0);
     }
 
+    [Test]
+    public async Task Diff_DoesNotTreatInventorySnapshotsWithSameContentsAsChanged()
+    {
+        Ulid playerId = Ulid.NewUlid();
+        DecodedInGamePlayer previous = new()
+        {
+            Id = playerId,
+            IsEnabled = true,
+            Name = "Kevin",
+            Inventory = new InventorySnapshot(1, 2, 3, 4),
+            SpecialInventory = new InventorySnapshot(5, 6, 7, 8),
+            DeadInventory = InventorySnapshot.Empty,
+            SpecialDeadInventory = InventorySnapshot.Empty,
+        };
+        DecodedInGamePlayer current = previous with
+        {
+            Inventory = new InventorySnapshot(1, 2, 3, 4),
+            SpecialInventory = new InventorySnapshot(5, 6, 7, 8),
+        };
+
+        CollectionDiff<DecodedInGamePlayer> diff = CollectionDiffer.Diff([previous], [current]);
+
+        await Assert.That(diff.Added.Count).IsEqualTo(0);
+        await Assert.That(diff.Removed.Count).IsEqualTo(0);
+        await Assert.That(diff.Changed.Count).IsEqualTo(0);
+    }
+
     private readonly record struct FakeEntity(Ulid Id, int Value) : IHasId;
 }

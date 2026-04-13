@@ -21,6 +21,7 @@ public sealed class AppSettingsServiceTests
                 Notifications = new NotificationSettings { EnableToastAlerts = false },
                 Display = new DisplaySettings
                 {
+                    ShowGameplayUiDuringTransitions = true,
                     EntitiesDock = new EntitiesDockSettings { OnlyShowCurrentPlayerRoom = false },
                     ScenarioItemsDock = new ScenarioItemsDockSettings { OnlyShowCurrentPlayerRoom = false },
                 },
@@ -48,6 +49,9 @@ public sealed class AppSettingsServiceTests
         await Assert
             .That(settingsElement.GetProperty("Notifications").GetProperty("EnableToastAlerts").GetBoolean())
             .IsFalse();
+        await Assert
+            .That(settingsElement.GetProperty("Display").GetProperty("ShowGameplayUiDuringTransitions").GetBoolean())
+            .IsTrue();
         await Assert
             .That(
                 settingsElement
@@ -114,6 +118,9 @@ public sealed class AppSettingsServiceTests
                 """
                 {
                   "OutbreakTracker": {
+                                        "Display": {
+                                            "ShowGameplayUiDuringTransitions": true
+                                        },
                                         "Notifications": {
                                             "EnableToastAlerts": false
                     },
@@ -145,6 +152,8 @@ public sealed class AppSettingsServiceTests
         await Assert.That(service.Current.AlertRules.Lobby.NameMatchFilter).IsEqualTo("Night");
         await Assert.That(service.Current.AlertRules.Lobby.ScenarioMatchCreated).IsTrue();
         await Assert.That(service.Current.AlertRules.Lobby.ScenarioMatchFilter).IsEqualTo("Wild things");
+        await Assert.That(importedSettings.Display.ShowGameplayUiDuringTransitions).IsTrue();
+        await Assert.That(service.Current.Display.ShowGameplayUiDuringTransitions).IsTrue();
         await Assert.That(importedSettings.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(service.Current.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(importedSettings.Display.ScenarioItemsDock.OnlyShowCurrentPlayerRoom).IsTrue();
@@ -175,6 +184,7 @@ public sealed class AppSettingsServiceTests
                 Notifications = new NotificationSettings { EnableToastAlerts = false },
                 Display = new DisplaySettings
                 {
+                    ShowGameplayUiDuringTransitions = true,
                     EntitiesDock = new EntitiesDockSettings { OnlyShowCurrentPlayerRoom = false },
                     ScenarioItemsDock = new ScenarioItemsDockSettings { OnlyShowCurrentPlayerRoom = false },
                 },
@@ -204,6 +214,7 @@ public sealed class AppSettingsServiceTests
         await Assert.That(resetSettings.AlertRules.Lobby.NameMatchFilter).IsEqualTo(string.Empty);
         await Assert.That(resetSettings.AlertRules.Lobby.ScenarioMatchCreated).IsFalse();
         await Assert.That(resetSettings.AlertRules.Lobby.ScenarioMatchFilter).IsEqualTo(string.Empty);
+        await Assert.That(resetSettings.Display.ShowGameplayUiDuringTransitions).IsFalse();
         await Assert.That(resetSettings.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(resetSettings.Display.ScenarioItemsDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(service.Current.Notifications.EnableToastAlerts).IsTrue();

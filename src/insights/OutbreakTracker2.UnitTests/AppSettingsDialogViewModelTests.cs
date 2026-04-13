@@ -90,13 +90,14 @@ public sealed class AppSettingsDialogViewModelTests
     }
 
     [Test]
-    public async Task BuildSettings_PreservesDockRoomFilterToggles()
+    public async Task BuildSettings_PreservesDisplayToggles()
     {
         using FakeAppSettingsService settingsService = new(
             new OutbreakTrackerSettings
             {
                 Display = new DisplaySettings
                 {
+                    ShowGameplayUiDuringTransitions = false,
                     EntitiesDock = new EntitiesDockSettings { OnlyShowCurrentPlayerRoom = false },
                     ScenarioItemsDock = new ScenarioItemsDockSettings { OnlyShowCurrentPlayerRoom = false },
                 },
@@ -120,8 +121,11 @@ public sealed class AppSettingsDialogViewModelTests
             viewModelType.GetProperty("EntitiesDockOnlyShowCurrentPlayerRoom")!.GetValue(viewModel)!;
         bool loadedItemsValue = (bool)
             viewModelType.GetProperty("ScenarioItemsDockOnlyShowCurrentPlayerRoom")!.GetValue(viewModel)!;
+        bool loadedTransitionValue = (bool)
+            viewModelType.GetProperty("ShowGameplayUiDuringTransitions")!.GetValue(viewModel)!;
         viewModelType.GetProperty("EntitiesDockOnlyShowCurrentPlayerRoom")!.SetValue(viewModel, true);
         viewModelType.GetProperty("ScenarioItemsDockOnlyShowCurrentPlayerRoom")!.SetValue(viewModel, true);
+        viewModelType.GetProperty("ShowGameplayUiDuringTransitions")!.SetValue(viewModel, true);
 
         MethodInfo buildSettingsMethod = viewModelType.GetMethod(
             "BuildSettings",
@@ -131,6 +135,8 @@ public sealed class AppSettingsDialogViewModelTests
 
         await Assert.That(loadedValue).IsFalse();
         await Assert.That(loadedItemsValue).IsFalse();
+        await Assert.That(loadedTransitionValue).IsFalse();
+        await Assert.That(builtSettings.Display.ShowGameplayUiDuringTransitions).IsTrue();
         await Assert.That(builtSettings.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(builtSettings.Display.ScenarioItemsDock.OnlyShowCurrentPlayerRoom).IsTrue();
     }

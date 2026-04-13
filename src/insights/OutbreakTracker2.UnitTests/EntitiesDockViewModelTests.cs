@@ -7,6 +7,7 @@ using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemies;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy;
 using OutbreakTracker2.Application.Views.GameDock.Dockables;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
 
@@ -33,7 +34,7 @@ public sealed class EntitiesDockViewModelTests
         source.Add(CreateEnemyViewModel(roomId: 1, slotId: 1, currentHp: 1550));
         source.Add(CreateEnemyViewModel(roomId: 3, slotId: 2, currentHp: 1400));
 
-        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
+        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0, Status = ScenarioStatus.InGame });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1), CreatePlayer(slotIndex: 1, roomId: 3)]);
 
         using EntitiesDockViewModel viewModel = new(
@@ -72,7 +73,7 @@ public sealed class EntitiesDockViewModelTests
         source.Add(CreateEnemyViewModel(roomId: 1, slotId: 1, currentHp: 1550));
         source.Add(CreateEnemyViewModel(roomId: 3, slotId: 2, currentHp: 1400));
 
-        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
+        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0, Status = ScenarioStatus.InGame });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
 
         using EntitiesDockViewModel viewModel = new(
@@ -90,6 +91,94 @@ public sealed class EntitiesDockViewModelTests
 
         await Assert.That(visibleEnemies.Count).IsEqualTo(1);
         await Assert.That(visibleEnemies[0].RoomId).IsEqualTo((byte)3);
+    }
+
+    [Test]
+    public async Task HidesEnemies_WhenScenarioStatusIsNotGameplayActive()
+    {
+        using FakeDataSource dataSource = new();
+        using FakeAppSettingsService settingsService = new(
+            new OutbreakTrackerSettings
+            {
+                Display = new DisplaySettings
+                {
+                    EntitiesDock = new EntitiesDockSettings { OnlyShowCurrentPlayerRoom = false },
+                },
+            }
+        );
+        using TestSynchronizationContextScope scope = new();
+
+        FakeEnemyCardCollectionSource source = new();
+        source.Add(CreateEnemyViewModel(roomId: 1, slotId: 1, currentHp: 1550));
+
+        dataSource.SetScenario(
+            new DecodedInGameScenario { LocalPlayerSlotIndex = 0, Status = ScenarioStatus.GameFinished }
+        );
+        dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
+
+        using EntitiesDockViewModel viewModel = new(
+            source,
+            dataSource,
+            dataSource,
+            settingsService,
+            new ImmediateDispatcherService(),
+            NullLogger<EntitiesDockViewModel>.Instance
+        );
+
+        await Assert.That(viewModel.HasEnemies).IsFalse();
+        await Assert.That(viewModel.EmptyMessage).IsEqualTo("No active enemies - not in-game");
+    }
+
+    [Test]
+    public async Task ShowsEnemies_WhenTransitionVisibilitySettingIsEnabledAtRuntime()
+    {
+        using FakeDataSource dataSource = new();
+        using FakeAppSettingsService settingsService = new(
+            new OutbreakTrackerSettings
+            {
+                Display = new DisplaySettings
+                {
+                    ShowGameplayUiDuringTransitions = false,
+                    EntitiesDock = new EntitiesDockSettings { OnlyShowCurrentPlayerRoom = false },
+                },
+            }
+        );
+        using TestSynchronizationContextScope scope = new();
+
+        FakeEnemyCardCollectionSource source = new();
+        source.Add(CreateEnemyViewModel(roomId: 1, slotId: 1, currentHp: 1550));
+
+        dataSource.SetScenario(
+            new DecodedInGameScenario { LocalPlayerSlotIndex = 0, Status = ScenarioStatus.TransitionLoading }
+        );
+        dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
+
+        using EntitiesDockViewModel viewModel = new(
+            source,
+            dataSource,
+            dataSource,
+            settingsService,
+            new ImmediateDispatcherService(),
+            NullLogger<EntitiesDockViewModel>.Instance
+        );
+
+        await Assert.That(viewModel.HasEnemies).IsFalse();
+
+        settingsService.SetCurrent(
+            new OutbreakTrackerSettings
+            {
+                Display = new DisplaySettings
+                {
+                    ShowGameplayUiDuringTransitions = true,
+                    EntitiesDock = new EntitiesDockSettings { OnlyShowCurrentPlayerRoom = false },
+                },
+            }
+        );
+
+        List<InGameEnemyViewModel> visibleEnemies = ReadVisibleEnemies(viewModel);
+
+        await Assert.That(viewModel.HasEnemies).IsTrue();
+        await Assert.That(visibleEnemies.Count).IsEqualTo(1);
     }
 
     [Test]
@@ -111,7 +200,7 @@ public sealed class EntitiesDockViewModelTests
         source.Add(CreateEnemyViewModel(roomId: 1, slotId: 1, currentHp: 1550));
         source.Add(CreateEnemyViewModel(roomId: 3, slotId: 2, currentHp: 1400));
 
-        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
+        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0, Status = ScenarioStatus.InGame });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
 
         using EntitiesDockViewModel viewModel = new(
@@ -157,7 +246,9 @@ public sealed class EntitiesDockViewModelTests
         source.Add(CreateEnemyViewModel(roomId: 1, slotId: 1, currentHp: 1550));
         source.Add(CreateEnemyViewModel(roomId: 3, slotId: 2, currentHp: 1400));
 
-        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = byte.MaxValue });
+        dataSource.SetScenario(
+            new DecodedInGameScenario { LocalPlayerSlotIndex = byte.MaxValue, Status = ScenarioStatus.InGame }
+        );
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 3), CreatePlayer(slotIndex: 1, roomId: 3)]);
 
         using EntitiesDockViewModel viewModel = new(
@@ -194,7 +285,7 @@ public sealed class EntitiesDockViewModelTests
         source.Add(CreateEnemyViewModel(roomId: 1, slotId: 1, currentHp: 1550));
         source.Add(CreateEnemyViewModel(roomId: 3, slotId: 2, currentHp: 1400));
 
-        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
+        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0, Status = ScenarioStatus.InGame });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
 
         using EntitiesDockViewModel viewModel = new(
@@ -209,7 +300,7 @@ public sealed class EntitiesDockViewModelTests
         int collectionChangedCount = 0;
         ((INotifyCollectionChanged)viewModel.EnemiesView).CollectionChanged += (_, _) => collectionChangedCount++;
 
-        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
+        dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0, Status = ScenarioStatus.InGame });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
 
         await Assert.That(collectionChangedCount).IsEqualTo(0);

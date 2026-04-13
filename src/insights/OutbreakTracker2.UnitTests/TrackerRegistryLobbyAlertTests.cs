@@ -16,13 +16,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(
-            dataManager,
-            dataManager,
-            dataManager,
-            settingsService,
-            new EntityTrackerFactory(NullLoggerFactory.Instance)
-        );
+        using TrackerRegistry trackerRegistry = CreateTrackerRegistry(dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -42,13 +36,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(
-            dataManager,
-            dataManager,
-            dataManager,
-            settingsService,
-            new EntityTrackerFactory(NullLoggerFactory.Instance)
-        );
+        using TrackerRegistry trackerRegistry = CreateTrackerRegistry(dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -66,13 +54,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(
-            dataManager,
-            dataManager,
-            dataManager,
-            settingsService,
-            new EntityTrackerFactory(NullLoggerFactory.Instance)
-        );
+        using TrackerRegistry trackerRegistry = CreateTrackerRegistry(dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -102,13 +84,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(
-            dataManager,
-            dataManager,
-            dataManager,
-            settingsService,
-            new EntityTrackerFactory(NullLoggerFactory.Instance)
-        );
+        using TrackerRegistry trackerRegistry = CreateTrackerRegistry(dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -136,13 +112,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(
-            dataManager,
-            dataManager,
-            dataManager,
-            settingsService,
-            new EntityTrackerFactory(NullLoggerFactory.Instance)
-        );
+        using TrackerRegistry trackerRegistry = CreateTrackerRegistry(dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -176,13 +146,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(
-            dataManager,
-            dataManager,
-            dataManager,
-            settingsService,
-            new EntityTrackerFactory(NullLoggerFactory.Instance)
-        );
+        using TrackerRegistry trackerRegistry = CreateTrackerRegistry(dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -216,13 +180,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(
-            dataManager,
-            dataManager,
-            dataManager,
-            settingsService,
-            new EntityTrackerFactory(NullLoggerFactory.Instance)
-        );
+        using TrackerRegistry trackerRegistry = CreateTrackerRegistry(dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -256,13 +214,7 @@ public sealed class TrackerRegistryLobbyAlertTests
     {
         using FakeDataManager dataManager = new();
         using FakeAppSettingsService settingsService = new();
-        using TrackerRegistry trackerRegistry = new(
-            dataManager,
-            dataManager,
-            dataManager,
-            settingsService,
-            new EntityTrackerFactory(NullLoggerFactory.Instance)
-        );
+        using TrackerRegistry trackerRegistry = CreateTrackerRegistry(dataManager, settingsService);
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
 
@@ -306,13 +258,7 @@ public sealed class TrackerRegistryLobbyAlertTests
                 },
             }
         );
-        using TrackerRegistry trackerRegistry = new(
-            dataManager,
-            dataManager,
-            dataManager,
-            settingsService,
-            new EntityTrackerFactory(NullLoggerFactory.Instance)
-        );
+        using TrackerRegistry trackerRegistry = CreateTrackerRegistry(dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -343,13 +289,7 @@ public sealed class TrackerRegistryLobbyAlertTests
                 },
             }
         );
-        using TrackerRegistry trackerRegistry = new(
-            dataManager,
-            dataManager,
-            dataManager,
-            settingsService,
-            new EntityTrackerFactory(NullLoggerFactory.Instance)
-        );
+        using TrackerRegistry trackerRegistry = CreateTrackerRegistry(dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -379,13 +319,7 @@ public sealed class TrackerRegistryLobbyAlertTests
                 },
             }
         );
-        using TrackerRegistry trackerRegistry = new(
-            dataManager,
-            dataManager,
-            dataManager,
-            settingsService,
-            new EntityTrackerFactory(NullLoggerFactory.Instance)
-        );
+        using TrackerRegistry trackerRegistry = CreateTrackerRegistry(dataManager, settingsService);
 
         List<AlertNotification> alerts = [];
         using IDisposable subscription = trackerRegistry.AllAlerts.Subscribe(alert => alerts.Add(alert));
@@ -419,6 +353,19 @@ public sealed class TrackerRegistryLobbyAlertTests
             ScenarioId = scenarioId,
             Version = "File 2",
         };
+
+    private static TrackerRegistry CreateTrackerRegistry(
+        FakeDataManager dataManager,
+        FakeAppSettingsService settingsService
+    ) =>
+        new(
+            dataManager,
+            new EntityTrackerFactory(NullLoggerFactory.Instance),
+            [new EnemyAlertRulesProvider(settingsService, dataManager)],
+            [new DoorAlertRulesProvider(settingsService, dataManager)],
+            [new PlayerAlertRulesProvider(settingsService, dataManager)],
+            [new LobbySlotAlertRulesProvider(settingsService)]
+        );
 
     private static DecodedInGamePlayer CreatePlayer(Ulid playerId, double virusPercentage)
     {
