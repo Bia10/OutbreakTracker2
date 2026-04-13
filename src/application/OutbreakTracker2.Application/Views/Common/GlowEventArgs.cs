@@ -1,6 +1,6 @@
 ﻿using Avalonia.Media;
 
-namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor;
+namespace OutbreakTracker2.Application.Views.Common;
 
 public sealed class GlowEventArgs(Color color) : EventArgs
 {

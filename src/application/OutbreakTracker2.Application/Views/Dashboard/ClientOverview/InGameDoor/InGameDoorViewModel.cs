@@ -1,6 +1,7 @@
 ﻿using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using CommunityToolkit.Mvvm.ComponentModel;
+using OutbreakTracker2.Application.Views.Common;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Models;
 

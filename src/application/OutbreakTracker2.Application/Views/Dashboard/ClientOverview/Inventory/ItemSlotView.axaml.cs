@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using OutbreakTracker2.Application.Views.Common;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
 
