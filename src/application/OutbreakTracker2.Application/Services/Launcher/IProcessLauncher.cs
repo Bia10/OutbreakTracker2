@@ -16,7 +16,7 @@ public interface IProcessLauncher
 
     Task<IGameClient> LaunchAsync(string fileName, string? arguments, CancellationToken cancellationToken = default);
 
-    Task<IGameClient> AttachAsync(int processId);
+    Task<IGameClient> AttachAsync(int processId, CancellationToken cancellationToken = default);
 
     Task TerminateAsync(int? processId = null);
 

@@ -37,7 +37,7 @@ public sealed class GameClientConnectionService(
     {
         _logger.LogInformation("Attaching to process {ProcessId} and initializing data manager", processId);
 
-        IGameClient gameClient = await _processLauncher.AttachAsync(processId).ConfigureAwait(false);
+        IGameClient gameClient = await _processLauncher.AttachAsync(processId, cancellationToken).ConfigureAwait(false);
         await _dataManager.InitializeAsync(gameClient, cancellationToken).ConfigureAwait(false);
 
         return gameClient;

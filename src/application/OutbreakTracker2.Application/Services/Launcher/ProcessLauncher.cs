@@ -300,10 +300,10 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
     }
 
     private Task[] CreateProcessingTasks(
-        ProcessAsyncEnumerable _,
+        ProcessAsyncEnumerable stdOut,
         ProcessAsyncEnumerable stdError,
         CancellationToken ct
-    ) => [ProcessOutputAsync(stdError, HandleErrorLog, ct)];
+    ) => [ProcessOutputAsync(stdOut, HandleOutputLog, ct), ProcessOutputAsync(stdError, HandleErrorLog, ct)];
 
     private static async Task ProcessOutputAsync(
         ProcessAsyncEnumerable output,
@@ -329,6 +329,11 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
     {
         _logger.LogError("[{Source}] {Log}", "CLIENT", log);
         _processErrors.OnNext(log);
+    }
+
+    private void HandleOutputLog(string log)
+    {
+        _logger.LogTrace("[{Source}] {Log}", "CLIENT-OUT", log);
     }
 
     private void HandleProcessExit(object? sender)
@@ -404,8 +409,10 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
         }
     }
 
-    public async Task<IGameClient> AttachAsync(int processId)
+    public async Task<IGameClient> AttachAsync(int processId, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         (Process? monitoredProcess, IGameClient? attachedGameClient) = GetClientStateSnapshot();
         int? monitoredProcessId = null;
         try
@@ -451,7 +458,7 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
                 return attachedGameClient;
             }
 
-            IGameClient reAttached = await ReplaceAttachedGameClientAsync(monitoredProcess, CancellationToken.None)
+            IGameClient reAttached = await ReplaceAttachedGameClientAsync(monitoredProcess, cancellationToken)
                 .ConfigureAwait(false);
 
             _processUpdate.OnNext(
@@ -471,7 +478,7 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
         if (process.HasExited)
             throw new InvalidOperationException($"Process {processId} has already exited.");
 
-        IGameClient freshAttached = await ReplaceAttachedGameClientAsync(process, CancellationToken.None)
+        IGameClient freshAttached = await ReplaceAttachedGameClientAsync(process, cancellationToken)
             .ConfigureAwait(false);
 
         RegisterProcess(process);

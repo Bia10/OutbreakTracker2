@@ -10,7 +10,14 @@ public sealed class LogDataStorageService : ILogDataStorageService, IAsyncDispos
 {
     private readonly ILogger<LogDataStorageService> _logger;
     private readonly IDispatcherService _dispatcher;
-    private readonly Channel<LogModel> _logChannel = Channel.CreateUnbounded<LogModel>();
+    private readonly Channel<LogModel> _logChannel = Channel.CreateBounded<LogModel>(
+        new BoundedChannelOptions(capacity: 2000)
+        {
+            FullMode = BoundedChannelFullMode.DropOldest,
+            SingleWriter = false,
+            SingleReader = true,
+        }
+    );
     private readonly Task _processingTask;
     private readonly CancellationTokenSource _cts = new();
     private volatile bool _isDisposed;
