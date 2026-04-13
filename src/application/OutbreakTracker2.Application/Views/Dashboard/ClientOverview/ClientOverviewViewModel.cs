@@ -42,13 +42,14 @@ public sealed class ClientOverviewViewModel(
 
     public async ValueTask DisposeAsync()
     {
-        // IAsyncDisposable children
-        await LobbySlotsViewModel.DisposeAsync().ConfigureAwait(false);
-        await LobbyRoomViewModel.DisposeAsync().ConfigureAwait(false);
-        await InGamePlayersViewModel.DisposeAsync().ConfigureAwait(false);
-        await InGameDoorsViewModel.DisposeAsync().ConfigureAwait(false);
+        await Task.WhenAll(
+                LobbySlotsViewModel.DisposeAsync().AsTask(),
+                LobbyRoomViewModel.DisposeAsync().AsTask(),
+                InGamePlayersViewModel.DisposeAsync().AsTask(),
+                InGameDoorsViewModel.DisposeAsync().AsTask()
+            )
+            .ConfigureAwait(false);
 
-        // IDisposable children
         InGameScenarioViewModel.Dispose();
         InGameEnemiesViewModel.Dispose();
         EmbeddedGameViewModel.Dispose();

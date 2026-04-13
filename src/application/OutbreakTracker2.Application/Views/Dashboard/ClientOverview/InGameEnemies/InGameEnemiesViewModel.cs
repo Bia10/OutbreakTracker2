@@ -4,8 +4,10 @@ using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
+using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Services.Tracking;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameEnemy;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
 
@@ -17,9 +19,13 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
     private readonly IDispatcherService _dispatcherService;
     private readonly TimeProvider _timeProvider;
     private readonly IDisposable _subscription;
+    private readonly IDisposable _scenarioStatusSubscription;
+    private readonly IDisposable _settingsSubscription;
     private readonly EnemyDiffPlanner _enemyDiffPlanner = new();
     private readonly Dictionary<Ulid, InGameEnemyViewModel> _viewModelCache = [];
     private readonly ObservableList<InGameEnemyViewModel> _enemies = [];
+    private ScenarioStatus _scenarioStatus;
+    private bool _showGameplayUiDuringTransitions;
 
     public NotifyCollectionChangedSynchronizedViewList<InGameEnemyViewModel> EnemiesView { get; }
 
@@ -31,25 +37,28 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
         IDispatcherService dispatcherService,
         IDataObservableSource dataObservable,
         TimeProvider timeProvider,
+        IAppSettingsService settingsService,
         ITrackerRegistry trackerRegistry
     )
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
         _timeProvider = timeProvider;
+        _showGameplayUiDuringTransitions = GetDisplaySettings(settingsService.Current).ShowGameplayUiDuringTransitions;
 
         EnemiesView = _enemies.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
         _subscription = trackerRegistry
             .Enemies.Changes.Diffs.WithLatestFrom(
                 dataObservable.InGameScenarioObservable,
-                (diff, scenario) => (Diff: diff, ScenarioName: scenario.ScenarioName)
+                (diff, scenario) => (Diff: diff, ScenarioName: scenario.ScenarioName, ScenarioStatus: scenario.Status)
             )
             .SubscribeAwait(
                 async (data, ct) =>
                 {
                     CollectionDiff<DecodedEnemy> diff = data.Diff;
                     string scenarioName = data.ScenarioName;
+                    ScenarioStatus scenarioStatus = data.ScenarioStatus;
                     DateTimeOffset now = _timeProvider.GetUtcNow();
 
                     EnemyListUpdatePlan plan = _enemyDiffPlanner.BuildPlan(diff, scenarioName, now);
@@ -68,8 +77,11 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
                             () =>
                             {
                                 EnemyListReconciler.Apply(plan, _enemies, _viewModelCache);
+                                _scenarioStatus = scenarioStatus;
 
-                                HasEnemies = _enemies.Count > 0;
+                                HasEnemies =
+                                    _scenarioStatus.ShouldShowGameplayUi(_showGameplayUiDuringTransitions)
+                                    && _enemies.Count > 0;
                                 _logger.LogDebug("Enemies updated: {Count}", _enemies.Count);
                             },
                             ct
@@ -78,6 +90,16 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
                 },
                 AwaitOperation.Drop
             );
+
+        _scenarioStatusSubscription = dataObservable
+            .InGameScenarioObservable.Select(static scenario => scenario.Status)
+            .DistinctUntilChanged()
+            .Subscribe(status => _dispatcherService.PostOnUI(() => UpdateVisibleState(status)));
+
+        _settingsSubscription = settingsService
+            .SettingsObservable.Select(static settings => GetDisplaySettings(settings).ShowGameplayUiDuringTransitions)
+            .DistinctUntilChanged()
+            .Subscribe(show => _dispatcherService.PostOnUI(() => UpdateTransitionDisplaySetting(show)));
     }
 
     IEnumerable<InGameEnemyViewModel> IEnemyCardCollectionSource.Enemies => EnemiesView;
@@ -92,6 +114,8 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
     {
         _logger.LogDebug("Disposing InGameEnemiesViewModel");
         _subscription.Dispose();
+        _scenarioStatusSubscription.Dispose();
+        _settingsSubscription.Dispose();
         _enemyDiffPlanner.Clear();
 
         _dispatcherService.PostOnUI(() =>
@@ -104,4 +128,22 @@ public sealed partial class InGameEnemiesViewModel : ObservableObject, IDisposab
 
         _logger.LogDebug("InGameEnemiesViewModel disposed");
     }
+
+    private void UpdateVisibleState(ScenarioStatus scenarioStatus)
+    {
+        _scenarioStatus = scenarioStatus;
+        HasEnemies = _scenarioStatus.ShouldShowGameplayUi(_showGameplayUiDuringTransitions) && _enemies.Count > 0;
+    }
+
+    private void UpdateTransitionDisplaySetting(bool showGameplayUiDuringTransitions)
+    {
+        if (_showGameplayUiDuringTransitions == showGameplayUiDuringTransitions)
+            return;
+
+        _showGameplayUiDuringTransitions = showGameplayUiDuringTransitions;
+        HasEnemies = _scenarioStatus.ShouldShowGameplayUi(_showGameplayUiDuringTransitions) && _enemies.Count > 0;
+    }
+
+    private static DisplaySettings GetDisplaySettings(OutbreakTrackerSettings settings) =>
+        settings.Display ?? new DisplaySettings();
 }

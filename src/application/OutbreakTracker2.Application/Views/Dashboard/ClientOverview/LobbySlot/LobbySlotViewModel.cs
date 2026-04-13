@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Views.Common.ScenarioImg;
@@ -13,8 +14,8 @@ public sealed partial class LobbySlotViewModel : ObservableObject
 {
     private readonly ILogger<LobbySlotViewModel> _logger;
 
-    private static readonly IBrush LockedBrush = new SolidColorBrush(Colors.Red);
-    private static readonly IBrush UnlockedBrush = new SolidColorBrush(Colors.LimeGreen);
+    private static readonly IBrush LockedBrush = new ImmutableSolidColorBrush(Colors.Red);
+    private static readonly IBrush UnlockedBrush = new ImmutableSolidColorBrush(Colors.LimeGreen);
 
     [ObservableProperty]
     private Ulid _id = Ulid.NewUlid();

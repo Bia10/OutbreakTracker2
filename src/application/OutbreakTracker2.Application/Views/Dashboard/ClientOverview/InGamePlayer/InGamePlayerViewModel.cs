@@ -119,6 +119,7 @@ public sealed partial class InGamePlayerViewModel : ObservableObject, IDisposabl
         Attributes.Update(player.CritBonus, player.Size, player.Power, player.Speed);
         Position.Update(player.PositionX, player.PositionY, player.RoomId, scenarioName);
 
+        Inventory.UpdateCharacterType(player.Type);
         Inventory.UpdateFromPlayerData(
             player.Status,
             player.EquippedItem,

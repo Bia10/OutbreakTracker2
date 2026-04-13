@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
+using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Services.Tracking;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlayer.Factory;
@@ -15,10 +16,14 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGamePlay
 public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDisposable
 {
     private readonly IDisposable _subscription;
+    private readonly IDisposable _scenarioStatusSubscription;
+    private readonly IDisposable _settingsSubscription;
     private readonly ILogger<InGamePlayersViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
     private readonly IInGamePlayerViewModelFactory _inGamePlayerViewModelFactory;
     private readonly Dictionary<Ulid, InGamePlayerViewModel> _viewModelCache = [];
+    private ScenarioStatus _scenarioStatus;
+    private bool _showGameplayUiDuringTransitions;
 
     private readonly ObservableList<InGamePlayerViewModel> _players = [];
     public NotifyCollectionChangedSynchronizedViewList<InGamePlayerViewModel> PlayersView { get; }
@@ -35,6 +40,7 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
     public InGamePlayersViewModel(
         IDataObservableSource dataObservable,
         ITrackerRegistry trackerRegistry,
+        IAppSettingsService settingsService,
         ILogger<InGamePlayersViewModel> logger,
         IDispatcherService dispatcherService,
         IInGamePlayerViewModelFactory inGamePlayerViewModelFactory
@@ -43,6 +49,7 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
         _logger = logger;
         _dispatcherService = dispatcherService;
         _inGamePlayerViewModelFactory = inGamePlayerViewModelFactory;
+        _showGameplayUiDuringTransitions = GetDisplaySettings(settingsService.Current).ShowGameplayUiDuringTransitions;
 
         PlayersView = _players.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
@@ -132,9 +139,10 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
                                 () =>
                                 {
                                     _logger.LogTrace("Applying player updates on UI thread");
+                                    _scenarioStatus = lastScenarioStatus;
 
                                     // Removals from raw stream — honour transitional-status guard
-                                    if (!IsTransitionalStatus(lastScenarioStatus))
+                                    if (!lastScenarioStatus.IsTransitional())
                                         foreach (DecodedInGamePlayer removed in diff.Removed)
                                             RemovePlayer(removed.Id);
 
@@ -164,7 +172,9 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
                                         foreach ((Ulid id, InGamePlayerViewModel vm) in lateJoins)
                                             AddPlayer(id, vm);
 
-                                    HasPlayers = _players.Count > 0;
+                                    HasPlayers =
+                                        _scenarioStatus.ShouldShowGameplayUi(_showGameplayUiDuringTransitions)
+                                        && _players.Count > 0;
                                     PlayerColumnCount = _players.Count > 0 ? _players.Count : 1;
 
                                     _logger.LogTrace("UI update complete. Players count: {Count}", _players.Count);
@@ -186,6 +196,16 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
                 },
                 AwaitOperation.Drop
             );
+
+        _scenarioStatusSubscription = dataObservable
+            .InGameScenarioObservable.Select(static scenario => scenario.Status)
+            .DistinctUntilChanged()
+            .Subscribe(status => _dispatcherService.PostOnUI(() => UpdateVisibleState(status)));
+
+        _settingsSubscription = settingsService
+            .SettingsObservable.Select(static settings => GetDisplaySettings(settings).ShowGameplayUiDuringTransitions)
+            .DistinctUntilChanged()
+            .Subscribe(show => _dispatcherService.PostOnUI(() => UpdateTransitionDisplaySetting(show)));
     }
 
     private void AddPlayer(Ulid id, InGamePlayerViewModel vm)
@@ -207,15 +227,6 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
         }
     }
 
-    // Statuses where player memory is temporarily unreliable.
-    // Keep stale VMs in the list rather than evicting and re-creating them.
-    private static bool IsTransitionalStatus(ScenarioStatus status) =>
-        status
-            is ScenarioStatus.TransitionLoading
-                or ScenarioStatus.CinematicPlaying
-                or ScenarioStatus.GenericLoading
-                or ScenarioStatus.PostIntroLoading;
-
     private static bool IsPlayerActive(DecodedInGamePlayer? player)
     {
         if (player is null || !player.IsEnabled)
@@ -224,10 +235,31 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
         return player.NameId > 0 || !string.IsNullOrEmpty(player.Type);
     }
 
+    private void UpdateVisibleState(ScenarioStatus scenarioStatus)
+    {
+        _scenarioStatus = scenarioStatus;
+        HasPlayers = _scenarioStatus.ShouldShowGameplayUi(_showGameplayUiDuringTransitions) && _players.Count > 0;
+        PlayerColumnCount = _players.Count > 0 ? _players.Count : 1;
+    }
+
+    private void UpdateTransitionDisplaySetting(bool showGameplayUiDuringTransitions)
+    {
+        if (_showGameplayUiDuringTransitions == showGameplayUiDuringTransitions)
+            return;
+
+        _showGameplayUiDuringTransitions = showGameplayUiDuringTransitions;
+        HasPlayers = _scenarioStatus.ShouldShowGameplayUi(_showGameplayUiDuringTransitions) && _players.Count > 0;
+    }
+
+    private static DisplaySettings GetDisplaySettings(OutbreakTrackerSettings settings) =>
+        settings.Display ?? new DisplaySettings();
+
     public async ValueTask DisposeAsync()
     {
         _logger.LogDebug("Disposing InGamePlayersViewModel");
         _subscription.Dispose();
+        _scenarioStatusSubscription.Dispose();
+        _settingsSubscription.Dispose();
 
         await _dispatcherService
             .InvokeOnUIAsync(() =>

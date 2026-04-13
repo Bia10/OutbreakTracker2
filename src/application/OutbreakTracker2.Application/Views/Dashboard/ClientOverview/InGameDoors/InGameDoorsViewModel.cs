@@ -1,9 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using ObservableCollections;
+using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
+using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Services.Tracking;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor;
+using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using R3;
 
@@ -12,9 +15,13 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.InGameDoor
 public sealed partial class InGameDoorsViewModel : ObservableObject, IAsyncDisposable
 {
     private readonly IDisposable _subscription;
+    private readonly IDisposable _scenarioStatusSubscription;
+    private readonly IDisposable _settingsSubscription;
     private readonly ILogger<InGameDoorsViewModel> _logger;
     private readonly IDispatcherService _dispatcherService;
     private readonly Dictionary<Ulid, InGameDoorViewModel> _viewModelCache = [];
+    private ScenarioStatus _scenarioStatus;
+    private bool _showGameplayUiDuringTransitions;
 
     [ObservableProperty]
     private bool _hasDoors;
@@ -26,6 +33,8 @@ public sealed partial class InGameDoorsViewModel : ObservableObject, IAsyncDispo
     public NotifyCollectionChangedSynchronizedViewList<InGameDoorViewModel> DoorsView { get; }
 
     public InGameDoorsViewModel(
+        IDataObservableSource dataObservable,
+        IAppSettingsService settingsService,
         ITrackerRegistry trackerRegistry,
         ILogger<InGameDoorsViewModel> logger,
         IDispatcherService dispatcherService
@@ -33,6 +42,7 @@ public sealed partial class InGameDoorsViewModel : ObservableObject, IAsyncDispo
     {
         _logger = logger;
         _dispatcherService = dispatcherService;
+        _showGameplayUiDuringTransitions = GetDisplaySettings(settingsService.Current).ShowGameplayUiDuringTransitions;
 
         DoorsView = Doors.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
@@ -82,7 +92,9 @@ public sealed partial class InGameDoorsViewModel : ObservableObject, IAsyncDispo
                                     Doors.AddRange(newVms);
                                 }
 
-                                HasDoors = Doors.Count > 0;
+                                HasDoors =
+                                    _scenarioStatus.ShouldShowGameplayUi(_showGameplayUiDuringTransitions)
+                                    && Doors.Count > 0;
                                 _logger.LogDebug("Doors updated: {Count}", Doors.Count);
                             },
                             ct
@@ -91,12 +103,24 @@ public sealed partial class InGameDoorsViewModel : ObservableObject, IAsyncDispo
                 },
                 AwaitOperation.Drop
             );
+
+        _scenarioStatusSubscription = dataObservable
+            .InGameScenarioObservable.Select(static scenario => scenario.Status)
+            .DistinctUntilChanged()
+            .Subscribe(status => _dispatcherService.PostOnUI(() => UpdateVisibleState(status)));
+
+        _settingsSubscription = settingsService
+            .SettingsObservable.Select(static settings => GetDisplaySettings(settings).ShowGameplayUiDuringTransitions)
+            .DistinctUntilChanged()
+            .Subscribe(show => _dispatcherService.PostOnUI(() => UpdateTransitionDisplaySetting(show)));
     }
 
     public async ValueTask DisposeAsync()
     {
         _logger.LogDebug("Disposing InGameDoorsViewModel");
         _subscription.Dispose();
+        _scenarioStatusSubscription.Dispose();
+        _settingsSubscription.Dispose();
 
         await _dispatcherService
             .InvokeOnUIAsync(() =>
@@ -110,4 +134,22 @@ public sealed partial class InGameDoorsViewModel : ObservableObject, IAsyncDispo
 
         _logger.LogDebug("InGameDoorsViewModel asynchronous disposal complete");
     }
+
+    private void UpdateVisibleState(ScenarioStatus scenarioStatus)
+    {
+        _scenarioStatus = scenarioStatus;
+        HasDoors = _scenarioStatus.ShouldShowGameplayUi(_showGameplayUiDuringTransitions) && Doors.Count > 0;
+    }
+
+    private void UpdateTransitionDisplaySetting(bool showGameplayUiDuringTransitions)
+    {
+        if (_showGameplayUiDuringTransitions == showGameplayUiDuringTransitions)
+            return;
+
+        _showGameplayUiDuringTransitions = showGameplayUiDuringTransitions;
+        HasDoors = _scenarioStatus.ShouldShowGameplayUi(_showGameplayUiDuringTransitions) && Doors.Count > 0;
+    }
+
+    private static DisplaySettings GetDisplaySettings(OutbreakTrackerSettings settings) =>
+        settings.Display ?? new DisplaySettings();
 }
