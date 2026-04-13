@@ -44,6 +44,14 @@ public sealed class NotificationServiceTests
 
         public IReadOnlyEntityTracker<DecodedLobbySlot> LobbySlots => null!;
 
+        public IEntityChangeSource<DecodedEnemy> EnemyChanges => null!;
+
+        public IEntityChangeSource<DecodedDoor> DoorChanges => null!;
+
+        public IEntityChangeSource<DecodedInGamePlayer> PlayerChanges => null!;
+
+        public IEntityChangeSource<DecodedLobbySlot> LobbySlotChanges => null!;
+
         public Observable<AlertNotification> AllAlerts => _alerts;
 
         public void Emit(AlertNotification alert) => _alerts.OnNext(alert);

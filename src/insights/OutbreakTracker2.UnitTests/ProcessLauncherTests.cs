@@ -42,7 +42,6 @@ public sealed class ProcessLauncherTests
     }
 
     [Test]
-    [SupportedOSPlatform("windows")]
     public async Task TerminateAsync_PublishesCancellingState_AndClearsTrackedClient()
     {
         using Process childProcess = StartLongRunningShellProcess();
@@ -69,24 +68,39 @@ public sealed class ProcessLauncherTests
         await Assert.That(factory.LastClient!.IsDisposed).IsTrue();
     }
 
-    [SupportedOSPlatform("windows")]
     private static Process StartLongRunningShellProcess()
     {
-        string shellPath =
-            Environment.GetEnvironmentVariable("ComSpec")
-            ?? throw new InvalidOperationException("ComSpec was not available for the test shell process.");
+        ProcessStartInfo startInfo = OperatingSystem.IsWindows()
+            ? CreateWindowsSleepProcessStartInfo()
+            : CreatePosixSleepProcessStartInfo();
 
-        ProcessStartInfo startInfo = new()
+        return Process.Start(startInfo)
+            ?? throw new InvalidOperationException("Failed to start the test shell process.");
+    }
+
+    private static ProcessStartInfo CreateWindowsSleepProcessStartInfo()
+    {
+        string? shellPath = Environment.GetEnvironmentVariable("ComSpec");
+        if (string.IsNullOrWhiteSpace(shellPath))
+            shellPath = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+
+        return new ProcessStartInfo
         {
             FileName = shellPath,
             Arguments = "/c ping -n 6 127.0.0.1 > nul",
             UseShellExecute = false,
             CreateNoWindow = true,
         };
-
-        return Process.Start(startInfo)
-            ?? throw new InvalidOperationException("Failed to start the test shell process.");
     }
+
+    private static ProcessStartInfo CreatePosixSleepProcessStartInfo() =>
+        new()
+        {
+            FileName = "/bin/sh",
+            Arguments = "-c \"sleep 5\"",
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
 
     private sealed class FakeGameClientFactory : IGameClientFactory
     {

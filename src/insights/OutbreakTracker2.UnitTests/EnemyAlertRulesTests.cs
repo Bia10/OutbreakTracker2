@@ -31,9 +31,9 @@ public sealed class EnemyAlertRulesTests
         FakeCurrentScenarioState snapshot = new();
 
         EnemyAlertRules.Register(tracker, settingsService, snapshot);
-        IAlertRule<DecodedEnemy> spawnRule = tracker.AddedRules[0];
+        IAddedAlertRule<DecodedEnemy> spawnRule = tracker.AddedRules[0];
 
-        bool triggered = spawnRule.ShouldTrigger(CreateEnemy(), null);
+        bool triggered = spawnRule.ShouldTrigger(CreateEnemy());
 
         await Assert.That(triggered).IsTrue();
     }
@@ -46,9 +46,9 @@ public sealed class EnemyAlertRulesTests
         FakeCurrentScenarioState snapshot = new() { ScenarioName = "Wild Things", Status = ScenarioStatus.InGame };
 
         EnemyAlertRules.Register(tracker, settingsService, snapshot);
-        IAlertRule<DecodedEnemy> killedRule = tracker.RemovedRules[0];
+        IRemovedAlertRule<DecodedEnemy> killedRule = tracker.RemovedRules[0];
 
-        bool triggered = killedRule.ShouldTrigger(CreateEnemy(curHp: 0), CreateEnemy(curHp: 0));
+        bool triggered = killedRule.ShouldTrigger(CreateEnemy(curHp: 0));
 
         await Assert.That(triggered).IsTrue();
     }
@@ -61,7 +61,7 @@ public sealed class EnemyAlertRulesTests
         FakeCurrentScenarioState snapshot = new();
 
         EnemyAlertRules.Register(tracker, settingsService, snapshot);
-        IAlertRule<DecodedEnemy> roomChangeRule = tracker.Rules[3];
+        IUpdatedAlertRule<DecodedEnemy> roomChangeRule = tracker.Rules[3];
 
         bool triggered = roomChangeRule.ShouldTrigger(CreateEnemy(roomId: 2), CreateEnemy(roomId: 1));
 
@@ -85,21 +85,21 @@ public sealed class EnemyAlertRulesTests
     {
         private readonly Subject<AlertNotification> _alerts = new();
 
-        public List<IAlertRule<DecodedEnemy>> AddedRules { get; } = [];
+        public List<IAddedAlertRule<DecodedEnemy>> AddedRules { get; } = [];
 
-        public List<IAlertRule<DecodedEnemy>> Rules { get; } = [];
+        public List<IUpdatedAlertRule<DecodedEnemy>> Rules { get; } = [];
 
-        public List<IAlertRule<DecodedEnemy>> RemovedRules { get; } = [];
+        public List<IRemovedAlertRule<DecodedEnemy>> RemovedRules { get; } = [];
 
         public IEntityChangeSource<DecodedEnemy> Changes { get; } = new FakeEntityChangeSource<DecodedEnemy>();
 
         public Observable<AlertNotification> Alerts => _alerts;
 
-        public void AddRule(IAlertRule<DecodedEnemy> rule) => Rules.Add(rule);
+        public void AddRule(IUpdatedAlertRule<DecodedEnemy> rule) => Rules.Add(rule);
 
-        public void AddAddedRule(IAlertRule<DecodedEnemy> rule) => AddedRules.Add(rule);
+        public void AddAddedRule(IAddedAlertRule<DecodedEnemy> rule) => AddedRules.Add(rule);
 
-        public void AddRemovedRule(IAlertRule<DecodedEnemy> rule) => RemovedRules.Add(rule);
+        public void AddRemovedRule(IRemovedAlertRule<DecodedEnemy> rule) => RemovedRules.Add(rule);
 
         public void Dispose()
         {

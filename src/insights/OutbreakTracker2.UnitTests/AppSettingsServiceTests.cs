@@ -277,6 +277,44 @@ public sealed class AppSettingsServiceTests
         await Assert.That(ex.Message).IsEqualTo("The user settings file must contain an OutbreakTracker object.");
     }
 
+    [Test]
+    public async Task SaveAsync_DoesNotReplaceLiveSettings_WhenSerializedDocumentFailsRoundTripValidation()
+    {
+        using TestSettingsEnvironment environment = new(
+            """
+            {
+                "OutbreakTracker": {
+                    "Notifications": {
+                        "EnableToastAlerts": false
+                    }
+                }
+            }
+            """
+        );
+        using AppSettingsService service = environment.CreateService(serializer: new InvalidWriteSettingsSerializer());
+
+        InvalidOperationException? ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.SaveAsync(
+                new OutbreakTrackerSettings { Notifications = new NotificationSettings { EnableToastAlerts = true } }
+            )
+        )!;
+
+        await Assert.That(ex).IsNotNull();
+        await Assert.That(ex!.Message).IsEqualTo("The user settings file must contain an OutbreakTracker object.");
+        await Assert.That(service.Current.Notifications.EnableToastAlerts).IsFalse();
+
+        using JsonDocument jsonDocument = JsonDocument.Parse(await File.ReadAllTextAsync(environment.UserSettingsPath));
+        await Assert
+            .That(
+                jsonDocument
+                    .RootElement.GetProperty("OutbreakTracker")
+                    .GetProperty("Notifications")
+                    .GetProperty("EnableToastAlerts")
+                    .GetBoolean()
+            )
+            .IsFalse();
+    }
+
     private sealed class TestSettingsEnvironment : IDisposable
     {
         private readonly string _directoryPath = Path.Combine(
@@ -330,19 +368,69 @@ public sealed class AppSettingsServiceTests
 
         public AppSettingsService CreateService()
         {
-            IConfigurationRoot configuration = new ConfigurationBuilder()
+            IConfigurationRoot configuration = CreateConfiguration();
+
+            return new AppSettingsService(configuration, NullLogger<AppSettingsService>.Instance, UserSettingsPath);
+        }
+
+        public AppSettingsService CreateService(
+            ISettingsSerializer? serializer = null,
+            ISettingsValidator? validator = null,
+            ISettingsPersistence? persistence = null
+        )
+        {
+            IConfigurationRoot configuration = CreateConfiguration();
+
+            return new AppSettingsService(
+                configuration,
+                NullLogger<AppSettingsService>.Instance,
+                serializer ?? new SettingsJsonSerializer(),
+                validator ?? new SettingsValidator(),
+                persistence ?? new FileSettingsPersistence(UserSettingsPath)
+            );
+        }
+
+        public IConfigurationRoot CreateConfiguration() =>
+            new ConfigurationBuilder()
                 .SetBasePath(_directoryPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
                 .AddJsonFile("user-settings.json", optional: true, reloadOnChange: false)
                 .Build();
-
-            return new AppSettingsService(configuration, NullLogger<AppSettingsService>.Instance, UserSettingsPath);
-        }
 
         public void Dispose()
         {
             if (Directory.Exists(_directoryPath))
                 Directory.Delete(_directoryPath, recursive: true);
         }
+    }
+
+    private sealed class InvalidWriteSettingsSerializer : ISettingsSerializer
+    {
+        private readonly SettingsJsonSerializer _inner = new();
+
+        public async ValueTask SerializeAsync(
+            Stream destination,
+            OutbreakTrackerSettings settings,
+            CancellationToken cancellationToken
+        )
+        {
+            ArgumentNullException.ThrowIfNull(destination);
+
+            if (destination.CanSeek)
+            {
+                destination.SetLength(0);
+                destination.Position = 0;
+            }
+
+            await using StreamWriter writer = new(destination, Encoding.UTF8, leaveOpen: true);
+            await writer.WriteAsync("{}".AsMemory(), cancellationToken).ConfigureAwait(false);
+            await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        public OutbreakTrackerSettings DeserializeSettings(JsonElement settingsElement) =>
+            _inner.DeserializeSettings(settingsElement);
+
+        public bool TryGetSettingsSection(JsonElement root, out JsonElement settingsSection) =>
+            _inner.TryGetSettingsSection(root, out settingsSection);
     }
 }

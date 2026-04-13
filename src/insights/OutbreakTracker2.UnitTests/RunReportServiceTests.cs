@@ -2,12 +2,14 @@
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Reports;
 using OutbreakTracker2.Application.Services.Reports.Events;
+using OutbreakTracker2.Application.Services.Toasts;
 using OutbreakTracker2.Application.Services.Tracking;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.PCSX2.Client;
 using R3;
+using SukiUI.Toasts;
 
 namespace OutbreakTracker2.UnitTests;
 
@@ -19,14 +21,26 @@ public sealed class RunReportServiceTests
         FakeTrackerRegistry registry,
         FakeDataSource dataSource,
         FakeRunReportWriter? writer = null,
-        TimeProvider? time = null
+        TimeProvider? time = null,
+        FakeToastService? toastService = null,
+        IRunReportCollectionDiffProcessor<DecodedLobbySlot>? lobbySlotProcessor = null,
+        IRunReportCollectionDiffProcessor<DecodedInGamePlayer>? playerProcessor = null,
+        IRunReportCollectionDiffProcessor<DecodedEnemy>? enemyProcessor = null,
+        IRunReportCollectionDiffProcessor<DecodedDoor>? doorProcessor = null,
+        IRunReportScenarioProcessor? scenarioProcessor = null
     ) =>
         new(
             registry,
             dataSource,
             writer ?? new FakeRunReportWriter(),
+            toastService ?? new FakeToastService(),
             time ?? TimeProvider.System,
-            NullLogger<RunReportService>.Instance
+            NullLogger<RunReportService>.Instance,
+            lobbySlotProcessor ?? new RunReportLobbySlotDiffProcessor(),
+            playerProcessor ?? new RunReportPlayerDiffProcessor(),
+            enemyProcessor ?? new RunReportEnemyDiffProcessor(),
+            doorProcessor ?? new RunReportDoorDiffProcessor(),
+            scenarioProcessor ?? new RunReportScenarioProcessor()
         );
 
     private static DecodedInGamePlayer InGamePlayer(Ulid id, short hp = 100, short maxHp = 100) =>
@@ -623,6 +637,78 @@ public sealed class RunReportServiceTests
         svc.Dispose();
     }
 
+    [Test]
+    public async Task WriteFailure_ShowsErrorToast()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        FakeRunReportWriter writer = new()
+        {
+            WriteException = new InvalidOperationException("Simulated report write failure."),
+        };
+        FakeToastService toastService = new();
+        using RunReportService svc = CreateService(registry, dataSource, writer, toastService: toastService);
+
+        dataSource.SetScenario(
+            new DecodedInGameScenario { Status = ScenarioStatus.InGame, ScenarioName = "Wild Things" }
+        );
+        DecodedInGamePlayer player = InGamePlayer(Ulid.NewUlid());
+
+        registry.PlayerTracker.ChangesSource.Push(Added(player));
+        registry.PlayerTracker.ChangesSource.Push(Removed(player));
+
+        using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(2));
+        string title = await toastService.LastErrorTitle.Task.WaitAsync(timeout.Token);
+        string content = await toastService.LastErrorContent.Task.WaitAsync(timeout.Token);
+
+        await Assert.That(title).IsEqualTo("Run report export failed");
+        await Assert.That(content).Contains("Wild Things");
+    }
+
+    [Test]
+    public async Task Service_DelegatesIncomingStreams_ToInjectedProcessors()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        RecordingCollectionDiffProcessor<DecodedLobbySlot> lobbySlotProcessor = new();
+        RecordingCollectionDiffProcessor<DecodedInGamePlayer> playerProcessor = new();
+        RecordingCollectionDiffProcessor<DecodedEnemy> enemyProcessor = new();
+        RecordingCollectionDiffProcessor<DecodedDoor> doorProcessor = new();
+        RecordingScenarioProcessor scenarioProcessor = new();
+        using RunReportService svc = CreateService(
+            registry,
+            dataSource,
+            lobbySlotProcessor: lobbySlotProcessor,
+            playerProcessor: playerProcessor,
+            enemyProcessor: enemyProcessor,
+            doorProcessor: doorProcessor,
+            scenarioProcessor: scenarioProcessor
+        );
+
+        DecodedLobbySlot lobbySlot = new() { Id = Ulid.NewUlid(), ScenarioId = "wild-things" };
+        DecodedDoor closedDoor = new()
+        {
+            Id = Ulid.NewUlid(),
+            Status = "Locked",
+            Hp = 100,
+            Flag = 0,
+        };
+        DecodedDoor openDoor = closedDoor with { Status = "Open" };
+
+        registry.LobbySlotTracker.ChangesSource.Push(Added(lobbySlot));
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(Ulid.NewUlid())));
+        registry.EnemyTracker.ChangesSource.Push(Added(AliveEnemy(Ulid.NewUlid())));
+        registry.DoorTracker.ChangesSource.Push(Changed(closedDoor, openDoor));
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+
+        await Assert.That(lobbySlotProcessor.CallCount).IsEqualTo(1);
+        await Assert.That(playerProcessor.CallCount).IsEqualTo(1);
+        await Assert.That(enemyProcessor.CallCount).IsEqualTo(1);
+        await Assert.That(doorProcessor.CallCount).IsEqualTo(1);
+        await Assert.That(scenarioProcessor.CallCount).IsGreaterThanOrEqualTo(1);
+        await Assert.That(scenarioProcessor.LastScenario?.Status).IsEqualTo(ScenarioStatus.InGame);
+    }
+
     // ── Fakes ────────────────────────────────────────────────────────────────
 
     private sealed class FakeTrackerRegistry : ITrackerRegistry, IDisposable
@@ -636,6 +722,11 @@ public sealed class RunReportServiceTests
         public IReadOnlyEntityTracker<DecodedDoor> Doors => DoorTracker;
         public IReadOnlyEntityTracker<DecodedInGamePlayer> Players => PlayerTracker;
         public IReadOnlyEntityTracker<DecodedLobbySlot> LobbySlots => LobbySlotTracker;
+
+        public IEntityChangeSource<DecodedEnemy> EnemyChanges => EnemyTracker.ChangesSource;
+        public IEntityChangeSource<DecodedDoor> DoorChanges => DoorTracker.ChangesSource;
+        public IEntityChangeSource<DecodedInGamePlayer> PlayerChanges => PlayerTracker.ChangesSource;
+        public IEntityChangeSource<DecodedLobbySlot> LobbySlotChanges => LobbySlotTracker.ChangesSource;
 
         private readonly Subject<AlertNotification> _allAlerts = new();
         public Observable<AlertNotification> AllAlerts => _allAlerts;
@@ -659,11 +750,11 @@ public sealed class RunReportServiceTests
         public IEntityChangeSource<T> Changes => ChangesSource;
         public Observable<AlertNotification> Alerts => _alerts;
 
-        public void AddRule(IAlertRule<T> rule) { }
+        public void AddRule(IUpdatedAlertRule<T> rule) { }
 
-        public void AddAddedRule(IAlertRule<T> rule) { }
+        public void AddAddedRule(IAddedAlertRule<T> rule) { }
 
-        public void AddRemovedRule(IAlertRule<T> rule) { }
+        public void AddRemovedRule(IRemovedAlertRule<T> rule) { }
 
         public void Dispose()
         {
@@ -744,10 +835,70 @@ public sealed class RunReportServiceTests
     {
         public List<RunReport> Written { get; } = [];
 
+        public Exception? WriteException { get; init; }
+
         public Task WriteAsync(RunReport report, CancellationToken cancellationToken = default)
         {
             Written.Add(report);
+
+            if (WriteException is not null)
+                return Task.FromException(WriteException);
+
             return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeToastService : IToastService
+    {
+        public TaskCompletionSource<string> LastErrorTitle { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource<string> LastErrorContent { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task InvokeInfoToastAsync(string content, string? title = "") => Task.CompletedTask;
+
+        public Task InvokeSuccessToastAsync(string content, string? title = "") => Task.CompletedTask;
+
+        public Task InvokeErrorToastAsync(string content, string? title = "")
+        {
+            LastErrorTitle.TrySetResult(title ?? string.Empty);
+            LastErrorContent.TrySetResult(content);
+            return Task.CompletedTask;
+        }
+
+        public Task InvokeWarningToastAsync(string content, string? title = "") => Task.CompletedTask;
+
+        public ISukiToast CreateToast(string title, object content) => throw new NotSupportedException();
+
+        public ISukiToast CreateInfoToastWithCancelButton(
+            string content,
+            object cancelButtonContent,
+            Action<ISukiToast> onCanceledAction,
+            string? title = ""
+        ) => throw new NotSupportedException();
+
+        public Task DismissToastAsync(ISukiToast toast) => Task.CompletedTask;
+    }
+
+    private sealed class RecordingCollectionDiffProcessor<T> : IRunReportCollectionDiffProcessor<T>
+        where T : IHasId
+    {
+        public int CallCount { get; private set; }
+
+        public void Process(CollectionDiff<T> diff, RunReportProcessingContext context) => CallCount++;
+    }
+
+    private sealed class RecordingScenarioProcessor : IRunReportScenarioProcessor
+    {
+        public int CallCount { get; private set; }
+
+        public DecodedInGameScenario? LastScenario { get; private set; }
+
+        public void Process(DecodedInGameScenario scenario, RunReportProcessingContext context)
+        {
+            CallCount++;
+            LastScenario = scenario;
         }
     }
 }

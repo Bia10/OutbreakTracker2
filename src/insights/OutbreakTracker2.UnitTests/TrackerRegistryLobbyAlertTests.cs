@@ -533,11 +533,11 @@ public sealed class TrackerRegistryLobbyAlertTests
 
         public Observable<AlertNotification> Alerts => _alerts;
 
-        public void AddRule(IAlertRule<T> rule) { }
+        public void AddRule(IUpdatedAlertRule<T> rule) { }
 
-        public void AddAddedRule(IAlertRule<T> rule) { }
+        public void AddAddedRule(IAddedAlertRule<T> rule) { }
 
-        public void AddRemovedRule(IAlertRule<T> rule) { }
+        public void AddRemovedRule(IRemovedAlertRule<T> rule) { }
 
         public void Dispose()
         {

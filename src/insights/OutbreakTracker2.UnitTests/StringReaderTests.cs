@@ -3,11 +3,11 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 using Microsoft.Extensions.Logging.Abstractions;
+using OutbreakTracker2.Memory.String;
 using MemoryStringReader = OutbreakTracker2.Memory.String.StringReader;
 
 namespace OutbreakTracker2.UnitTests;
 
-[SupportedOSPlatform("windows")]
 public sealed class StringReaderTests
 {
     [Test]
@@ -21,9 +21,10 @@ public sealed class StringReaderTests
             Marshal.Copy(bytes, 0, address, bytes.Length);
 
             using Process currentProcess = Process.GetCurrentProcess();
-            MemoryStringReader reader = new(NullLogger<MemoryStringReader>.Instance);
+            IStringReader reader = CreateReader();
+            nint processHandle = GetCurrentProcessHandle(currentProcess);
 
-            bool success = reader.TryRead(currentProcess.Handle, address, out string result, Encoding.UTF8);
+            bool success = reader.TryRead(processHandle, address, out string result, Encoding.UTF8);
 
             await Assert.That(success).IsTrue();
             await Assert.That(result).IsEqualTo("\u30FB");
@@ -34,4 +35,37 @@ public sealed class StringReaderTests
             Marshal.FreeHGlobal(address);
         }
     }
+
+    private static IStringReader CreateReader()
+    {
+        if (OperatingSystem.IsWindows())
+            return CreateWindowsReader();
+
+        if (OperatingSystem.IsLinux())
+        {
+            Type readerType =
+                Type.GetType("OutbreakTracker2.LinuxInterop.LinuxStringReader, OutbreakTracker2.LinuxInterop")
+                ?? throw new InvalidOperationException("Linux string reader type could not be loaded.");
+            Type loggerType = typeof(NullLogger<>).MakeGenericType(readerType);
+            object logger =
+                loggerType.GetProperty("Instance")?.GetValue(null)
+                ?? throw new InvalidOperationException("Linux string reader logger could not be created.");
+
+            return (IStringReader)(
+                Activator.CreateInstance(readerType, logger)
+                ?? throw new InvalidOperationException("Linux string reader could not be created.")
+            );
+        }
+
+        throw new PlatformNotSupportedException(
+            "Only Windows and Linux are currently supported by string reader tests."
+        );
+    }
+
+    [SupportedOSPlatform("windows")]
+    private static IStringReader CreateWindowsReader() =>
+        new MemoryStringReader(NullLogger<MemoryStringReader>.Instance);
+
+    private static nint GetCurrentProcessHandle(Process currentProcess) =>
+        OperatingSystem.IsLinux() ? currentProcess.Id : currentProcess.Handle;
 }
