@@ -39,9 +39,11 @@ public sealed class EntityChangeSource<T> : IEntityChangeSource<T>, IDisposable
 
     public EntityChangeSource(Observable<T[]> snapshots)
     {
+        CollectionDiffAccumulator<T> diffAccumulator = new();
+
         ConnectableObservable<CollectionDiff<T>> published = snapshots
             .Scan(seed: (Prev: Array.Empty<T>(), Curr: Array.Empty<T>()), (acc, next) => (acc.Curr, next))
-            .Select(pair => CollectionDiffer.Diff(pair.Prev, pair.Curr))
+            .Select(pair => diffAccumulator.Diff(pair.Prev, pair.Curr))
             .Publish();
 
         Diffs = published.AsObservable();

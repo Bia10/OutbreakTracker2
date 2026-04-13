@@ -233,7 +233,7 @@ internal static class DefaultPlayerAlertRules
                     return settings.Joined
                         && cur.IsInGame
                         && !(prev?.IsInGame ?? true)
-                        && !IsTransitionalStatus(scenarioState.Status);
+                        && !scenarioState.Status.IsTransitional();
                 },
                 cur => new AlertNotification("Player Joined", $"{cur.Name} joined the game.", AlertLevel.Info)
             )
@@ -247,19 +247,12 @@ internal static class DefaultPlayerAlertRules
                     return settings.Left
                         && !cur.IsInGame
                         && (prev?.IsInGame ?? false)
-                        && !IsTransitionalStatus(scenarioState.Status);
+                        && !scenarioState.Status.IsTransitional();
                 },
                 cur => new AlertNotification("Player Left", $"{cur.Name} left the game.", AlertLevel.Warning)
             )
         );
     }
-
-    private static bool IsTransitionalStatus(ScenarioStatus status) =>
-        status
-            is ScenarioStatus.TransitionLoading
-                or ScenarioStatus.CinematicPlaying
-                or ScenarioStatus.GenericLoading
-                or ScenarioStatus.PostIntroLoading;
 
     private static string ResolveRoomName(short roomId, string scenarioName) =>
         AlertRuleHelpers.ResolveRoomName(roomId, scenarioName);

@@ -5,10 +5,10 @@ namespace OutbreakTracker2.Application.Services.Tracking;
 
 public interface ITrackerRegistry
 {
-    IEntityTracker<DecodedEnemy> Enemies { get; }
-    IEntityTracker<DecodedDoor> Doors { get; }
-    IEntityTracker<DecodedInGamePlayer> Players { get; }
-    IEntityTracker<DecodedLobbySlot> LobbySlots { get; }
+    IReadOnlyEntityTracker<DecodedEnemy> Enemies { get; }
+    IReadOnlyEntityTracker<DecodedDoor> Doors { get; }
+    IReadOnlyEntityTracker<DecodedInGamePlayer> Players { get; }
+    IReadOnlyEntityTracker<DecodedLobbySlot> LobbySlots { get; }
 
     Observable<AlertNotification> AllAlerts { get; }
 }
