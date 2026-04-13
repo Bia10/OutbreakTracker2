@@ -12,4 +12,6 @@ public sealed record PlayerLeftEvent(
 {
     public override string Describe(Scenario scenario) =>
         Invariant($"Player **{PlayerName}** left (HP: {FinalHealth}, Virus: {FinalVirusPercentage:F3}%)");
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

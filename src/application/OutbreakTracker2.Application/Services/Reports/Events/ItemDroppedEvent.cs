@@ -17,4 +17,6 @@ public sealed record ItemDroppedEvent(
             : Invariant(
                 $"**{PreviousHolder}** returned **{TypeName}** (item slot {SlotIndex}) to {RoomName(scenario, RoomId)}"
             );
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

@@ -10,4 +10,6 @@ public sealed record DoorStateChangedEvent(
 {
     public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
         Invariant($"Door #{SlotId} status changed: {OldStatus} → **{NewStatus}**");
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

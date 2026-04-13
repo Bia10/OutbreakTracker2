@@ -9,4 +9,6 @@ public sealed record ScenarioStatusChangedEvent(
 ) : RunEvent(OccurredAt)
 {
     public override string Describe(Scenario scenario) => Invariant($"Scenario status: {OldStatus} → **{NewStatus}**");
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

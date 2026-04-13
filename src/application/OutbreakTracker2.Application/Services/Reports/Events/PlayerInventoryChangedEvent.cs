@@ -21,6 +21,8 @@ public sealed record PlayerInventoryChangedEvent(
             $"Player **{PlayerName}** {Kind} slot {SlotIndex} changed from {FormatItemValue(OldItemName, OldItemId)} to **{FormatItemValue(NewItemName, NewItemId)}**."
         );
 
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
+
     private static string FormatItemValue(string itemName, byte itemId) => $"{itemName} ({FormatRawValue(itemId)})";
 
     private static string FormatRawValue(byte itemId) => $"0x{itemId:X2} | {itemId}";

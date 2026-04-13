@@ -7,4 +7,6 @@ public sealed record DoorDamagedEvent(DateTimeOffset OccurredAt, Ulid DoorId, in
 
     public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
         Invariant($"Door #{SlotId} damaged: {OldHp} → {NewHp} HP (-{Damage})");
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

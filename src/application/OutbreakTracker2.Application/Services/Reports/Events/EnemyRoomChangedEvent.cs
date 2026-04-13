@@ -13,4 +13,6 @@ public sealed record EnemyRoomChangedEvent(
         Invariant(
             $"Enemy **{EnemyName}** (Slot {SlotId}) moved room: {RoomName(scenario, OldRoomId)} → **{RoomName(scenario, NewRoomId)}**"
         );
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

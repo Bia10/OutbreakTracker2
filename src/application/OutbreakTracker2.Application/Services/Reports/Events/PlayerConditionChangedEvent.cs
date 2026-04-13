@@ -12,4 +12,6 @@ public sealed record PlayerConditionChangedEvent(
 {
     public override string Describe(Scenario scenario) =>
         Invariant($"Player **{PlayerName}** condition: {OldCondition} → **{NewCondition}**");
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

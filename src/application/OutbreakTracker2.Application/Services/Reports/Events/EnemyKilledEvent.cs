@@ -13,4 +13,6 @@ public sealed record EnemyKilledEvent(
         Invariant(
             $"Enemy **{EnemyName}** killed ({RoomName(scenario, RoomId)}, Slot {SlotId}){FormatContributions(ContributingPlayers)}"
         );
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

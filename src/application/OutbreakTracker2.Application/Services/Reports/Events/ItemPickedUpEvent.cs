@@ -17,4 +17,6 @@ public sealed record ItemPickedUpEvent(
             : Invariant(
                 $"**{PickedUpByName}** looted **{TypeName}** (item slot {SlotIndex}) from {RoomName(scenario, RoomId)}"
             );
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

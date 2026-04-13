@@ -18,4 +18,6 @@ public sealed record EnemyDamagedEvent(
         Invariant(
             $"Enemy **{EnemyName}** damaged: {OldHp} → {NewHp}/{MaxHp} (-{Damage}) ({RoomName(scenario, RoomId)}){FormatContributions(ContributingPlayers)}"
         );
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

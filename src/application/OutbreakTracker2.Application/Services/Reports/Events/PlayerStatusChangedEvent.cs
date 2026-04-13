@@ -13,4 +13,6 @@ public sealed record PlayerStatusChangedEvent(
 {
     public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
         Invariant($"Player **{PlayerName}** status: {OldStatus} → **{NewStatus}**");
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

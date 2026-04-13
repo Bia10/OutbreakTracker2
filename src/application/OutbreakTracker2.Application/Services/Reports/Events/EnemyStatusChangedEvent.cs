@@ -29,4 +29,6 @@ public sealed record EnemyStatusChangedEvent(
             : Invariant(
                 $"Enemy **{EnemyName}** status: 0x{OldStatus:X2} → 0x{NewStatus:X2} ({RoomName(scenario, RoomId)}){FormatContributions(ContributingPlayers)}"
             );
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

@@ -10,6 +10,8 @@ public abstract record RunEvent(DateTimeOffset OccurredAt)
 
     public abstract string Describe(Scenario scenario);
 
+    internal abstract void Accumulate(IRunEventStatsAccumulator accumulator);
+
     protected static string Invariant(FormattableString value) => FormattableString.Invariant(value);
 
     protected static string RoomName(Scenario scenario, int roomId) => scenario.GetRoomName(roomId);

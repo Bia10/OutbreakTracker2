@@ -18,4 +18,6 @@ public sealed record EnemyDespawnedEvent(
         Invariant(
             $"Enemy **{EnemyName}** despawned ({RoomName(scenario, RoomId)}, Slot {SlotId}, HP remaining: {RemainingHp}/{MaxHp})"
         );
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

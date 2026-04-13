@@ -15,4 +15,6 @@ public sealed record PlayerJoinedEvent(
         Invariant(
             $"Player **{PlayerName}** joined (HP: {InitialHealth}/{MaxHealth}, Virus: {InitialVirusPercentage:F3}%)"
         );
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

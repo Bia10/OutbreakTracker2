@@ -11,4 +11,6 @@ public sealed record EnemySpawnedEvent(
 {
     public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
         Invariant($"Enemy **{EnemyName}** spawned ({RoomName(scenario, RoomId)}, Slot {SlotId}, HP: {MaxHp})");
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

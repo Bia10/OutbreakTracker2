@@ -29,4 +29,6 @@ public sealed record PlayerHealthChangedEvent(
 
         return Invariant($"Player **{PlayerName}** health: {OldHealth} → **{NewHealth}/{MaxHealth}**");
     }
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

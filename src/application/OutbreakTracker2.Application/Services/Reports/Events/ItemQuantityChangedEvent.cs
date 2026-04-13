@@ -13,4 +13,6 @@ public sealed record ItemQuantityChangedEvent(
         Invariant(
             $"**{TypeName}** (slot {SlotIndex}) quantity: {OldQuantity} → **{NewQuantity}** ({RoomName(scenario, RoomId)})"
         );
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

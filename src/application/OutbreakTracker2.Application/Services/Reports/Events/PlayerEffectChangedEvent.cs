@@ -16,4 +16,6 @@ public sealed record PlayerEffectChangedEvent(
         IsApplied
             ? Invariant($"Player **{PlayerName}** effect **{EffectName}** applied")
             : Invariant($"Player **{PlayerName}** effect **{EffectName}** expired");
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

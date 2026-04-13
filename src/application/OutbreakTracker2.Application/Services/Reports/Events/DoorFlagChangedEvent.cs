@@ -10,4 +10,6 @@ public sealed record DoorFlagChangedEvent(
 {
     public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
         Invariant($"Door #{SlotId} flag changed: 0x{OldFlag:X4} → **0x{NewFlag:X4}**");
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }

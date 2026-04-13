@@ -20,4 +20,6 @@ public sealed record PlayerVirusChangedEvent(
             : Invariant(
                 $"Player **{PlayerName}** virus: {OldVirusPercentage:F3}% → **{NewVirusPercentage:F3}%** ({Delta:F3}%)"
             );
+
+    internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
 }
