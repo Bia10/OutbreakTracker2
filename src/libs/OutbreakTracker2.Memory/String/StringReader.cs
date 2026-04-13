@@ -155,13 +155,15 @@ public sealed class StringReader : IStringReader
         if (result.Contains('\ufffd', StringComparison.Ordinal))
         {
             _logger.LogWarning("Encoding issues detected. Trying fallback encodings...");
-            TryFallbackEncodings(bytes);
+            string? fallbackResult = TryFallbackEncodings(bytes);
+            if (fallbackResult is not null)
+                return fallbackResult;
         }
 
         return result;
     }
 
-    private void TryFallbackEncodings(List<byte> bytes)
+    private string? TryFallbackEncodings(List<byte> bytes)
     {
         Encoding[] encodings =
         [
@@ -178,6 +180,12 @@ public sealed class StringReader : IStringReader
                 _logger.LogTrace(
                     $"Fallback {encoding.EncodingName}: {decoded} | Bytes: {BitConverter.ToString([.. bytes])}"
                 );
+
+                if (decoded.Contains('\ufffd', StringComparison.Ordinal))
+                    continue;
+
+                _logger.LogDebug("Recovered string using fallback encoding {EncodingName}", encoding.EncodingName);
+                return decoded;
             }
             catch (Exception ex)
             {
@@ -188,6 +196,8 @@ public sealed class StringReader : IStringReader
                     ex.Message
                 );
             }
+
+        return null;
     }
 
     private string GetByteInterpretations(byte @byte)

@@ -108,6 +108,9 @@ public sealed record DecodedInGamePlayer : IHasId
     [JsonPropertyName(nameof(Status))]
     public string Status { get; init; } = string.Empty;
 
+    /// <summary>
+    /// Inventory snapshot buffer. The array reference is init-only, but the contents remain shallow-mutable by design.
+    /// </summary>
     [JsonInclude]
     [JsonPropertyName(nameof(Inventory))]
     public byte[] Inventory { get; init; } = new byte[4];
@@ -116,14 +119,23 @@ public sealed record DecodedInGamePlayer : IHasId
     [JsonPropertyName(nameof(SpecialItem))]
     public byte SpecialItem { get; init; }
 
+    /// <summary>
+    /// Special-inventory snapshot buffer. The array reference is init-only, but the contents remain shallow-mutable by design.
+    /// </summary>
     [JsonInclude]
     [JsonPropertyName(nameof(SpecialInventory))]
     public byte[] SpecialInventory { get; init; } = new byte[4];
 
+    /// <summary>
+    /// Downed-inventory snapshot buffer. The array reference is init-only, but the contents remain shallow-mutable by design.
+    /// </summary>
     [JsonInclude]
     [JsonPropertyName(nameof(DeadInventory))]
     public byte[] DeadInventory { get; init; } = new byte[4];
 
+    /// <summary>
+    /// Downed special-inventory snapshot buffer. The array reference is init-only, but the contents remain shallow-mutable by design.
+    /// </summary>
     [JsonInclude]
     [JsonPropertyName(nameof(SpecialDeadInventory))]
     public byte[] SpecialDeadInventory { get; init; } = new byte[4];

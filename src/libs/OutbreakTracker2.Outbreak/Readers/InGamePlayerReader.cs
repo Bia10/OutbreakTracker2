@@ -248,10 +248,10 @@ public sealed class InGamePlayerReader : ReaderBase, IInGamePlayerReader
         nameId is 0 ? charType : GetCharacterNpcNameFromNameId(nameId);
 
     private static double GetHealthPercentage(short curHealth, short maxHealth) =>
-        PercentageUtility.GetPercentage(curHealth, maxHealth, 3);
+        maxHealth <= 0 ? 0.0 : PercentageUtility.GetPercentage(curHealth, maxHealth, 3);
 
     private static double GetVirusPercentage(int curVirus, int maxVirus) =>
-        PercentageUtility.GetPercentage(curVirus, maxVirus, 3);
+        maxVirus <= 0 ? 0.0 : PercentageUtility.GetPercentage(curVirus, maxVirus, 3);
 
     private string DecodeStatusText(byte status)
     {
@@ -281,6 +281,9 @@ public sealed class InGamePlayerReader : ReaderBase, IInGamePlayerReader
 
     private static string DecodeCondition(short curHp, short maxHp)
     {
+        if (maxHp <= 0)
+            return curHp <= 0 ? "down" : string.Empty;
+
         return PercentageUtility.GetPercentage(curHp, maxHp) switch
         {
             >= 75 => "fine",

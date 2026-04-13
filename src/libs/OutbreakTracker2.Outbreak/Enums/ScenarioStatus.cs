@@ -22,15 +22,27 @@ public enum ScenarioStatus : byte
     [EnumMember(Value = "Generic Loading")]
     GenericLoading = 7,
 
+    /// <summary>
+    /// Online transitional state observed between room loads. Treated as transitional in session tracking.
+    /// </summary>
     [EnumMember(Value = "Unknown8")]
     Unknown8 = 8,
 
+    /// <summary>
+    /// Online transitional state observed between room loads. Treated as transitional in session tracking.
+    /// </summary>
     [EnumMember(Value = "Unknown9")]
     Unknown9 = 9,
 
+    /// <summary>
+    /// Online transitional state observed between room loads. Treated as transitional in session tracking.
+    /// </summary>
     [EnumMember(Value = "Unknown10")]
     Unknown10 = 10,
 
+    /// <summary>
+    /// Online transitional state observed between room loads. Treated as transitional in session tracking.
+    /// </summary>
     [EnumMember(Value = "Unknown11")]
     Unknown11 = 11,
 

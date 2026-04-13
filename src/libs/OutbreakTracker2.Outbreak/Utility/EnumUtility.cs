@@ -84,13 +84,22 @@ public static class EnumUtility
     public static bool TryParseByValueOrMember<TEnum>(string value, out TEnum result)
         where TEnum : struct, Enum
     {
-        if (FastEnum.TryParse(value.AsSpan(), out result))
+        return TryParseByValueOrMember(value.AsSpan(), out result);
+    }
+
+    private static bool TryParseByValueOrMember<TEnum>(ReadOnlySpan<char> value, out TEnum result)
+        where TEnum : struct, Enum
+    {
+        if (FastEnum.TryParse(value, out result))
             return true;
 
         foreach (TEnum enumValue in FastEnum.GetValues<TEnum>())
         {
             string? memberValue = enumValue.GetEnumMemberValue();
-            if (!string.Equals(value, memberValue, StringComparison.OrdinalIgnoreCase))
+            if (
+                string.IsNullOrEmpty(memberValue)
+                || !value.Equals(memberValue.AsSpan(), StringComparison.OrdinalIgnoreCase)
+            )
                 continue;
 
             result = enumValue;
@@ -118,40 +127,29 @@ public static class EnumUtility
             // If the object is a string, use the string overload directly
             case string str:
                 return TryParseByValueOrMember(str, out result);
-            // Unbox byte and call the byte overload
+            // Unbox integral values and use the span-based formatting path.
             case byte b:
                 return TryParseByValueOrMember(b, out result);
-            // Unbox short and call the short overload
             case short s:
                 return TryParseByValueOrMember(s, out result);
-            // Unbox int and call the int overload
             case int i:
                 return TryParseByValueOrMember(i, out result);
-        }
-
-        // For unhandled value types (like char, float, custom structs) or reference types,
-        // ToString() will still cause boxing if 'value' is a value type.
-        string? valueString = value.ToString();
-        if (string.IsNullOrEmpty(valueString))
-            return false;
-
-        if (FastEnum.TryParse(valueString.AsSpan(), out result))
-        {
-            if (FastEnum.IsDefined(result))
-                return true;
-        }
-
-        foreach (TEnum enumValue in FastEnum.GetValues<TEnum>())
-        {
-            string? memberValue = enumValue.GetEnumMemberValue();
-            if (
-                string.IsNullOrEmpty(memberValue)
-                || !string.Equals(valueString, memberValue, StringComparison.OrdinalIgnoreCase)
-            )
-                continue;
-
-            result = enumValue;
-            return true;
+            case sbyte sb:
+                return TryParseFormattableValue(sb, 4, out result);
+            case ushort us:
+                return TryParseFormattableValue(us, 5, out result);
+            case uint ui:
+                return TryParseFormattableValue(ui, 10, out result);
+            case long l:
+                return TryParseFormattableValue(l, 20, out result);
+            case ulong ul:
+                return TryParseFormattableValue(ul, 20, out result);
+            case char ch:
+                Span<char> charBuffer = stackalloc char[1];
+                charBuffer[0] = ch;
+                return TryParseByValueOrMember(charBuffer, out result);
+            case ISpanFormattable spanFormattable:
+                return TryParseSpanFormattable(spanFormattable, out result);
         }
 
         return false;
@@ -159,51 +157,15 @@ public static class EnumUtility
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryParseByValueOrMember<TEnum>(byte value, out TEnum result)
-        where TEnum : struct, Enum
-    {
-        result = default;
-
-        Span<char> charBuffer = stackalloc char[3];
-        if (value.TryFormat(charBuffer, out int charsWritten))
-        {
-            if (FastEnum.TryParse(charBuffer[..charsWritten], out result) && FastEnum.IsDefined(result))
-                return true;
-        }
-
-        return TryParseByValueOrMember(value.ToString(), out result);
-    }
+        where TEnum : struct, Enum => TryParseFormattableValue(value, 3, out result);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryParseByValueOrMember<TEnum>(short value, out TEnum result)
-        where TEnum : struct, Enum
-    {
-        result = default;
-
-        Span<char> charBuffer = stackalloc char[6];
-        if (value.TryFormat(charBuffer, out int charsWritten))
-        {
-            if (FastEnum.TryParse(charBuffer[..charsWritten], out result) && FastEnum.IsDefined(result))
-                return true;
-        }
-
-        return TryParseByValueOrMember(value.ToString(CultureInfo.InvariantCulture), out result);
-    }
+        where TEnum : struct, Enum => TryParseFormattableValue(value, 6, out result);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryParseByValueOrMember<TEnum>(int value, out TEnum result)
-        where TEnum : struct, Enum
-    {
-        result = default;
-
-        Span<char> charBuffer = stackalloc char[11];
-        if (value.TryFormat(charBuffer, out int charsWritten))
-        {
-            if (FastEnum.TryParse(charBuffer[..charsWritten], out result) && FastEnum.IsDefined(result))
-                return true;
-        }
-
-        return TryParseByValueOrMember(value.ToString(CultureInfo.InvariantCulture), out result);
-    }
+        where TEnum : struct, Enum => TryParseFormattableValue(value, 11, out result);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryParseByValueOrMember<TEnum>(TEnum value, out TEnum result)
@@ -211,6 +173,29 @@ public static class EnumUtility
     {
         result = value;
         return FastEnum.IsDefined(value);
+    }
+
+    private static bool TryParseFormattableValue<TValue, TEnum>(TValue value, int bufferLength, out TEnum result)
+        where TValue : ISpanFormattable
+        where TEnum : struct, Enum
+    {
+        Span<char> charBuffer = stackalloc char[bufferLength];
+        if (value.TryFormat(charBuffer, out int charsWritten, default, CultureInfo.InvariantCulture))
+            return TryParseByValueOrMember(charBuffer[..charsWritten], out result);
+
+        result = default;
+        return false;
+    }
+
+    private static bool TryParseSpanFormattable<TEnum>(ISpanFormattable value, out TEnum result)
+        where TEnum : struct, Enum
+    {
+        Span<char> charBuffer = stackalloc char[64];
+        if (value.TryFormat(charBuffer, out int charsWritten, default, CultureInfo.InvariantCulture))
+            return TryParseByValueOrMember(charBuffer[..charsWritten], out result);
+
+        result = default;
+        return false;
     }
 
     public static string GetRoomName(this Scenario scenarioName, int roomId) =>
