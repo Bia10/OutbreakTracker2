@@ -1,8 +1,9 @@
-﻿using System.Globalization;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using OutbreakTracker2.Application.Utilities;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory.Factory;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Utility;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.Inventory;
 
@@ -19,22 +20,26 @@ public sealed partial class InventoryViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDeadOrZombie))]
+    [NotifyPropertyChangedFor(nameof(HasSpecialInventory))]
     [NotifyPropertyChangedFor(nameof(IsSpecialInventoryVisible))]
     [NotifyPropertyChangedFor(nameof(IsSpecialDeadInventoryVisible))]
     private string _playerStatus;
 
     [ObservableProperty]
-    private string _playerName;
+    [NotifyPropertyChangedFor(nameof(HasSpecialInventory))]
+    [NotifyPropertyChangedFor(nameof(IsSpecialInventoryVisible))]
+    [NotifyPropertyChangedFor(nameof(IsSpecialDeadInventoryVisible))]
+    private string _characterType;
 
     public bool IsDeadOrZombie => PlayerStatus is "Dead" or "Zombie";
-    public bool HasSpecialInventory => PlayerName is "Yoko" or "Cindy" or "David";
+    public bool HasSpecialInventory => CharacterInventoryUtility.HasSpecialInventory(CharacterType);
     public bool IsSpecialInventoryVisible => HasSpecialInventory && !IsDeadOrZombie;
     public bool IsSpecialDeadInventoryVisible => HasSpecialInventory && IsDeadOrZombie;
 
     public InventoryViewModel(DecodedInGamePlayer player, IItemSlotViewModelFactory itemSlotViewModelFactory)
     {
         _playerStatus = player.Status;
-        _playerName = player.Name;
+        _characterType = player.Type;
         _itemSlotViewModelFactory = itemSlotViewModelFactory;
 
         EquippedItems = CreateSection(1);
@@ -44,6 +49,8 @@ public sealed partial class InventoryViewModel : ObservableObject, IDisposable
         DeadSlots = CreateSection(4);
         SpecialDeadSlots = CreateSection(4);
     }
+
+    public void UpdateCharacterType(string characterType) => CharacterType = characterType;
 
     private ItemSlotViewModel[] CreateSection(int count)
     {
@@ -56,11 +63,11 @@ public sealed partial class InventoryViewModel : ObservableObject, IDisposable
     public void UpdateFromPlayerData(
         string playerStatus,
         byte equippedItem,
-        byte[] mainInventory,
+        InventorySnapshot mainInventory,
         byte specialItem,
-        byte[] specialInventory,
-        byte[] deadInventory,
-        byte[] specialDeadInventory,
+        InventorySnapshot specialInventory,
+        InventorySnapshot deadInventory,
+        InventorySnapshot specialDeadInventory,
         GameFile gameFile,
         DecodedItem[] scenarioItems
     )
@@ -76,7 +83,7 @@ public sealed partial class InventoryViewModel : ObservableObject, IDisposable
 
     private void UpdateSlots(
         ItemSlotViewModel[] slots,
-        byte[] inventory,
+        InventorySnapshot inventory,
         GameFile gameFile,
         DecodedItem[] scenarioItems
     )
@@ -87,26 +94,9 @@ public sealed partial class InventoryViewModel : ObservableObject, IDisposable
 
     private void UpdateSlot(ItemSlotViewModel slot, byte itemId, GameFile gameFile, DecodedItem[] scenarioItems)
     {
-        (string name, string count, string debug) = LookupItemDetails(itemId, scenarioItems);
-        slot.UpdateDisplay(name, count, debug, gameFile);
+        ResolvedInventorySlotValue item = InventorySlotValueResolver.Resolve(itemId, scenarioItems);
+        slot.UpdateDisplay(item.Name, item.Count, item.Debug, gameFile);
     }
-
-    private static (string Name, string Count, string Debug) LookupItemDetails(byte itemId, DecodedItem[] scenarioItems)
-    {
-        if (itemId is 0x0)
-            return ("Empty", "0", "0x00 | 0");
-
-        DecodedItem? item = scenarioItems
-            .AsValueEnumerable()
-            .Where(IsValidItem)
-            .FirstOrDefault(item => item.Id.Equals(itemId));
-
-        return item is { } i
-            ? (i.TypeName, i.Quantity.ToString(CultureInfo.InvariantCulture), $"0x{itemId:X2} | {itemId}")
-            : ("Unknown", "0", $"0x{itemId:X2} | {itemId}");
-    }
-
-    private static bool IsValidItem(DecodedItem item) => item is not { SlotIndex: 0, PickedUp: 0 };
 
     public void Dispose()
     {
