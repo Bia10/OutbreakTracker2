@@ -198,6 +198,7 @@ public sealed class AppSettingsService : IAppSettingsService
 
         return defaults with
         {
+            ShowGameplayUiDuringTransitions = overrides.ShowGameplayUiDuringTransitions,
             EntitiesDock = overrides.EntitiesDock ?? defaults.EntitiesDock,
             ScenarioItemsDock = overrides.ScenarioItemsDock ?? defaults.ScenarioItemsDock,
         };

@@ -35,6 +35,9 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
     private bool _enableToastAlerts;
 
     [ObservableProperty]
+    private bool _showGameplayUiDuringTransitions;
+
+    [ObservableProperty]
     private bool _playerDangerCondition;
 
     [ObservableProperty]
@@ -287,6 +290,7 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
             LobbyAlertRuleSettings lobby = alertRules.Lobby ?? new();
 
             EnableToastAlerts = notifications.EnableToastAlerts;
+            ShowGameplayUiDuringTransitions = display.ShowGameplayUiDuringTransitions;
 
             PlayerDangerCondition = players.DangerCondition;
             PlayerGasCondition = players.GasCondition;
@@ -335,6 +339,7 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
             Notifications = new NotificationSettings { EnableToastAlerts = EnableToastAlerts },
             Display = new DisplaySettings
             {
+                ShowGameplayUiDuringTransitions = ShowGameplayUiDuringTransitions,
                 EntitiesDock = new EntitiesDockSettings
                 {
                     OnlyShowCurrentPlayerRoom = EntitiesDockOnlyShowCurrentPlayerRoom,
