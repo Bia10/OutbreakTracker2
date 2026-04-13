@@ -1,11 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.FileLocators;
 using OutbreakTracker2.Application.Services.Launcher;
 using OutbreakTracker2.Application.Services.Toasts;
-using OutbreakTracker2.PCSX2.Client;
 using R3;
 using SukiUI.Toasts;
 
@@ -15,15 +13,15 @@ public sealed partial class ClientNotRunningViewModel(
     ILogger<ClientNotRunningViewModel> logger,
     IToastService toastService,
     IProcessLauncher processLauncher,
-    IPcsx2Locator pcsx2Locator,
-    IDataManager dataManager
+    IGameClientConnectionService gameClientConnectionService,
+    IPcsx2Locator pcsx2Locator
 ) : ObservableObject, IDisposable
 {
     private readonly ILogger<ClientNotRunningViewModel> _logger = logger;
     private readonly IToastService _toastService = toastService;
     private readonly IProcessLauncher _processLauncher = processLauncher;
+    private readonly IGameClientConnectionService _gameClientConnectionService = gameClientConnectionService;
     private readonly IPcsx2Locator _pcsx2Locator = pcsx2Locator;
-    private readonly IDataManager _dataManager = dataManager;
 
     // Tracks the IsCancelling subscription for the current launch attempt. Disposed before
     // each new launch to prevent subscriptions accumulating on repeated LaunchGameAsync calls.
@@ -200,16 +198,11 @@ public sealed partial class ClientNotRunningViewModel(
         CancellationToken cancellationToken
     )
     {
-        _logger.LogInformation("Initiating PCSX2 process launch via ProcessLauncher.LaunchAsync");
-        await _processLauncher.LaunchAsync(pcsx2ExePath, arguments, cancellationToken).ConfigureAwait(false);
-        _logger.LogInformation("PCSX2 process launched successfully");
-
-        IGameClient gameClient =
-            _processLauncher.GetActiveGameClient()
-            ?? throw new InvalidOperationException("GameClient not available after launch.");
-        _logger.LogInformation("GameClient acquired successfully.");
-
-        await _dataManager.InitializeAsync(gameClient, cancellationToken).ConfigureAwait(false);
+        _logger.LogInformation("Initiating PCSX2 process launch and data-manager initialization");
+        await _gameClientConnectionService
+            .LaunchAndInitializeAsync(pcsx2ExePath, arguments, cancellationToken)
+            .ConfigureAwait(false);
+        _logger.LogInformation("PCSX2 process launched and data manager initialized successfully");
     }
 
     public void Dispose()

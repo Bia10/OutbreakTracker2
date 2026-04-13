@@ -1,40 +1,39 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using OutbreakTracker2.Application.Services.Data;
+using ObservableCollections;
 using OutbreakTracker2.Application.Services.Launcher;
 using OutbreakTracker2.Application.Services.Toasts;
 using OutbreakTracker2.Application.Utilities;
-using OutbreakTracker2.PCSX2.Client;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientAlreadyRunning;
 
 public sealed partial class ClientAlreadyRunningViewModel(
     IProcessLauncher processLauncher,
+    IGameClientConnectionService gameClientConnectionService,
     IToastService toastService,
-    ILogger<ClientAlreadyRunningViewModel> logger,
-    IDataManager dataManager
+    ILogger<ClientAlreadyRunningViewModel> logger
 ) : ObservableObject
 {
     private readonly ILogger<ClientAlreadyRunningViewModel> _logger = logger;
     private readonly IProcessLauncher _processLauncher = processLauncher;
+    private readonly IGameClientConnectionService _gameClientConnectionService = gameClientConnectionService;
     private readonly IToastService _toastService = toastService;
-    private readonly IDataManager _dataManager = dataManager;
 
     [ObservableProperty]
-    private ObservableCollection<ProcessModel> _runningProcesses = [];
+    private ObservableList<ProcessModel> _runningProcesses = [];
 
     public void UpdateProcesses(IReadOnlyList<int> processIds)
     {
         RunningProcesses.Clear();
+        List<ProcessModel> discoveredProcesses = [];
 
         foreach (int id in processIds)
             try
             {
                 Process process = Process.GetProcessById(id);
-                RunningProcesses.Add(
+                discoveredProcesses.Add(
                     new ProcessModel
                     {
                         Id = process.Id,
@@ -48,6 +47,8 @@ public sealed partial class ClientAlreadyRunningViewModel(
             {
                 _logger.LogWarning(ex, "Process {ProcessId} no longer exists", id);
             }
+
+        RunningProcesses.AddRange(discoveredProcesses);
     }
 
     [RelayCommand]
@@ -55,14 +56,10 @@ public sealed partial class ClientAlreadyRunningViewModel(
     {
         try
         {
-            await _processLauncher.AttachAsync(processId).ConfigureAwait(false);
+            await _gameClientConnectionService
+                .AttachAndInitializeAsync(processId, CancellationToken.None)
+                .ConfigureAwait(false);
             await _toastService.InvokeSuccessToastAsync("Successfully attached to process!").ConfigureAwait(false);
-
-            IGameClient? activeGameClient = _processLauncher.GetActiveGameClient();
-            if (activeGameClient is not null)
-            {
-                await _dataManager.InitializeAsync(activeGameClient, CancellationToken.None).ConfigureAwait(false);
-            }
         }
         catch (Exception ex)
         {

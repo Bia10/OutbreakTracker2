@@ -47,6 +47,11 @@ namespace OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGa
 /// </remarks>
 public sealed class EmbeddedGameView : NativeControlHost
 {
+    private readonly record struct WindowSearchResult(nint Handle, bool TimedOut, string? ErrorMessage)
+    {
+        public bool Failed => !string.IsNullOrEmpty(ErrorMessage);
+    }
+
     // Guarded by the UI thread (CreateNativeControlCore / DestroyNativeControlCore run on UI thread)
     private nint _containerHandle;
     private nint _embeddedHandle;
@@ -162,10 +167,10 @@ public sealed class EmbeddedGameView : NativeControlHost
 
     // ── Host-window position tracking is handled by IWindowPositionWatcher ──────────────────
     //
-    // The watcher runs a 100 ms background poll that:
-    //   * Hides the embedded WS_POPUP window when the container tab is hidden (prevents floating).
-    //   * Re-shows and repositions the embedded window when the container becomes visible or moves.
-    // OnAttachedToVisualTree / Window.PositionChanged subscription are no longer needed.
+    // On Windows the watcher is fully event-driven: dedicated hook helpers keep the embedded
+    // window aligned with the container, detect embedded HWND recreation, and route focus when
+    // the cursor crosses the game area. OnAttachedToVisualTree / Window.PositionChanged
+    // subscription are no longer needed.
 
     // ── Resize ────────────────────────────────────────────────────────────────
 
@@ -298,7 +303,28 @@ public sealed class EmbeddedGameView : NativeControlHost
                         return;
                     }
 
-                    nint found = task.Result;
+                    WindowSearchResult result = task.Result;
+
+                    if (result.Failed)
+                    {
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            if (DataContext is EmbeddedGameViewModel cur)
+                            {
+                                cur.DiagnosticInfo = embedder.GetDiagnosticInfo(pid);
+                                cur.StatusMessage = $"Search failed: {result.ErrorMessage}";
+                                cur.LogWarning($"Embed search failed for PCSX2 PID {pid}: {result.ErrorMessage}");
+                                cur.IsSearching = false;
+                                cur.IsEmbedRequested = false;
+                            }
+                        });
+                        return;
+                    }
+
+                    nint found = result.Handle;
+
+                    if (found == nint.Zero && !result.TimedOut)
+                        return;
 
                     if (found == nint.Zero)
                     {
@@ -360,7 +386,7 @@ public sealed class EmbeddedGameView : NativeControlHost
             );
     }
 
-    private static nint PollForWindow(
+    private static WindowSearchResult PollForWindow(
         IWindowEmbedder embedder,
         int pid,
         CancellationToken ct,
@@ -368,23 +394,36 @@ public sealed class EmbeddedGameView : NativeControlHost
         Action<string>? onDiag = null
     )
     {
-        for (int i = 0; i < MaxSearchIterations && !ct.IsCancellationRequested; i++)
+        try
         {
-            // Refresh diagnostics immediately on first try and every 10 iterations (~5 s)
-            if (i % 10 == 0)
-                onDiag?.Invoke(embedder.GetDiagnosticInfo(pid));
+            for (int i = 0; i < MaxSearchIterations && !ct.IsCancellationRequested; i++)
+            {
+                // Refresh diagnostics immediately on first try and every 10 iterations (~5 s)
+                if (i % 10 == 0)
+                    onDiag?.Invoke(embedder.GetDiagnosticInfo(pid));
 
-            nint handle = embedder.FindProcessWindow(pid);
-            if (handle != nint.Zero)
-                return handle;
+                nint handle = embedder.FindProcessWindow(pid);
+                if (handle != nint.Zero)
+                    return new WindowSearchResult(handle, TimedOut: false, ErrorMessage: null);
 
-            int remaining = (MaxSearchIterations - i) / 2;
-            onStatus?.Invoke($"Scanning… ({remaining} s remaining)");
+                int remaining = (MaxSearchIterations - i) / 2;
+                onStatus?.Invoke($"Scanning… ({remaining} s remaining)");
 
-            ct.WaitHandle.WaitOne(500);
+                ct.WaitHandle.WaitOne(500);
+            }
+
+            return new WindowSearchResult(nint.Zero, TimedOut: !ct.IsCancellationRequested, ErrorMessage: null);
         }
-
-        return nint.Zero;
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            return new WindowSearchResult(nint.Zero, TimedOut: false, ErrorMessage: null);
+        }
+        catch (Exception ex)
+        {
+            string errorMessage = ex.ToString();
+            onStatus?.Invoke($"Search failed: {errorMessage}");
+            return new WindowSearchResult(nint.Zero, TimedOut: false, ErrorMessage: errorMessage);
+        }
     }
 
     /// <summary>
