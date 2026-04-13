@@ -76,8 +76,24 @@ public sealed class HtmlRunReportWriterTests
 
             await Assert.That(content.Contains("Scenario Run Report", StringComparison.Ordinal)).IsTrue();
             await Assert.That(content.Contains("id=\"eventHistogram\"", StringComparison.Ordinal)).IsTrue();
+            await Assert.That(content.Contains("Event density timeline", StringComparison.Ordinal)).IsTrue();
+            await Assert.That(content.Contains("id=\"clearTimelineFocus\"", StringComparison.Ordinal)).IsTrue();
+            await Assert
+                .That(content.Contains("data-bucket-index=\"${bucket.index}\"", StringComparison.Ordinal))
+                .IsTrue();
             await Assert.That(content.Contains("type=\"application/json\"", StringComparison.Ordinal)).IsTrue();
+            await Assert
+                .That(content.Contains("data-group=\"type\" aria-pressed=\"true\"", StringComparison.Ordinal))
+                .IsTrue();
             await Assert.That(content.Contains("data-group=\"actor\"", StringComparison.Ordinal)).IsTrue();
+            await Assert
+                .That(
+                    content.Contains("groupButton.getAttribute('aria-expanded') === 'true'", StringComparison.Ordinal)
+                )
+                .IsTrue();
+            await Assert
+                .That(content.Contains("groupsHost.querySelectorAll('[data-group-key]')", StringComparison.Ordinal))
+                .IsTrue();
         }
     }
 

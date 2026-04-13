@@ -243,8 +243,21 @@ public sealed class HtmlRunReportWriter : IRunReportWriter
         );
         builder.AppendLine("</div>");
         builder.AppendLine("<div class=\"histogram-block\">");
-        builder.AppendLine("<div class=\"panel-kicker\">Event density</div>");
-        builder.AppendLine("<div class=\"histogram\" id=\"eventHistogram\"></div>");
+        builder.AppendLine("<div class=\"histogram-header\">");
+        builder.AppendLine("<div>");
+        builder.AppendLine("<div class=\"panel-kicker\">Event density timeline</div>");
+        builder.AppendLine(
+            "<div class=\"histogram-caption\" id=\"timelineSummary\">Click a bar to focus the event list by time window.</div>"
+        );
+        builder.AppendLine("</div>");
+        builder.AppendLine(
+            "<button id=\"clearTimelineFocus\" class=\"toolbar-btn subtle histogram-reset\" type=\"button\" hidden>Show full run</button>"
+        );
+        builder.AppendLine("</div>");
+        builder.AppendLine(
+            "<div class=\"histogram\" id=\"eventHistogram\" role=\"list\" aria-label=\"Event density timeline\"></div>"
+        );
+        builder.AppendLine("<div class=\"histogram-scale\"><span>Start</span><span>End</span></div>");
         builder.AppendLine("</div>");
         builder.AppendLine("</div>");
         builder.AppendLine("</section>");
@@ -371,10 +384,10 @@ public sealed class HtmlRunReportWriter : IRunReportWriter
         builder.AppendLine("<span class=\"toolbar-label\">Group by</span>");
         builder.AppendLine("<div class=\"toggle-row\" role=\"radiogroup\" aria-label=\"Group events\">");
         builder.AppendLine(
-            "<button class=\"toggle-btn active\" type=\"button\" data-group=\"category\" aria-pressed=\"true\">Category</button>"
+            "<button class=\"toggle-btn\" type=\"button\" data-group=\"category\" aria-pressed=\"false\">Category</button>"
         );
         builder.AppendLine(
-            "<button class=\"toggle-btn\" type=\"button\" data-group=\"type\" aria-pressed=\"false\">Event type</button>"
+            "<button class=\"toggle-btn active\" type=\"button\" data-group=\"type\" aria-pressed=\"true\">Event type</button>"
         );
         builder.AppendLine(
             "<button class=\"toggle-btn\" type=\"button\" data-group=\"actor\" aria-pressed=\"false\">Actor</button>"
@@ -919,9 +932,12 @@ public sealed class HtmlRunReportWriter : IRunReportWriter
     private static string GetTone(RunEvent evt, string category) =>
         evt switch
         {
-            EnemyKilledEvent or ItemPickedUpEvent or PlayerHealthChangedEvent { IsHeal: true } => "good",
-            PlayerHealthChangedEvent { IsDamage: true } or PlayerVirusChangedEvent { Delta: > 0 } or DoorDamagedEvent =>
-                "warn",
+            EnemyKilledEvent => "danger",
+            ItemPickedUpEvent
+            or PlayerHealthChangedEvent { IsHeal: true }
+            or PlayerHealthChangedEvent { IsDamage: true }
+            or PlayerVirusChangedEvent { Delta: > 0 } => "good",
+            DoorDamagedEvent => "warn",
             EnemyDespawnedEvent => "muted",
             _ => category,
         };
@@ -1388,6 +1404,23 @@ html[data-theme="light"] body {
     padding-top: 4px;
 }
 
+.histogram-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.histogram-caption {
+    margin-top: 6px;
+    color: var(--text-soft);
+    font-size: 0.86rem;
+}
+
+.histogram-reset {
+    align-self: flex-start;
+}
+
 .histogram {
     display: flex;
     align-items: end;
@@ -1399,8 +1432,31 @@ html[data-theme="light"] body {
 .histogram-bar {
     flex: 1;
     min-width: 8px;
+    border: 1px solid transparent;
     border-radius: 999px 999px 4px 4px;
     background: linear-gradient(180deg, var(--accent), rgba(79, 209, 197, 0.2));
+    cursor: pointer;
+}
+
+.histogram-bar:hover {
+    border-color: rgba(79, 209, 197, 0.34);
+}
+
+.histogram-bar.active {
+    border-color: rgba(79, 209, 197, 0.55);
+    box-shadow: 0 0 0 2px rgba(79, 209, 197, 0.14);
+}
+
+.histogram-bar.empty {
+    opacity: 0.35;
+}
+
+.histogram-scale {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    color: var(--text-soft);
+    font-size: 0.78rem;
 }
 
 .insight-grid {
@@ -1507,9 +1563,41 @@ html[data-theme="light"] body {
 
 .group-toggle {
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 18px;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
     padding: 18px 20px;
+    align-items: center;
+}
+
+.group-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    transition: transform 200ms ease, background 140ms ease;
+    flex-shrink: 0;
+}
+
+.group-chevron::after {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--text-muted);
+    border-bottom: 2px solid var(--text-muted);
+    transform: rotate(-45deg) translate(-1px, -1px);
+    transition: transform 200ms ease;
+}
+
+.group-toggle[aria-expanded="true"] .group-chevron::after {
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.group-toggle:hover .group-chevron {
+    background: var(--border);
 }
 
 .group-title {
@@ -1525,6 +1613,11 @@ html[data-theme="light"] body {
     margin-top: 6px;
     color: var(--text-soft);
     font-size: 0.86rem;
+    transition: opacity 160ms ease;
+}
+
+.group-toggle[aria-expanded="false"] .group-meta {
+    display: none;
 }
 
 .group-count {
@@ -1546,6 +1639,10 @@ html[data-theme="light"] body {
     padding: 0 16px 16px;
 }
 
+.group-events[hidden] {
+    display: none;
+}
+
 .event-card {
     overflow: hidden;
     background: var(--surface-1);
@@ -1561,10 +1658,36 @@ html[data-theme="light"] body {
 
 .event-open {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto auto 1fr auto;
     gap: 14px;
     align-items: start;
     padding: 0;
+}
+
+.event-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    transition: transform 200ms ease;
+}
+
+.event-chevron::after {
+    content: '';
+    display: block;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid var(--text-soft);
+    border-bottom: 2px solid var(--text-soft);
+    transform: rotate(-45deg) translate(-1px, -1px);
+    transition: transform 200ms ease;
+}
+
+.event-open[aria-expanded="true"] .event-chevron::after {
+    transform: rotate(45deg) translate(-1px, -1px);
 }
 
 .event-toggle.highlight {
@@ -1596,6 +1719,7 @@ html[data-theme="light"] body {
 .event-chip.muted { background: rgba(148, 163, 184, 0.16); color: var(--other); }
 .event-chip.good { background: rgba(52, 211, 153, 0.14); color: var(--good); }
 .event-chip.warn { background: rgba(245, 158, 11, 0.16); color: var(--warn); }
+.event-chip.danger { background: rgba(251, 113, 133, 0.18); color: var(--enemy); }
 
 .event-main {
     min-width: 0;
@@ -1739,7 +1863,7 @@ mark {
     }
 
     .event-open {
-        grid-template-columns: 1fr;
+        grid-template-columns: auto 1fr;
     }
 
     .event-time,
@@ -1775,6 +1899,7 @@ mark {
     private const string ClientScript = """
 (() => {
     const payload = JSON.parse(document.getElementById('report-data')?.textContent ?? '{}');
+    payload.events = Array.isArray(payload.events) ? payload.events : [];
     const categories = [
         { key: 'all', label: 'All', tone: 'other' },
         { key: 'player', label: 'Players', tone: 'player' },
@@ -1784,12 +1909,16 @@ mark {
         { key: 'scenario', label: 'Scenario', tone: 'scenario' },
         { key: 'other', label: 'Other', tone: 'other' },
     ];
+    const histogramBucketCount = 18;
+    const reportDurationMs = Math.max(1, Number(payload.durationMs ?? 1));
+    const reportOriginUnixMs = payload.events.length === 0 ? 0 : payload.events[0].occurredAtUnixMs;
 
     const state = {
         query: '',
         category: 'all',
-        groupBy: 'category',
+        groupBy: 'type',
         sort: 'timeline',
+        timelineBucket: null,
         expandedGroups: new Map(),
         expandedEvents: new Set(),
     };
@@ -1801,6 +1930,8 @@ mark {
     const filterSummary = document.getElementById('filterSummary');
     const emptyState = document.getElementById('emptyState');
     const histogram = document.getElementById('eventHistogram');
+    const timelineSummary = document.getElementById('timelineSummary');
+    const clearTimelineButton = document.getElementById('clearTimelineFocus');
     const stickyBar = document.getElementById('stickyBar');
     const stickySearchButton = document.getElementById('stickySearchBtn');
     const themeToggle = document.getElementById('themeToggle');
@@ -1852,19 +1983,61 @@ mark {
         return counts;
     };
 
-    const getFilteredEvents = () => {
+    const formatTimelineLabel = (milliseconds) => {
+        const totalTenths = Math.max(0, Math.round(Number(milliseconds) / 100));
+        const tenths = totalTenths % 10;
+        const totalSeconds = Math.floor(totalTenths / 10);
+        const seconds = totalSeconds % 60;
+        const totalMinutes = Math.floor(totalSeconds / 60);
+        const minutes = totalMinutes % 60;
+        const hours = Math.floor(totalMinutes / 60);
+
+        if (hours > 0) {
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${tenths}`;
+        }
+
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${tenths}`;
+    };
+
+    const getBucketIndexForEvent = (event) => {
+        const ratio = Math.min(0.9999, Math.max(0, event.occurredAtUnixMs - reportOriginUnixMs) / reportDurationMs);
+        return Math.min(histogramBucketCount - 1, Math.floor(ratio * histogramBucketCount));
+    };
+
+    const matchesBaseFilters = (event) => {
+        if (state.category !== 'all' && event.category !== state.category) {
+            return false;
+        }
+
         const normalizedQuery = state.query.trim().toLowerCase();
-        return payload.events.filter((event) => {
-            if (state.category !== 'all' && event.category !== state.category) {
-                return false;
-            }
+        if (!normalizedQuery) {
+            return true;
+        }
 
-            if (!normalizedQuery) {
-                return true;
-            }
+        return event.searchText.toLowerCase().includes(normalizedQuery);
+    };
 
-            return event.searchText.toLowerCase().includes(normalizedQuery);
-        });
+    const getBaseFilteredEvents = () => payload.events.filter(matchesBaseFilters);
+
+    const matchesTimelineFilter = (event) => state.timelineBucket === null || getBucketIndexForEvent(event) === state.timelineBucket;
+
+    const buildHistogramBuckets = (events) => {
+        const buckets = Array.from({ length: histogramBucketCount }, (_, index) => ({
+            index,
+            count: 0,
+            startMs: Math.round(index * reportDurationMs / histogramBucketCount),
+            endMs: Math.round((index + 1) * reportDurationMs / histogramBucketCount),
+        }));
+
+        for (const event of events) {
+            buckets[getBucketIndexForEvent(event)].count += 1;
+        }
+
+        return buckets;
+    };
+
+    const getFilteredEvents = () => {
+        return getBaseFilteredEvents().filter(matchesTimelineFilter);
     };
 
     const sortEvents = (events) => {
@@ -1928,9 +2101,13 @@ mark {
         return values;
     };
 
-    const isGroupOpen = (groupKey, index) => {
-        const key = `${state.groupBy}:${groupKey}`;
-        return state.expandedGroups.has(key) ? state.expandedGroups.get(key) : index < 3;
+    const isGroupOpen = (group, index) => {
+        const key = `${state.groupBy}:${group.key}`;
+        if (state.expandedGroups.has(key)) {
+            return state.expandedGroups.get(key);
+        }
+
+        return group.events.length <= 12 && index < 4;
     };
 
     const renderFilters = () => {
@@ -1948,22 +2125,31 @@ mark {
     };
 
     const renderHistogram = () => {
-        const bucketCount = 18;
-        const buckets = Array.from({ length: bucketCount }, () => 0);
-        const duration = Math.max(1, Number(payload.durationMs));
-        const origin = payload.events.length === 0 ? 0 : payload.events[0].occurredAtUnixMs;
+        const baseEvents = getBaseFilteredEvents();
+        const buckets = buildHistogramBuckets(baseEvents);
 
-        for (const event of payload.events) {
-            const ratio = Math.min(0.9999, Math.max(0, event.occurredAtUnixMs - origin) / duration);
-            const bucketIndex = Math.min(bucketCount - 1, Math.floor(ratio * bucketCount));
-            buckets[bucketIndex] += 1;
+        if (state.timelineBucket !== null && buckets[state.timelineBucket]?.count === 0) {
+            state.timelineBucket = null;
         }
 
-        const peak = Math.max(1, ...buckets);
-        histogram.innerHTML = buckets.map((value) => {
-            const height = Math.max(14, Math.round((value / peak) * 100));
-            return `<span class="histogram-bar" style="height:${height}%" title="${value} event(s)"></span>`;
+        const peak = Math.max(1, ...buckets.map((bucket) => bucket.count));
+        histogram.innerHTML = buckets.map((bucket) => {
+            const height = bucket.count === 0 ? 18 : Math.max(18, Math.round((bucket.count / peak) * 100));
+            const active = state.timelineBucket === bucket.index;
+            const label = `${bucket.count} event(s) from ${formatTimelineLabel(bucket.startMs)} to ${formatTimelineLabel(bucket.endMs)}${active ? ' (selected)' : ''}`;
+            return `<button class="histogram-bar${active ? ' active' : ''}${bucket.count === 0 ? ' empty' : ''}" type="button" data-bucket-index="${bucket.index}" aria-pressed="${active}" title="${escapeHtml(label)}" style="height:${height}%"></button>`;
         }).join('');
+
+        if (state.timelineBucket === null) {
+            timelineSummary.textContent = baseEvents.length === 0
+                ? 'No events match the current category or search filter.'
+                : 'Click a bar to focus the event list by time window.';
+        } else {
+            const selectedBucket = buckets[state.timelineBucket];
+            timelineSummary.textContent = `${selectedBucket.count} event(s) from ${formatTimelineLabel(selectedBucket.startMs)} to ${formatTimelineLabel(selectedBucket.endMs)}`;
+        }
+
+        clearTimelineButton.hidden = state.timelineBucket === null;
     };
 
     const formatGroupMeta = (events) => `${events.length} event(s) from ${events[0].scenarioTime} to ${events[events.length - 1].scenarioTime}`;
@@ -1982,9 +2168,10 @@ mark {
             <article class="event-card ${isOpen ? 'open' : ''}" id="${event.id}">
                 <div class="event-toggle${location.hash === `#${event.id}` ? ' highlight' : ''}">
                     <button class="event-open" type="button" data-event-id="${event.id}" aria-expanded="${isOpen}">
+                        <span class="event-chevron"></span>
                         <div class="event-badges">
                             <span class="event-chip ${event.category}">${escapeHtml(event.categoryLabel)}</span>
-                            <span class="event-chip ${event.tone}">${escapeHtml(event.typeLabel)}</span>
+                            <span class="event-chip ${event.category}">${escapeHtml(event.typeLabel)}</span>
                             ${metricChip}
                         </div>
                         <div class="event-main">
@@ -2008,16 +2195,21 @@ mark {
 
     const renderGroups = () => {
         const filteredEvents = getFilteredEvents();
+        const baseEvents = getBaseFilteredEvents();
         const groups = groupEvents(filteredEvents);
 
-        filterSummary.textContent = `${filteredEvents.length} of ${payload.totalEvents} events shown`;
+        const timelineSuffix = state.timelineBucket === null
+            ? ''
+            : ` · ${formatTimelineLabel(Math.round(state.timelineBucket * reportDurationMs / histogramBucketCount))}–${formatTimelineLabel(Math.round((state.timelineBucket + 1) * reportDurationMs / histogramBucketCount))}`;
+        filterSummary.textContent = `${filteredEvents.length} of ${payload.totalEvents} events shown (${baseEvents.length} after search/category)` + timelineSuffix;
         emptyState.hidden = filteredEvents.length !== 0;
         groupsHost.innerHTML = groups.map((group, index) => {
-            const open = isGroupOpen(group.key, index);
+            const open = isGroupOpen(group, index);
             const storageKey = `${state.groupBy}:${group.key}`;
             return `
                 <section class="group-card">
                     <button class="group-toggle" type="button" data-group-key="${storageKey}" aria-expanded="${open}">
+                        <span class="group-chevron"></span>
                         <div>
                             <div class="group-title">
                                 <span class="legend-dot ${group.tone}"></span>
@@ -2053,6 +2245,7 @@ mark {
             return;
         }
 
+        state.timelineBucket = null;
         state.expandedEvents.add(event.id);
 
         const groupKey = state.groupBy === 'type'
@@ -2078,10 +2271,18 @@ mark {
 
     const render = () => {
         renderFilters();
+        renderHistogram();
         setActiveButtons('[data-group]', state.groupBy, 'group');
         setActiveButtons('[data-sort]', state.sort, 'sort');
         expandGroupsForHash();
         renderGroups();
+    };
+
+    const setRenderedGroupsExpanded = (expanded) => {
+        groupsHost.querySelectorAll('[data-group-key]').forEach((groupButton) => {
+            state.expandedGroups.set(groupButton.dataset.groupKey, expanded);
+        });
+        render();
     };
 
     filterHost.addEventListener('click', (event) => {
@@ -2120,19 +2321,25 @@ mark {
         searchInput.focus();
     });
 
-    document.getElementById('expandAll').addEventListener('click', () => {
-        for (const group of groupEvents(getFilteredEvents())) {
-            state.expandedGroups.set(`${state.groupBy}:${group.key}`, true);
+    histogram.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-bucket-index]');
+        if (!button) {
+            return;
         }
+
+        const bucketIndex = Number(button.dataset.bucketIndex);
+        state.timelineBucket = state.timelineBucket === bucketIndex ? null : bucketIndex;
         render();
     });
 
-    document.getElementById('collapseAll').addEventListener('click', () => {
-        for (const group of groupEvents(getFilteredEvents())) {
-            state.expandedGroups.set(`${state.groupBy}:${group.key}`, false);
-        }
+    clearTimelineButton.addEventListener('click', () => {
+        state.timelineBucket = null;
         render();
     });
+
+    document.getElementById('expandAll').addEventListener('click', () => setRenderedGroupsExpanded(true));
+
+    document.getElementById('collapseAll').addEventListener('click', () => setRenderedGroupsExpanded(false));
 
     groupsHost.addEventListener('click', (event) => {
         const copyButton = event.target.closest('[data-copy-id]');
@@ -2145,7 +2352,7 @@ mark {
 
         const groupButton = event.target.closest('[data-group-key]');
         if (groupButton) {
-            const current = state.expandedGroups.get(groupButton.dataset.groupKey) ?? false;
+            const current = groupButton.getAttribute('aria-expanded') === 'true';
             state.expandedGroups.set(groupButton.dataset.groupKey, !current);
             render();
             return;
@@ -2173,7 +2380,6 @@ mark {
     themeToggle.addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
 
     initializeTheme();
-    renderHistogram();
     render();
     updateStickyBar();
 })();

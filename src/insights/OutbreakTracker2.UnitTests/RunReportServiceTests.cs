@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Reports;
 using OutbreakTracker2.Application.Services.Reports.Events;
@@ -23,6 +24,7 @@ public sealed class RunReportServiceTests
         FakeRunReportWriter? writer = null,
         TimeProvider? time = null,
         FakeToastService? toastService = null,
+        ILogger<RunReportService>? logger = null,
         IRunReportCollectionDiffProcessor<DecodedLobbySlot>? lobbySlotProcessor = null,
         IRunReportCollectionDiffProcessor<DecodedInGamePlayer>? playerProcessor = null,
         IRunReportCollectionDiffProcessor<DecodedEnemy>? enemyProcessor = null,
@@ -35,10 +37,10 @@ public sealed class RunReportServiceTests
             writer ?? new FakeRunReportWriter(),
             toastService ?? new FakeToastService(),
             time ?? TimeProvider.System,
-            NullLogger<RunReportService>.Instance,
+            logger ?? NullLogger<RunReportService>.Instance,
             lobbySlotProcessor ?? new RunReportLobbySlotDiffProcessor(),
             playerProcessor ?? new RunReportPlayerDiffProcessor(),
-            enemyProcessor ?? new RunReportEnemyDiffProcessor(),
+            enemyProcessor ?? new RunReportEnemyDiffProcessor(logger ?? NullLogger<RunReportService>.Instance),
             doorProcessor ?? new RunReportDoorDiffProcessor(),
             scenarioProcessor ?? new RunReportScenarioProcessor()
         );
@@ -411,6 +413,64 @@ public sealed class RunReportServiceTests
     }
 
     [Test]
+    public async Task EnemyDamagedEvent_IsNotEmitted_WhenPreviousHpSnapshotIsImpossible()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        RecordingLogger<RunReportService> logger = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource, logger: logger);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(playerId)));
+
+        Ulid enemyId = Ulid.NewUlid();
+        DecodedEnemy previous = AliveEnemy(enemyId, maxHp: 1450) with { CurHp = 0xffff, Name = "Megabyte" };
+        DecodedEnemy current = previous with { CurHp = 1450 };
+        registry.EnemyTracker.ChangesSource.Push(Changed(previous, current));
+
+        await Assert.That(received.OfType<EnemyDamagedEvent>().Count()).IsEqualTo(0);
+        await Assert
+            .That(
+                logger.Messages.Any(message =>
+                    message.Contains("Excluded faulty enemy run-report damage event", StringComparison.Ordinal)
+                )
+            )
+            .IsTrue();
+    }
+
+    [Test]
+    public async Task EnemyDamagedEvent_IsNotEmitted_WhenDamageExceedsSupportedRange()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        RecordingLogger<RunReportService> logger = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource, logger: logger);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(playerId)));
+
+        Ulid enemyId = Ulid.NewUlid();
+        DecodedEnemy previous = AliveEnemy(enemyId, maxHp: 20000) with { CurHp = 20000, Name = "Megabyte" };
+        DecodedEnemy current = previous with { CurHp = 9000 };
+        registry.EnemyTracker.ChangesSource.Push(Changed(previous, current));
+
+        await Assert.That(received.OfType<EnemyDamagedEvent>().Count()).IsEqualTo(0);
+        await Assert
+            .That(
+                logger.Messages.Any(message =>
+                    message.Contains("enemy damage exceeds the supported report range", StringComparison.Ordinal)
+                )
+            )
+            .IsTrue();
+    }
+
+    [Test]
     public async Task DoorStateChangedEvent_IsEmitted_OnDoorStatusChange_DuringInGame()
     {
         using FakeTrackerRegistry registry = new();
@@ -745,6 +805,7 @@ public sealed class RunReportServiceTests
         where T : IHasId
     {
         private readonly Subject<AlertNotification> _alerts = new();
+
         public FakeEntityChangeSource<T> ChangesSource { get; } = new();
 
         public IEntityChangeSource<T> Changes => ChangesSource;
@@ -760,6 +821,34 @@ public sealed class RunReportServiceTests
         {
             _alerts.Dispose();
             ChangesSource.Dispose();
+        }
+    }
+
+    private sealed class RecordingLogger<T> : ILogger<T>
+    {
+        public List<string> Messages { get; } = [];
+
+        public IDisposable BeginScope<TState>(TState state)
+            where TState : notnull => NullScope.Instance;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter
+        )
+        {
+            Messages.Add(formatter(state, exception));
+        }
+
+        private sealed class NullScope : IDisposable
+        {
+            public static NullScope Instance { get; } = new();
+
+            public void Dispose() { }
         }
     }
 

@@ -64,7 +64,7 @@ public sealed class RunReportService : IRunReportService
             logger,
             new RunReportLobbySlotDiffProcessor(),
             new RunReportPlayerDiffProcessor(),
-            new RunReportEnemyDiffProcessor(),
+            new RunReportEnemyDiffProcessor(logger),
             new RunReportDoorDiffProcessor(),
             new RunReportScenarioProcessor()
         ) { }
