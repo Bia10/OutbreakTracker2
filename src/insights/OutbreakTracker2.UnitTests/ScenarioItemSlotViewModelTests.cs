@@ -256,6 +256,12 @@ public sealed class ScenarioItemSlotViewModelTests
     {
         public Bitmap? Texture => null;
 
+        public bool TryGetSourceRectangle(string name, out Rect rect)
+        {
+            rect = default;
+            return false;
+        }
+
         public Rect GetSourceRectangle(string name) => default;
     }
 

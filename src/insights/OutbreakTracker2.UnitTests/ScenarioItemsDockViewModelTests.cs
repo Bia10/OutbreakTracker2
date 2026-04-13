@@ -37,7 +37,7 @@ public sealed class ScenarioItemsDockViewModelTests
         dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1), CreatePlayer(slotIndex: 1, roomId: 3)]);
 
-        source.UpdateItems(CreateItems(), frameCounter: 100, GameFile.FileOne);
+        source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
 
         using ScenarioItemsDockViewModel viewModel = new(
             source,
@@ -75,7 +75,7 @@ public sealed class ScenarioItemsDockViewModelTests
         dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
 
-        source.UpdateItems(CreateItems(), frameCounter: 100, GameFile.FileOne);
+        source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
 
         using ScenarioItemsDockViewModel viewModel = new(
             source,
@@ -113,7 +113,7 @@ public sealed class ScenarioItemsDockViewModelTests
         dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
 
-        source.UpdateItems(CreateItems(), frameCounter: 100, GameFile.FileOne);
+        source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
 
         using ScenarioItemsDockViewModel viewModel = new(
             source,
@@ -157,7 +157,7 @@ public sealed class ScenarioItemsDockViewModelTests
         dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
 
-        source.UpdateItems(CreateItems(), frameCounter: 100, GameFile.FileOne);
+        source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
 
         using ScenarioItemsDockViewModel viewModel = new(
             source,
@@ -167,7 +167,12 @@ public sealed class ScenarioItemsDockViewModelTests
             new ImmediateDispatcherService()
         );
 
-        source.UpdateItems(CreateItemsWithClearedFirstSlot(), frameCounter: 101, GameFile.FileOne);
+        source.UpdateItems(
+            CreateItemsWithClearedFirstSlot(),
+            IdentityProjection,
+            frameCounter: 101,
+            gameFile: GameFile.FileOne
+        );
 
         List<ScenarioRoomGroupViewModel> visibleGroups = ReadVisibleGroups(viewModel);
 
@@ -199,7 +204,7 @@ public sealed class ScenarioItemsDockViewModelTests
         dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
 
-        source.UpdateItems(CreateItems(), frameCounter: 100, GameFile.FileOne);
+        source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
 
         using ScenarioItemsDockViewModel viewModel = new(
             source,
@@ -209,7 +214,12 @@ public sealed class ScenarioItemsDockViewModelTests
             new ImmediateDispatcherService()
         );
 
-        source.UpdateItems(CreateItemsWithClearedFirstSlot(), frameCounter: 101, GameFile.FileOne);
+        source.UpdateItems(
+            CreateItemsWithClearedFirstSlot(),
+            IdentityProjection,
+            frameCounter: 101,
+            gameFile: GameFile.FileOne
+        );
 
         List<ScenarioRoomGroupViewModel> visibleGroups = ReadVisibleGroups(viewModel);
 
@@ -224,14 +234,19 @@ public sealed class ScenarioItemsDockViewModelTests
         using TestSynchronizationContextScope scope = new();
         using ScenarioEntitiesViewModel source = new(new NullToastService(), new StubItemImageViewModelFactory());
 
-        source.UpdateItems(CreateItems(), frameCounter: 100, GameFile.FileOne);
+        source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
 
         ScenarioItemSlotViewModel trackedSlot = source.Items[0];
         trackedSlot.IsPickupTracked = true;
 
         await Assert.That(trackedSlot.IsPickupTracked).IsTrue();
 
-        source.UpdateItems(CreateItemsWithPickedUpFirstSlot(), frameCounter: 101, GameFile.FileOne);
+        source.UpdateItems(
+            CreateItemsWithPickedUpFirstSlot(),
+            IdentityProjection,
+            frameCounter: 101,
+            gameFile: GameFile.FileOne
+        );
 
         await Assert.That(trackedSlot.IsPickupTracked).IsFalse();
         await Assert.That(trackedSlot.DisplayName).IsEqualTo("Empty");
@@ -256,7 +271,7 @@ public sealed class ScenarioItemsDockViewModelTests
         dataSource.SetScenario(new DecodedInGameScenario { LocalPlayerSlotIndex = 0 });
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 1)]);
 
-        source.UpdateItems(CreateItems(), frameCounter: 100, GameFile.FileOne);
+        source.UpdateItems(CreateItems(), IdentityProjection, frameCounter: 100, gameFile: GameFile.FileOne);
 
         using ScenarioItemsDockViewModel viewModel = new(
             source,
@@ -266,7 +281,12 @@ public sealed class ScenarioItemsDockViewModelTests
             new ImmediateDispatcherService()
         );
 
-        source.UpdateItems(CreateItemsWithPickedUpFirstSlot(), frameCounter: 101, GameFile.FileOne);
+        source.UpdateItems(
+            CreateItemsWithPickedUpFirstSlot(),
+            IdentityProjection,
+            frameCounter: 101,
+            gameFile: GameFile.FileOne
+        );
 
         List<ScenarioRoomGroupViewModel> visibleGroups = ReadVisibleGroups(viewModel);
 
@@ -369,6 +389,8 @@ public sealed class ScenarioItemsDockViewModelTests
             Type = "Kevin",
             RoomId = roomId,
         };
+
+    private static DecodedItem IdentityProjection(DecodedItem item) => item;
 
     private static List<ScenarioRoomGroupViewModel> ReadVisibleGroups(ScenarioItemsDockViewModel viewModel)
     {
@@ -563,6 +585,12 @@ public sealed class ScenarioItemsDockViewModelTests
     private sealed class StubTextureAtlas : ITextureAtlas
     {
         public Bitmap? Texture => null;
+
+        public bool TryGetSourceRectangle(string name, out Rect rect)
+        {
+            rect = default;
+            return false;
+        }
 
         public Rect GetSourceRectangle(string name) => default;
     }

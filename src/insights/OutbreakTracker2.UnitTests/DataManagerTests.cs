@@ -3,6 +3,7 @@ using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Launcher;
 using OutbreakTracker2.Memory.SafeMemory;
 using OutbreakTracker2.Memory.String;
+using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Readers;
 using OutbreakTracker2.PCSX2.Client;
 using OutbreakTracker2.PCSX2.EEmem;
@@ -29,6 +30,45 @@ public sealed class DataManagerTests
         }
         finally
         {
+            manager.Dispose();
+        }
+    }
+
+    [Test]
+    public async Task InitializeAsync_IgnoresConcurrentSecondCall_WhileFirstInitializationIsInProgress()
+    {
+        BlockingEEmemMemory eememMemory = new();
+        FakeGameReaderFactory readerFactory = new();
+        DataManager manager = new(
+            NullLogger<DataManager>.Instance,
+            eememMemory,
+            new FakeProcessLauncher(),
+            readerFactory
+        );
+        FakeGameClient gameClient = new();
+        Task? firstInitializeTask = null;
+
+        try
+        {
+            firstInitializeTask = manager.InitializeAsync(gameClient, CancellationToken.None).AsTask();
+            await eememMemory.InitializationStarted.Task;
+
+            Task secondInitializeTask = manager.InitializeAsync(gameClient, CancellationToken.None).AsTask();
+            await secondInitializeTask;
+
+            eememMemory.AllowInitializationToContinue.TrySetResult(true);
+            await firstInitializeTask;
+
+            await Assert.That(eememMemory.InitializeCallCount).IsEqualTo(1);
+            await Assert.That(readerFactory.TotalCreateCallCount).IsEqualTo(7);
+        }
+        finally
+        {
+            eememMemory.AllowInitializationToContinue.TrySetResult(true);
+
+            if (firstInitializeTask is not null)
+                await firstInitializeTask;
+
             manager.Dispose();
         }
     }
@@ -70,30 +110,52 @@ public sealed class DataManagerTests
 
     private sealed class FakeGameReaderFactory : IGameReaderFactory
     {
-        public IDoorReader CreateDoorReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
-            throw new NotSupportedException();
+        public int TotalCreateCallCount { get; private set; }
 
-        public IEnemiesReader CreateEnemiesReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
-            throw new NotSupportedException();
+        public IDoorReader CreateDoorReader(IGameClient gameClient, IEEmemAddressReader eememMemory)
+        {
+            TotalCreateCallCount++;
+            return new FakeDoorReader();
+        }
 
-        public IInGamePlayerReader CreateInGamePlayerReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
-            throw new NotSupportedException();
+        public IEnemiesReader CreateEnemiesReader(IGameClient gameClient, IEEmemAddressReader eememMemory)
+        {
+            TotalCreateCallCount++;
+            return new FakeEnemiesReader();
+        }
 
-        public IInGameScenarioReader CreateInGameScenarioReader(
-            IGameClient gameClient,
-            IEEmemAddressReader eememMemory
-        ) => throw new NotSupportedException();
+        public IInGamePlayerReader CreateInGamePlayerReader(IGameClient gameClient, IEEmemAddressReader eememMemory)
+        {
+            TotalCreateCallCount++;
+            return new FakeInGamePlayerReader();
+        }
+
+        public IInGameScenarioReader CreateInGameScenarioReader(IGameClient gameClient, IEEmemAddressReader eememMemory)
+        {
+            TotalCreateCallCount++;
+            return new FakeInGameScenarioReader();
+        }
 
         public ILobbyRoomPlayerReader CreateLobbyRoomPlayerReader(
             IGameClient gameClient,
             IEEmemAddressReader eememMemory
-        ) => throw new NotSupportedException();
+        )
+        {
+            TotalCreateCallCount++;
+            return new FakeLobbyRoomPlayerReader();
+        }
 
-        public ILobbyRoomReader CreateLobbyRoomReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
-            throw new NotSupportedException();
+        public ILobbyRoomReader CreateLobbyRoomReader(IGameClient gameClient, IEEmemAddressReader eememMemory)
+        {
+            TotalCreateCallCount++;
+            return new FakeLobbyRoomReader();
+        }
 
-        public ILobbySlotReader CreateLobbySlotReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
-            throw new NotSupportedException();
+        public ILobbySlotReader CreateLobbySlotReader(IGameClient gameClient, IEEmemAddressReader eememMemory)
+        {
+            TotalCreateCallCount++;
+            return new FakeLobbySlotReader();
+        }
     }
 
     private sealed class FakeEEmemMemory : IEEmemMemory
@@ -106,6 +168,39 @@ public sealed class DataManagerTests
 
         public ValueTask<bool> InitializeAsync(IGameClient gameClient, CancellationToken cancellationToken) =>
             ValueTask.FromResult(true);
+
+        public nint GetAddressFromPtr(nint ptrOffset) => nint.Zero;
+
+        public nint GetAddressFromPtrChain(nint ptrOffset, params ReadOnlySpan<nint> offsets) => nint.Zero;
+
+        public bool IsAddressInBounds(nint address) => false;
+    }
+
+    private sealed class BlockingEEmemMemory : IEEmemMemory
+    {
+        private int _initializeCallCount;
+
+        public TaskCompletionSource<bool> InitializationStarted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource<bool> AllowInitializationToContinue { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public int InitializeCallCount => Volatile.Read(ref _initializeCallCount);
+
+        public ISafeMemoryReader MemoryReader { get; } = new FakeSafeMemoryReader();
+
+        public IStringReader StringReader { get; } = new FakeStringReader();
+
+        public nint BaseAddress => nint.Zero;
+
+        public async ValueTask<bool> InitializeAsync(IGameClient gameClient, CancellationToken cancellationToken)
+        {
+            Interlocked.Increment(ref _initializeCallCount);
+            InitializationStarted.TrySetResult(true);
+            await AllowInitializationToContinue.Task.WaitAsync(cancellationToken);
+            return true;
+        }
 
         public nint GetAddressFromPtr(nint ptrOffset) => nint.Zero;
 
@@ -132,5 +227,83 @@ public sealed class DataManagerTests
         }
 
         public string Read(nint hProcess, nint address, System.Text.Encoding? encoding = null) => string.Empty;
+    }
+
+    private sealed class FakeGameClient : IGameClient
+    {
+        public nint Handle => nint.Zero;
+
+        public bool IsAttached => true;
+
+        public System.Diagnostics.Process? Process => null;
+
+        public nint MainModuleBase => nint.Zero;
+
+        public void Dispose() { }
+    }
+
+    private sealed class FakeDoorReader : IDoorReader
+    {
+        public DecodedDoor[] DecodedDoors { get; } = [];
+
+        public void Dispose() { }
+
+        public void UpdateDoors() { }
+    }
+
+    private sealed class FakeEnemiesReader : IEnemiesReader
+    {
+        public DecodedEnemy[] DecodedEnemies2 { get; } = [];
+
+        public void Dispose() { }
+
+        public void UpdateEnemies2() { }
+    }
+
+    private sealed class FakeInGamePlayerReader : IInGamePlayerReader
+    {
+        public DecodedInGamePlayer[] DecodedInGamePlayers { get; } = [];
+
+        public void Dispose() { }
+
+        public void UpdateInGamePlayers() { }
+    }
+
+    private sealed class FakeInGameScenarioReader : IInGameScenarioReader
+    {
+        public DecodedInGameScenario DecodedScenario { get; } = new();
+
+        public void Dispose() { }
+
+        public bool IsInScenario() => false;
+
+        public void UpdateScenario() { }
+    }
+
+    private sealed class FakeLobbyRoomPlayerReader : ILobbyRoomPlayerReader
+    {
+        public DecodedLobbyRoomPlayer[] DecodedLobbyRoomPlayers { get; } = [];
+
+        public void Dispose() { }
+
+        public void UpdateRoomPlayers() { }
+    }
+
+    private sealed class FakeLobbyRoomReader : ILobbyRoomReader
+    {
+        public DecodedLobbyRoom DecodedLobbyRoom { get; } = new();
+
+        public void Dispose() { }
+
+        public void UpdateLobbyRoom() { }
+    }
+
+    private sealed class FakeLobbySlotReader : ILobbySlotReader
+    {
+        public DecodedLobbySlot[] DecodedLobbySlots { get; } = [];
+
+        public void Dispose() { }
+
+        public void UpdateLobbySlots() { }
     }
 }

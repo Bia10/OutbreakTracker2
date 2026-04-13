@@ -28,7 +28,7 @@ public sealed class ImageViewModelTests
             new ImmediateDispatcherService()
         );
 
-        await viewModel.UpdateImageAsync("FileTwo/Handgun", "test-item-atlas");
+        await viewModel.UpdateImageAsync("File Two/Handgun", "test-item-atlas");
 
         await Assert.That(viewModel.SourceImage).IsNull();
     }

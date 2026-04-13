@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using Microsoft.Extensions.Logging.Abstractions;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Services.Settings;
@@ -40,7 +41,8 @@ public sealed class EntitiesDockViewModelTests
             dataSource,
             dataSource,
             settingsService,
-            new ImmediateDispatcherService()
+            new ImmediateDispatcherService(),
+            NullLogger<EntitiesDockViewModel>.Instance
         );
 
         List<InGameEnemyViewModel> visibleEnemies = ReadVisibleEnemies(viewModel);
@@ -78,7 +80,8 @@ public sealed class EntitiesDockViewModelTests
             dataSource,
             dataSource,
             settingsService,
-            new ImmediateDispatcherService()
+            new ImmediateDispatcherService(),
+            NullLogger<EntitiesDockViewModel>.Instance
         );
 
         dataSource.SetInGamePlayers([CreatePlayer(slotIndex: 0, roomId: 3)]);
@@ -116,7 +119,8 @@ public sealed class EntitiesDockViewModelTests
             dataSource,
             dataSource,
             settingsService,
-            new ImmediateDispatcherService()
+            new ImmediateDispatcherService(),
+            NullLogger<EntitiesDockViewModel>.Instance
         );
 
         settingsService.SetCurrent(
@@ -161,7 +165,8 @@ public sealed class EntitiesDockViewModelTests
             dataSource,
             dataSource,
             settingsService,
-            new ImmediateDispatcherService()
+            new ImmediateDispatcherService(),
+            NullLogger<EntitiesDockViewModel>.Instance
         );
 
         List<InGameEnemyViewModel> visibleEnemies = ReadVisibleEnemies(viewModel);
@@ -197,7 +202,8 @@ public sealed class EntitiesDockViewModelTests
             dataSource,
             dataSource,
             settingsService,
-            new ImmediateDispatcherService()
+            new ImmediateDispatcherService(),
+            NullLogger<EntitiesDockViewModel>.Instance
         );
 
         int collectionChangedCount = 0;

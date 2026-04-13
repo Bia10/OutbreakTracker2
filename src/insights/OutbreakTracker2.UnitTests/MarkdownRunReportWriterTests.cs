@@ -75,22 +75,26 @@ public sealed class MarkdownRunReportWriterTests
     }
 
     [Test]
-    public async Task WriteAsync_DefaultOutputDirectory_IsRelativeToBaseDirectory()
+    public async Task Constructor_DoesNotCreateConfiguredDirectory_UntilWriteAsync()
     {
-        string defaultDir = Path.GetFullPath(
-            Path.Combine(AppContext.BaseDirectory, RunReportOptions.DefaultOutputDirectory)
+        string outputDirectory = Path.Combine(Path.GetTempPath(), $"OT2.Reports.{Guid.NewGuid():N}");
+        MarkdownRunReportWriter writer = new(
+            NullLogger<MarkdownRunReportWriter>.Instance,
+            new RunReportOptions { OutputDirectory = outputDirectory }
         );
 
-        MarkdownRunReportWriter writer = new(NullLogger<MarkdownRunReportWriter>.Instance, new RunReportOptions());
-
-        // We only verify the directory was created (or already exists); don't write a real file.
-        await Assert.That(Directory.Exists(defaultDir)).IsTrue();
-
-        // Cleanup reports directory only if we created it in this test.
-        if (Directory.Exists(defaultDir))
+        try
         {
-            foreach (string file in Directory.GetFiles(defaultDir, "run_*.md"))
-                File.Delete(file);
+            await Assert.That(Directory.Exists(outputDirectory)).IsFalse();
+
+            await writer.WriteAsync(EmptyReport());
+
+            await Assert.That(Directory.Exists(outputDirectory)).IsTrue();
+        }
+        finally
+        {
+            if (Directory.Exists(outputDirectory))
+                Directory.Delete(outputDirectory, recursive: true);
         }
     }
 

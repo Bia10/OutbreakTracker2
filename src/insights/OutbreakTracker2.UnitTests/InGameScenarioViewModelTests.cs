@@ -13,6 +13,7 @@ using OutbreakTracker2.Application.Views.GameDock;
 using OutbreakTracker2.Outbreak.Common;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
+using OutbreakTracker2.Outbreak.Utility;
 using R3;
 using SukiUI.Toasts;
 
@@ -99,6 +100,54 @@ public sealed class InGameScenarioViewModelTests
         await Assert.That((int)viewModel.PlayerCount).IsEqualTo(1);
         await Assert.That(viewModel.ScenarioEntitiesVm.Enemies.Count).IsEqualTo(1);
         await Assert.That(viewModel.ScenarioEntitiesVm.Doors.Count).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task Update_ProjectsScenarioItemDisplayFields_WithoutMutatingSourceScenario()
+    {
+        using TestSynchronizationContextScope scope = new();
+        using FakeScenarioDataSource dataSource = new();
+        using ScenarioEntitiesViewModel scenarioEntities = new(
+            new NullToastService(),
+            new StubItemImageViewModelFactory()
+        );
+        using InGameScenarioViewModel viewModel = new(
+            NullLogger<InGameScenarioViewModel>.Instance,
+            dataSource,
+            new ImmediateDispatcherService(),
+            scenarioEntities,
+            new ScenarioEntityCommands(),
+            new ScenarioViewModelRouter([])
+        );
+
+        DecodedItem[] items = new DecodedItem[GameConstants.MaxItems];
+        items[0] = new DecodedItem
+        {
+            Id = 1,
+            SlotIndex = 1,
+            TypeId = 300,
+            TypeName = "Green Herb",
+            Quantity = 1,
+            PickedUp = 0,
+            Present = 1,
+            RoomId = 3,
+        };
+
+        DecodedInGameScenario scenario = new()
+        {
+            CurrentFile = (byte)GameFile.FileTwo,
+            ScenarioName = nameof(Scenario.Unknown),
+            FrameCounter = 1,
+            Status = ScenarioStatus.InGame,
+            Items = items,
+        };
+
+        viewModel.Update(scenario, []);
+
+        await Assert.That(scenario.Items[0].RoomName).IsEqualTo(string.Empty);
+        await Assert.That(scenario.Items[0].PickedUpByName).IsEqualTo(string.Empty);
+        await Assert.That(viewModel.ScenarioEntitiesVm.Items[0].RoomName).IsEqualTo(Scenario.Unknown.GetRoomName(3));
+        await Assert.That(viewModel.ScenarioEntitiesVm.Items[0].PickedUpByName).IsEqualTo("None");
     }
 
     private sealed class FakeScenarioDataSource : IDataObservableSource, IDataSnapshot, IDisposable
@@ -279,6 +328,12 @@ public sealed class InGameScenarioViewModelTests
     private sealed class StubTextureAtlas : ITextureAtlas
     {
         public Bitmap? Texture => null;
+
+        public bool TryGetSourceRectangle(string name, out Rect rect)
+        {
+            rect = default;
+            return false;
+        }
 
         public Rect GetSourceRectangle(string name) => default;
     }

@@ -3,6 +3,7 @@ using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging.Abstractions;
 using OutbreakTracker2.Application.Services.Launcher;
 using OutbreakTracker2.PCSX2.Client;
+using R3;
 
 namespace OutbreakTracker2.UnitTests;
 
@@ -23,6 +24,68 @@ public sealed class ProcessLauncherTests
         await Assert.That(ReferenceEquals(launcher.AttachedGameClient, factory.LastClient)).IsTrue();
         await Assert.That(launcher.ClientMonitoredProcess).IsNotNull();
         await Assert.That(launcher.ClientMonitoredProcess!.Id).IsEqualTo(currentProcess.Id);
+    }
+
+    [Test]
+    public async Task AttachAsync_ReusesExistingGameClient_ForSameTrackedProcess()
+    {
+        using Process currentProcess = Process.GetCurrentProcess();
+        FakeGameClientFactory factory = new();
+        using ProcessLauncher launcher = new(NullLogger<ProcessLauncher>.Instance, factory);
+
+        IGameClient firstAttachedClient = await launcher.AttachAsync(currentProcess.Id);
+        IGameClient secondAttachedClient = await launcher.AttachAsync(currentProcess.Id);
+
+        await Assert.That(factory.CallCount).IsEqualTo(1);
+        await Assert.That(ReferenceEquals(firstAttachedClient, secondAttachedClient)).IsTrue();
+        await Assert.That(ReferenceEquals(launcher.AttachedGameClient, firstAttachedClient)).IsTrue();
+    }
+
+    [Test]
+    [SupportedOSPlatform("windows")]
+    public async Task TerminateAsync_PublishesCancellingState_AndClearsTrackedClient()
+    {
+        using Process childProcess = StartLongRunningShellProcess();
+        FakeGameClientFactory factory = new();
+        using ProcessLauncher launcher = new(NullLogger<ProcessLauncher>.Instance, factory);
+        List<bool> cancellationStates = [];
+        using IDisposable subscription = launcher.IsCancelling.Subscribe(onNext: isCancelling =>
+            cancellationStates.Add(isCancelling)
+        );
+
+        await launcher.AttachAsync(childProcess.Id);
+        await launcher.TerminateAsync(childProcess.Id);
+
+        bool stateCleared = SpinWait.SpinUntil(
+            () => launcher.ClientMonitoredProcess is null && launcher.AttachedGameClient is null,
+            TimeSpan.FromSeconds(2)
+        );
+
+        await Assert.That(stateCleared).IsTrue();
+        await Assert.That(cancellationStates.Count).IsEqualTo(2);
+        await Assert.That(cancellationStates[0]).IsTrue();
+        await Assert.That(cancellationStates[1]).IsFalse();
+        await Assert.That(factory.LastClient).IsNotNull();
+        await Assert.That(factory.LastClient!.IsDisposed).IsTrue();
+    }
+
+    [SupportedOSPlatform("windows")]
+    private static Process StartLongRunningShellProcess()
+    {
+        string shellPath =
+            Environment.GetEnvironmentVariable("ComSpec")
+            ?? throw new InvalidOperationException("ComSpec was not available for the test shell process.");
+
+        ProcessStartInfo startInfo = new()
+        {
+            FileName = shellPath,
+            Arguments = "/c ping -n 6 127.0.0.1 > nul",
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+
+        return Process.Start(startInfo)
+            ?? throw new InvalidOperationException("Failed to start the test shell process.");
     }
 
     private sealed class FakeGameClientFactory : IGameClientFactory
@@ -49,13 +112,19 @@ public sealed class ProcessLauncherTests
     {
         public nint Handle => nint.Zero;
 
-        public bool IsAttached => true;
+        public bool IsAttached => !IsDisposed;
 
-        public Process? Process { get; } = process;
+        public Process? Process { get; private set; } = process;
+
+        public bool IsDisposed { get; private set; }
 
         [SupportedOSPlatform("windows")]
         public nint MainModuleBase => nint.Zero;
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            IsDisposed = true;
+            Process = null;
+        }
     }
 }
