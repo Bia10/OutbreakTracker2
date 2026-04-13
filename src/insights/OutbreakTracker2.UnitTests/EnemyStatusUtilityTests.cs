@@ -29,9 +29,18 @@ public sealed class EnemyStatusUtilityTests
     }
 
     [Test]
-    public async Task GetHealthStatusForFileTwo_ReturnsEmpty_ForZeroNameId()
+    public async Task GetHealthStatusForFileTwo_ReturnsCurrentHp_ForLiveLicker()
     {
-        string status = EnemyStatusUtility.GetHealthStatusForFileTwo(slotId: 10, nameId: 0, curHp: 25, maxHp: 25);
+        string status = EnemyStatusUtility.GetHealthStatusForFileTwo(slotId: 49, nameId: 0, curHp: 1138, maxHp: 1250);
+
+        await Assert.That(status).IsEqualTo("1138");
+        await Assert.That(EnemyStatusUtility.IsDeadStatus(status)).IsFalse();
+    }
+
+    [Test]
+    public async Task GetHealthStatusForFileTwo_ReturnsEmpty_ForFileTwoEmptySlot()
+    {
+        string status = EnemyStatusUtility.GetHealthStatusForFileTwo(slotId: 0, nameId: 0, curHp: 0, maxHp: 0);
 
         await Assert.That(status).IsEqualTo("Empty");
         await Assert.That(EnemyStatusUtility.IsDeadStatus(status)).IsFalse();

@@ -174,11 +174,8 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
 
     public static Color GetEnemyColorForFileTwo(int slotId, byte nameId)
     {
-        // if (slotId is < 0 or >= GameConstants.MaxEnemies2)
-        // return Color.FromArgb(255, 0, 0, 0);
-
-        if (nameId == 0)
-            return Color.FromArgb(255, 0, 0, 0);
+        if (slotId <= 0)
+            return InvalidSlotColor;
 
         bool enemyTypeParsed = EnumUtility.TryParseByValueOrMember(nameId, out EnemyType enemyType);
         if (!enemyTypeParsed)

@@ -27,7 +27,7 @@ public static class EnemyStatusUtility
 
     public static string GetHealthStatusForFileTwo(int slotId, byte nameId, ushort curHp, ushort maxHp)
     {
-        if (nameId == 0)
+        if (IsEmptyFileTwoSlot(slotId, maxHp))
             return "Empty";
 
         if (!EnumUtility.TryParseByValueOrMember(nameId, out EnemyType enemyType))
@@ -46,6 +46,8 @@ public static class EnemyStatusUtility
     }
 
     public static bool IsDeadStatus(string healthStatus) => healthStatus is "Dead" or "Destroyed" or "Exploded";
+
+    private static bool IsEmptyFileTwoSlot(int slotId, ushort maxHp) => slotId <= 0 || maxHp == 0;
 
     private static bool IsInvincibleHealth(EnemyType enemyType, ushort curHp, ushort maxHp) =>
         curHp == 0x7fff
