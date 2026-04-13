@@ -209,7 +209,16 @@ public sealed class InGameScenarioReader(IGameClient gameClient, IEEmemAddressRe
         return items;
     }
 
-    public bool IsInScenario() => GetFrameCount() > 0 && GetScenarioStatus() == ScenarioStatus.InGame;
+    // Keep the core scenario poll alive for any non-None session state so the application
+    // still receives transition and terminal status updates. Live gameplay visibility/data
+    // is gated later from the published ScenarioStatus value.
+    public bool IsInScenario()
+    {
+        ScenarioStatus status = GetScenarioStatus();
+        int frameCount = GetFrameCount();
+
+        return frameCount > 0 && status is not ScenarioStatus.None and not (ScenarioStatus)0xFF;
+    }
 
     public void UpdateScenario()
     {

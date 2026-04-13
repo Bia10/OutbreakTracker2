@@ -91,17 +91,15 @@ public sealed class InGamePlayerReader : ReaderBase, IInGamePlayerReader
             _ => nint.Zero,
         };
 
-    private byte[] GetInventory(nint basePlayerAddress)
+    private InventorySnapshot GetInventory(nint basePlayerAddress)
     {
-        byte[] inventory = new byte[4];
         nint baseInventoryOffset = GetInventoryBaseOffset();
-        for (int i = 0; i < 4; i++)
-        {
-            ReadOnlySpan<nint> offsets = [baseInventoryOffset + i];
-            inventory[i] = ReadValue<byte>(basePlayerAddress, offsets);
-        }
-
-        return inventory;
+        return new InventorySnapshot(
+            ReadValue<byte>(basePlayerAddress, [baseInventoryOffset]),
+            ReadValue<byte>(basePlayerAddress, [baseInventoryOffset + 1]),
+            ReadValue<byte>(basePlayerAddress, [baseInventoryOffset + 2]),
+            ReadValue<byte>(basePlayerAddress, [baseInventoryOffset + 3])
+        );
     }
 
     private byte GetSpecialItem(nint basePlayerAddress)
@@ -111,45 +109,43 @@ public sealed class InGamePlayerReader : ReaderBase, IInGamePlayerReader
         return ReadValue<byte>(basePlayerAddress, offsets);
     }
 
-    private byte[] GetSpecialInventory(nint basePlayerAddress)
+    private InventorySnapshot GetSpecialInventory(nint basePlayerAddress)
     {
-        byte[] specialInventory = new byte[4];
         nint baseInventoryOffset = GetInventoryBaseOffset();
-        for (int i = 0; i < 4; i++)
-        {
-            ReadOnlySpan<nint> offsets = [baseInventoryOffset + 5 + i];
-            specialInventory[i] = ReadValue<byte>(basePlayerAddress, offsets);
-        }
-
-        return specialInventory;
+        return new InventorySnapshot(
+            ReadValue<byte>(basePlayerAddress, [baseInventoryOffset + 5]),
+            ReadValue<byte>(basePlayerAddress, [baseInventoryOffset + 6]),
+            ReadValue<byte>(basePlayerAddress, [baseInventoryOffset + 7]),
+            ReadValue<byte>(basePlayerAddress, [baseInventoryOffset + 8])
+        );
     }
 
-    private byte[] GetDeadInventory(int characterId)
+    private InventorySnapshot GetDeadInventory(int characterId)
     {
-        byte[] deadInventory = new byte[4];
-        for (int i = 0; i < 4; i++)
-        {
-            nint curItemOffset = (8 * characterId) + i;
-            nint fileOneAddress = FileOnePtrs.DeadInventoryStart + curItemOffset;
-            nint fileTwoAddress = FileTwoPtrs.DeadInventoryStart + curItemOffset;
-            deadInventory[i] = ReadValue<byte>([fileOneAddress], [fileTwoAddress], errorValue: 0);
-        }
-
-        return deadInventory;
+        return new InventorySnapshot(
+            ReadDeadInventoryValue(characterId, 0),
+            ReadDeadInventoryValue(characterId, 1),
+            ReadDeadInventoryValue(characterId, 2),
+            ReadDeadInventoryValue(characterId, 3)
+        );
     }
 
-    private byte[] GetSpecialDeadInventory(int characterId)
+    private InventorySnapshot GetSpecialDeadInventory(int characterId)
     {
-        byte[] specialDeadInventory = new byte[4];
-        for (int i = 0; i < 4; i++)
-        {
-            nint curItemOffset = (8 * characterId) + 4 + i;
-            nint fileOneAddress = FileOnePtrs.DeadInventoryStart + curItemOffset;
-            nint fileTwoAddress = FileTwoPtrs.DeadInventoryStart + curItemOffset;
-            specialDeadInventory[i] = ReadValue<byte>([fileOneAddress], [fileTwoAddress], errorValue: 0);
-        }
+        return new InventorySnapshot(
+            ReadDeadInventoryValue(characterId, 4),
+            ReadDeadInventoryValue(characterId, 5),
+            ReadDeadInventoryValue(characterId, 6),
+            ReadDeadInventoryValue(characterId, 7)
+        );
+    }
 
-        return specialDeadInventory;
+    private byte ReadDeadInventoryValue(int characterId, int itemOffset)
+    {
+        nint curItemOffset = (8 * characterId) + itemOffset;
+        nint fileOneAddress = FileOnePtrs.DeadInventoryStart + curItemOffset;
+        nint fileTwoAddress = FileTwoPtrs.DeadInventoryStart + curItemOffset;
+        return ReadValue<byte>([fileOneAddress], [fileTwoAddress], errorValue: 0);
     }
 
     private ushort GetBleedTime(nint basePlayerAddress)

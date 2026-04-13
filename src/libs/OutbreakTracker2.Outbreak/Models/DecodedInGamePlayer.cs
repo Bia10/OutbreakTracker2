@@ -109,36 +109,36 @@ public sealed record DecodedInGamePlayer : IHasId
     public string Status { get; init; } = string.Empty;
 
     /// <summary>
-    /// Inventory snapshot buffer. The array reference is init-only, but the contents remain shallow-mutable by design.
+    /// Inventory snapshot with value semantics so diffing is based on slot contents, not buffer identity.
     /// </summary>
     [JsonInclude]
     [JsonPropertyName(nameof(Inventory))]
-    public byte[] Inventory { get; init; } = new byte[4];
+    public InventorySnapshot Inventory { get; init; } = InventorySnapshot.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(SpecialItem))]
     public byte SpecialItem { get; init; }
 
     /// <summary>
-    /// Special-inventory snapshot buffer. The array reference is init-only, but the contents remain shallow-mutable by design.
+    /// Special-inventory snapshot with value semantics.
     /// </summary>
     [JsonInclude]
     [JsonPropertyName(nameof(SpecialInventory))]
-    public byte[] SpecialInventory { get; init; } = new byte[4];
+    public InventorySnapshot SpecialInventory { get; init; } = InventorySnapshot.Empty;
 
     /// <summary>
-    /// Downed-inventory snapshot buffer. The array reference is init-only, but the contents remain shallow-mutable by design.
+    /// Downed-inventory snapshot with value semantics.
     /// </summary>
     [JsonInclude]
     [JsonPropertyName(nameof(DeadInventory))]
-    public byte[] DeadInventory { get; init; } = new byte[4];
+    public InventorySnapshot DeadInventory { get; init; } = InventorySnapshot.Empty;
 
     /// <summary>
-    /// Downed special-inventory snapshot buffer. The array reference is init-only, but the contents remain shallow-mutable by design.
+    /// Downed special-inventory snapshot with value semantics.
     /// </summary>
     [JsonInclude]
     [JsonPropertyName(nameof(SpecialDeadInventory))]
-    public byte[] SpecialDeadInventory { get; init; } = new byte[4];
+    public InventorySnapshot SpecialDeadInventory { get; init; } = InventorySnapshot.Empty;
 
     [JsonInclude]
     [JsonPropertyName(nameof(EquippedItem))]

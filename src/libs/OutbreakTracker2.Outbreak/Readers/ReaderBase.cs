@@ -68,13 +68,6 @@ public abstract class ReaderBase : IDisposable
         try
         {
             T result = _memoryReader.Read<T>(_gameClient.Handle, address);
-            Logger.LogTrace(
-                "[{MethodName}] Successfully read {Type} from address 0x{Address:X}. Value: {Result}",
-                methodName,
-                typeof(T).Name,
-                address,
-                result
-            );
             return result;
         }
         catch (AccessViolationException ex)
@@ -117,12 +110,6 @@ public abstract class ReaderBase : IDisposable
 
         if (_stringReader.TryRead(_gameClient.Handle, address, out string readResult, encoding))
         {
-            Logger.LogTrace(
-                "[{MethodName}] Successfully read string from address 0x{Address:X}. Value: '{Result}'",
-                methodName,
-                address,
-                readResult
-            );
             result = readResult;
             return true;
         }
@@ -204,17 +191,6 @@ public abstract class ReaderBase : IDisposable
             );
             return nint.Zero;
         }
-        else
-        {
-            Logger.LogTrace(
-                "[{MethodName}] Computed address 0x{ComputedAddress:X} from base pointer 0x{BasePointer:X} with {OffsetCount} offsets",
-                methodName,
-                computedAddress,
-                basePtr,
-                offsets.Length
-            );
-        }
-
         return computedAddress;
     }
 
@@ -249,17 +225,6 @@ public abstract class ReaderBase : IDisposable
             );
             return nint.Zero;
         }
-        else
-        {
-            Logger.LogTrace(
-                "[{MethodName}] Computed address 0x{ComputedAddress:X} from {OffsetCount} offsets (first offset: 0x{FirstOffset:X})",
-                methodName,
-                computedAddress,
-                offsets.Length,
-                offsets[0]
-            );
-        }
-
         return computedAddress;
     }
 
