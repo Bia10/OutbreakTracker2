@@ -10,6 +10,57 @@ To create a release: go to **Actions → Release → Run workflow** and enter a 
 
 ## [Unreleased]
 
+### Added
+- Tests: `ClientAlreadyRunningViewModelTests` and `InGameEnemyViewModelTests` new unit test files
+
+### Changed
+- Reports: `RunReportEnemyDiffProcessor` — inject `ILogger`; add `MaxReportableEnemyHp` / `MaxReportableEnemyDamage` validation constants; guard spawns via `TryValidateSpawn` and kills via `IsReportableMaxHp`; log faulty events instead of silently emitting them
+- Reports: `HtmlRunReportWriter` — interactive event density timeline with focus/reset bar, accessibility roles, and hover caption; histogram scale labels added; default group-by switched to "Event type"
+- Reports: `RunReportService` — forward logger to `RunReportEnemyDiffProcessor`
+- Views: `ClientAlreadyRunningViewModel` — convert from primary constructor to explicit constructor; expose `RunningProcessesView` as `NotifyCollectionChangedSynchronizedViewList` for safe cross-thread binding
+- Views: `ClientAlreadyRunningView` — bind `ItemsControl` to `RunningProcessesView`
+
+### Fixed
+- Enemy: `EnemyStatusUtility.GetHealthStatusForFileTwo` — replace `nameId == 0` guard with `IsEmptyFileTwoSlot(slotId, maxHp)` to correctly detect empty file-two slots
+- Enemy: `InGameEnemyViewModel.GetEnemyColorForFileTwo` — normalize empty-slot fallback to `InvalidSlotColor` constant; remove dead commented-out code
+
+---
+
+## [v1.0.0] — 2026-04-13
+
+### Added
+- Settings: `ShowGameplayUiDuringTransitions` display setting to control UI visibility during non-stable scenario states
+- Reports: HTML run report with full event density timeline, grouped event log, and composite writer support
+- Reports: raw inventory slot values surfaced in HTML output; `InventorySlotValueResolver` introduced for shared slot resolution
+- Reports: door events now include `SlotId`; enemy kill/despawn detection improved; room names resolved in event timeline and monster log
+- Reports: `RunEvent.Accumulate` internal method for building event hierarchies
+- Tracking: `ICurrentScenarioState` interface; alert rules narrowed to depend on `ICurrentScenarioState` instead of full `IDataSnapshot`; in-game reset gated on confirmed post-game lobby
+- Tracking: `CollectionDiffAccumulator` extracted; `IReadOnlyEntityTracker` exposed; `TrackerRegistry` tightened
+- Data: `GameStateStore` and `IDataObservableSource` / `IDataSnapshot` interfaces introduced
+- Data: `DataManagerOptions` for configurable polling intervals
+- Inventory: inventory snapshot model and domain utilities
+- Library: `ScenarioStatus` extended values; `DecodedInGamePlayer` new fields; readers and utilities updated
+- Views: in-game UI visibility gated via `ShouldShowGameplayUi` and improved overview view models
+- Launcher: `GameClientConnectionService` added; `ProcessLauncher` cancellation propagation improved
+- Embedding: Windows embedded-window refactored into focused session components
+- Atlas: texture atlas service, sprite name resolver, and image view models refined
+
+### Changed
+- Reports: `RunReportService` decomposed into dedicated diff processors (`RunReportEnemyDiffProcessor`, `RunReportDoorDiffProcessor`, etc.)
+- Tracking: `IAlertRule<T>` split into typed `IAddedAlertRule`, `IUpdatedAlertRule`, `IRemovedAlertRule`
+- Scenario: `ScenarioEntitiesViewModel` split into `ScenarioItemsViewModel` and `ScenarioEnemiesViewModel`
+- Outbreak: `RoomName` dropped from `DecodedEnemy`; player slot ULIDs migrated to `ConcurrentDictionary`
+- Enemy: `EnemyStatusUtility` extracted from inline logic; `EnemyListReconciler` removed
+- Views: `GlowEventArgs` consolidated into `Views/Common`
+- Services: log-storage uses bounded buffer; process launcher lifetime cleanup
+
+### Fixed
+- Keyboard focus: restore focus to PCSX2 when OT2 regains foreground after alt-tab
+- Startup: deferred dock rebuild and pre-warmed singletons to eliminate startup blocking
+- Scenario items: collapse non-contiguous story item copies in projection
+- Scenario state: prevent stale state when switching dashboard views
+- Performance: incremental room-group patching to avoid full collection Reset events
+
 ---
 
 ## [v0.3.0] — 2026-04-06
