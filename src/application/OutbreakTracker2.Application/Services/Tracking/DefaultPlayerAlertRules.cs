@@ -20,7 +20,7 @@ internal static class DefaultPlayerAlertRules
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
                     return settings.DangerCondition
                         && cur.Condition.Equals("danger", StringComparison.OrdinalIgnoreCase)
-                        && !(prev?.Condition.Equals("danger", StringComparison.OrdinalIgnoreCase) ?? false);
+                        && !prev.Condition.Equals("danger", StringComparison.OrdinalIgnoreCase);
                 },
                 cur => new AlertNotification("Condition Update", $"{cur.Name} is now in DANGER!", AlertLevel.Error)
             )
@@ -33,7 +33,7 @@ internal static class DefaultPlayerAlertRules
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
                     return settings.GasCondition
                         && cur.Condition.Equals("gas", StringComparison.OrdinalIgnoreCase)
-                        && !(prev?.Condition.Equals("gas", StringComparison.OrdinalIgnoreCase) ?? false);
+                        && !prev.Condition.Equals("gas", StringComparison.OrdinalIgnoreCase);
                 },
                 cur => new AlertNotification("Condition Update", $"{cur.Name} is gassed!", AlertLevel.Warning)
             )
@@ -46,7 +46,7 @@ internal static class DefaultPlayerAlertRules
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
                     return settings.DeadStatus
                         && string.Equals(cur.Status, "Dead", StringComparison.Ordinal)
-                        && !string.Equals(prev?.Status, "Dead", StringComparison.Ordinal);
+                        && !string.Equals(prev.Status, "Dead", StringComparison.Ordinal);
                 },
                 cur => new AlertNotification("Status Update", $"{cur.Name} has DIED!", AlertLevel.Error)
             )
@@ -59,7 +59,7 @@ internal static class DefaultPlayerAlertRules
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
                     return settings.ZombieStatus
                         && string.Equals(cur.Status, "Zombie", StringComparison.Ordinal)
-                        && !string.Equals(prev?.Status, "Zombie", StringComparison.Ordinal);
+                        && !string.Equals(prev.Status, "Zombie", StringComparison.Ordinal);
                 },
                 cur => new AlertNotification("Status Update", $"{cur.Name} turned into a ZOMBIE!", AlertLevel.Error)
             )
@@ -72,7 +72,7 @@ internal static class DefaultPlayerAlertRules
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
                     return settings.DownStatus
                         && string.Equals(cur.Status, "Down", StringComparison.Ordinal)
-                        && !string.Equals(prev?.Status, "Down", StringComparison.Ordinal);
+                        && !string.Equals(prev.Status, "Down", StringComparison.Ordinal);
                 },
                 cur => new AlertNotification("Status Update", $"{cur.Name} is now DOWNED!", AlertLevel.Warning)
             )
@@ -85,7 +85,7 @@ internal static class DefaultPlayerAlertRules
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
                     return settings.BleedStatus
                         && string.Equals(cur.Status, "Bleed", StringComparison.Ordinal)
-                        && !string.Equals(prev?.Status, "Bleed", StringComparison.Ordinal);
+                        && !string.Equals(prev.Status, "Bleed", StringComparison.Ordinal);
                 },
                 cur => new AlertNotification("Status Update", $"{cur.Name} is now BLEEDING!", AlertLevel.Warning)
             )
@@ -98,7 +98,7 @@ internal static class DefaultPlayerAlertRules
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
                     return settings.HealthZero
                         && cur.CurHealth <= 0
-                        && (prev?.CurHealth ?? 0) > 0
+                        && prev.CurHealth > 0
                         && !string.Equals(cur.Status, "Zombie", StringComparison.Ordinal);
                 },
                 cur => new AlertNotification("Player Died", $"{cur.Name} health dropped to 0!", AlertLevel.Error)
@@ -106,8 +106,8 @@ internal static class DefaultPlayerAlertRules
         );
 
         players.AddAddedRule(
-            new PredicateAlertRule<DecodedInGamePlayer>(
-                (cur, _) =>
+            new PredicateAddedAlertRule<DecodedInGamePlayer>(
+                cur =>
                 {
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
                     return settings.VirusWarningEnabled && cur.VirusPercentage >= settings.VirusWarningThreshold;
@@ -127,7 +127,7 @@ internal static class DefaultPlayerAlertRules
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
                     return settings.VirusWarningEnabled
                         && cur.VirusPercentage >= settings.VirusWarningThreshold
-                        && (prev?.VirusPercentage ?? 0.0) < settings.VirusWarningThreshold;
+                        && prev.VirusPercentage < settings.VirusWarningThreshold;
                 },
                 cur => new AlertNotification(
                     "Virus Warning",
@@ -138,8 +138,8 @@ internal static class DefaultPlayerAlertRules
         );
 
         players.AddAddedRule(
-            new PredicateAlertRule<DecodedInGamePlayer>(
-                (cur, _) =>
+            new PredicateAddedAlertRule<DecodedInGamePlayer>(
+                cur =>
                 {
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
                     return settings.VirusCriticalEnabled && cur.VirusPercentage >= settings.VirusCriticalThreshold;
@@ -159,7 +159,7 @@ internal static class DefaultPlayerAlertRules
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
                     return settings.VirusCriticalEnabled
                         && cur.VirusPercentage >= settings.VirusCriticalThreshold
-                        && (prev?.VirusPercentage ?? 0.0) < settings.VirusCriticalThreshold;
+                        && prev.VirusPercentage < settings.VirusCriticalThreshold;
                 },
                 cur => new AlertNotification(
                     "Virus Critical",
@@ -174,7 +174,7 @@ internal static class DefaultPlayerAlertRules
                 (cur, prev) =>
                 {
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
-                    return settings.AntiVirusExpired && cur.AntiVirusTime == 0 && (prev?.AntiVirusTime ?? 0) > 0;
+                    return settings.AntiVirusExpired && cur.AntiVirusTime == 0 && prev.AntiVirusTime > 0;
                 },
                 cur => new AlertNotification(
                     "Antivirus Expired",
@@ -189,7 +189,7 @@ internal static class DefaultPlayerAlertRules
                 (cur, prev) =>
                 {
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
-                    return settings.AntiVirusGExpired && cur.AntiVirusGTime == 0 && (prev?.AntiVirusGTime ?? 0) > 0;
+                    return settings.AntiVirusGExpired && cur.AntiVirusGTime == 0 && prev.AntiVirusGTime > 0;
                 },
                 cur => new AlertNotification(
                     "Antivirus-G Expired",
@@ -204,7 +204,7 @@ internal static class DefaultPlayerAlertRules
                 (cur, prev) =>
                 {
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
-                    return settings.BleedStopped && cur.BleedTime == 0 && (prev?.BleedTime ?? 0) > 0;
+                    return settings.BleedStopped && cur.BleedTime == 0 && prev.BleedTime > 0;
                 },
                 cur => new AlertNotification("Bleed Stopped", $"{cur.Name}'s bleed timer expired.", AlertLevel.Info)
             )
@@ -215,7 +215,7 @@ internal static class DefaultPlayerAlertRules
                 (cur, prev) =>
                 {
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
-                    return settings.RoomChange && cur.IsInGame && prev is not null && cur.RoomId != prev.RoomId;
+                    return settings.RoomChange && cur.IsInGame && cur.RoomId != prev.RoomId;
                 },
                 cur =>
                 {
@@ -230,10 +230,7 @@ internal static class DefaultPlayerAlertRules
                 (cur, prev) =>
                 {
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
-                    return settings.Joined
-                        && cur.IsInGame
-                        && !(prev?.IsInGame ?? true)
-                        && !scenarioState.Status.IsTransitional();
+                    return settings.Joined && cur.IsInGame && !prev.IsInGame && !scenarioState.Status.IsTransitional();
                 },
                 cur => new AlertNotification("Player Joined", $"{cur.Name} joined the game.", AlertLevel.Info)
             )
@@ -244,10 +241,7 @@ internal static class DefaultPlayerAlertRules
                 (cur, prev) =>
                 {
                     PlayerAlertRuleSettings settings = settingsService.Current.AlertRules.Players;
-                    return settings.Left
-                        && !cur.IsInGame
-                        && (prev?.IsInGame ?? false)
-                        && !scenarioState.Status.IsTransitional();
+                    return settings.Left && !cur.IsInGame && prev.IsInGame && !scenarioState.Status.IsTransitional();
                 },
                 cur => new AlertNotification("Player Left", $"{cur.Name} left the game.", AlertLevel.Warning)
             )

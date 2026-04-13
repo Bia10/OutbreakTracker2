@@ -14,8 +14,8 @@ internal static class EnemyAlertRules
     )
     {
         enemies.AddAddedRule(
-            new PredicateAlertRule<DecodedEnemy>(
-                (cur, _) =>
+            new PredicateAddedAlertRule<DecodedEnemy>(
+                cur =>
                 {
                     EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
                     return settings.Spawned && cur.Enabled != 0 && cur.MaxHp > 0 && cur.SlotId > 0 && cur.RoomId != 0;
@@ -42,7 +42,7 @@ internal static class EnemyAlertRules
                         && cur.MaxHp > 0
                         && cur.SlotId > 0
                         && cur.RoomId != 0
-                        && (prev?.Enabled == 0);
+                        && prev.Enabled == 0;
                 },
                 cur =>
                 {
@@ -63,8 +63,8 @@ internal static class EnemyAlertRules
                     EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
                     return settings.Killed
                         && cur.CurHp == 0
-                        && (prev?.CurHp ?? 0) > 0
-                        && prev?.Enabled != 0
+                        && prev.CurHp > 0
+                        && prev.Enabled != 0
                         && !AlertRuleHelpers.IsInvulnerableEnemy(cur.NameId, cur.MaxHp)
                         && scenarioState.Status == ScenarioStatus.InGame;
                 },
@@ -81,8 +81,8 @@ internal static class EnemyAlertRules
         );
 
         enemies.AddRemovedRule(
-            new PredicateAlertRule<DecodedEnemy>(
-                (cur, _) =>
+            new PredicateRemovedAlertRule<DecodedEnemy>(
+                cur =>
                 {
                     EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
                     return settings.Killed
@@ -108,7 +108,7 @@ internal static class EnemyAlertRules
                 (cur, prev) =>
                 {
                     EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
-                    return settings.Despawned && cur.Enabled == 0 && (prev?.Enabled ?? 0) != 0;
+                    return settings.Despawned && cur.Enabled == 0 && prev.Enabled != 0;
                 },
                 cur =>
                 {
@@ -127,7 +127,7 @@ internal static class EnemyAlertRules
                 (cur, prev) =>
                 {
                     EnemyAlertRuleSettings settings = settingsService.Current.AlertRules.Enemies;
-                    return settings.RoomChange && cur.RoomId != (prev?.RoomId ?? cur.RoomId) && cur.Enabled != 0;
+                    return settings.RoomChange && cur.RoomId != prev.RoomId && cur.Enabled != 0;
                 },
                 cur =>
                 {

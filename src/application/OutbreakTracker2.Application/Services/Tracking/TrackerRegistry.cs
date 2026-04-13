@@ -16,6 +16,11 @@ public sealed class TrackerRegistry : ITrackerRegistry, IDisposable
     public IReadOnlyEntityTracker<DecodedInGamePlayer> Players => _playerTracker;
     public IReadOnlyEntityTracker<DecodedLobbySlot> LobbySlots => _lobbySlotTracker;
 
+    public IEntityChangeSource<DecodedEnemy> EnemyChanges => _enemyTracker.Changes;
+    public IEntityChangeSource<DecodedDoor> DoorChanges => _doorTracker.Changes;
+    public IEntityChangeSource<DecodedInGamePlayer> PlayerChanges => _playerTracker.Changes;
+    public IEntityChangeSource<DecodedLobbySlot> LobbySlotChanges => _lobbySlotTracker.Changes;
+
     public Observable<AlertNotification> AllAlerts { get; }
 
     public TrackerRegistry(

@@ -7,13 +7,18 @@ namespace OutbreakTracker2.Application.Services.Tracking;
 public sealed class EntityTracker<T> : IEntityTracker<T>, IDisposable
     where T : IHasId
 {
-    private readonly List<IAlertRule<T>> _rules = [];
-    private readonly List<IAlertRule<T>> _addedRules = [];
-    private readonly List<IAlertRule<T>> _removedRules = [];
+    private int _rulesLocked;
+    private readonly List<IUpdatedAlertRule<T>> _rules = [];
+    private readonly List<IAddedAlertRule<T>> _addedRules = [];
+    private readonly List<IRemovedAlertRule<T>> _removedRules = [];
     private readonly Subject<AlertNotification> _alertSubject = new();
     private readonly ILogger<EntityTracker<T>> _logger;
     private readonly IDisposable _subscription;
 
+    /// <summary>
+    /// Low-level diff source owned by this tracker. Consumers may subscribe to it,
+    /// but the tracker controls its lifetime and disposes it during tracker disposal.
+    /// </summary>
     public IEntityChangeSource<T> Changes { get; }
     public Observable<AlertNotification> Alerts { get; }
 
@@ -27,23 +32,23 @@ public sealed class EntityTracker<T> : IEntityTracker<T>, IDisposable
         // removed entities in a single pass rather than one callback per entity.
         _subscription = changes.Diffs.Subscribe(diff =>
         {
+            Volatile.Write(ref _rulesLocked, 1);
+
             foreach (T added in diff.Added)
-            foreach (IAlertRule<T> rule in _addedRules)
-                EvaluateRule(rule, added, default);
+            foreach (IAddedAlertRule<T> rule in _addedRules)
+                EvaluateAddedRule(rule, added);
 
             foreach (EntityChange<T> change in diff.Changed)
-            foreach (IAlertRule<T> rule in _rules)
-                EvaluateRule(rule, change.Current, change.Previous);
+            foreach (IUpdatedAlertRule<T> rule in _rules)
+                EvaluateUpdatedRule(rule, change.Current, change.Previous);
 
-            // Removed rules receive (current: snapshot, previous: snapshot) — both the same
-            // last-known value so rules can inspect the entity state at the moment of removal.
             foreach (T removed in diff.Removed)
-            foreach (IAlertRule<T> rule in _removedRules)
-                EvaluateRule(rule, removed, removed);
+            foreach (IRemovedAlertRule<T> rule in _removedRules)
+                EvaluateRemovedRule(rule, removed);
         });
     }
 
-    private void EvaluateRule(IAlertRule<T> rule, T current, T? previous)
+    private void EvaluateUpdatedRule(IUpdatedAlertRule<T> rule, T current, T previous)
     {
         try
         {
@@ -57,13 +62,57 @@ public sealed class EntityTracker<T> : IEntityTracker<T>, IDisposable
         }
     }
 
-    public void AddRule(IAlertRule<T> rule) => _rules.Add(rule ?? throw new ArgumentNullException(nameof(rule)));
+    private void EvaluateAddedRule(IAddedAlertRule<T> rule, T current)
+    {
+        try
+        {
+            if (rule.ShouldTrigger(current))
+                _alertSubject.OnNext(rule.CreateNotification(current));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Alert rule {Rule} threw during evaluation; rule skipped", rule.GetType().Name);
+        }
+    }
 
-    public void AddAddedRule(IAlertRule<T> rule) =>
+    private void EvaluateRemovedRule(IRemovedAlertRule<T> rule, T removed)
+    {
+        try
+        {
+            if (rule.ShouldTrigger(removed))
+                _alertSubject.OnNext(rule.CreateNotification(removed));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Alert rule {Rule} threw during evaluation; rule skipped", rule.GetType().Name);
+        }
+    }
+
+    private void ThrowIfRulesLocked()
+    {
+        if (Volatile.Read(ref _rulesLocked) != 0)
+            throw new InvalidOperationException(
+                "Alert rules must be registered before the tracker processes its first diff."
+            );
+    }
+
+    public void AddRule(IUpdatedAlertRule<T> rule)
+    {
+        ThrowIfRulesLocked();
+        _rules.Add(rule ?? throw new ArgumentNullException(nameof(rule)));
+    }
+
+    public void AddAddedRule(IAddedAlertRule<T> rule)
+    {
+        ThrowIfRulesLocked();
         _addedRules.Add(rule ?? throw new ArgumentNullException(nameof(rule)));
+    }
 
-    public void AddRemovedRule(IAlertRule<T> rule) =>
+    public void AddRemovedRule(IRemovedAlertRule<T> rule)
+    {
+        ThrowIfRulesLocked();
         _removedRules.Add(rule ?? throw new ArgumentNullException(nameof(rule)));
+    }
 
     public void Dispose()
     {

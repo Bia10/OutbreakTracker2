@@ -1,10 +1,10 @@
 ﻿using OutbreakTracker2.Outbreak.Models;
-using R3;
 
 namespace OutbreakTracker2.Application.Services.Tracking;
 
-public interface IReadOnlyEntityTracker<T> : IDisposable
+public interface IRemovedAlertRule<T>
     where T : IHasId
 {
-    Observable<AlertNotification> Alerts { get; }
+    bool ShouldTrigger(T removed);
+    AlertNotification CreateNotification(T removed);
 }

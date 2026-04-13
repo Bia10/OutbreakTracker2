@@ -59,7 +59,7 @@ internal static class DefaultLobbySlotAlertRules
         );
     }
 
-    private static bool IsNewActiveLobbyGame(in DecodedLobbySlot cur, in DecodedLobbySlot? prev) =>
+    private static bool IsNewActiveLobbyGame(in DecodedLobbySlot cur, in DecodedLobbySlot prev) =>
         IsActiveLobbyGame(cur) && !IsActiveLobbyGame(prev);
 
     private static bool IsActiveLobbyGame(in DecodedLobbySlot? slot) =>

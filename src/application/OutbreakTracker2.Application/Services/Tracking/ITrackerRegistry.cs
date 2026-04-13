@@ -10,5 +10,10 @@ public interface ITrackerRegistry
     IReadOnlyEntityTracker<DecodedInGamePlayer> Players { get; }
     IReadOnlyEntityTracker<DecodedLobbySlot> LobbySlots { get; }
 
+    IEntityChangeSource<DecodedEnemy> EnemyChanges { get; }
+    IEntityChangeSource<DecodedDoor> DoorChanges { get; }
+    IEntityChangeSource<DecodedInGamePlayer> PlayerChanges { get; }
+    IEntityChangeSource<DecodedLobbySlot> LobbySlotChanges { get; }
+
     Observable<AlertNotification> AllAlerts { get; }
 }
