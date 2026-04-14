@@ -97,7 +97,8 @@ public sealed class MarkdownRunReportWriter : IRunReportWriter
         sb.Append(CultureInfo.InvariantCulture, $"| Player Leaves | {stats.TotalPlayerLeaves} |").AppendLine();
         sb.Append(CultureInfo.InvariantCulture, $"| Player Health Changes | {stats.TotalPlayerHealthChanges} |")
             .AppendLine();
-        sb.Append(CultureInfo.InvariantCulture, $"| Total Damage Taken | {stats.TotalDamageTaken} HP |").AppendLine();
+        sb.Append(CultureInfo.InvariantCulture, $"| Total Damage Taken (all players) | {stats.TotalDamageTaken} HP |")
+            .AppendLine();
         sb.Append(CultureInfo.InvariantCulture, $"| Player Healing Events | {stats.TotalPlayerHealingEvents} |")
             .AppendLine();
         sb.Append(CultureInfo.InvariantCulture, $"| Player Virus Changes | {stats.TotalPlayerVirusChanges} |")

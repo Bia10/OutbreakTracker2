@@ -345,7 +345,9 @@ public sealed class MarkdownRunReportWriterTests
             await writer.WriteAsync(report);
             string content = await ReadSingleFileAsync(outputDirectory);
 
-            await Assert.That(content.Contains("| Total Damage Taken | 60 HP |", StringComparison.Ordinal)).IsTrue();
+            await Assert
+                .That(content.Contains("| Total Damage Taken (all players) | 60 HP |", StringComparison.Ordinal))
+                .IsTrue();
         }
     }
 

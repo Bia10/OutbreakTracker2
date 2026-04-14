@@ -94,6 +94,83 @@ public sealed class HtmlRunReportWriterTests
             await Assert
                 .That(content.Contains("groupsHost.querySelectorAll('[data-group-key]')", StringComparison.Ordinal))
                 .IsTrue();
+            await Assert
+                .That(
+                    content.Contains("role=\"tablist\" aria-label=\"Player breakdown tabs\"", StringComparison.Ordinal)
+                )
+                .IsFalse();
+        }
+    }
+
+    [Test]
+    public async Task WriteAsync_ContentContainsGroupOverviewLabelsAndPlayerTabs()
+    {
+        (HtmlRunReportWriter writer, string outputDirectory, IDisposable cleanup) = CreateWriterWithTempDir();
+        using (cleanup)
+        {
+            DateTimeOffset start = new(2025, 1, 15, 10, 0, 0, TimeSpan.Zero);
+            Ulid kevinId = Ulid.NewUlid();
+            Ulid cindyId = Ulid.NewUlid();
+
+            RunReport report = new(
+                Ulid.NewUlid(),
+                "training-ground",
+                "Training Ground",
+                Scenario.TrainingGround,
+                start,
+                start.AddMinutes(5),
+                [
+                    new PlayerJoinedEvent(
+                        start.AddSeconds(1),
+                        kevinId,
+                        "Kevin",
+                        InitialHealth: 100,
+                        MaxHealth: 100,
+                        InitialVirusPercentage: 5.0
+                    ),
+                    new PlayerJoinedEvent(
+                        start.AddSeconds(2),
+                        cindyId,
+                        "Cindy",
+                        InitialHealth: 120,
+                        MaxHealth: 120,
+                        InitialVirusPercentage: 10.0
+                    ),
+                    new PlayerHealthChangedEvent(
+                        start.AddSeconds(10),
+                        kevinId,
+                        "Kevin",
+                        OldHealth: 100,
+                        NewHealth: 70,
+                        MaxHealth: 100
+                    ),
+                    new PlayerVirusChangedEvent(
+                        start.AddSeconds(15),
+                        cindyId,
+                        "Cindy",
+                        OldVirusPercentage: 10.0,
+                        NewVirusPercentage: 35.0
+                    ),
+                ]
+            );
+
+            await writer.WriteAsync(report);
+            string content = await ReadSingleFileAsync(outputDirectory);
+
+            await Assert.That(content.Contains("Damage Taken (All Players)", StringComparison.Ordinal)).IsTrue();
+            await Assert.That(content.Contains("Peak Virus (Any Player)", StringComparison.Ordinal)).IsTrue();
+            await Assert
+                .That(
+                    content.Contains("role=\"tablist\" aria-label=\"Player breakdown tabs\"", StringComparison.Ordinal)
+                )
+                .IsTrue();
+            await Assert.That(content.Contains("Individual players", StringComparison.Ordinal)).IsTrue();
+            await Assert.That(content.Contains("Kevin", StringComparison.Ordinal)).IsTrue();
+            await Assert.That(content.Contains("Cindy", StringComparison.Ordinal)).IsTrue();
+            await Assert.That(content.Contains("Filter event browser", StringComparison.Ordinal)).IsTrue();
+            await Assert
+                .That(content.Contains("data-player-tab-target=\"player-panel-01\"", StringComparison.Ordinal))
+                .IsTrue();
         }
     }
 

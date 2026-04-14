@@ -70,6 +70,7 @@ public sealed class HtmlRunReportWriter : IRunReportWriter
         AppendHeader(builder, report, scenarioTitle);
         AppendHero(builder, report, stats, events, categoryCounts);
         AppendInsights(builder, report, stats, categoryCounts);
+        AppendPlayerViews(builder, report, stats);
         AppendToolbar(builder);
         builder.AppendLine("<section id=\"emptyState\" class=\"empty-state\" hidden>");
         builder.AppendLine("<h2>No matching events</h2>");
@@ -225,13 +226,13 @@ public sealed class HtmlRunReportWriter : IRunReportWriter
         );
         AppendStatCard(
             builder,
-            "Damage Taken",
+            "Damage Taken (All Players)",
             string.Create(CultureInfo.InvariantCulture, $"{stats.TotalDamageTaken} HP"),
             "warn"
         );
         AppendStatCard(
             builder,
-            "Peak Virus",
+            "Peak Virus (Any Player)",
             string.Create(CultureInfo.InvariantCulture, $"{stats.PeakVirusPercentage:F3}%"),
             "warn"
         );
@@ -288,6 +289,369 @@ public sealed class HtmlRunReportWriter : IRunReportWriter
         AppendEventMixPanel(builder, report.Events.Count, categoryCounts);
         builder.AppendLine("</section>");
     }
+
+    private static void AppendPlayerViews(StringBuilder builder, RunReport report, RunReportStats stats)
+    {
+        List<RunReportPlayerSummary> players = BuildPlayerSummaries(report, stats);
+        if (players.Count == 0)
+            return;
+
+        builder.AppendLine("<section class=\"player-views insight-panel\">");
+        builder.AppendLine("<div class=\"player-views-header\">");
+        builder.AppendLine("<div>");
+        builder.AppendLine("<div class=\"panel-kicker\">Player breakdown</div>");
+        builder.AppendLine("<h2>Individual players</h2>");
+        builder.AppendLine(
+            "<p class=\"panel-note\">The overview above reflects group performance. Use a player tab to inspect one player at a time.</p>"
+        );
+        builder.AppendLine("</div>");
+        builder.AppendLine(
+            "<div class=\"toggle-row player-tabs\" role=\"tablist\" aria-label=\"Player breakdown tabs\">"
+        );
+
+        for (int index = 0; index < players.Count; index++)
+        {
+            RunReportPlayerSummary player = players[index];
+            string panelId = GetPlayerPanelId(index);
+            bool isSelected = index == 0;
+
+            builder.Append("<button class=\"toggle-btn");
+            if (isSelected)
+                builder.Append(" active");
+
+            builder.Append("\" type=\"button\" role=\"tab\" data-player-tab-target=\"");
+            AppendEncoded(builder, panelId);
+            builder.Append("\" aria-controls=\"");
+            AppendEncoded(builder, panelId);
+            builder.Append("\" aria-selected=\"");
+            AppendEncoded(builder, isSelected ? "true" : "false");
+            builder.Append("\">");
+            AppendEncoded(builder, player.Name);
+            builder.AppendLine("</button>");
+        }
+
+        builder.AppendLine("</div>");
+        builder.AppendLine("</div>");
+        builder.AppendLine("<div class=\"player-panels\">");
+
+        for (int index = 0; index < players.Count; index++)
+        {
+            RunReportPlayerSummary player = players[index];
+            bool isSelected = index == 0;
+
+            builder.Append("<article class=\"player-panel\" id=\"");
+            AppendEncoded(builder, GetPlayerPanelId(index));
+            builder.Append("\" data-player-panel role=\"tabpanel\"");
+            if (!isSelected)
+                builder.Append(" hidden");
+
+            builder.AppendLine(">\n<div class=\"player-panel-head\">\n<div>");
+            builder.Append("<h3>");
+            AppendEncoded(builder, player.Name);
+            builder.AppendLine("</h3>");
+            builder.Append("<p class=\"panel-note\">");
+            AppendEncoded(
+                builder,
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"Observed in {player.RelatedEvents} tracked event(s). Damage dealt and kill credits use the same contribution rules as the group overview."
+                )
+            );
+            builder.AppendLine("</p>");
+            builder.AppendLine("</div>");
+            builder.Append(
+                "<button class=\"toolbar-btn subtle player-focus-btn\" type=\"button\" data-player-search=\""
+            );
+            AppendEncoded(builder, player.Name);
+            builder.AppendLine("\">Filter event browser</button>");
+            builder.AppendLine("</div>");
+            builder.AppendLine("<div class=\"stats-grid player-panel-stats\">");
+            AppendStatCard(
+                builder,
+                "Damage Taken",
+                string.Create(CultureInfo.InvariantCulture, $"{player.DamageTaken} HP"),
+                "warn"
+            );
+            AppendStatCard(
+                builder,
+                "Peak Virus",
+                string.Create(CultureInfo.InvariantCulture, $"{player.PeakVirusPercentage:F3}%"),
+                "warn"
+            );
+            AppendStatCard(
+                builder,
+                "Damage Dealt",
+                string.Create(CultureInfo.InvariantCulture, $"{player.DamageDealt} HP"),
+                "player"
+            );
+            AppendStatCard(
+                builder,
+                "Kill Credits",
+                string.Create(CultureInfo.InvariantCulture, $"{player.KillCredits}"),
+                "player"
+            );
+            AppendStatCard(
+                builder,
+                "Healing Events",
+                string.Create(CultureInfo.InvariantCulture, $"{player.HealingEvents}"),
+                "accent"
+            );
+            AppendStatCard(
+                builder,
+                "Room Changes",
+                string.Create(CultureInfo.InvariantCulture, $"{player.RoomTransitions}"),
+                "neutral"
+            );
+            AppendStatCard(
+                builder,
+                "Inventory Changes",
+                string.Create(CultureInfo.InvariantCulture, $"{player.InventoryChanges}"),
+                "accent"
+            );
+            AppendStatCard(
+                builder,
+                "State Changes",
+                string.Create(CultureInfo.InvariantCulture, $"{player.StateChanges}"),
+                "neutral"
+            );
+            AppendStatCard(
+                builder,
+                "Item Interactions",
+                string.Create(CultureInfo.InvariantCulture, $"{player.ItemInteractions}"),
+                "accent"
+            );
+            AppendStatCard(
+                builder,
+                "Related Events",
+                string.Create(CultureInfo.InvariantCulture, $"{player.RelatedEvents}"),
+                "neutral"
+            );
+            builder.AppendLine("</div>");
+            builder.AppendLine("</article>");
+        }
+
+        builder.AppendLine("</div>");
+        builder.AppendLine("</section>");
+    }
+
+    private static List<RunReportPlayerSummary> BuildPlayerSummaries(RunReport report, RunReportStats stats)
+    {
+        Dictionary<string, PlayerSummaryAccumulator> summaries = new(StringComparer.Ordinal);
+
+        for (int index = 0; index < report.Events.Count; index++)
+        {
+            RunEvent evt = report.Events[index];
+
+            switch (evt)
+            {
+                case PlayerConditionChangedEvent playerConditionChanged:
+                    TrackPlayerEvent(
+                        summaries,
+                        playerConditionChanged.PlayerName,
+                        index,
+                        static summary =>
+                        {
+                            summary.RelatedEvents++;
+                            summary.StateChanges++;
+                        }
+                    );
+                    break;
+                case PlayerEffectChangedEvent playerEffectChanged:
+                    TrackPlayerEvent(
+                        summaries,
+                        playerEffectChanged.PlayerName,
+                        index,
+                        static summary =>
+                        {
+                            summary.RelatedEvents++;
+                            summary.StateChanges++;
+                        }
+                    );
+                    break;
+                case PlayerHealthChangedEvent playerHealthChanged:
+                    TrackPlayerEvent(
+                        summaries,
+                        playerHealthChanged.PlayerName,
+                        index,
+                        summary =>
+                        {
+                            summary.RelatedEvents++;
+                            if (playerHealthChanged.IsDamage)
+                                summary.DamageTaken += playerHealthChanged.OldHealth - playerHealthChanged.NewHealth;
+                            else if (playerHealthChanged.IsHeal)
+                                summary.HealingEvents++;
+                        }
+                    );
+                    break;
+                case PlayerInventoryChangedEvent playerInventoryChanged:
+                    TrackPlayerEvent(
+                        summaries,
+                        playerInventoryChanged.PlayerName,
+                        index,
+                        static summary =>
+                        {
+                            summary.RelatedEvents++;
+                            summary.InventoryChanges++;
+                        }
+                    );
+                    break;
+                case PlayerJoinedEvent playerJoined:
+                    TrackPlayerEvent(
+                        summaries,
+                        playerJoined.PlayerName,
+                        index,
+                        summary =>
+                        {
+                            summary.RelatedEvents++;
+                            summary.PeakVirusPercentage = Math.Max(
+                                summary.PeakVirusPercentage,
+                                playerJoined.InitialVirusPercentage
+                            );
+                        }
+                    );
+                    break;
+                case PlayerLeftEvent playerLeft:
+                    TrackPlayerEvent(
+                        summaries,
+                        playerLeft.PlayerName,
+                        index,
+                        summary =>
+                        {
+                            summary.RelatedEvents++;
+                            summary.PeakVirusPercentage = Math.Max(
+                                summary.PeakVirusPercentage,
+                                playerLeft.FinalVirusPercentage
+                            );
+                        }
+                    );
+                    break;
+                case PlayerRoomChangedEvent playerRoomChanged:
+                    TrackPlayerEvent(
+                        summaries,
+                        playerRoomChanged.PlayerName,
+                        index,
+                        static summary =>
+                        {
+                            summary.RelatedEvents++;
+                            summary.RoomTransitions++;
+                        }
+                    );
+                    break;
+                case PlayerStatusChangedEvent playerStatusChanged:
+                    TrackPlayerEvent(
+                        summaries,
+                        playerStatusChanged.PlayerName,
+                        index,
+                        static summary =>
+                        {
+                            summary.RelatedEvents++;
+                            summary.StateChanges++;
+                        }
+                    );
+                    break;
+                case PlayerVirusChangedEvent playerVirusChanged:
+                    TrackPlayerEvent(
+                        summaries,
+                        playerVirusChanged.PlayerName,
+                        index,
+                        summary =>
+                        {
+                            summary.RelatedEvents++;
+                            summary.PeakVirusPercentage = Math.Max(
+                                summary.PeakVirusPercentage,
+                                Math.Max(playerVirusChanged.OldVirusPercentage, playerVirusChanged.NewVirusPercentage)
+                            );
+                        }
+                    );
+                    break;
+                case ItemDroppedEvent itemDropped:
+                    TrackPlayerEvent(
+                        summaries,
+                        itemDropped.PreviousHolder,
+                        index,
+                        static summary =>
+                        {
+                            summary.RelatedEvents++;
+                            summary.ItemInteractions++;
+                        }
+                    );
+                    break;
+                case ItemPickedUpEvent itemPickedUp:
+                    TrackPlayerEvent(
+                        summaries,
+                        itemPickedUp.PickedUpByName,
+                        index,
+                        static summary =>
+                        {
+                            summary.RelatedEvents++;
+                            summary.ItemInteractions++;
+                        }
+                    );
+                    break;
+                case EnemyDamagedEvent enemyDamaged:
+                    TrackContributorEvents(summaries, enemyDamaged.ContributingPlayers, index);
+                    break;
+                case EnemyKilledEvent enemyKilled:
+                    TrackContributorEvents(summaries, enemyKilled.ContributingPlayers, index);
+                    break;
+                case EnemyStatusChangedEvent enemyStatusChanged:
+                    TrackContributorEvents(summaries, enemyStatusChanged.ContributingPlayers, index);
+                    break;
+            }
+        }
+
+        return summaries
+            .Values.OrderBy(static summary => summary.FirstSeenSequence)
+            .ThenBy(static summary => summary.Name, StringComparer.Ordinal)
+            .Select(summary => new RunReportPlayerSummary(
+                summary.Name,
+                summary.RelatedEvents,
+                summary.DamageTaken,
+                summary.HealingEvents,
+                summary.PeakVirusPercentage,
+                stats.EnemyDamageContributedByPlayer.GetValueOrDefault(summary.Name),
+                stats.KillsContributedByPlayer.GetValueOrDefault(summary.Name),
+                summary.RoomTransitions,
+                summary.InventoryChanges,
+                summary.StateChanges,
+                summary.ItemInteractions
+            ))
+            .ToList();
+    }
+
+    private static void TrackContributorEvents(
+        IDictionary<string, PlayerSummaryAccumulator> summaries,
+        IReadOnlyList<(Ulid PlayerId, string PlayerName, float Power)> contributors,
+        int sequence
+    )
+    {
+        foreach ((_, string playerName, _) in contributors)
+        {
+            TrackPlayerEvent(summaries, playerName, sequence, static summary => summary.RelatedEvents++);
+        }
+    }
+
+    private static void TrackPlayerEvent(
+        IDictionary<string, PlayerSummaryAccumulator> summaries,
+        string playerName,
+        int sequence,
+        Action<PlayerSummaryAccumulator> apply
+    )
+    {
+        if (string.IsNullOrWhiteSpace(playerName))
+            return;
+
+        if (!summaries.TryGetValue(playerName, out PlayerSummaryAccumulator? summary))
+        {
+            summary = new PlayerSummaryAccumulator(playerName, sequence);
+            summaries.Add(playerName, summary);
+        }
+
+        apply(summary);
+    }
+
+    private static string GetPlayerPanelId(int index) =>
+        string.Create(CultureInfo.InvariantCulture, $"player-panel-{index + 1:D2}");
 
     private static void AppendRankingPanel(
         StringBuilder builder,
@@ -1048,6 +1412,43 @@ public sealed class HtmlRunReportWriter : IRunReportWriter
 
     internal sealed record HtmlDetailItem(string Label, string Value);
 
+    private sealed record RunReportPlayerSummary(
+        string Name,
+        int RelatedEvents,
+        int DamageTaken,
+        int HealingEvents,
+        double PeakVirusPercentage,
+        int DamageDealt,
+        int KillCredits,
+        int RoomTransitions,
+        int InventoryChanges,
+        int StateChanges,
+        int ItemInteractions
+    );
+
+    private sealed class PlayerSummaryAccumulator(string name, int firstSeenSequence)
+    {
+        public string Name { get; } = name;
+
+        public int FirstSeenSequence { get; } = firstSeenSequence;
+
+        public int RelatedEvents { get; set; }
+
+        public int DamageTaken { get; set; }
+
+        public int HealingEvents { get; set; }
+
+        public double PeakVirusPercentage { get; set; }
+
+        public int RoomTransitions { get; set; }
+
+        public int InventoryChanges { get; set; }
+
+        public int StateChanges { get; set; }
+
+        public int ItemInteractions { get; set; }
+    }
+
     private const string Styles = """
 :root {
     --bg: #0c1117;
@@ -1263,9 +1664,18 @@ html[data-theme="light"] body {
 }
 
 .hero-panel,
-.insight-panel {
+.insight-panel,
+.player-views {
     border-radius: var(--radius-lg);
     padding: 24px;
+}
+
+.insight-panel h2,
+.player-panel h3 {
+    margin: 0;
+    font-size: 1.35rem;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
 }
 
 .ring-panel {
@@ -1462,6 +1872,45 @@ html[data-theme="light"] body {
 .insight-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     margin-bottom: 16px;
+}
+
+.player-views {
+    margin-bottom: 16px;
+}
+
+.player-views-header,
+.player-panel-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.player-tabs {
+    justify-content: flex-end;
+}
+
+.player-panels {
+    margin-top: 18px;
+}
+
+.player-panel[hidden] {
+    display: none;
+}
+
+.player-panel {
+    padding: 20px;
+    border-radius: var(--radius-md);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+}
+
+.player-panel-stats {
+    margin-top: 16px;
+}
+
+.player-focus-btn {
+    white-space: nowrap;
 }
 
 .panel-note,
@@ -1839,6 +2288,11 @@ mark {
         grid-template-columns: 1fr;
     }
 
+    .player-views-header,
+    .player-panel-head {
+        flex-direction: column;
+    }
+
     .toolbar-actions {
         align-items: flex-start;
     }
@@ -1881,6 +2335,7 @@ mark {
     .page-header,
     .hero-panel,
     .insight-panel,
+    .player-views,
     .toolbar,
     .empty-state {
         padding: 20px;
@@ -1935,6 +2390,8 @@ mark {
     const stickyBar = document.getElementById('stickyBar');
     const stickySearchButton = document.getElementById('stickySearchBtn');
     const themeToggle = document.getElementById('themeToggle');
+    const playerTabs = Array.from(document.querySelectorAll('[data-player-tab-target]'));
+    const playerPanels = Array.from(document.querySelectorAll('[data-player-panel]'));
 
     const escapeHtml = (value) => String(value)
         .replaceAll('&', '&amp;')
@@ -2278,6 +2735,18 @@ mark {
         renderGroups();
     };
 
+    const setActivePlayerTab = (targetId) => {
+        playerTabs.forEach((button) => {
+            const active = button.dataset.playerTabTarget === targetId;
+            button.classList.toggle('active', active);
+            button.setAttribute('aria-selected', String(active));
+        });
+
+        playerPanels.forEach((panel) => {
+            panel.hidden = panel.id !== targetId;
+        });
+    };
+
     const setRenderedGroupsExpanded = (expanded) => {
         groupsHost.querySelectorAll('[data-group-key]').forEach((groupButton) => {
             state.expandedGroups.set(groupButton.dataset.groupKey, expanded);
@@ -2309,6 +2778,10 @@ mark {
         });
     });
 
+    playerTabs.forEach((button) => {
+        button.addEventListener('click', () => setActivePlayerTab(button.dataset.playerTabTarget));
+    });
+
     searchInput.addEventListener('input', () => {
         state.query = searchInput.value;
         render();
@@ -2319,6 +2792,18 @@ mark {
         state.query = '';
         render();
         searchInput.focus();
+    });
+
+    document.querySelectorAll('[data-player-search]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const playerName = button.dataset.playerSearch ?? '';
+            searchInput.value = playerName;
+            state.query = playerName;
+            state.timelineBucket = null;
+            render();
+            document.querySelector('.toolbar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            searchInput.focus();
+        });
     });
 
     histogram.addEventListener('click', (event) => {
