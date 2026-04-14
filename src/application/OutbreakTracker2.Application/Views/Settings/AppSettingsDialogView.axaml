@@ -59,6 +59,45 @@ mc:Ignorable="d">
                                 <TextBlock Foreground="IndianRed" Text="{Binding ValidationMessage}" TextWrapping="Wrap" />
                             </StackPanel>
                         </suki:GlassCard>
+
+                        <suki:GlassCard Padding="18">
+                            <StackPanel Spacing="10">
+                                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Memory Polling" />
+                                <TextBlock Opacity="0.8"
+                                           Text="Controls how often game memory is read. Lower values increase responsiveness but use more CPU. Restart required for changes to take effect."
+                                           TextWrapping="Wrap" />
+
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                                    <suki:GlassCard Grid.Column="0" Padding="14">
+                                        <StackPanel Spacing="8">
+                                            <TextBlock FontWeight="SemiBold" Text="Fast poll interval (ms)" />
+                                            <TextBlock Opacity="0.8"
+                                                       Text="Used for in-game player, enemy and door data."
+                                                       TextWrapping="Wrap" />
+                                            <NumericUpDown Minimum="1"
+                                                           Maximum="10000"
+                                                           Increment="10"
+                                                           FormatString="F0"
+                                                           Value="{Binding DataManagerFastUpdateIntervalMs, Mode=TwoWay}" />
+                                        </StackPanel>
+                                    </suki:GlassCard>
+
+                                    <suki:GlassCard Grid.Column="1" Padding="14">
+                                        <StackPanel Spacing="8">
+                                            <TextBlock FontWeight="SemiBold" Text="Slow poll interval (ms)" />
+                                            <TextBlock Opacity="0.8"
+                                                       Text="Used for lobby and less time-sensitive data."
+                                                       TextWrapping="Wrap" />
+                                            <NumericUpDown Minimum="1"
+                                                           Maximum="10000"
+                                                           Increment="10"
+                                                           FormatString="F0"
+                                                           Value="{Binding DataManagerSlowUpdateIntervalMs, Mode=TwoWay}" />
+                                        </StackPanel>
+                                    </suki:GlassCard>
+                                </Grid>
+                            </StackPanel>
+                        </suki:GlassCard>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -166,6 +205,43 @@ mc:Ignorable="d">
                                           ItemsSource="{Binding LobbyScenarioOptions}"
                                           SelectedItem="{Binding LobbyScenarioMatchFilter, Mode=TwoWay}" />
                                 <TextBlock Opacity="0.8" Text="Lobby title matching still uses text. Scenario matching now uses an exact scenario selection from the known enum values." TextWrapping="Wrap" />
+                            </StackPanel>
+                        </suki:GlassCard>
+
+                        <TextBlock Foreground="IndianRed" Text="{Binding ValidationMessage}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Reports">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="18" Spacing="14">
+                        <suki:GlassCard Padding="18">
+                            <StackPanel Spacing="10">
+                                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Run Report Generation" />
+                                <TextBlock Opacity="0.8"
+                                           Text="When enabled, a report is written to the configured output directory at the end of each scenario run."
+                                           TextWrapping="Wrap" />
+
+                                <CheckBox Content="Generate run reports"
+                                          IsChecked="{Binding GenerateRunReports}" />
+
+                                <Border Height="1" Margin="0,4,0,4" Background="{DynamicResource SukiControlBorderBrush}" />
+
+                                <TextBlock FontWeight="SemiBold" Text="Output Formats" />
+                                <TextBlock Opacity="0.8"
+                                           Text="Select which file formats to write. At least one format should be enabled when generation is active."
+                                           TextWrapping="Wrap" />
+
+                                <CheckBox Content="Markdown (.md) — quick text inspection  /  llm summary"
+                                          IsChecked="{Binding ReportWriteMarkdown}"
+                                          IsEnabled="{Binding GenerateRunReports}" />
+                                <CheckBox Content="CSV (.csv) — machine-learning / data analysis"
+                                          IsChecked="{Binding ReportWriteCsv}"
+                                          IsEnabled="{Binding GenerateRunReports}" />
+                                <CheckBox Content="HTML (.html) — rich interactive inspection"
+                                          IsChecked="{Binding ReportWriteHtml}"
+                                          IsEnabled="{Binding GenerateRunReports}" />
                             </StackPanel>
                         </suki:GlassCard>
 

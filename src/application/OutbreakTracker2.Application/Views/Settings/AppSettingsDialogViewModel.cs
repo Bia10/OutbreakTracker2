@@ -138,6 +138,26 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private string _lobbyScenarioMatchFilter = string.Empty;
 
+    [ObservableProperty]
+    private bool _generateRunReports;
+
+    [ObservableProperty]
+    private bool _reportWriteMarkdown;
+
+    [ObservableProperty]
+    private bool _reportWriteCsv;
+
+    [ObservableProperty]
+    private bool _reportWriteHtml;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private int _dataManagerFastUpdateIntervalMs;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private int _dataManagerSlowUpdateIntervalMs;
+
     public AppSettingsDialogViewModel(
         IAppSettingsService settingsService,
         ISukiToastManager toastManager,
@@ -272,6 +292,10 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
 
     partial void OnLobbyScenarioMatchFilterChanged(string value) => UpdateValidationMessage();
 
+    partial void OnDataManagerFastUpdateIntervalMsChanged(int value) => UpdateValidationMessage();
+
+    partial void OnDataManagerSlowUpdateIntervalMsChanged(int value) => UpdateValidationMessage();
+
     private bool CanSave() => string.IsNullOrWhiteSpace(ValidationMessage);
 
     private void Load(OutbreakTrackerSettings settings)
@@ -288,6 +312,8 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
             EnemyAlertRuleSettings enemies = alertRules.Enemies ?? new();
             DoorAlertRuleSettings doors = alertRules.Doors ?? new();
             LobbyAlertRuleSettings lobby = alertRules.Lobby ?? new();
+            RunReportSettings runReports = settings.RunReports ?? new();
+            DataManagerSettings dataManager = settings.DataManager ?? new();
 
             EnableToastAlerts = notifications.EnableToastAlerts;
             ShowGameplayUiDuringTransitions = display.ShowGameplayUiDuringTransitions;
@@ -326,6 +352,14 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
             LobbyNameMatchFilter = lobby.NameMatchFilter ?? string.Empty;
             LobbyScenarioMatchCreated = lobby.ScenarioMatchCreated;
             LobbyScenarioMatchFilter = NormalizeScenarioSelection(lobby.ScenarioMatchFilter);
+
+            GenerateRunReports = runReports.GenerateRunReports;
+            ReportWriteMarkdown = runReports.WriteMarkdown;
+            ReportWriteCsv = runReports.WriteCsv;
+            ReportWriteHtml = runReports.WriteHtml;
+
+            DataManagerFastUpdateIntervalMs = dataManager.FastUpdateIntervalMs;
+            DataManagerSlowUpdateIntervalMs = dataManager.SlowUpdateIntervalMs;
         }
         finally
         {
@@ -392,6 +426,18 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
                     ScenarioMatchCreated = LobbyScenarioMatchCreated,
                     ScenarioMatchFilter = NormalizeScenarioSelection(LobbyScenarioMatchFilter),
                 },
+            },
+            RunReports = new RunReportSettings
+            {
+                GenerateRunReports = GenerateRunReports,
+                WriteMarkdown = ReportWriteMarkdown,
+                WriteCsv = ReportWriteCsv,
+                WriteHtml = ReportWriteHtml,
+            },
+            DataManager = new DataManagerSettings
+            {
+                FastUpdateIntervalMs = DataManagerFastUpdateIntervalMs,
+                SlowUpdateIntervalMs = DataManagerSlowUpdateIntervalMs,
             },
         };
 
