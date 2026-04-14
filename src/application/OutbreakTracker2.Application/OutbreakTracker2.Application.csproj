@@ -50,6 +50,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" />
     <PackageReference Include="ProcessX" />
     <PackageReference Include="R3Extensions.Avalonia" />
+    <PackageReference Include="Sep" />
     <PackageReference Include="Serilog.Enrichers.Environment" />
     <PackageReference Include="Serilog.Enrichers.Process" />
     <PackageReference Include="Serilog.Enrichers.Thread" />
