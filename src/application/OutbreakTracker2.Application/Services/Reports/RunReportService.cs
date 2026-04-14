@@ -300,18 +300,24 @@ public sealed class RunReportService : IRunReportService
     }
 
     // PickedUp encodes the player slot as a 1-based index (1 = slot 0, 2 = slot 1, …).
-    // Returns the player's name if the slot is known, otherwise an empty string so the caller
-    // can emit an anonymous event rather than inventing a fake player name.
+    // Resolves against all enabled players (including NPC-controlled slots with IsInGame=false).
+    // Returns an empty string and logs a warning only if the slot is genuinely unresolvable — that is a bug.
     private string ResolvePickupHolderName(short pickedUp)
     {
         int slotIndex = pickedUp - 1;
-        if (slotIndex >= 0 && slotIndex < _processingState.ActivePlayersBySlot.Length)
+        if (slotIndex >= 0 && slotIndex < _processingState.AllEnabledPlayersBySlot.Length)
         {
-            DecodedInGamePlayer? player = _processingState.ActivePlayersBySlot[slotIndex];
+            DecodedInGamePlayer? player = _processingState.AllEnabledPlayersBySlot[slotIndex];
             if (player is not null && !string.IsNullOrEmpty(player.Name))
                 return player.Name;
         }
 
+        _logger.LogWarning(
+            "Could not resolve holder name for item PickedUp={PickedUp}: slot index {SlotIndex} has no enabled player. "
+                + "This indicates a data synchronization issue or an unexpected game state.",
+            pickedUp,
+            slotIndex
+        );
         return string.Empty;
     }
 
