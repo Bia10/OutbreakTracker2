@@ -936,6 +936,86 @@ public sealed class RunReportServiceTests
             .IsTrue();
     }
 
+    // ── Door HP reset ─────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task DoorDamagedEvent_ReportsLethalDamage_WhenDoorHpResetsAfterReachingZero()
+    {
+        // RE: Outbreak doors don't actually die — when HP reaches 0 the game resets the door to
+        // 500 HP and opens it. Because the poller samples at intervals, we may see the change as
+        // OldHp=200, NewHp=500, which causes ushort subtraction to underflow (65236 instead of 200).
+        // The processor should clamp NewHp to 0 whenever curr.Hp > prev.Hp so that the damage
+        // event correctly reports 200 → 0, damage = 200.
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(playerId)));
+
+        Ulid doorId = Ulid.NewUlid();
+        DecodedDoor damagedDoor = new()
+        {
+            Id = doorId,
+            Status = "Locked",
+            Hp = 200,
+            Flag = 1,
+            SlotId = 9,
+        };
+        // Simulate the poll catching the door after it reset: HP went 200 → 0 → 500
+        DecodedDoor resetDoor = damagedDoor with
+        {
+            Hp = 500,
+            Status = "Unlocked",
+        };
+
+        registry.DoorTracker.ChangesSource.Push(Changed(damagedDoor, resetDoor));
+
+        DoorDamagedEvent? evt = received.OfType<DoorDamagedEvent>().FirstOrDefault();
+        await Assert.That(evt).IsNotNull();
+        await Assert.That(evt!.OldHp).IsEqualTo((ushort)200);
+        // NewHp must be clamped to 0, not the raw reset value (500)
+        await Assert.That(evt.NewHp).IsEqualTo((ushort)0);
+        await Assert.That(evt.Damage).IsEqualTo((ushort)200);
+    }
+
+    [Test]
+    public async Task DoorDamagedEvent_ReportsActualDamage_ForNormalDamageHit()
+    {
+        // Ensure that normal door damage (HP decreasing) is still reported accurately.
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(playerId)));
+
+        Ulid doorId = Ulid.NewUlid();
+        DecodedDoor before = new()
+        {
+            Id = doorId,
+            Status = "Locked",
+            Hp = 800,
+            Flag = 1,
+            SlotId = 9,
+        };
+        DecodedDoor after = before with { Hp = 500 };
+
+        registry.DoorTracker.ChangesSource.Push(Changed(before, after));
+
+        DoorDamagedEvent? evt = received.OfType<DoorDamagedEvent>().FirstOrDefault();
+        await Assert.That(evt).IsNotNull();
+        await Assert.That(evt!.OldHp).IsEqualTo((ushort)800);
+        await Assert.That(evt.NewHp).IsEqualTo((ushort)500);
+        await Assert.That(evt.Damage).IsEqualTo((ushort)300);
+    }
+
     private sealed class FakeTrackerRegistry : ITrackerRegistry, IDisposable
     {
         public FakeEntityTracker<DecodedEnemy> EnemyTracker { get; } = new();
