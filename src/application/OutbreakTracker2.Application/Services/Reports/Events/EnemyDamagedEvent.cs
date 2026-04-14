@@ -16,7 +16,7 @@ public sealed record EnemyDamagedEvent(
 
     public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
         Invariant(
-            $"Enemy **{EnemyName}** damaged: {OldHp} → {NewHp}/{MaxHp} (-{Damage}) ({RoomName(scenario, RoomId)}){FormatContributions(ContributingPlayers)}"
+            $"Enemy **{EnemyName}** damaged: {OldHp} → {NewHp} ({RoomName(scenario, RoomId)}){FormatContributions(ContributingPlayers)}"
         );
 
     internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);

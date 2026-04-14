@@ -11,7 +11,7 @@ public sealed record ItemQuantityChangedEvent(
 {
     public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
         Invariant(
-            $"**{TypeName}** (slot {SlotIndex}) quantity: {OldQuantity} → **{NewQuantity}** ({RoomName(scenario, RoomId)})"
+            $"**{TypeName}** at scenario slot {SlotIndex} at {RoomName(scenario, RoomId)} changed quantity: {OldQuantity} → **{NewQuantity}**"
         );
 
     internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
