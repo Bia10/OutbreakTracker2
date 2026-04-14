@@ -1,40 +1,61 @@
 ﻿using System.Runtime.ExceptionServices;
 using Microsoft.Extensions.Logging;
+using OutbreakTracker2.Application.Services.Settings;
 
 namespace OutbreakTracker2.Application.Services.Reports;
 
 public sealed class CompositeRunReportWriter : IRunReportWriter
 {
+    private readonly CsvRunReportWriter _csvWriter;
     private readonly HtmlRunReportWriter _htmlWriter;
+    private readonly IAppSettingsService _appSettingsService;
     private readonly ILogger<CompositeRunReportWriter> _logger;
     private readonly MarkdownRunReportWriter _markdownWriter;
-    private readonly RunReportOptions _options;
 
     public CompositeRunReportWriter(
         MarkdownRunReportWriter markdownWriter,
         HtmlRunReportWriter htmlWriter,
-        RunReportOptions options,
+        CsvRunReportWriter csvWriter,
+        IAppSettingsService appSettingsService,
         ILogger<CompositeRunReportWriter> logger
     )
     {
         _markdownWriter = markdownWriter;
         _htmlWriter = htmlWriter;
-        _options = options;
+        _csvWriter = csvWriter;
+        _appSettingsService = appSettingsService;
         _logger = logger;
     }
 
     public async Task WriteAsync(RunReport report, CancellationToken cancellationToken = default)
     {
+        RunReportSettings reportSettings = _appSettingsService.Current.RunReports;
+
+        if (!reportSettings.GenerateRunReports)
+        {
+            _logger.LogInformation(
+                "Run report generation is disabled in settings — skipping for session {SessionId}.",
+                report.SessionId
+            );
+            return;
+        }
+
         List<Exception>? failures = null;
         bool anyWriterEnabled = false;
 
-        if (_options.WriteMarkdown)
+        if (reportSettings.WriteMarkdown)
         {
             anyWriterEnabled = true;
             await TryWriteAsync(_markdownWriter, "markdown", report, cancellationToken).ConfigureAwait(false);
         }
 
-        if (_options.WriteHtml)
+        if (reportSettings.WriteCsv)
+        {
+            anyWriterEnabled = true;
+            await TryWriteAsync(_csvWriter, "csv", report, cancellationToken).ConfigureAwait(false);
+        }
+
+        if (reportSettings.WriteHtml)
         {
             anyWriterEnabled = true;
             await TryWriteAsync(_htmlWriter, "html", report, cancellationToken).ConfigureAwait(false);

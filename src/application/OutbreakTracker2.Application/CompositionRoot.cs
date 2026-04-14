@@ -168,6 +168,7 @@ internal static class CompositionRoot
         services.AddSingleton<IRunReportService, RunReportService>();
         services.AddSingleton<MarkdownRunReportWriter>();
         services.AddSingleton<HtmlRunReportWriter>();
+        services.AddSingleton<CsvRunReportWriter>();
         services.AddSingleton<IRunReportWriter, CompositeRunReportWriter>();
 
         services.AddSingleton<ILogDataStorageService, LogDataStorageService>();
@@ -297,13 +298,18 @@ internal static class CompositionRoot
 
     private static void AddDataServices(IServiceCollection services, IConfiguration configuration)
     {
-        DataManagerOptions dataManagerOptions =
-            configuration.GetSection(DataManagerOptions.SectionName).Get<DataManagerOptions>()
-            ?? new DataManagerOptions();
         TextureAtlasOptions textureAtlasOptions = GetTextureAtlasOptions(configuration);
 
         services.AddSingleton<IEEmemMemory, EEmemMemory>();
-        services.AddSingleton(dataManagerOptions);
+        services.AddSingleton<DataManagerOptions>(sp =>
+        {
+            DataManagerSettings userSettings = sp.GetRequiredService<IAppSettingsService>().Current.DataManager;
+            return new DataManagerOptions
+            {
+                FastUpdateIntervalMs = userSettings.FastUpdateIntervalMs,
+                SlowUpdateIntervalMs = userSettings.SlowUpdateIntervalMs,
+            };
+        });
         services.AddSingleton<IDataManager, DataManager>();
         services.AddSingleton<IDataObservableSource>(sp => sp.GetRequiredService<IDataManager>());
         services.AddSingleton<IDataSnapshot>(sp => sp.GetRequiredService<IDataManager>());
