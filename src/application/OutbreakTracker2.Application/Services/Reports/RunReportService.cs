@@ -300,7 +300,8 @@ public sealed class RunReportService : IRunReportService
     }
 
     // PickedUp encodes the player slot as a 1-based index (1 = slot 0, 2 = slot 1, …).
-    // Returns the player's name if the slot is known, otherwise a fallback label.
+    // Returns the player's name if the slot is known, otherwise an empty string so the caller
+    // can emit an anonymous event rather than inventing a fake player name.
     private string ResolvePickupHolderName(short pickedUp)
     {
         int slotIndex = pickedUp - 1;
@@ -311,7 +312,7 @@ public sealed class RunReportService : IRunReportService
                 return player.Name;
         }
 
-        return $"Player {pickedUp}";
+        return string.Empty;
     }
 
     public void Dispose()
