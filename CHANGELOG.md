@@ -10,6 +10,27 @@ To create a release: go to **Actions → Release → Run workflow** and enter a 
 
 ## [Unreleased]
 
+---
+
+## [v1.2.0]  — 2026-04-14
+
+### Added
+- Tests: `ClientAlreadyRunningViewModelTests` and `InGameEnemyViewModelTests` new unit test files
+
+### Changed
+- Reports: `RunReportEnemyDiffProcessor` — inject `ILogger`; add `MaxReportableEnemyHp` / `MaxReportableEnemyDamage` validation constants; guard spawns via `TryValidateSpawn` and kills via `IsReportableMaxHp`; log faulty events instead of silently emitting them
+- Reports: `HtmlRunReportWriter` — interactive event density timeline with focus/reset bar, accessibility roles, and hover caption; histogram scale labels added; default group-by switched to "Event type"
+- Reports: `RunReportService` — forward logger to `RunReportEnemyDiffProcessor`- Views: `ClientAlreadyRunningViewModel` — convert from primary constructor to explicit constructor; expose `RunningProcessesView` as `NotifyCollectionChangedSynchronizedViewList` for safe cross-thread binding
+- Views: `ClientAlreadyRunningView` — bind `ItemsControl` to `RunningProcessesView`
+
+### Fixed
+- Enemy: `EnemyStatusUtility.GetHealthStatusForFileTwo` — replace `nameId == 0` guard with `IsEmptyFileTwoSlot(slotId, maxHp)` to correctly detect empty file-two slots
+- Enemy: `InGameEnemyViewModel.GetEnemyColorForFileTwo` — normalize empty-slot fallback to `InvalidSlotColor` constant; remove dead commented-out code
+
+---
+
+## [v1.1.0] — 2026-04-13 
+
 ### Added
 - Settings: `RunReportSettings` record — per-user controls for report generation toggle and per-format enable flags (`GenerateRunReports`, `WriteMarkdown`, `WriteCsv`, `WriteHtml`)
 - Settings: `DataManagerSettings` record — per-user polling interval overrides (`FastUpdateIntervalMs`, `SlowUpdateIntervalMs`)
