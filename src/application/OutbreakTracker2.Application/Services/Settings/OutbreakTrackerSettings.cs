@@ -12,6 +12,10 @@ public sealed record OutbreakTrackerSettings
 
     public AlertRuleSettings AlertRules { get; init; } = new();
 
+    public RunReportSettings RunReports { get; init; } = new();
+
+    public DataManagerSettings DataManager { get; init; } = new();
+
     public bool TryValidate([NotNullWhen(false)] out string? error)
     {
         if (Notifications is null)
@@ -41,6 +45,18 @@ public sealed record OutbreakTrackerSettings
         if (AlertRules is null)
         {
             error = "OutbreakTracker:AlertRules cannot be null.";
+            return false;
+        }
+
+        if (RunReports is null)
+        {
+            error = "OutbreakTracker:RunReports cannot be null.";
+            return false;
+        }
+
+        if (DataManager is null)
+        {
+            error = "OutbreakTracker:DataManager cannot be null.";
             return false;
         }
 
@@ -101,6 +117,18 @@ public sealed record OutbreakTrackerSettings
         {
             error =
                 "OutbreakTracker:AlertRules:Lobby:ScenarioMatchFilter cannot be empty when ScenarioMatchCreated is enabled.";
+            return false;
+        }
+
+        if (DataManager.FastUpdateIntervalMs <= 0)
+        {
+            error = "OutbreakTracker:DataManager:FastUpdateIntervalMs must be greater than 0.";
+            return false;
+        }
+
+        if (DataManager.SlowUpdateIntervalMs <= 0)
+        {
+            error = "OutbreakTracker:DataManager:SlowUpdateIntervalMs must be greater than 0.";
             return false;
         }
 
