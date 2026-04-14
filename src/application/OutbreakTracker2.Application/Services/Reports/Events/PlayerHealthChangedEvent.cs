@@ -19,15 +19,15 @@ public sealed record PlayerHealthChangedEvent(
     {
         if (IsDamage)
             return Invariant(
-                $"Player **{PlayerName}** took **{OldHealth - NewHealth} damage** ({OldHealth} → {NewHealth}/{MaxHealth})"
+                $"Player **{PlayerName}** took **{OldHealth - NewHealth} damage** ({OldHealth} → {NewHealth})"
             );
 
         if (IsHeal)
             return Invariant(
-                $"Player **{PlayerName}** healed **+{NewHealth - OldHealth} HP** ({OldHealth} → {NewHealth}/{MaxHealth})"
+                $"Player **{PlayerName}** healed **+{NewHealth - OldHealth} HP** ({OldHealth} → {NewHealth})"
             );
 
-        return Invariant($"Player **{PlayerName}** health: {OldHealth} → **{NewHealth}/{MaxHealth}**");
+        return Invariant($"Player **{PlayerName}** health: {OldHealth} → **{NewHealth}**");
     }
 
     internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);

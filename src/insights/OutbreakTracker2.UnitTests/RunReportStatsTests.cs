@@ -109,4 +109,92 @@ public sealed class RunReportStatsTests
         await Assert.That(stats.KillsContributedByPlayer["Jim"]).IsEqualTo(1);
         await Assert.That(stats.Duration).IsEqualTo(TimeSpan.FromMinutes(5));
     }
+
+    [Test]
+    public async Task EnemyDamage_IsNotAttributed_WhenAllContributingPlayersHaveZeroPower()
+    {
+        // Ensures that Power=0 players (e.g. downed/loading) do not receive damage credit.
+        // Previously the fallback `1f / players.Count` would distribute damage equally even
+        // when no player had positive Power, inflating group-performance stats with unearned damage.
+        DateTimeOffset start = new(2025, 1, 15, 10, 0, 0, TimeSpan.Zero);
+        Ulid playerOneId = Ulid.NewUlid();
+        Ulid playerTwoId = Ulid.NewUlid();
+
+        IReadOnlyList<(Ulid PlayerId, string PlayerName, float Power)> zeroPowerContributors =
+        [
+            (playerOneId, "Kevin", 0f),
+            (playerTwoId, "Jim", 0f),
+        ];
+
+        RunReport report = new(
+            Ulid.NewUlid(),
+            "wild-things",
+            "Wild Things",
+            Scenario.WildThings,
+            start,
+            start.AddMinutes(1),
+            [
+                new EnemyDamagedEvent(
+                    start.AddSeconds(1),
+                    Ulid.NewUlid(),
+                    "Zombie",
+                    2,
+                    1,
+                    200,
+                    150,
+                    200,
+                    zeroPowerContributors
+                ),
+            ]
+        );
+
+        RunReportStats stats = report.ComputeStats();
+
+        await Assert.That(stats.TotalEnemyDamageEvents).IsEqualTo(1);
+        await Assert.That(stats.EnemyDamageContributedByPlayer.ContainsKey("Kevin")).IsFalse();
+        await Assert.That(stats.EnemyDamageContributedByPlayer.ContainsKey("Jim")).IsFalse();
+    }
+
+    [Test]
+    public async Task EnemyDamage_IsAttributedProportionally_WhenMixedPowerContributors()
+    {
+        // Sanity-check: a player with Power=0 mixed with a positive-Power player must not
+        // receive a damage share; the positive-Power player gets 100% of the attribution.
+        DateTimeOffset start = new(2025, 1, 15, 10, 0, 0, TimeSpan.Zero);
+        Ulid aliveId = Ulid.NewUlid();
+        Ulid downedId = Ulid.NewUlid();
+
+        IReadOnlyList<(Ulid PlayerId, string PlayerName, float Power)> mixedContributors =
+        [
+            (aliveId, "Karl", 2.0f),
+            (downedId, "Mark", 0f),
+        ];
+
+        RunReport report = new(
+            Ulid.NewUlid(),
+            "wild-things",
+            "Wild Things",
+            Scenario.WildThings,
+            start,
+            start.AddMinutes(1),
+            [
+                new EnemyDamagedEvent(
+                    start.AddSeconds(1),
+                    Ulid.NewUlid(),
+                    "Zombie",
+                    2,
+                    1,
+                    100,
+                    80,
+                    100,
+                    mixedContributors
+                ),
+            ]
+        );
+
+        RunReportStats stats = report.ComputeStats();
+
+        await Assert.That(stats.EnemyDamageContributedByPlayer["Karl"]).IsEqualTo(20);
+        await Assert.That(stats.EnemyDamageContributedByPlayer.ContainsKey("Mark")).IsFalse();
+    }
 }

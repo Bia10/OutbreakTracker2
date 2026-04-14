@@ -13,6 +13,13 @@ internal sealed class RunReportProcessingState
 
     public ConcurrentDictionary<Ulid, DecodedInGamePlayer> ActivePlayers { get; } = new();
 
+    /// <summary>
+    /// Tracks all enabled players by their slot index, regardless of <c>IsInGame</c> status.
+    /// Used to resolve item pickup/drop holder names, which reference slot indices and may point
+    /// to NPC-controlled slots that have <c>IsEnabled=true</c> but <c>IsInGame=false</c>.
+    /// </summary>
+    public DecodedInGamePlayer?[] AllEnabledPlayersBySlot { get; } = new DecodedInGamePlayer?[GameConstants.MaxPlayers];
+
     public DecodedInGamePlayer?[] ActivePlayersBySlot { get; } = new DecodedInGamePlayer?[GameConstants.MaxPlayers];
 
     public DecodedItem[]? PreviousItems { get; set; }

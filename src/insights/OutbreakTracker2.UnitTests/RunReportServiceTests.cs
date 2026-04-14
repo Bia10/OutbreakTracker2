@@ -769,7 +769,252 @@ public sealed class RunReportServiceTests
         await Assert.That(scenarioProcessor.LastScenario?.Status).IsEqualTo(ScenarioStatus.InGame);
     }
 
-    // ── Fakes ────────────────────────────────────────────────────────────────
+    // ── Item pickup/drop player name resolution ──────────────────────────────
+
+    [Test]
+    public async Task ItemPickedUpEvent_ResolvesHolderName_WhenPlayerIsEnabledButNotInGame()
+    {
+        // Reproduces the "ghost player" bug: a player slot with IsEnabled=true but IsInGame=false
+        // (e.g. an NPC-controlled character) was never in ActivePlayersBySlot, so the old code
+        // fell back to "Player N" and invented a phantom player in the report.
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        // Human player at slot 0 starts the session.
+        Ulid humanId = Ulid.NewUlid();
+        DecodedInGamePlayer humanPlayer = InGamePlayer(humanId) with { SlotIndex = 0, Name = "Karl" };
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(humanPlayer));
+
+        // NPC player: enabled but NOT in-game (AI-controlled slot 2).
+        Ulid npcId = Ulid.NewUlid();
+        DecodedInGamePlayer npcPlayer = new()
+        {
+            Id = npcId,
+            IsEnabled = true,
+            IsInGame = false,
+            Name = "Cindy",
+            SlotIndex = 2,
+            CurHealth = 100,
+            MaxHealth = 100,
+        };
+        registry.PlayerTracker.ChangesSource.Push(Added(npcPlayer));
+
+        // Simulate a ground item transitioning to PickedUp=3 (1-based → slot index 2 = Cindy).
+        DecodedItem[] previousItems =
+        [
+            new DecodedItem
+            {
+                SlotIndex = 0,
+                TypeName = "Green Herb",
+                PickedUp = 0,
+                RoomId = 1,
+            },
+        ];
+        DecodedItem[] currentItems =
+        [
+            new DecodedItem
+            {
+                SlotIndex = 0,
+                TypeName = "Green Herb",
+                PickedUp = 3,
+                RoomId = 1,
+            },
+        ];
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame, Items = previousItems });
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame, Items = currentItems });
+
+        ItemPickedUpEvent? evt = received.OfType<ItemPickedUpEvent>().FirstOrDefault();
+        await Assert.That(evt).IsNotNull();
+        await Assert.That(evt!.PickedUpByName).IsEqualTo("Cindy");
+    }
+
+    [Test]
+    public async Task ItemDroppedEvent_ResolvesHolderName_WhenPlayerIsEnabledButNotInGame()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid humanId = Ulid.NewUlid();
+        DecodedInGamePlayer humanPlayer = InGamePlayer(humanId) with { SlotIndex = 0, Name = "Karl" };
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(humanPlayer));
+
+        Ulid npcId = Ulid.NewUlid();
+        DecodedInGamePlayer npcPlayer = new()
+        {
+            Id = npcId,
+            IsEnabled = true,
+            IsInGame = false,
+            Name = "George",
+            SlotIndex = 3,
+            CurHealth = 100,
+            MaxHealth = 100,
+        };
+        registry.PlayerTracker.ChangesSource.Push(Added(npcPlayer));
+
+        // George (slot 3, PickedUp=4) drops the item.
+        DecodedItem[] previousItems =
+        [
+            new DecodedItem
+            {
+                SlotIndex = 0,
+                TypeName = "Knife",
+                PickedUp = 4,
+                RoomId = 2,
+            },
+        ];
+        DecodedItem[] currentItems =
+        [
+            new DecodedItem
+            {
+                SlotIndex = 0,
+                TypeName = "Knife",
+                PickedUp = 0,
+                RoomId = 2,
+            },
+        ];
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame, Items = previousItems });
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame, Items = currentItems });
+
+        ItemDroppedEvent? evt = received.OfType<ItemDroppedEvent>().FirstOrDefault();
+        await Assert.That(evt).IsNotNull();
+        await Assert.That(evt!.PreviousHolder).IsEqualTo("George");
+    }
+
+    [Test]
+    public async Task ItemPickedUpEvent_LogsWarning_WhenPickedUpSlotIsUnresolvable()
+    {
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        RecordingLogger<RunReportService> logger = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource, logger: logger);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid humanId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(humanId) with { SlotIndex = 0 }));
+
+        // PickedUp=3 but no player at slot index 2.
+        DecodedItem[] previousItems =
+        [
+            new DecodedItem
+            {
+                SlotIndex = 0,
+                TypeName = "Shotgun Shells",
+                PickedUp = 0,
+                RoomId = 1,
+            },
+        ];
+        DecodedItem[] currentItems =
+        [
+            new DecodedItem
+            {
+                SlotIndex = 0,
+                TypeName = "Shotgun Shells",
+                PickedUp = 3,
+                RoomId = 1,
+            },
+        ];
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame, Items = previousItems });
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame, Items = currentItems });
+
+        ItemPickedUpEvent? evt = received.OfType<ItemPickedUpEvent>().FirstOrDefault();
+        await Assert.That(evt).IsNotNull();
+        // Name is empty — event uses anonymous description, no ghost player created.
+        await Assert.That(evt!.PickedUpByName).IsEmpty();
+        // A warning must be logged so the developer knows this is a bug.
+        await Assert
+            .That(logger.Messages.Any(m => m.Contains("Could not resolve holder name", StringComparison.Ordinal)))
+            .IsTrue();
+    }
+
+    // ── Door HP reset ─────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task DoorDamagedEvent_ReportsLethalDamage_WhenDoorHpResetsAfterReachingZero()
+    {
+        // RE: Outbreak doors don't actually die — when HP reaches 0 the game resets the door to
+        // 500 HP and opens it. Because the poller samples at intervals, we may see the change as
+        // OldHp=200, NewHp=500, which causes ushort subtraction to underflow (65236 instead of 200).
+        // The processor should clamp NewHp to 0 whenever curr.Hp > prev.Hp so that the damage
+        // event correctly reports 200 → 0, damage = 200.
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(playerId)));
+
+        Ulid doorId = Ulid.NewUlid();
+        DecodedDoor damagedDoor = new()
+        {
+            Id = doorId,
+            Status = "Locked",
+            Hp = 200,
+            Flag = 1,
+            SlotId = 9,
+        };
+        // Simulate the poll catching the door after it reset: HP went 200 → 0 → 500
+        DecodedDoor resetDoor = damagedDoor with
+        {
+            Hp = 500,
+            Status = "Unlocked",
+        };
+
+        registry.DoorTracker.ChangesSource.Push(Changed(damagedDoor, resetDoor));
+
+        DoorDamagedEvent? evt = received.OfType<DoorDamagedEvent>().FirstOrDefault();
+        await Assert.That(evt).IsNotNull();
+        await Assert.That(evt!.OldHp).IsEqualTo((ushort)200);
+        // NewHp must be clamped to 0, not the raw reset value (500)
+        await Assert.That(evt.NewHp).IsEqualTo((ushort)0);
+        await Assert.That(evt.Damage).IsEqualTo((ushort)200);
+    }
+
+    [Test]
+    public async Task DoorDamagedEvent_ReportsActualDamage_ForNormalDamageHit()
+    {
+        // Ensure that normal door damage (HP decreasing) is still reported accurately.
+        using FakeTrackerRegistry registry = new();
+        using FakeDataSource dataSource = new();
+        List<RunEvent> received = [];
+        using RunReportService svc = CreateService(registry, dataSource);
+        using IDisposable sub = svc.Events.Subscribe(received.Add);
+
+        Ulid playerId = Ulid.NewUlid();
+        dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
+        registry.PlayerTracker.ChangesSource.Push(Added(InGamePlayer(playerId)));
+
+        Ulid doorId = Ulid.NewUlid();
+        DecodedDoor before = new()
+        {
+            Id = doorId,
+            Status = "Locked",
+            Hp = 800,
+            Flag = 1,
+            SlotId = 9,
+        };
+        DecodedDoor after = before with { Hp = 500 };
+
+        registry.DoorTracker.ChangesSource.Push(Changed(before, after));
+
+        DoorDamagedEvent? evt = received.OfType<DoorDamagedEvent>().FirstOrDefault();
+        await Assert.That(evt).IsNotNull();
+        await Assert.That(evt!.OldHp).IsEqualTo((ushort)800);
+        await Assert.That(evt.NewHp).IsEqualTo((ushort)500);
+        await Assert.That(evt.Damage).IsEqualTo((ushort)300);
+    }
 
     private sealed class FakeTrackerRegistry : ITrackerRegistry, IDisposable
     {

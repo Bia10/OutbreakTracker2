@@ -28,15 +28,22 @@ internal sealed class RunReportDoorDiffProcessor : IRunReportCollectionDiffProce
                 );
 
             if (change.Previous.Hp != change.Current.Hp)
+            {
+                // When curr.Hp > prev.Hp the door was killed (reached 0) and reset to its default HP
+                // before the next poll. The actual lethal hit took the door from prev.Hp to 0, so we
+                // clamp NewHp to 0 to prevent the ushort subtraction from underflowing (e.g. 200 - 500
+                // would wrap to 65236 instead of the correct 200 damage).
+                ushort reportedNewHp = change.Current.Hp > change.Previous.Hp ? (ushort)0 : change.Current.Hp;
                 context.Emit(
                     new DoorDamagedEvent(
                         now,
                         change.Current.Id,
                         change.Current.SlotId,
                         change.Previous.Hp,
-                        change.Current.Hp
+                        reportedNewHp
                     )
                 );
+            }
 
             if (change.Previous.Flag != change.Current.Flag)
                 context.Emit(

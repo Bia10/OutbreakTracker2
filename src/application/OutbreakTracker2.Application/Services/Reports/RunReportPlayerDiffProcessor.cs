@@ -16,14 +16,24 @@ internal sealed class RunReportPlayerDiffProcessor : IRunReportCollectionDiffPro
         ScenarioStatus currentScenarioStatus = state.LastScenarioStatus;
 
         foreach (DecodedInGamePlayer player in diff.Added)
+        {
+            if (player.IsEnabled)
+                state.AllEnabledPlayersBySlot[player.SlotIndex] = player;
+
             if (player.IsInGame)
             {
                 state.ActivePlayers[player.Id] = player;
                 state.ActivePlayersBySlot[player.SlotIndex] = player;
             }
+        }
 
         foreach (EntityChange<DecodedInGamePlayer> change in diff.Changed)
         {
+            if (change.Current.IsEnabled)
+                state.AllEnabledPlayersBySlot[change.Current.SlotIndex] = change.Current;
+            else
+                state.AllEnabledPlayersBySlot[change.Current.SlotIndex] = null;
+
             if (change.Current.IsInGame)
             {
                 state.ActivePlayers[change.Current.Id] = change.Current;
@@ -41,6 +51,8 @@ internal sealed class RunReportPlayerDiffProcessor : IRunReportCollectionDiffPro
         if (!isTransitional)
             foreach (DecodedInGamePlayer player in diff.Removed)
             {
+                state.AllEnabledPlayersBySlot[player.SlotIndex] = null;
+
                 if (state.ActivePlayers.TryRemove(player.Id, out _))
                 {
                     state.ActivePlayersBySlot[player.SlotIndex] = null;

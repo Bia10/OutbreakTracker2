@@ -150,9 +150,17 @@ internal sealed class RunReportStatsAccumulator : IRunEventStatsAccumulator
         foreach ((_, _, float power) in players)
             totalPower += power;
 
+        // No player has positive Power (e.g. all are downed/loading) — treat the event as
+        // unattributed so that scripted or environmental damage does not inflate player stats.
+        if (totalPower <= 0f)
+            return;
+
         foreach ((_, string name, float power) in players)
         {
-            float share = totalPower > 0f ? power / totalPower : 1f / players.Count;
+            if (power <= 0f)
+                continue;
+
+            float share = power / totalPower;
             int credited = (int)MathF.Round(totalDamage * share);
             accumulator[name] = accumulator.GetValueOrDefault(name) + credited;
         }

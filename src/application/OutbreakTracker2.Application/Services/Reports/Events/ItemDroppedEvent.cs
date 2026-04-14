@@ -13,9 +13,9 @@ public sealed record ItemDroppedEvent(
 {
     public override string Describe(OutbreakTracker2.Outbreak.Enums.Scenario scenario) =>
         string.IsNullOrEmpty(PreviousHolder)
-            ? Invariant($"**{TypeName}** (item slot {SlotIndex}) returned to {RoomName(scenario, RoomId)}")
+            ? Invariant($"**{TypeName}** placed at scenario slot {SlotIndex} in {RoomName(scenario, RoomId)}")
             : Invariant(
-                $"**{PreviousHolder}** returned **{TypeName}** (item slot {SlotIndex}) to {RoomName(scenario, RoomId)}"
+                $"**{PreviousHolder}** put **{TypeName}** at scenario slot {SlotIndex} in {RoomName(scenario, RoomId)}"
             );
 
     internal override void Accumulate(IRunEventStatsAccumulator accumulator) => accumulator.Accumulate(this);
