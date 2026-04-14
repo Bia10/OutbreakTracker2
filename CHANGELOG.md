@@ -11,14 +11,23 @@ To create a release: go to **Actions → Release → Run workflow** and enter a 
 ## [Unreleased]
 
 ### Added
+- Settings: `RunReportSettings` record — per-user controls for report generation toggle and per-format enable flags (`GenerateRunReports`, `WriteMarkdown`, `WriteCsv`, `WriteHtml`)
+- Settings: `DataManagerSettings` record — per-user polling interval overrides (`FastUpdateIntervalMs`, `SlowUpdateIntervalMs`)
+- Reports: `CsvRunReportWriter` — flat-row CSV output via the `Sep` library; one row per `RunEvent` with session metadata columns
+- Views: Settings dialog — new **Reports** tab with run-report generation toggle and per-format checkboxes
+- Views: Settings dialog — **Memory Polling** section with fast/slow interval `NumericUpDown` controls
 - Tests: `ClientAlreadyRunningViewModelTests` and `InGameEnemyViewModelTests` new unit test files
 
 ### Changed
+- Reports: `CompositeRunReportWriter` — reads format enablement and generation toggle from `IAppSettingsService` (via `RunReportSettings`) instead of the `RunReportOptions` DI object; `CsvRunReportWriter` injected as a third writer
+- Reports: `RunReportOptions` — `WriteMarkdown` and `WriteHtml` flags removed; options now carries only `OutputDirectory`
 - Reports: `RunReportEnemyDiffProcessor` — inject `ILogger`; add `MaxReportableEnemyHp` / `MaxReportableEnemyDamage` validation constants; guard spawns via `TryValidateSpawn` and kills via `IsReportableMaxHp`; log faulty events instead of silently emitting them
 - Reports: `HtmlRunReportWriter` — interactive event density timeline with focus/reset bar, accessibility roles, and hover caption; histogram scale labels added; default group-by switched to "Event type"
 - Reports: `RunReportService` — forward logger to `RunReportEnemyDiffProcessor`
+- Services: `DataManagerOptions` resolved lazily from `IAppSettingsService` at startup so user overrides are respected without a config-file edit
 - Views: `ClientAlreadyRunningViewModel` — convert from primary constructor to explicit constructor; expose `RunningProcessesView` as `NotifyCollectionChangedSynchronizedViewList` for safe cross-thread binding
 - Views: `ClientAlreadyRunningView` — bind `ItemsControl` to `RunningProcessesView`
+- Tests: `CompositeRunReportWriterTests` — updated to use `FakeAppSettingsService` and new `CsvRunReportWriter` constructor; `WriteCsv` covered by existing matrix
 
 ### Fixed
 - Enemy: `EnemyStatusUtility.GetHealthStatusForFileTwo` — replace `nameId == 0` guard with `IsEmptyFileTwoSlot(slotId, maxHp)` to correctly detect empty file-two slots
