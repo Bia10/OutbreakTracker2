@@ -113,7 +113,7 @@ jobs:
           exclusions: '*.git* .github/* insights/* .idea/*'
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
         with:
           tag_name: ${{ steps.resolve.outputs.TAG_NAME }}
           name: ${{ steps.resolve.outputs.TAG_NAME }}
@@ -177,7 +177,7 @@ jobs:
           path: '${{ github.workspace }}/publish_output'
 
       - name: Upload artifact to release
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
         with:
           tag_name: ${{ needs.release.outputs.tag_name }}
           files: OutbreakTracker2-${{ needs.release.outputs.version }}-${{ matrix.artifact_suffix }}.zip
