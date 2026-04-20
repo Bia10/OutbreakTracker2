@@ -187,7 +187,13 @@ internal sealed class EnemyDiffPlanner
 
     private static bool IsDead(DecodedEnemy enemy) =>
         EnemyStatusUtility.IsDeadStatus(
-            EnemyStatusUtility.GetHealthStatusForFileTwo(enemy.SlotId, enemy.NameId, enemy.CurHp, enemy.MaxHp)
+            EnemyStatusUtility.GetHealthStatusForFileTwo(
+                enemy.SlotId,
+                enemy.NameId,
+                enemy.CurHp,
+                enemy.MaxHp,
+                enemy.Name
+            )
         );
 
     private static bool IsEnemyBasicallyValid(DecodedEnemy enemy) =>

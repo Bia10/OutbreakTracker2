@@ -45,4 +45,109 @@ public sealed class EnemyStatusUtilityTests
         await Assert.That(status).IsEqualTo("Empty");
         await Assert.That(EnemyStatusUtility.IsDeadStatus(status)).IsFalse();
     }
+
+    [Test]
+    public async Task GetHealthStatusForFileTwo_ReturnsInvincible_ForFireWithMaxHpOne()
+    {
+        string status = EnemyStatusUtility.GetHealthStatusForFileTwo(
+            slotId: 1,
+            nameId: (byte)EnemyType.Fire,
+            curHp: 1,
+            maxHp: 1,
+            enemyName: "Fire"
+        );
+
+        await Assert.That(status).IsEqualTo("Invincible");
+        await Assert.That(EnemyStatusUtility.IsDeadStatus(status)).IsFalse();
+    }
+
+    [Test]
+    public async Task GetHealthStatusForFileTwo_ReturnsExploded_ForMineAtZeroHp()
+    {
+        string status = EnemyStatusUtility.GetHealthStatusForFileTwo(
+            slotId: 1,
+            nameId: (byte)EnemyType.Mine,
+            curHp: 0,
+            maxHp: 100,
+            enemyName: "Mine"
+        );
+
+        await Assert.That(status).IsEqualTo("Exploded");
+        await Assert.That(EnemyStatusUtility.IsDeadStatus(status)).IsTrue();
+    }
+
+    [Test]
+    public async Task GetHealthStatusForFileTwo_ReturnsExploded_ForGasolineTankAtZeroHp()
+    {
+        string status = EnemyStatusUtility.GetHealthStatusForFileTwo(
+            slotId: 1,
+            nameId: (byte)EnemyType.GasolineTank,
+            curHp: 0,
+            maxHp: 100,
+            enemyName: "Gasoline Tank"
+        );
+
+        await Assert.That(status).IsEqualTo("Exploded");
+        await Assert.That(EnemyStatusUtility.IsDeadStatus(status)).IsTrue();
+    }
+
+    [Test]
+    public async Task GetHealthStatusForFileTwo_ReturnsExploded_ForEntityNameContainingCanister()
+    {
+        string status = EnemyStatusUtility.GetHealthStatusForFileTwo(
+            slotId: 1,
+            nameId: 0,
+            curHp: 0,
+            maxHp: 50,
+            enemyName: "Gas Canister"
+        );
+
+        await Assert.That(status).IsEqualTo("Exploded");
+        await Assert.That(EnemyStatusUtility.IsDeadStatus(status)).IsTrue();
+    }
+
+    [Test]
+    public async Task GetHealthStatusForFileTwo_ReturnsExploded_ForEntityNameContainingExplosive()
+    {
+        string status = EnemyStatusUtility.GetHealthStatusForFileTwo(
+            slotId: 1,
+            nameId: 0,
+            curHp: 0,
+            maxHp: 50,
+            enemyName: "Explosive Device"
+        );
+
+        await Assert.That(status).IsEqualTo("Exploded");
+        await Assert.That(EnemyStatusUtility.IsDeadStatus(status)).IsTrue();
+    }
+
+    [Test]
+    public async Task GetHealthStatusForFileTwo_ReturnsExploded_ForEntityNameContainingFuel()
+    {
+        string status = EnemyStatusUtility.GetHealthStatusForFileTwo(
+            slotId: 1,
+            nameId: 0,
+            curHp: 0,
+            maxHp: 50,
+            enemyName: "Fuel Tank"
+        );
+
+        await Assert.That(status).IsEqualTo("Exploded");
+        await Assert.That(EnemyStatusUtility.IsDeadStatus(status)).IsTrue();
+    }
+
+    [Test]
+    public async Task GetHealthStatusForFileTwo_ReturnsDead_ForStandardEnemyWithZeroHp()
+    {
+        string status = EnemyStatusUtility.GetHealthStatusForFileTwo(
+            slotId: 1,
+            nameId: 0,
+            curHp: 0,
+            maxHp: 100,
+            enemyName: "Licker"
+        );
+
+        await Assert.That(status).IsEqualTo("Dead");
+        await Assert.That(EnemyStatusUtility.IsDeadStatus(status)).IsTrue();
+    }
 }
