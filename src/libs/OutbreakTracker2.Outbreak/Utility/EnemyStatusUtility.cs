@@ -5,13 +5,7 @@ namespace OutbreakTracker2.Outbreak.Utility;
 
 public static class EnemyStatusUtility
 {
-    public static string GetHealthStatusForFileOne(
-        int slotId,
-        byte nameId,
-        ushort curHp,
-        ushort maxHp,
-        string? enemyName = null
-    )
+    public static string GetHealthStatusForFileOne(int slotId, byte nameId, ushort curHp, ushort maxHp)
     {
         if (slotId is < 0 or >= GameConstants.MaxEnemies1)
             return $"Invalid enemy SlotId({slotId})";
@@ -26,18 +20,12 @@ public static class EnemyStatusUtility
         {
             0x0 or 0xffff or >= 0x8000 when enemyType is not (EnemyType.Mine or EnemyType.GasolineTank) => "Dead",
             0xffff when maxHp is 0x1 && enemyType is EnemyType.Mine => "Destroyed",
-            0x0 when IsExplosiveEntity(enemyType, enemyName) => "Exploded",
+            0x0 when enemyType is EnemyType.GasolineTank => "Exploded",
             _ => $"{curHp}",
         };
     }
 
-    public static string GetHealthStatusForFileTwo(
-        int slotId,
-        byte nameId,
-        ushort curHp,
-        ushort maxHp,
-        string? enemyName = null
-    )
+    public static string GetHealthStatusForFileTwo(int slotId, byte nameId, ushort curHp, ushort maxHp)
     {
         if (IsEmptyFileTwoSlot(slotId, maxHp))
             return "Empty";
@@ -52,7 +40,7 @@ public static class EnemyStatusUtility
         {
             0x0 or 0xffff or >= 0x8000 when enemyType is not (EnemyType.Mine or EnemyType.GasolineTank) => "Dead",
             0xffff when maxHp is 0x1 && enemyType is EnemyType.Mine => "Destroyed",
-            0x0 when IsExplosiveEntity(enemyType, enemyName) => "Exploded",
+            0x0 when enemyType is EnemyType.GasolineTank => "Exploded",
             _ => $"{curHp}",
         };
     }
@@ -64,7 +52,6 @@ public static class EnemyStatusUtility
     private static bool IsInvincibleHealth(EnemyType enemyType, ushort curHp, ushort maxHp) =>
         curHp == 0x7fff
         || (enemyType is EnemyType.Megabytes && maxHp == 1)
-        || (enemyType is EnemyType.Fire && maxHp == 1)
         || enemyType
             is EnemyType.Drainer11
                 or EnemyType.Drainer12
@@ -72,23 +59,4 @@ public static class EnemyStatusUtility
                 or EnemyType.Neptune
                 or EnemyType.Tentacles
                 or EnemyType.LeechTentacles;
-
-    private static bool IsExplosiveEntity(EnemyType enemyType, string? enemyName = null)
-    {
-        // Check enum-based explosive types
-        if (enemyType is EnemyType.Mine or EnemyType.GasolineTank)
-            return true;
-
-        // Check if entity name contains explosive-related keywords
-        if (!string.IsNullOrEmpty(enemyName))
-        {
-            var lowerName = enemyName.ToLowerInvariant();
-            return lowerName.Contains("canister")
-                || lowerName.Contains("mine")
-                || lowerName.Contains("explosive")
-                || lowerName.Contains("fuel");
-        }
-
-        return false;
-    }
 }

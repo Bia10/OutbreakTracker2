@@ -95,8 +95,7 @@ public sealed partial class InGameEnemyViewModel : ObservableObject
             enemy.SlotId,
             enemy.NameId,
             enemy.CurHp,
-            enemy.MaxHp,
-            enemy.Name
+            enemy.MaxHp
         );
         IsDead = EnemyStatusUtility.IsDeadStatus(HealthStatus);
         IsInvincible = HealthStatus is "Invincible";
