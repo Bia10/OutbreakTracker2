@@ -27,14 +27,9 @@ public static class EnemyStatusUtility
 
         return curHp switch
         {
-            0x0
-            or 0xffff
-            or >= 0x8000
-                when enemyType is not (EnemyType.Mine or EnemyType.GasolineTank) && !IsExplosiveEntity(entityName) =>
-                "Dead",
+            0x0 or 0xffff or >= 0x8000 when !IsExplosiveEntity(enemyType, entityName) => "Dead",
             0xffff when maxHp is 0x1 && enemyType is EnemyType.Mine => "Destroyed",
-            0x0 when enemyType is EnemyType.GasolineTank => "Exploded",
-            0x0 when IsExplosiveEntity(entityName) => "Exploded",
+            0x0 when IsExplosiveEntity(enemyType, entityName) => "Exploded",
             _ => $"{curHp}",
         };
     }
@@ -61,14 +56,9 @@ public static class EnemyStatusUtility
 
         return curHp switch
         {
-            0x0
-            or 0xffff
-            or >= 0x8000
-                when enemyType is not (EnemyType.Mine or EnemyType.GasolineTank) && !IsExplosiveEntity(entityName) =>
-                "Dead",
+            0x0 or 0xffff or >= 0x8000 when !IsExplosiveEntity(enemyType, entityName) => "Dead",
             0xffff when maxHp is 0x1 && enemyType is EnemyType.Mine => "Destroyed",
-            0x0 when enemyType is EnemyType.GasolineTank => "Exploded",
-            0x0 when IsExplosiveEntity(entityName) => "Exploded",
+            0x0 when IsExplosiveEntity(enemyType, entityName) => "Exploded",
             _ => $"{curHp}",
         };
     }
@@ -92,11 +82,20 @@ public static class EnemyStatusUtility
                 or EnemyType.Tentacles
                 or EnemyType.LeechTentacles;
 
+    private static bool IsExplosiveEntity(EnemyType enemyType, string entityName)
+    {
+        if (enemyType is EnemyType.Mine or EnemyType.GasolineTank)
+            return true;
+
+        return IsExplosiveEntity(entityName);
+    }
+
     private static bool IsExplosiveEntity(string entityName) =>
-        string.IsNullOrEmpty(entityName)
-            ? false
-            : entityName.Contains("canister", StringComparison.OrdinalIgnoreCase)
-                || entityName.Contains("mine", StringComparison.OrdinalIgnoreCase)
-                || entityName.Contains("explosive", StringComparison.OrdinalIgnoreCase)
-                || entityName.Contains("fuel", StringComparison.OrdinalIgnoreCase);
+        !string.IsNullOrEmpty(entityName)
+        && (
+            entityName.Contains("canister", StringComparison.OrdinalIgnoreCase)
+            || entityName.Contains("mine", StringComparison.OrdinalIgnoreCase)
+            || entityName.Contains("explosive", StringComparison.OrdinalIgnoreCase)
+            || entityName.Contains("fuel", StringComparison.OrdinalIgnoreCase)
+        );
 }

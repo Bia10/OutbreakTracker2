@@ -149,4 +149,46 @@ public sealed class EnemyStatusUtilityTests
         await Assert.That(status).IsEqualTo("Dead");
         await Assert.That(EnemyStatusUtility.IsDeadStatus(status)).IsTrue();
     }
+
+    [Test]
+    public async Task GetHealthStatusForFileTwo_ReturnsExploded_ForMineEnumAtZeroHp()
+    {
+        string status = EnemyStatusUtility.GetHealthStatusForFileTwo(
+            slotId: 5,
+            nameId: (byte)EnemyType.Mine,
+            curHp: 0,
+            maxHp: 1500
+        );
+
+        await Assert.That(status).IsEqualTo("Exploded");
+        await Assert.That(EnemyStatusUtility.IsDeadStatus(status)).IsTrue();
+    }
+
+    [Test]
+    public async Task GetHealthStatusForFileTwo_ReturnsExploded_ForGasolineTankEnumAtZeroHp()
+    {
+        string status = EnemyStatusUtility.GetHealthStatusForFileTwo(
+            slotId: 5,
+            nameId: (byte)EnemyType.GasolineTank,
+            curHp: 0,
+            maxHp: 1500
+        );
+
+        await Assert.That(status).IsEqualTo("Exploded");
+        await Assert.That(EnemyStatusUtility.IsDeadStatus(status)).IsTrue();
+    }
+
+    [Test]
+    public async Task GetHealthStatusForFileTwo_ReturnsDestroyed_ForMineEnumAtMaxHpOneAndCurHpFfff()
+    {
+        string status = EnemyStatusUtility.GetHealthStatusForFileTwo(
+            slotId: 5,
+            nameId: (byte)EnemyType.Mine,
+            curHp: 0xffff,
+            maxHp: 1
+        );
+
+        await Assert.That(status).IsEqualTo("Destroyed");
+        await Assert.That(EnemyStatusUtility.IsDeadStatus(status)).IsTrue();
+    }
 }
