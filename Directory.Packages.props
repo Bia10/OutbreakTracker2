@@ -28,7 +28,7 @@
        UI / AVALONIA
        ═══════════════════════════════════════════════════════ -->
   <ItemGroup Label="Avalonia">
-    <PackageVersion Include="Avalonia" Version="11.3.13" />
+    <PackageVersion Include="Avalonia" Version="12.0.0" />
     <PackageVersion Include="Avalonia.Desktop" Version="11.3.13" />
     <PackageVersion Include="Avalonia.Diagnostics" Version="11.3.13" />
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.13" />
@@ -36,7 +36,7 @@
     <PackageVersion Include="Xaml.Behaviors.Avalonia" Version="11.3.9.5" />
     <PackageVersion Include="Material.Icons.Avalonia" Version="3.0.0" />
     <PackageVersion Include="SukiUI" Version="6.0.3" />
-    <PackageVersion Include="Dock.Avalonia" Version="11.3.11.22" />
+    <PackageVersion Include="Dock.Avalonia" Version="12.0.0.2" />
     <PackageVersion Include="Dock.Avalonia.Themes.Fluent" Version="11.3.11.22" />
     <PackageVersion Include="Dock.Model.Mvvm" Version="11.3.11.22" />
     <PackageVersion Include="SukiUI.Dock" Version="6.0.3" />
