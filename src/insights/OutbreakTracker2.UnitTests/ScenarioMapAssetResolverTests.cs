@@ -27,13 +27,28 @@ public sealed class ScenarioMapAssetResolverTests
     [Test]
     public async Task ResolveRelativePath_PrefersRoomCodeAsset_WhenPresent()
     {
-        string? resolvedPath = ScenarioMapAssetResolver.ResolveRelativePath(
-            "End of the road",
-            "Central passage 1",
-            roomId: 2
-        );
+        const string scenarioSlug = "end-of-the-road";
+        string scenarioDirectory = Path.Combine(AppContext.BaseDirectory, "Assets", "Maps", scenarioSlug);
+        string roomAssetPath = Path.Combine(scenarioDirectory, "r0060200.png");
 
-        await Assert.That(resolvedPath).IsEqualTo(Path.Combine("Assets", "Maps", "end-of-the-road", "r0060200.png"));
+        Directory.CreateDirectory(scenarioDirectory);
+        await File.WriteAllBytesAsync(roomAssetPath, []);
+
+        try
+        {
+            string? resolvedPath = ScenarioMapAssetResolver.ResolveRelativePath(
+                "End of the road",
+                "Central passage 1",
+                roomId: 2
+            );
+
+            await Assert.That(resolvedPath).IsEqualTo(Path.Combine("Assets", "Maps", scenarioSlug, "r0060200.png"));
+        }
+        finally
+        {
+            if (File.Exists(roomAssetPath))
+                File.Delete(roomAssetPath);
+        }
     }
 
     [Test]
