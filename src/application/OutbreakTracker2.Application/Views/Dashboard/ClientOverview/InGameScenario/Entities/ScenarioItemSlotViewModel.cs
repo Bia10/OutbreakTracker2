@@ -18,6 +18,7 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemS
     public ItemImageViewModel ItemImageViewModel { get; }
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ToggleMapProjectionCommand))]
     private DecodedItem _item;
 
     [ObservableProperty]
@@ -27,6 +28,10 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemS
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TrackingMenuHeader))]
     private bool _isPickupTracked;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MapProjectionMenuHeader))]
+    private bool _isProjectedOnMap;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PickedUpAtDisplay))]
@@ -53,6 +58,7 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemS
     public string PickedUpDisplay => GetPickedUpDisplay(Item);
     public bool IsHeldByPlayer => IsItemHeldByPlayer(Item);
     public string TrackingMenuHeader => IsPickupTracked ? "Stop Tracking Pickup" : "Track Pickup";
+    public string MapProjectionMenuHeader => IsProjectedOnMap ? "Remove from Map" : "Project on Map";
     public string PickedUpAtDisplay =>
         PickedUpAtFrame.HasValue ? TimeUtility.GetTimeFromFrames(PickedUpAtFrame.Value) : "--:--:--.–";
 
@@ -74,6 +80,9 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemS
     [RelayCommand]
     private void TogglePickupTracking() => IsPickupTracked = !IsPickupTracked;
 
+    [RelayCommand(CanExecute = nameof(CanToggleMapProjection))]
+    private void ToggleMapProjection() => IsProjectedOnMap = !IsProjectedOnMap;
+
     public void UpdateItem(in DecodedItem newItem, int frameCounter, GameFile gameFile, byte positionIndex)
     {
         Color? glowColor = DetermineGlowColor(Item, newItem);
@@ -88,9 +97,13 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemS
 
         bool wasEmpty = IsEmpty;
         string previousTypeName = TypeName;
+        DecodedItem previousItem = Item;
 
         Item = newItem;
         PositionIndex = positionIndex;
+
+        if (ShouldResetMapProjection(previousItem, newItem))
+            IsProjectedOnMap = false;
 
         if (IsEmpty != wasEmpty || !string.Equals(TypeName, previousTypeName, StringComparison.Ordinal))
             RefreshImage(gameFile);
@@ -118,7 +131,11 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemS
         RaiseIfChanged(IsItemEmpty(oldValue), IsItemEmpty(newValue), nameof(IsEmpty));
         RaiseIfChanged(GetDisplayName(oldValue), GetDisplayName(newValue), nameof(DisplayName));
         RaiseIfChanged(GetDebugInfo(oldValue), GetDebugInfo(newValue), nameof(DebugInfo));
+
+        ToggleMapProjectionCommand.NotifyCanExecuteChanged();
     }
+
+    private bool CanToggleMapProjection() => !IsEmpty && !IsHeldByPlayer && RoomId > 0;
 
     private static Color? DetermineGlowColor(in DecodedItem previousItem, in DecodedItem newItem)
     {
@@ -161,6 +178,14 @@ public sealed partial class ScenarioItemSlotViewModel : ObservableObject, IItemS
         item.PickedUp > 0 ? $"P{item.PickedUp}" : string.Empty;
 
     private static bool IsItemHeldByPlayer(in DecodedItem item) => item.PickedUp > 0;
+
+    private static bool ShouldResetMapProjection(in DecodedItem previousItem, in DecodedItem newItem)
+    {
+        if (IsItemEmpty(newItem) || newItem.RoomId == 0)
+            return true;
+
+        return !IsItemEmpty(previousItem) && (previousItem.Id != newItem.Id || previousItem.TypeId != newItem.TypeId);
+    }
 
     private void RaiseIfChanged<T>(T oldValue, T newValue, string propertyName)
     {

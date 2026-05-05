@@ -111,6 +111,9 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
     private bool _scenarioItemsDockOnlyShowCurrentPlayerRoom;
 
     [ObservableProperty]
+    private bool _scenarioItemsProjectAllOntoMap;
+
+    [ObservableProperty]
     private bool _doorFlagChanged;
 
     [ObservableProperty]
@@ -342,6 +345,7 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
             EnemyRoomChange = enemies.RoomChange;
             EntitiesDockOnlyShowCurrentPlayerRoom = entitiesDock.OnlyShowCurrentPlayerRoom;
             ScenarioItemsDockOnlyShowCurrentPlayerRoom = scenarioItemsDock.OnlyShowCurrentPlayerRoom;
+            ScenarioItemsProjectAllOntoMap = scenarioItemsDock.ProjectAllOntoMap;
 
             DoorFlagChanged = doors.FlagChanged;
             DoorDestroyed = doors.Destroyed;
@@ -381,6 +385,7 @@ internal sealed partial class AppSettingsDialogViewModel : ObservableObject
                 ScenarioItemsDock = new ScenarioItemsDockSettings
                 {
                     OnlyShowCurrentPlayerRoom = ScenarioItemsDockOnlyShowCurrentPlayerRoom,
+                    ProjectAllOntoMap = ScenarioItemsProjectAllOntoMap,
                 },
             },
             AlertRules = new AlertRuleSettings

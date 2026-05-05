@@ -17,6 +17,7 @@ mc:Ignorable="d">
             <ContextMenu>
                 <MenuItem Header="Details" Click="OnDetailsMenuItemClick" />
                 <Separator />
+                <MenuItem Header="{Binding MapProjectionMenuHeader}" Command="{Binding ToggleMapProjectionCommand}" />
                 <MenuItem Header="{Binding TrackingMenuHeader}" Command="{Binding TogglePickupTrackingCommand}" />
             </ContextMenu>
         </Grid.ContextMenu>

@@ -183,6 +183,11 @@ mc:Ignorable="d">
                                 <TextBlock Opacity="0.8"
                                            Text="Filters the docked Items tool without changing the shared scenario item state."
                                            TextWrapping="Wrap" />
+                                <CheckBox Content="Project all scenario items onto map"
+                                          IsChecked="{Binding ScenarioItemsProjectAllOntoMap}" />
+                                <TextBlock Opacity="0.8"
+                                           Text="When enabled, the map projects every live world item in the active stitched section. When disabled, use the item context menu to project only selected items."
+                                           TextWrapping="Wrap" />
                             </StackPanel>
                         </suki:GlassCard>
 

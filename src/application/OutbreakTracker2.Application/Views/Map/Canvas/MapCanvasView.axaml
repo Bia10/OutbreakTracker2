@@ -10,9 +10,13 @@
     <Grid>
         <!-- Canvas: only shown when in-game; background deferred until a scenario map is loaded -->
         <Border BorderBrush="Gray" BorderThickness="1" IsVisible="{Binding IsInGame}">
-            <Grid>
+            <Grid Background="DimGray">
+                <Image Source="{Binding MapBackgroundImage}"
+                       Stretch="Fill"
+                       IsVisible="{Binding HasMapBackgroundImage}" />
+
                 <Canvas x:Name="GameMapCanvas"
-                        Background="DimGray"
+                        Background="Transparent"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         ClipToBounds="True"
@@ -23,12 +27,31 @@
                             VerticalAlignment="Top"
                             Margin="4"
                             Spacing="4">
+                    <Button x:Name="CalibrationButton"
+                        Content="Calibrate"
+                        Padding="4,2"
+                        FontSize="9"
+                        Click="OnToggleCalibrationClick"
+                        ToolTip.Tip="Toggle map calibration mode&#x0a;Arrows move · +/- scale · 0 reset" />
+
                     <Button Content="⟳ Reset"
                             Padding="4,2"
                             FontSize="9"
                             Click="OnResetZoomClick"
                             ToolTip.Tip="Reset zoom and pan&#x0a;Scroll to zoom · Drag to pan" />
                 </StackPanel>
+
+                <TextBlock x:Name="CalibrationLabel"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Top"
+                       Margin="4"
+                       Padding="4"
+                       MaxWidth="280"
+                       Background="#AA000000"
+                       Foreground="White"
+                       FontSize="9"
+                       TextWrapping="Wrap"
+                       IsVisible="False" />
 
                 <!-- Overlay: zoom level indicator (bottom-left) -->
                 <TextBlock x:Name="ZoomLabel"

@@ -240,6 +240,7 @@ internal static class CompositionRoot
         services.AddSingleton<DockToolSet>();
         services.AddSingleton<GameDockFactory>();
 
+        services.AddSingleton<IPolygonCirclePackingService, PolygonCirclePackingService>();
         services.AddSingleton<MapCanvasViewModel>();
         services.AddSingleton<IEnemyCardCollectionSource>(sp => sp.GetRequiredService<InGameEnemiesViewModel>());
 
