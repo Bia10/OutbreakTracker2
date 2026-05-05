@@ -220,6 +220,69 @@ public sealed class ScenarioItemSlotViewModelTests
         await Assert.That(glowTriggered).IsFalse();
     }
 
+    [Test]
+    public async Task ToggleMapProjectionCommand_TogglesProjectedStateAndHeader()
+    {
+        ScenarioItemSlotViewModel viewModel = CreateLiveViewModel(
+            new DecodedItem
+            {
+                Id = 3,
+                TypeId = 22,
+                TypeName = "Handgun Ammo",
+                Quantity = 15,
+                Present = 1,
+                RoomId = 4,
+                RoomName = "Warehouse",
+            }
+        );
+
+        await Assert.That(viewModel.IsProjectedOnMap).IsFalse();
+        await Assert.That(viewModel.MapProjectionMenuHeader).IsEqualTo("Project on Map");
+
+        viewModel.ToggleMapProjectionCommand.Execute(null);
+
+        await Assert.That(viewModel.IsProjectedOnMap).IsTrue();
+        await Assert.That(viewModel.MapProjectionMenuHeader).IsEqualTo("Remove from Map");
+    }
+
+    [Test]
+    public async Task UpdateItem_ResetsMapProjection_WhenSlotIdentityChanges()
+    {
+        ScenarioItemSlotViewModel viewModel = CreateLiveViewModel(
+            new DecodedItem
+            {
+                Id = 3,
+                TypeId = 22,
+                TypeName = "Handgun Ammo",
+                Quantity = 15,
+                Present = 1,
+                RoomId = 4,
+                RoomName = "Warehouse",
+            }
+        );
+
+        viewModel.ToggleMapProjectionCommand.Execute(null);
+
+        viewModel.UpdateItem(
+            new DecodedItem
+            {
+                Id = 5,
+                TypeId = 41,
+                TypeName = "Green Herb",
+                Quantity = 1,
+                Present = 1,
+                RoomId = 4,
+                RoomName = "Warehouse",
+            },
+            frameCounter: 120,
+            GameFile.FileOne,
+            positionIndex: 0
+        );
+
+        await Assert.That(viewModel.IsProjectedOnMap).IsFalse();
+        await Assert.That(viewModel.MapProjectionMenuHeader).IsEqualTo("Project on Map");
+    }
+
     private static ScenarioItemSlotViewModel CreateViewModel(DecodedItem item)
     {
         ScenarioItemSlotViewModel viewModel = (ScenarioItemSlotViewModel)

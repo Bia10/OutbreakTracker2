@@ -23,7 +23,11 @@ public sealed class AppSettingsServiceTests
                 {
                     ShowGameplayUiDuringTransitions = true,
                     EntitiesDock = new EntitiesDockSettings { OnlyShowCurrentPlayerRoom = false },
-                    ScenarioItemsDock = new ScenarioItemsDockSettings { OnlyShowCurrentPlayerRoom = false },
+                    ScenarioItemsDock = new ScenarioItemsDockSettings
+                    {
+                        OnlyShowCurrentPlayerRoom = false,
+                        ProjectAllOntoMap = true,
+                    },
                 },
                 AlertRules = new AlertRuleSettings
                 {
@@ -61,6 +65,15 @@ public sealed class AppSettingsServiceTests
                     .GetBoolean()
             )
             .IsFalse();
+        await Assert
+            .That(
+                settingsElement
+                    .GetProperty("Display")
+                    .GetProperty("ScenarioItemsDock")
+                    .GetProperty("ProjectAllOntoMap")
+                    .GetBoolean()
+            )
+            .IsTrue();
         await Assert
             .That(
                 settingsElement
@@ -158,6 +171,8 @@ public sealed class AppSettingsServiceTests
         await Assert.That(service.Current.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(importedSettings.Display.ScenarioItemsDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(service.Current.Display.ScenarioItemsDock.OnlyShowCurrentPlayerRoom).IsTrue();
+        await Assert.That(importedSettings.Display.ScenarioItemsDock.ProjectAllOntoMap).IsFalse();
+        await Assert.That(service.Current.Display.ScenarioItemsDock.ProjectAllOntoMap).IsFalse();
         await Assert.That(File.Exists(environment.UserSettingsPath)).IsTrue();
 
         using JsonDocument jsonDocument = JsonDocument.Parse(await File.ReadAllTextAsync(environment.UserSettingsPath));
@@ -186,7 +201,11 @@ public sealed class AppSettingsServiceTests
                 {
                     ShowGameplayUiDuringTransitions = true,
                     EntitiesDock = new EntitiesDockSettings { OnlyShowCurrentPlayerRoom = false },
-                    ScenarioItemsDock = new ScenarioItemsDockSettings { OnlyShowCurrentPlayerRoom = false },
+                    ScenarioItemsDock = new ScenarioItemsDockSettings
+                    {
+                        OnlyShowCurrentPlayerRoom = false,
+                        ProjectAllOntoMap = true,
+                    },
                 },
                 AlertRules = new AlertRuleSettings
                 {
@@ -217,6 +236,7 @@ public sealed class AppSettingsServiceTests
         await Assert.That(resetSettings.Display.ShowGameplayUiDuringTransitions).IsFalse();
         await Assert.That(resetSettings.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(resetSettings.Display.ScenarioItemsDock.OnlyShowCurrentPlayerRoom).IsTrue();
+        await Assert.That(resetSettings.Display.ScenarioItemsDock.ProjectAllOntoMap).IsFalse();
         await Assert.That(service.Current.Notifications.EnableToastAlerts).IsTrue();
     }
 
