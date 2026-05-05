@@ -38,7 +38,7 @@
     <PackageVersion Include="SukiUI" Version="6.0.3" />
     <PackageVersion Include="Dock.Avalonia" Version="11.3.11.22" />
     <PackageVersion Include="Dock.Avalonia.Themes.Fluent" Version="11.3.11.22" />
-    <PackageVersion Include="Dock.Model.Mvvm" Version="11.3.11.22" />
+    <PackageVersion Include="Dock.Model.Mvvm" Version="12.0.0.2" />
     <PackageVersion Include="SukiUI.Dock" Version="6.0.3" />
   </ItemGroup>
   <!-- ═══════════════════════════════════════════════════════
