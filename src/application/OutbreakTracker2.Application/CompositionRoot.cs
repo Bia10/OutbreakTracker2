@@ -1,5 +1,7 @@
-﻿using Bia.LogViewer.Avalonia;
+﻿using System.Runtime.Versioning;
+using Bia.LogViewer.Avalonia;
 using Bia.LogViewer.Core;
+using MemoryWatcher.Remote;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -50,6 +52,7 @@ using OutbreakTracker2.Application.Views.Map.Canvas;
 using OutbreakTracker2.Application.Views.Settings;
 using OutbreakTracker2.Memory.SafeMemory;
 using OutbreakTracker2.Memory.String;
+using OutbreakTracker2.MemoryWatcherIntegration;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Readers;
 using OutbreakTracker2.PCSX2.Client;
@@ -156,6 +159,9 @@ internal static class CompositionRoot
             serviceProvider.GetRequiredService<ISettingsValidator>(),
             serviceProvider.GetRequiredService<ISettingsPersistence>()
         ));
+        services.AddSingleton<MemoryWatcherSettings>(sp =>
+            sp.GetRequiredService<IAppSettingsService>().Current.MemoryWatcher
+        );
         services.AddSingleton(runReportOptions);
         services.AddSingleton<IEntityTrackerFactory, EntityTrackerFactory>();
         services.AddSingleton<IAlertRuleProvider<DecodedEnemy>, EnemyAlertRulesProvider>();
@@ -189,17 +195,23 @@ internal static class CompositionRoot
 
     private static void AddPlatformServices(IServiceCollection services)
     {
+        services.AddSingleton<IMemoryWatchSessionFactory>(sp => new NativeMemoryWatchSessionFactory(
+            sp.GetRequiredService<MemoryWatcherSettings>().NativeLibraryPath
+        ));
+        services.AddSingleton<IOutbreakTrackerMemoryRegionCatalog, OutbreakTrackerMemoryRegionCatalog>();
+        services.AddSingleton<MemoryWatcherSnapshotCache>();
+        services.AddSingleton<SnapshotBackedSafeMemoryReader>();
+        services.AddSingleton<SnapshotBackedStringReader>();
+
         // Memory reader implementations: platform-specific
         if (OperatingSystem.IsWindows())
         {
-            services.AddSingleton<ISafeMemoryReader, SafeMemoryReader>();
-            services.AddSingleton<IStringReader, StringReader>();
+            AddWindowsMemoryReaderServices(services);
         }
         else if (OperatingSystem.IsLinux())
         {
 #if LINUX
-            services.AddSingleton<ISafeMemoryReader, LinuxSafeMemoryReader>();
-            services.AddSingleton<IStringReader, LinuxStringReader>();
+            AddLinuxMemoryReaderServices(services);
 #else
             throw new PlatformNotSupportedException("Linux reader implementations are only available in Linux builds.");
 #endif
@@ -213,9 +225,13 @@ internal static class CompositionRoot
         // Linux support is planned (PCSX2 must be launched by OT2 to inherit permissions),
         // but is not yet implemented.
         if (OperatingSystem.IsWindows())
-            services.AddSingleton<IWindowEmbedder, WindowsWindowEmbedder>();
+        {
+            AddWindowsWindowEmbeddingServices(services);
+        }
         else
+        {
             throw new PlatformNotSupportedException("Window embedding is currently only supported on Windows.");
+        }
 
         services.AddSingleton<EmbeddedGameViewModel>();
     }
@@ -301,7 +317,13 @@ internal static class CompositionRoot
     {
         TextureAtlasOptions textureAtlasOptions = GetTextureAtlasOptions(configuration);
 
-        services.AddSingleton<IEEmemMemory, EEmemMemory>();
+        services.AddSingleton<EEmemMemory>();
+        services.AddSingleton<MemoryWatcherEEmemMemory>();
+        services.AddSingleton<IEEmemMemory>(sp =>
+            UseMemoryWatcherBackend(sp)
+                ? sp.GetRequiredService<MemoryWatcherEEmemMemory>()
+                : sp.GetRequiredService<EEmemMemory>()
+        );
         services.AddSingleton<DataManagerOptions>(sp =>
         {
             DataManagerSettings userSettings = sp.GetRequiredService<IAppSettingsService>().Current.DataManager;
@@ -328,5 +350,50 @@ internal static class CompositionRoot
             ILogger<TextureAtlas> logger = serviceProvider.GetRequiredService<ILogger<TextureAtlas>>();
             return (imageStream, spriteSheet) => new TextureAtlas(imageStream, spriteSheet, logger);
         });
+    }
+
+    private static bool UseMemoryWatcherBackend(IServiceProvider serviceProvider) =>
+        serviceProvider.GetRequiredService<MemoryWatcherSettings>().Backend == MemoryBackendMode.MemoryWatcher;
+
+    [SupportedOSPlatform("windows")]
+    private static void AddWindowsMemoryReaderServices(IServiceCollection services)
+    {
+        services.AddSingleton<SafeMemoryReader>();
+        services.AddSingleton<StringReader>();
+        services.AddSingleton<ISafeMemoryReader>(sp =>
+            UseMemoryWatcherBackend(sp)
+                ? sp.GetRequiredService<SnapshotBackedSafeMemoryReader>()
+                : sp.GetRequiredService<SafeMemoryReader>()
+        );
+        services.AddSingleton<IStringReader>(sp =>
+            UseMemoryWatcherBackend(sp)
+                ? sp.GetRequiredService<SnapshotBackedStringReader>()
+                : sp.GetRequiredService<StringReader>()
+        );
+    }
+
+#if LINUX
+    [SupportedOSPlatform("linux")]
+    private static void AddLinuxMemoryReaderServices(IServiceCollection services)
+    {
+        services.AddSingleton<LinuxSafeMemoryReader>();
+        services.AddSingleton<LinuxStringReader>();
+        services.AddSingleton<ISafeMemoryReader>(sp =>
+            UseMemoryWatcherBackend(sp)
+                ? sp.GetRequiredService<SnapshotBackedSafeMemoryReader>()
+                : sp.GetRequiredService<LinuxSafeMemoryReader>()
+        );
+        services.AddSingleton<IStringReader>(sp =>
+            UseMemoryWatcherBackend(sp)
+                ? sp.GetRequiredService<SnapshotBackedStringReader>()
+                : sp.GetRequiredService<LinuxStringReader>()
+        );
+    }
+#endif
+
+    [SupportedOSPlatform("windows")]
+    private static void AddWindowsWindowEmbeddingServices(IServiceCollection services)
+    {
+        services.AddSingleton<IWindowEmbedder, WindowsWindowEmbedder>();
     }
 }

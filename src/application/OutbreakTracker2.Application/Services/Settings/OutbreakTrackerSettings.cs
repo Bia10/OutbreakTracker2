@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
+using OutbreakTracker2.MemoryWatcherIntegration;
 
 namespace OutbreakTracker2.Application.Services.Settings;
 
@@ -15,6 +16,8 @@ public sealed record OutbreakTrackerSettings
     public RunReportSettings RunReports { get; init; } = new();
 
     public DataManagerSettings DataManager { get; init; } = new();
+
+    public MemoryWatcherSettings MemoryWatcher { get; init; } = new();
 
     public bool TryValidate([NotNullWhen(false)] out string? error)
     {
@@ -57,6 +60,12 @@ public sealed record OutbreakTrackerSettings
         if (DataManager is null)
         {
             error = "OutbreakTracker:DataManager cannot be null.";
+            return false;
+        }
+
+        if (MemoryWatcher is null)
+        {
+            error = "OutbreakTracker:MemoryWatcher cannot be null.";
             return false;
         }
 
@@ -129,6 +138,18 @@ public sealed record OutbreakTrackerSettings
         if (DataManager.SlowUpdateIntervalMs <= 0)
         {
             error = "OutbreakTracker:DataManager:SlowUpdateIntervalMs must be greater than 0.";
+            return false;
+        }
+
+        if (MemoryWatcher.EventBufferCapacity <= 0)
+        {
+            error = "OutbreakTracker:MemoryWatcher:EventBufferCapacity must be greater than 0.";
+            return false;
+        }
+
+        if (MemoryWatcher.HashBlockSizeBytes < 16)
+        {
+            error = "OutbreakTracker:MemoryWatcher:HashBlockSizeBytes must be at least 16.";
             return false;
         }
 

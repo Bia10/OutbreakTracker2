@@ -9,6 +9,7 @@
     <Project Path="libs/OutbreakTracker2.Extensions/OutbreakTracker2.Extensions.csproj" />
     <Project Path="libs/OutbreakTracker2.LinuxInterop/OutbreakTracker2.LinuxInterop.csproj" />
     <Project Path="libs/OutbreakTracker2.Memory/OutbreakTracker2.Memory.csproj" />
+    <Project Path="libs/OutbreakTracker2.MemoryWatcherIntegration/OutbreakTracker2.MemoryWatcherIntegration.csproj" />
     <Project Path="libs/OutbreakTracker2.Outbreak/OutbreakTracker2.Outbreak.csproj" />
     <Project Path="libs/OutbreakTracker2.PCSX2/OutbreakTracker2.PCSX2.csproj" />
     <Project Path="libs/OutbreakTracker2.WinInterop/OutbreakTracker2.WinInterop.csproj" />
