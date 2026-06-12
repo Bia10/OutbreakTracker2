@@ -110,6 +110,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\libs\OutbreakTracker2.Extensions\OutbreakTracker2.Extensions.csproj" />
     <ProjectReference Include="..\..\libs\OutbreakTracker2.Outbreak\OutbreakTracker2.Outbreak.csproj" />
     <ProjectReference Include="..\..\libs\OutbreakTracker2.MemoryWatcherIntegration\OutbreakTracker2.MemoryWatcherIntegration.csproj" />
     <!-- Linux reader implementations -->
