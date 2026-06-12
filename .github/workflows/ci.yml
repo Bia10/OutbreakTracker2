@@ -74,4 +74,10 @@ jobs:
         run: dotnet build src/OutbreakTracker2.slnx -c ${{ matrix.configuration }} --no-restore
 
       - name: Run unit tests
-        run: dotnet test --project src/insights/OutbreakTracker2.UnitTests/OutbreakTracker2.UnitTests.csproj -c ${{ matrix.configuration }}
+        run: >
+          dotnet test
+          --project src/insights/OutbreakTracker2.UnitTests/OutbreakTracker2.UnitTests.csproj
+          -c ${{ matrix.configuration }}
+          --no-build
+          --timeout 10m
+          --results-directory "${{ github.workspace }}/artifacts/TestResults/unit-${{ matrix.os }}-${{ matrix.configuration }}"
