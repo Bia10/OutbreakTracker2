@@ -65,6 +65,8 @@ jobs:
           -c Release
           --no-build
           --timeout 10m
+          --maximum-parallel-tests 4
+          --parallelism-strategy fixed
           --results-directory "${{ github.workspace }}/artifacts/TestResults/unit-${{ matrix.os }}-Release"
 
   release:
