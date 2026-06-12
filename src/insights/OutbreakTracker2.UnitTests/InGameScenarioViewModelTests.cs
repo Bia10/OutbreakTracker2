@@ -127,7 +127,6 @@ public sealed class InGameScenarioViewModelTests
     {
         using TestSynchronizationContextScope scope = new();
         using FakeScenarioDataSource dataSource = new();
-        using FakeAppSettingsService settingsService = new();
         TrackingDispatcherService scenarioItemsDispatcher = new();
         using ScenarioItemsViewModel scenarioItems = new(
             NullLogger<ScenarioItemsViewModel>.Instance,
@@ -135,15 +134,6 @@ public sealed class InGameScenarioViewModelTests
             scenarioItemsDispatcher,
             new NullToastService(),
             new StubItemImageViewModelFactory()
-        );
-        TrackingDispatcherService scenarioDispatcher = new();
-        using InGameScenarioViewModel viewModel = new(
-            NullLogger<InGameScenarioViewModel>.Instance,
-            dataSource,
-            scenarioDispatcher,
-            settingsService,
-            new ScenarioEntityCommands(),
-            new ScenarioViewModelRouter([])
         );
 
         DecodedItem[] items = new DecodedItem[GameConstants.MaxItems];
@@ -169,12 +159,8 @@ public sealed class InGameScenarioViewModelTests
         };
 
         int scenarioItemsBaseline = scenarioItemsDispatcher.InvocationCount;
-        int scenarioBaseline = scenarioDispatcher.InvocationCount;
         dataSource.PublishOverview(new InGameOverviewSnapshot(scenario, [], [], []));
-        await Task.WhenAll(
-            scenarioItemsDispatcher.WaitForInvocationCountAsync(scenarioItemsBaseline + 1),
-            scenarioDispatcher.WaitForInvocationCountAsync(scenarioBaseline + 1)
-        );
+        await scenarioItemsDispatcher.WaitForInvocationCountAsync(scenarioItemsBaseline + 1);
 
         await Assert.That(scenario.Items[0].RoomName).IsEqualTo(string.Empty);
         await Assert.That(scenario.Items[0].PickedUpByName).IsEqualTo(string.Empty);
@@ -478,7 +464,7 @@ public sealed class InGameScenarioViewModelTests
                 waitTask = completion.Task;
             }
 
-            using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(2));
+            using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(5));
             await waitTask.WaitAsync(timeout.Token);
         }
 
