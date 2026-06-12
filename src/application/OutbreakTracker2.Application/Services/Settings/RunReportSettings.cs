@@ -9,4 +9,6 @@ public sealed record RunReportSettings
     public bool WriteCsv { get; init; } = true;
 
     public bool WriteHtml { get; init; } = true;
+
+    public string OutputDirectory { get; init; } = "reports";
 }

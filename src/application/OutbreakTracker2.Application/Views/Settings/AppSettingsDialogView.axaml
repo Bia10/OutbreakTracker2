@@ -12,6 +12,117 @@ d:DesignHeight="760"
 d:DesignWidth="980"
 mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <DataTemplate x:Key="MemoryWatcherCapabilityCardTemplate">
+            <suki:GlassCard Width="430" MinHeight="404" Margin="0,0,12,12" Padding="16">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*,Auto" RowSpacing="10">
+                    <Border Height="4"
+                            CornerRadius="999"
+                            Background="{Binding SupportBadgeBorderBrush}" />
+
+                    <StackPanel Grid.Row="1" Spacing="3">
+                        <TextBlock FontSize="17"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding Title}" />
+                        <TextBlock FontSize="13"
+                                   Opacity="0.7"
+                                   Text="{Binding Subtitle}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <WrapPanel Grid.Row="2" Orientation="Horizontal">
+                        <Border Margin="0,0,8,8"
+                                Padding="10,4"
+                                CornerRadius="8"
+                                Background="{Binding SupportBadgeBackgroundBrush}"
+                                BorderBrush="{Binding SupportBadgeBorderBrush}"
+                                BorderThickness="1">
+                            <TextBlock FontSize="12"
+                                       Foreground="{Binding SupportBadgeForegroundBrush}"
+                                       FontWeight="SemiBold"
+                                       Text="{Binding SupportLabel}" />
+                        </Border>
+                        <Border Margin="0,0,8,8"
+                                Padding="10,4"
+                                CornerRadius="8"
+                                Background="{Binding HostSupportBadgeBackgroundBrush}"
+                                BorderBrush="{Binding HostSupportBadgeBorderBrush}"
+                                BorderThickness="1">
+                            <TextBlock FontSize="12"
+                                       Foreground="{Binding HostSupportBadgeForegroundBrush}"
+                                       FontWeight="SemiBold"
+                                       Text="{Binding HostSupportLabel}" />
+                        </Border>
+                        <Border IsVisible="{Binding HasRecommendationLabel}"
+                                Margin="0,0,8,8"
+                                Padding="10,4"
+                                CornerRadius="8"
+                                Background="{DynamicResource SukiControlBorderBrush}">
+                            <TextBlock FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Text="{Binding RecommendationLabel}" />
+                        </Border>
+                    </WrapPanel>
+
+                    <TextBlock Grid.Row="3"
+                               IsVisible="{Binding HasHostSummary}"
+                               FontSize="13"
+                               Opacity="0.78"
+                               Text="{Binding HostSummary}"
+                               TextWrapping="Wrap" />
+
+                    <TextBlock Grid.Row="4"
+                               FontSize="13"
+                               Opacity="0.84"
+                               Text="{Binding StatusSummary}"
+                               TextWrapping="Wrap" />
+
+                    <Border Grid.Row="5"
+                            IsVisible="{Binding HasConstraintLabel}"
+                            Padding="10,6"
+                            HorizontalAlignment="Left"
+                            CornerRadius="8"
+                            Background="{DynamicResource SukiControlBorderBrush}"
+                            BorderBrush="{Binding SupportBadgeBorderBrush}"
+                            BorderThickness="1">
+                        <TextBlock FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{Binding SupportBadgeForegroundBrush}"
+                                   Text="{Binding ConstraintLabel}"
+                                   TextWrapping="Wrap" />
+                    </Border>
+
+                    <TextBlock Grid.Row="6"
+                               FontSize="13"
+                               Opacity="0.8"
+                               Text="{Binding Metrics}"
+                               TextWrapping="Wrap" />
+
+                    <StackPanel Grid.Row="7" Spacing="6">
+                        <TextBlock IsVisible="{Binding HasReason}"
+                                   FontSize="13"
+                                   Opacity="0.72"
+                                   Text="{Binding Reason}"
+                                   TextWrapping="Wrap" />
+                        <TextBlock IsVisible="{Binding HasPickWhen}"
+                                   FontSize="13"
+                                   Opacity="0.72"
+                                   Text="{Binding PickWhen}"
+                                   TextWrapping="Wrap" />
+                        <Button MinWidth="162"
+                                MinHeight="36"
+                                Margin="0,6,0,0"
+                                HorizontalAlignment="Left"
+                                IsEnabled="{Binding CanApply}"
+                                Command="{Binding DataContext.UseMemoryWatcherCapabilityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"
+                                Content="{Binding ButtonText}" />
+                    </StackPanel>
+                </Grid>
+            </suki:GlassCard>
+        </DataTemplate>
+    </UserControl.Resources>
+
     <Grid MinWidth="920" MaxWidth="1000" RowDefinitions="*,Auto">
         <TabControl SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
             <TabItem Header="General">
@@ -55,24 +166,177 @@ mc:Ignorable="d">
                                             Command="{Binding ResetToDefaultsCommand}"
                                             Content="Reset To Defaults" />
                                 </Grid>
-
-                                <TextBlock Foreground="IndianRed" Text="{Binding ValidationMessage}" TextWrapping="Wrap" />
                             </StackPanel>
                         </suki:GlassCard>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
 
+            <TabItem Header="Memory">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="18" Spacing="14">
                         <suki:GlassCard Padding="18">
-                            <StackPanel Spacing="10">
-                                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Memory Polling" />
-                                <TextBlock Opacity="0.8"
-                                           Text="Controls how often game memory is read. Lower values increase responsiveness but use more CPU. Restart required for changes to take effect."
-                                           TextWrapping="Wrap" />
+                            <StackPanel Spacing="14">
+                                <StackPanel Spacing="10">
+                                    <TextBlock FontSize="22" FontWeight="SemiBold" Text="Memory Reader" />
+                                    <TextBlock Opacity="0.78"
+                                               Text="Choose how OT2 reads PCSX2 memory. The scan below reflects what this machine, your current rights, and the attached target can support. Restart required after saving."
+                                               TextWrapping="Wrap" />
+                                    <Button MinWidth="124"
+                                            MinHeight="38"
+                                            HorizontalAlignment="Left"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            Command="{Binding RefreshMemoryCapabilitiesCommand}"
+                                            Content="Refresh Scan" />
+                                </StackPanel>
+
+                                <Border Height="1" Margin="0,2,0,0" Background="{DynamicResource SukiControlBorderBrush}" />
 
                                 <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
                                     <suki:GlassCard Grid.Column="0" Padding="14">
                                         <StackPanel Spacing="8">
-                                            <TextBlock FontWeight="SemiBold" Text="Fast poll interval (ms)" />
-                                            <TextBlock Opacity="0.8"
-                                                       Text="Used for in-game player, enemy and door data."
+                                            <TextBlock FontWeight="SemiBold" Text="Host Scan" />
+                                            <TextBlock FontSize="13"
+                                                       Opacity="0.8"
+                                                       Text="{Binding MemoryCapabilityHostSummary}"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </suki:GlassCard>
+
+                                    <suki:GlassCard Grid.Column="1" Padding="14">
+                                        <StackPanel Spacing="8">
+                                            <TextBlock FontWeight="SemiBold" Text="Target Scan" />
+                                            <TextBlock FontSize="13"
+                                                       Opacity="0.8"
+                                                       Text="{Binding MemoryCapabilityTargetSummary}"
+                                                       TextWrapping="Wrap" />
+                                            <Border Height="1"
+                                                    Margin="0,2,0,2"
+                                                    Background="{DynamicResource SukiControlBorderBrush}" />
+                                            <TextBlock FontSize="13"
+                                                       Opacity="0.76"
+                                                       Text="{Binding MemoryCapabilityNativeLibrarySummary}"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </suki:GlassCard>
+                                </Grid>
+                            </StackPanel>
+                        </suki:GlassCard>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                            <suki:GlassCard Grid.Column="0" Padding="18">
+                                <StackPanel Spacing="10">
+                                    <TextBlock FontSize="20" FontWeight="SemiBold" Text="Best Current Pick" />
+                                    <TextBlock Opacity="0.78"
+                                               Text="If you want the safest choice for your current machine and current PCSX2 attachment state, start here."
+                                               TextWrapping="Wrap" />
+                                    <TextBlock FontSize="13"
+                                               Opacity="0.84"
+                                               Text="{Binding MemoryRecommendedConfigurationSummary}"
+                                               TextWrapping="Wrap" />
+                                    <Button MinWidth="190"
+                                            MinHeight="36"
+                                            HorizontalAlignment="Left"
+                                            Command="{Binding UseRecommendedMemoryConfigurationCommand}"
+                                            Content="Use Recommended Default" />
+                                </StackPanel>
+                            </suki:GlassCard>
+
+                            <suki:GlassCard Grid.Column="1" Padding="18">
+                                <StackPanel Spacing="12">
+                                    <TextBlock FontSize="20" FontWeight="SemiBold" Text="How To Read The Cards" />
+                                    <TextBlock Opacity="0.78"
+                                               Text="Each strategy card shows two badges. The OT2 badge tells you whether this app can use the strategy right now, after one explicit step, or only after deeper integration work. The Host badge tells you whether the OS, runtime, and attached target can execute that backend in principle."
+                                               TextWrapping="Wrap" />
+                                    <Border Padding="12"
+                                            CornerRadius="10"
+                                            Background="{DynamicResource SukiControlBorderBrush}">
+                                        <TextBlock FontSize="13"
+                                                   Opacity="0.9"
+                                                   Text="{Binding MemoryCapabilityRealitySummary}"
+                                                   TextWrapping="Wrap" />
+                                    </Border>
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <Border Padding="10,4"
+                                                CornerRadius="8"
+                                                Background="#1F4631"
+                                                BorderBrush="#65D39B"
+                                                BorderThickness="1">
+                                            <TextBlock FontSize="12"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#E2FFED"
+                                                       Text="Ready now" />
+                                        </Border>
+                                        <TextBlock Grid.Column="1"
+                                                   VerticalAlignment="Center"
+                                                   FontSize="13"
+                                                   Opacity="0.84"
+                                                   Text="OT2 can use the strategy immediately on the attached target."
+                                                   TextWrapping="Wrap" />
+                                    </Grid>
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <Border Padding="10,4"
+                                                CornerRadius="8"
+                                                Background="#1C385C"
+                                                BorderBrush="#68AAFF"
+                                                BorderThickness="1">
+                                            <TextBlock FontSize="12"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#E0F0FF"
+                                                       Text="Action needed" />
+                                        </Border>
+                                        <TextBlock Grid.Column="1"
+                                                   VerticalAlignment="Center"
+                                                   FontSize="13"
+                                                   Opacity="0.84"
+                                                   Text="The path exists in principle, but something specific is still missing. For some cards that missing piece is just an OT2 step such as intrusive opt-in or a probe retry; for others it is a deeper helper or watch-model limitation that OT2 does not expose yet."
+                                                   TextWrapping="Wrap" />
+                                    </Grid>
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <Border Padding="10,4"
+                                                CornerRadius="8"
+                                                Background="#561E1E"
+                                                BorderBrush="#EC7070"
+                                                BorderThickness="1">
+                                            <TextBlock FontSize="12"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#FFE7E7"
+                                                       Text="Unavailable here" />
+                                        </Border>
+                                        <TextBlock Grid.Column="1"
+                                                   VerticalAlignment="Center"
+                                                   FontSize="13"
+                                                   Opacity="0.84"
+                                                   Text="This machine, runtime, packaged backend, or current rights cannot expose the strategy here."
+                                                   TextWrapping="Wrap" />
+                                    </Grid>
+                                </StackPanel>
+                            </suki:GlassCard>
+                        </Grid>
+
+                        <suki:GlassCard Padding="18">
+                            <StackPanel Spacing="10">
+                                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Update Cadence" />
+                                <TextBlock Opacity="0.78"
+                                           Text="These intervals are OT2's fallback and max-idle decode cadence. MemoryWatcher can still wake the reader earlier when the chosen strategy supports wait signals."
+                                           TextWrapping="Wrap" />
+                                <Border Padding="12"
+                                        CornerRadius="10"
+                                        Background="{DynamicResource SukiControlBorderBrush}">
+                                    <TextBlock FontSize="13"
+                                               Opacity="0.9"
+                                               Text="{Binding MemoryCadenceSummary}"
+                                               TextWrapping="Wrap" />
+                                </Border>
+
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                                    <suki:GlassCard Grid.Column="0" Padding="14">
+                                        <StackPanel Spacing="8">
+                                            <TextBlock FontWeight="SemiBold" Text="Fast interval (ms)" />
+                                            <TextBlock FontSize="13"
+                                                       Opacity="0.78"
+                                                       Text="Used for in-game player, enemy, and door updates."
                                                        TextWrapping="Wrap" />
                                             <NumericUpDown Minimum="1"
                                                            Maximum="10000"
@@ -84,9 +348,10 @@ mc:Ignorable="d">
 
                                     <suki:GlassCard Grid.Column="1" Padding="14">
                                         <StackPanel Spacing="8">
-                                            <TextBlock FontWeight="SemiBold" Text="Slow poll interval (ms)" />
-                                            <TextBlock Opacity="0.8"
-                                                       Text="Used for lobby and less time-sensitive data."
+                                            <TextBlock FontWeight="SemiBold" Text="Slow interval (ms)" />
+                                            <TextBlock FontSize="13"
+                                                       Opacity="0.78"
+                                                       Text="Used for lobby and other lower-priority refreshes."
                                                        TextWrapping="Wrap" />
                                             <NumericUpDown Minimum="1"
                                                            Maximum="10000"
@@ -96,6 +361,342 @@ mc:Ignorable="d">
                                         </StackPanel>
                                     </suki:GlassCard>
                                 </Grid>
+                            </StackPanel>
+                        </suki:GlassCard>
+
+                        <suki:GlassCard Padding="18">
+                            <StackPanel Spacing="12">
+                                <TextBlock FontSize="20" FontWeight="SemiBold" Text="OT2 Backend" />
+                                <TextBlock Opacity="0.78"
+                                           Text="Pick the live reader OT2 should use. MemoryWatcher can negotiate multiple observation strategies, while Legacy stays timer-driven and out-of-process."
+                                           TextWrapping="Wrap" />
+
+                                <ItemsControl ItemsSource="{Binding BackendCapabilityCards}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <suki:GlassCard Width="412" MinHeight="292" Margin="0,0,12,12" Padding="16">
+                                                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" RowSpacing="10">
+                                                    <Border Height="4"
+                                                            CornerRadius="999"
+                                                            Background="{Binding SupportBadgeBorderBrush}" />
+
+                                                    <TextBlock Grid.Row="1"
+                                                               FontSize="17"
+                                                               FontWeight="SemiBold"
+                                                               Text="{Binding Title}" />
+
+                                                    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
+                                                        <Border Padding="10,4"
+                                                                CornerRadius="8"
+                                                                Background="{Binding SupportBadgeBackgroundBrush}"
+                                                                BorderBrush="{Binding SupportBadgeBorderBrush}"
+                                                                BorderThickness="1">
+                                                            <TextBlock FontSize="12"
+                                                                       Foreground="{Binding SupportBadgeForegroundBrush}"
+                                                                       FontWeight="SemiBold"
+                                                                       Text="{Binding SupportLabel}" />
+                                                        </Border>
+                                                        <Border IsVisible="{Binding HasRecommendationLabel}"
+                                                                Padding="10,4"
+                                                                CornerRadius="8"
+                                                                Background="{DynamicResource SukiControlBorderBrush}">
+                                                            <TextBlock FontSize="12"
+                                                                       FontWeight="SemiBold"
+                                                                       Text="{Binding RecommendationLabel}" />
+                                                        </Border>
+                                                    </StackPanel>
+
+                                                    <TextBlock Grid.Row="3"
+                                                               FontSize="13"
+                                                               Opacity="0.78"
+                                                               Text="{Binding Summary}"
+                                                               TextWrapping="Wrap" />
+
+                                                    <TextBlock Grid.Row="4"
+                                                               FontSize="13"
+                                                               Opacity="0.84"
+                                                               Text="{Binding StatusSummary}"
+                                                               TextWrapping="Wrap" />
+
+                                                    <TextBlock Grid.Row="5"
+                                                               FontSize="13"
+                                                               Opacity="0.78"
+                                                               Text="{Binding Metrics}"
+                                                               TextWrapping="Wrap" />
+
+                                                    <StackPanel Grid.Row="6" Spacing="6">
+                                                        <TextBlock IsVisible="{Binding HasReason}"
+                                                                   FontSize="13"
+                                                                   Opacity="0.72"
+                                                                   Text="{Binding Reason}"
+                                                                   TextWrapping="Wrap" />
+                                                        <TextBlock IsVisible="{Binding HasPickWhen}"
+                                                                   FontSize="13"
+                                                                   Opacity="0.72"
+                                                                   Text="{Binding PickWhen}"
+                                                                   TextWrapping="Wrap" />
+                                                        <Button MinWidth="132"
+                                                                MinHeight="36"
+                                                                Margin="0,6,0,0"
+                                                                HorizontalAlignment="Left"
+                                                                Command="{Binding DataContext.UseAppBackendCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding Mode}"
+                                                                Content="{Binding ButtonText}" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </suki:GlassCard>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </suki:GlassCard>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                            <suki:GlassCard Grid.Column="0" Padding="18">
+                                <StackPanel Spacing="10">
+                                    <TextBlock FontSize="20" FontWeight="SemiBold" Text="MemoryWatcher Request Policy" />
+                                    <TextBlock Opacity="0.78"
+                                               Text="The OT2 app backend is chosen above. These controls shape what OT2 asks MemoryWatcher to build when you use the MemoryWatcher path. Non-snapshot strategies still keep OT2's grouped snapshot reads today; they change how OT2 wakes or invalidates those grouped refreshes."
+                                               TextWrapping="Wrap" />
+                                    <Border Padding="12"
+                                            CornerRadius="10"
+                                            Background="{DynamicResource SukiControlBorderBrush}">
+                                        <TextBlock FontSize="13"
+                                                   Opacity="0.9"
+                                                   Text="{Binding MemoryWatcherRequestPolicyScopeSummary}"
+                                                   TextWrapping="Wrap" />
+                                    </Border>
+
+                                    <TextBlock Opacity="0.8" Text="Preferred backend" />
+                                    <ComboBox ItemsSource="{Binding PreferredMemoryWatcherBackendOptions}"
+                                              SelectedItem="{Binding SelectedMemoryWatcherPreferredBackendOption, Mode=TwoWay}">
+                                         <ComboBox.ItemTemplate>
+                                             <DataTemplate>
+                                                 <StackPanel Spacing="4">
+                                                     <WrapPanel Orientation="Horizontal">
+                                                         <TextBlock Margin="0,0,8,0"
+                                                                    FontWeight="SemiBold"
+                                                                    Text="{Binding Label}" />
+                                                         <Border IsVisible="{Binding HasStatus}"
+                                                                 Margin="0,0,0,4"
+                                                                 Padding="8,3"
+                                                                 CornerRadius="8"
+                                                                 Background="{Binding StatusBadgeBackgroundBrush}"
+                                                                 BorderBrush="{Binding StatusBadgeBorderBrush}"
+                                                                 BorderThickness="1">
+                                                             <TextBlock FontSize="12"
+                                                                        FontWeight="SemiBold"
+                                                                        Foreground="{Binding StatusBadgeForegroundBrush}"
+                                                                        Text="{Binding StatusLabel}" />
+                                                         </Border>
+                                                     </WrapPanel>
+                                                     <TextBlock FontSize="13"
+                                                                Opacity="0.72"
+                                                                Text="{Binding Description}"
+                                                                TextWrapping="Wrap" />
+                                                     <TextBlock IsVisible="{Binding HasStateSummary}"
+                                                                FontSize="13"
+                                                                Opacity="0.82"
+                                                                Text="{Binding StateSummary}"
+                                                                TextWrapping="Wrap" />
+                                                 </StackPanel>
+                                             </DataTemplate>
+                                         </ComboBox.ItemTemplate>
+                                     </ComboBox>
+                                     <TextBlock FontSize="13"
+                                                Opacity="0.76"
+                                                Text="{Binding SelectedMemoryWatcherPreferredBackendStateSummary}"
+                                                TextWrapping="Wrap" />
+
+                                     <Border Height="1"
+                                             Margin="0,4,0,0"
+                                             Background="{DynamicResource SukiControlBorderBrush}" />
+
+                                     <TextBlock Opacity="0.8" Text="Preferred precision" />
+                                     <ComboBox ItemsSource="{Binding PreferredMemoryWatcherPrecisionOptions}"
+                                               IsEnabled="{Binding CanEditMemoryWatcherPreferredPrecision}"
+                                               SelectedItem="{Binding SelectedMemoryWatcherPreferredPrecisionOption, Mode=TwoWay}">
+                                         <ComboBox.ItemTemplate>
+                                             <DataTemplate>
+                                                 <StackPanel Spacing="4">
+                                                     <WrapPanel Orientation="Horizontal">
+                                                         <TextBlock Margin="0,0,8,0"
+                                                                    FontWeight="SemiBold"
+                                                                    Text="{Binding Label}" />
+                                                         <Border IsVisible="{Binding HasStatus}"
+                                                                 Margin="0,0,0,4"
+                                                                 Padding="8,3"
+                                                                 CornerRadius="8"
+                                                                 Background="{Binding StatusBadgeBackgroundBrush}"
+                                                                 BorderBrush="{Binding StatusBadgeBorderBrush}"
+                                                                 BorderThickness="1">
+                                                             <TextBlock FontSize="12"
+                                                                        FontWeight="SemiBold"
+                                                                        Foreground="{Binding StatusBadgeForegroundBrush}"
+                                                                        Text="{Binding StatusLabel}" />
+                                                         </Border>
+                                                     </WrapPanel>
+                                                     <TextBlock FontSize="13"
+                                                                Opacity="0.72"
+                                                                Text="{Binding Description}"
+                                                                TextWrapping="Wrap" />
+                                                     <TextBlock IsVisible="{Binding HasStateSummary}"
+                                                                FontSize="13"
+                                                                Opacity="0.82"
+                                                                Text="{Binding StateSummary}"
+                                                                TextWrapping="Wrap" />
+                                                 </StackPanel>
+                                             </DataTemplate>
+                                         </ComboBox.ItemTemplate>
+                                     </ComboBox>
+                                     <TextBlock FontSize="13"
+                                                Opacity="0.76"
+                                                Text="{Binding SelectedMemoryWatcherPreferredPrecisionStateSummary}"
+                                                TextWrapping="Wrap" />
+
+                                     <TextBlock IsVisible="{Binding IsMemoryWatcherPreferredPrecisionLocked}"
+                                                FontSize="13"
+                                                Opacity="0.72"
+                                                Text="Precision is locked because the selected backend has a fixed observation model."
+                                                TextWrapping="Wrap" />
+
+                                     <Border Height="1"
+                                             Margin="0,4,0,0"
+                                             Background="{DynamicResource SukiControlBorderBrush}" />
+
+                                     <CheckBox Content="Allow fallback when the preferred backend cannot be created"
+                                               IsChecked="{Binding MemoryWatcherAllowFallback}" />
+                                    <CheckBox Content="Allow intrusive backends when the host supports them"
+                                              IsChecked="{Binding MemoryWatcherAllowIntrusiveBackends}" />
+                                    <CheckBox Content="Use hash index for grouped snapshots"
+                                              IsChecked="{Binding MemoryWatcherUseHashIndex}" />
+                                </StackPanel>
+                            </suki:GlassCard>
+
+                            <suki:GlassCard Grid.Column="1" Padding="18">
+                                <StackPanel Spacing="10">
+                                    <TextBlock FontSize="20" FontWeight="SemiBold" Text="Advanced Runtime Tuning" />
+                                    <TextBlock Opacity="0.78"
+                                               Text="These values control which native runtime OT2 loads and how the MemoryWatcher session buffers and groups its work."
+                                               TextWrapping="Wrap" />
+
+                                    <TextBlock Opacity="0.8" Text="Native library override" />
+                                    <TextBox Text="{Binding MemoryWatcherNativeLibraryPath, Mode=TwoWay}"
+                                             Watermark="Optional absolute path" />
+
+                                    <TextBlock Opacity="0.8" Text="Event buffer capacity" />
+                                    <NumericUpDown Minimum="1"
+                                                   Maximum="65536"
+                                                   Increment="64"
+                                                   FormatString="F0"
+                                                   Value="{Binding MemoryWatcherEventBufferCapacity, Mode=TwoWay}" />
+
+                                    <TextBlock Opacity="0.8" Text="Hash block size (bytes)" />
+                                    <NumericUpDown Minimum="16"
+                                                   Maximum="4096"
+                                                   Increment="16"
+                                                   FormatString="F0"
+                                                   Value="{Binding MemoryWatcherHashBlockSizeBytes, Mode=TwoWay}" />
+                                </StackPanel>
+                            </suki:GlassCard>
+                        </Grid>
+
+                        <suki:GlassCard Padding="18">
+                            <StackPanel Spacing="10">
+                                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Current Request Preview" />
+                                <TextBlock Opacity="0.78"
+                                           Text="This shows the exact request OT2 is making now, the host verdict for that backend, and whether OT2 can use it immediately or only after an explicit next step. For advanced wake strategies, OT2 still decodes from grouped snapshots after the signal fires."
+                                           TextWrapping="Wrap" />
+                                <TextBlock FontSize="13"
+                                           Opacity="0.82"
+                                           Text="{Binding MemoryWatcherPolicySummary}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </suki:GlassCard>
+
+                        <suki:GlassCard Padding="18">
+                            <StackPanel Spacing="12">
+                                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Detected MemoryWatcher Strategies" />
+                                <TextBlock Opacity="0.78"
+                                           Text="These are the generic observation strategies MemoryWatcher knows about for the current host and target. OT2 groups them below by what works now, what is one explicit step away, what still needs new OT2 or helper wiring, and what this machine or runtime cannot expose."
+                                           TextWrapping="Wrap" />
+
+                                <StackPanel IsVisible="{Binding HasReadyMemoryWatcherCapabilityCards}"
+                                            Spacing="10">
+                                    <Border Height="1" Background="{DynamicResource SukiControlBorderBrush}" />
+                                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="Ready To Use Now" />
+                                    <TextBlock FontSize="13"
+                                               Opacity="0.82"
+                                               Text="{Binding ReadyMemoryWatcherCapabilitySummary}"
+                                               TextWrapping="Wrap" />
+                                    <ItemsControl ItemsSource="{Binding ReadyMemoryWatcherCapabilityCards}"
+                                                  ItemTemplate="{StaticResource MemoryWatcherCapabilityCardTemplate}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                </StackPanel>
+
+                                <StackPanel IsVisible="{Binding HasActionableMemoryWatcherCapabilityCards}"
+                                            Spacing="10">
+                                    <Border Height="1" Background="{DynamicResource SukiControlBorderBrush}" />
+                                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="Actionable Next Step" />
+                                    <TextBlock FontSize="13"
+                                               Opacity="0.82"
+                                               Text="{Binding ActionableMemoryWatcherCapabilitySummary}"
+                                               TextWrapping="Wrap" />
+                                    <ItemsControl ItemsSource="{Binding ActionableMemoryWatcherCapabilityCards}"
+                                                  ItemTemplate="{StaticResource MemoryWatcherCapabilityCardTemplate}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                </StackPanel>
+
+                                <StackPanel IsVisible="{Binding HasFutureMemoryWatcherCapabilityCards}"
+                                            Spacing="10">
+                                    <Border Height="1" Background="{DynamicResource SukiControlBorderBrush}" />
+                                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="Needs New OT2 Or Helper Work" />
+                                    <TextBlock FontSize="13"
+                                               Opacity="0.82"
+                                               Text="{Binding FutureMemoryWatcherCapabilitySummary}"
+                                               TextWrapping="Wrap" />
+                                    <ItemsControl ItemsSource="{Binding FutureMemoryWatcherCapabilityCards}"
+                                                  ItemTemplate="{StaticResource MemoryWatcherCapabilityCardTemplate}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                </StackPanel>
+
+                                <StackPanel IsVisible="{Binding HasUnavailableMemoryWatcherCapabilityCards}"
+                                            Spacing="10">
+                                    <Border Height="1" Background="{DynamicResource SukiControlBorderBrush}" />
+                                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="Unavailable Here" />
+                                    <TextBlock FontSize="13"
+                                               Opacity="0.82"
+                                               Text="{Binding UnavailableMemoryWatcherCapabilitySummary}"
+                                               TextWrapping="Wrap" />
+                                    <ItemsControl ItemsSource="{Binding UnavailableMemoryWatcherCapabilityCards}"
+                                                  ItemTemplate="{StaticResource MemoryWatcherCapabilityCardTemplate}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
                         </suki:GlassCard>
                     </StackPanel>
@@ -190,8 +791,6 @@ mc:Ignorable="d">
                                            TextWrapping="Wrap" />
                             </StackPanel>
                         </suki:GlassCard>
-
-                        <TextBlock Foreground="IndianRed" Text="{Binding ValidationMessage}" TextWrapping="Wrap" />
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -212,8 +811,6 @@ mc:Ignorable="d">
                                 <TextBlock Opacity="0.8" Text="Lobby title matching still uses text. Scenario matching now uses an exact scenario selection from the known enum values." TextWrapping="Wrap" />
                             </StackPanel>
                         </suki:GlassCard>
-
-                        <TextBlock Foreground="IndianRed" Text="{Binding ValidationMessage}" TextWrapping="Wrap" />
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -230,6 +827,13 @@ mc:Ignorable="d">
 
                                 <CheckBox Content="Generate run reports"
                                           IsChecked="{Binding GenerateRunReports}" />
+
+                                <TextBlock FontWeight="SemiBold" Text="Output Directory" />
+                                <TextBlock Opacity="0.8"
+                                           Text="Relative paths are resolved under the app directory. Leave blank to use the default reports folder."
+                                           TextWrapping="Wrap" />
+                                <TextBox Text="{Binding ReportOutputDirectory, Mode=TwoWay}"
+                                         Watermark="reports" />
 
                                 <Border Height="1" Margin="0,4,0,4" Background="{DynamicResource SukiControlBorderBrush}" />
 
@@ -249,8 +853,6 @@ mc:Ignorable="d">
                                           IsEnabled="{Binding GenerateRunReports}" />
                             </StackPanel>
                         </suki:GlassCard>
-
-                        <TextBlock Foreground="IndianRed" Text="{Binding ValidationMessage}" TextWrapping="Wrap" />
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

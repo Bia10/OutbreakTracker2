@@ -5,6 +5,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OutbreakTracker2.Application.Pages;
 using OutbreakTracker2.Application.Services;
+using OutbreakTracker2.Application.Services.Capabilities;
+using OutbreakTracker2.Application.Services.Launcher;
 using OutbreakTracker2.Application.Services.Settings;
 using OutbreakTracker2.Application.Views.Dashboard.ClientOverview.EmbeddedGame;
 using OutbreakTracker2.Application.Views.Settings;
@@ -49,6 +51,8 @@ internal sealed partial class OutbreakTracker2ViewModel : ObservableObject, IDis
         ISukiToastManager toastManager,
         ISukiDialogManager dialogManager,
         IAppSettingsService settingsService,
+        IMemoryBackendCapabilityService memoryBackendCapabilityService,
+        IProcessLauncher processLauncher,
         EmbeddedGameViewModel embeddedGameViewModel
     )
     {
@@ -127,7 +131,16 @@ internal sealed partial class OutbreakTracker2ViewModel : ObservableObject, IDis
             DialogManager
                 .CreateDialog()
                 .WithTitle("Settings")
-                .WithViewModel(dialog => new AppSettingsDialogViewModel(settingsService, ToastManager, dialog), false)
+                .WithViewModel(
+                    dialog => new AppSettingsDialogViewModel(
+                        settingsService,
+                        memoryBackendCapabilityService,
+                        processLauncher,
+                        ToastManager,
+                        dialog
+                    ),
+                    false
+                )
                 .Dismiss()
                 .ByClickingBackground()
                 .TryShow();

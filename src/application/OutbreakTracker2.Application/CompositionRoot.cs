@@ -10,6 +10,7 @@ using OutbreakTracker2.Application.SerilogSinks;
 using OutbreakTracker2.Application.Services;
 using OutbreakTracker2.Application.Services.Atlas;
 using OutbreakTracker2.Application.Services.Atlas.Models;
+using OutbreakTracker2.Application.Services.Capabilities;
 using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Dispatcher;
 using OutbreakTracker2.Application.Services.Embedding;
@@ -137,9 +138,6 @@ internal static class CompositionRoot
 
     private static void AddCoreServices(IServiceCollection services, IConfiguration configuration)
     {
-        RunReportOptions runReportOptions =
-            configuration.GetSection(RunReportOptions.SectionName).Get<RunReportOptions>() ?? new RunReportOptions();
-
         services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<PageNavigationService>();
         services.AddSingleton<ISukiToastManager, SukiToastManager>();
@@ -162,7 +160,10 @@ internal static class CompositionRoot
         services.AddSingleton<MemoryWatcherSettings>(sp =>
             sp.GetRequiredService<IAppSettingsService>().Current.MemoryWatcher
         );
-        services.AddSingleton(runReportOptions);
+        services.AddSingleton(sp => new RunReportOptions
+        {
+            OutputDirectory = sp.GetRequiredService<IAppSettingsService>().Current.RunReports.OutputDirectory,
+        });
         services.AddSingleton<IEntityTrackerFactory, EntityTrackerFactory>();
         services.AddSingleton<IAlertRuleProvider<DecodedEnemy>, EnemyAlertRulesProvider>();
         services.AddSingleton<IAlertRuleProvider<DecodedDoor>, DoorAlertRulesProvider>();
@@ -191,6 +192,7 @@ internal static class CompositionRoot
         services.AddSingleton<IGameClientFactory, GameClientFactory>();
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
         services.AddSingleton<IGameClientConnectionService, GameClientConnectionService>();
+        services.AddSingleton<IMemoryBackendCapabilityService, MemoryBackendCapabilityService>();
     }
 
     private static void AddPlatformServices(IServiceCollection services)
@@ -198,8 +200,10 @@ internal static class CompositionRoot
         services.AddSingleton<IMemoryWatchSessionFactory>(sp => new NativeMemoryWatchSessionFactory(
             sp.GetRequiredService<MemoryWatcherSettings>().NativeLibraryPath
         ));
+        services.AddSingleton<IMemoryWatchNegotiationService, MemoryWatchNegotiationService>();
         services.AddSingleton<IOutbreakTrackerMemoryRegionCatalog, OutbreakTrackerMemoryRegionCatalog>();
         services.AddSingleton<MemoryWatcherSnapshotCache>();
+        services.AddSingleton<IMemoryActivitySource>(sp => sp.GetRequiredService<MemoryWatcherSnapshotCache>());
         services.AddSingleton<SnapshotBackedSafeMemoryReader>();
         services.AddSingleton<SnapshotBackedStringReader>();
 

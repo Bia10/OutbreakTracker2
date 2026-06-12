@@ -255,6 +255,9 @@ public sealed class AppSettingsService : IAppSettingsService
             Notifications = overrides.Notifications ?? defaults.Notifications,
             Display = MergeSettings(defaults.Display, overrides.Display),
             AlertRules = MergeSettings(defaults.AlertRules, overrides.AlertRules),
+            RunReports = overrides.RunReports ?? defaults.RunReports,
+            DataManager = overrides.DataManager ?? defaults.DataManager,
+            MemoryWatcher = overrides.MemoryWatcher ?? defaults.MemoryWatcher,
         };
     }
 

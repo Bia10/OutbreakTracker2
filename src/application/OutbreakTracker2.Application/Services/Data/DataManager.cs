@@ -1,5 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using OutbreakTracker2.Application.Services.Launcher;
+using OutbreakTracker2.Extensions;
+using OutbreakTracker2.MemoryWatcherIntegration;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Readers;
@@ -14,12 +17,23 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
     private const int InitializeStateIdle = 0;
     private const int InitializeStateInitializing = 1;
     private const int InitializeStateInitialized = 2;
+    private static readonly TimeSpan UpdateLoopShutdownTimeout = TimeSpan.FromSeconds(2);
+    private const OutbreakTrackerMemoryDomains InGameDomains =
+        OutbreakTrackerMemoryDomains.Scenario
+        | OutbreakTrackerMemoryDomains.InGamePlayers
+        | OutbreakTrackerMemoryDomains.Enemies
+        | OutbreakTrackerMemoryDomains.Doors;
+    private const OutbreakTrackerMemoryDomains LobbyDomains =
+        OutbreakTrackerMemoryDomains.LobbyRoom
+        | OutbreakTrackerMemoryDomains.LobbyRoomPlayers
+        | OutbreakTrackerMemoryDomains.LobbySlots;
     private int _disposeState;
     private int _initializeState;
-    private readonly ILogger<IDataManager> _logger;
+    private readonly ILogger<DataManager> _logger;
     private readonly IEEmemMemory _eememMemory;
+    private readonly IMemoryActivitySource _memoryActivitySource;
     private readonly IGameReaderFactory _readerFactory;
-    private IDisposable? _updateSubscription;
+    private Task? _updateLoopTask;
     private IDisposable? _loggingSubscriptions;
     private IDisposable? _processSubscription;
     private CancellationTokenSource? _updateCts;
@@ -66,6 +80,7 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
     public DataManager(
         ILogger<DataManager> logger,
         IEEmemMemory eememMemory,
+        IMemoryActivitySource memoryActivitySource,
         IProcessLauncher processLauncher,
         IGameReaderFactory readerFactory,
         DataManagerOptions options
@@ -73,6 +88,7 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
     {
         _logger = logger;
         _eememMemory = eememMemory;
+        _memoryActivitySource = memoryActivitySource;
         _readerFactory = readerFactory;
         ArgumentNullException.ThrowIfNull(options);
 
@@ -92,6 +108,17 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
             throw new InvalidOperationException($"DataManager option '{optionName}' must be greater than zero.");
 
         return TimeSpan.FromMilliseconds(intervalMilliseconds);
+    }
+
+    private static string GetProcessNameForDiagnostics(IGameClient gameClient)
+    {
+        return gameClient.Process.GetSafeName() ?? "unknown";
+    }
+
+    private static int GetProcessIdForDiagnostics(IGameClient gameClient)
+    {
+        Process? process = gameClient.Process;
+        return process is null ? -1 : process.GetSafeId();
     }
 
     private static void CancelAndDispose(CancellationTokenSource? cancellationTokenSource)
@@ -182,8 +209,10 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
                 .ConfigureAwait(false);
             if (!eememInitialized)
             {
+                string processName = GetProcessNameForDiagnostics(gameClient);
+                int processId = GetProcessIdForDiagnostics(gameClient);
                 throw new InvalidOperationException(
-                    $"Failed to initialize EEmemory for process '{gameClient.Process?.ProcessName}' (PID: {gameClient.Process?.Id})."
+                    $"Failed to initialize EEmemory for process '{processName}' (PID: {processId})."
                 );
             }
 
@@ -195,70 +224,18 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
             _lobbyRoomReader = _readerFactory.CreateLobbyRoomReader(gameClient, _eememMemory);
             _lobbySlotReader = _readerFactory.CreateLobbySlotReader(gameClient, _eememMemory);
 
-            _updateSubscription?.Dispose();
-            _updateSubscription = null;
-
             CancellationTokenSource updateCts = new();
             CancelAndDispose(Interlocked.Exchange(ref _updateCts, updateCts));
-
-            Observable<Unit> fastUpdateTrigger = Observable.Interval(_fastUpdateInterval, updateCts.Token);
-            Observable<Unit> slowUpdateTrigger = Observable.Interval(_slowUpdateInterval, updateCts.Token);
-
-            // Each Observable.Interval emits one value at a time on the thread pool. The Subscribe
-            // callback runs synchronously per emission, so consecutive Update calls within the same
-            // loop are serialized. The fast and slow loops are on separate intervals and can overlap
-            // each other, but they write to independent parts of the store (in-game vs lobby data).
-            IDisposable? fastSubscription = null;
-            IDisposable? slowSubscription = null;
-
-            try
+            CancellationToken updateToken = updateCts.Token;
+            Task updateLoopTask = Task.Run(() => RunUpdateLoopAsync(updateToken), CancellationToken.None);
+            Task? previousUpdateLoopTask = Interlocked.Exchange(ref _updateLoopTask, updateLoopTask);
+            if (previousUpdateLoopTask is not null && !previousUpdateLoopTask.IsCompleted)
             {
-                fastSubscription = fastUpdateTrigger
-                    .Where(_ => IsInScenario())
-                    .ObserveOnThreadPool()
-                    .Subscribe(_ =>
-                    {
-                        try
-                        {
-                            UpdateCoreGameData();
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error during fast update cycle");
-                        }
-                    });
-
-                slowSubscription = slowUpdateTrigger
-                    .Where(_ => !IsInScenario())
-                    .ObserveOnThreadPool()
-                    .Subscribe(_ =>
-                    {
-                        try
-                        {
-                            UpdateLobbyData();
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error during slow update cycle");
-                        }
-                    });
-
-                _updateSubscription = Disposable.Combine(fastSubscription, slowSubscription);
-            }
-            catch
-            {
-                fastSubscription?.Dispose();
-                slowSubscription?.Dispose();
-
-                CancellationTokenSource? activeUpdateCts = Interlocked.CompareExchange(ref _updateCts, null, updateCts);
-                if (ReferenceEquals(activeUpdateCts, updateCts))
-                    CancelAndDispose(updateCts);
-
-                throw;
+                _logger.LogWarning("Replacing an existing DataManager update loop during initialization.");
             }
 
             Volatile.Write(ref _initializeState, InitializeStateInitialized);
-            _logger.LogInformation("Data manager has been initialized and update loop started");
+            _logger.LogInformation("Data manager has been initialized and wait-driven update loop started");
         }
         catch
         {
@@ -404,13 +381,191 @@ public sealed class DataManager : IDataManager, ICurrentScenarioState, IDisposab
         return reader is not null && reader.IsInScenario();
     }
 
+    private async Task RunUpdateLoopAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            try
+            {
+                RunCurrentUpdateCycle();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during initial update cycle");
+            }
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                OutbreakTrackerMemoryActivityResult activity = await _memoryActivitySource
+                    .WaitForActivityAsync(GetCurrentUpdateInterval(), cancellationToken)
+                    .ConfigureAwait(false);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                try
+                {
+                    if (!TryRunSelectiveUpdate(activity))
+                    {
+                        RunCurrentUpdateCycle();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during update cycle");
+                }
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
+    }
+
+    private TimeSpan GetCurrentUpdateInterval() => IsInScenario() ? _fastUpdateInterval : _slowUpdateInterval;
+
+    private void RunCurrentUpdateCycle()
+    {
+        if (IsInScenario())
+        {
+            UpdateCoreGameData();
+            return;
+        }
+
+        UpdateLobbyData();
+    }
+
+    private bool TryRunSelectiveUpdate(OutbreakTrackerMemoryActivityResult activity)
+    {
+        if (!activity.HasActivity)
+        {
+            return false;
+        }
+
+        if (IsInScenario())
+        {
+            OutbreakTrackerMemoryDomains inGameDomains = activity.Domains & InGameDomains;
+            if (inGameDomains == OutbreakTrackerMemoryDomains.None)
+            {
+                return false;
+            }
+
+            RunSelectiveInGameUpdate(inGameDomains);
+            return true;
+        }
+
+        OutbreakTrackerMemoryDomains lobbyDomains = activity.Domains & LobbyDomains;
+        if (lobbyDomains == OutbreakTrackerMemoryDomains.None)
+        {
+            return false;
+        }
+
+        RunSelectiveLobbyUpdate(lobbyDomains);
+        return true;
+    }
+
+    private void RunSelectiveInGameUpdate(OutbreakTrackerMemoryDomains domains)
+    {
+        _wasInScenario = true;
+        _store.IsAtLobbyState.Value = false;
+
+        ScenarioStatus previousStatus = _store.InGameScenarioState.Value.Status;
+        bool scenarioUpdated = domains.HasFlag(OutbreakTrackerMemoryDomains.Scenario);
+        if (scenarioUpdated)
+        {
+            UpdateInGameScenario();
+        }
+
+        ScenarioStatus scenarioStatus = _store.InGameScenarioState.Value.Status;
+        if (!scenarioStatus.IsGameplayActive())
+        {
+            if (scenarioUpdated && !scenarioStatus.IsTransitional())
+            {
+                ClearLiveGameplayData();
+            }
+
+            PublishInGameOverviewSnapshot();
+            return;
+        }
+
+        bool refreshAllGameplay = scenarioUpdated && !previousStatus.IsGameplayActive();
+        if (refreshAllGameplay || domains.HasFlag(OutbreakTrackerMemoryDomains.Doors))
+        {
+            UpdateDoors();
+        }
+
+        if (refreshAllGameplay || domains.HasFlag(OutbreakTrackerMemoryDomains.Enemies))
+        {
+            UpdateEnemies();
+        }
+
+        if (refreshAllGameplay || domains.HasFlag(OutbreakTrackerMemoryDomains.InGamePlayers))
+        {
+            UpdateInGamePlayer();
+        }
+
+        PublishInGameOverviewSnapshot();
+    }
+
+    private void RunSelectiveLobbyUpdate(OutbreakTrackerMemoryDomains domains)
+    {
+        UpdateLobbyRoom();
+        DecodedLobbyRoom lobbyRoom = _lobbyRoomReader?.DecodedLobbyRoom ?? new DecodedLobbyRoom();
+
+        if (_wasInScenario)
+        {
+            if (!_postGameLobbyStatuses.Contains(lobbyRoom.Status))
+            {
+                return;
+            }
+
+            _wasInScenario = false;
+            ResetInGameData();
+        }
+
+        bool isAtLobby = LobbyStatusPolicy.IsActive(lobbyRoom);
+        _store.IsAtLobbyState.Value = isAtLobby;
+        if (!isAtLobby)
+        {
+            return;
+        }
+
+        _store.LobbyRoomState.Value = lobbyRoom;
+
+        if (domains.HasFlag(OutbreakTrackerMemoryDomains.LobbyRoomPlayers))
+        {
+            UpdateLobbyRoomPlayers();
+        }
+
+        if (domains.HasFlag(OutbreakTrackerMemoryDomains.LobbySlots))
+        {
+            UpdateLobbySlots();
+        }
+    }
+
+    private void WaitForUpdateLoopShutdown(Task? updateLoopTask)
+    {
+        if (updateLoopTask is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (!updateLoopTask.Wait(UpdateLoopShutdownTimeout))
+            {
+                _logger.LogWarning(
+                    "DataManager update loop did not stop within {TimeoutMilliseconds} ms.",
+                    UpdateLoopShutdownTimeout.TotalMilliseconds
+                );
+            }
+        }
+        catch (AggregateException ex) when (ex.InnerException is OperationCanceledException) { }
+    }
+
     private void StopUpdateLoops()
     {
+        Task? updateLoopTask = Interlocked.Exchange(ref _updateLoopTask, null);
         CancellationTokenSource? updateCts = Interlocked.Exchange(ref _updateCts, null);
         CancelAndDispose(updateCts);
-
-        _updateSubscription?.Dispose();
-        _updateSubscription = null;
+        WaitForUpdateLoopShutdown(updateLoopTask);
+        _memoryActivitySource.Detach();
 
         _doorReader?.Dispose();
         _doorReader = null;

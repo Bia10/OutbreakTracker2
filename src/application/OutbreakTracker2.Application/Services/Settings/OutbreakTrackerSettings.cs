@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using MemoryWatcher;
 using OutbreakTracker2.MemoryWatcherIntegration;
 
 namespace OutbreakTracker2.Application.Services.Settings;
@@ -141,6 +142,12 @@ public sealed record OutbreakTrackerSettings
             return false;
         }
 
+        if (RunReports.GenerateRunReports && !RunReports.WriteMarkdown && !RunReports.WriteCsv && !RunReports.WriteHtml)
+        {
+            error = "OutbreakTracker:RunReports must enable at least one output format when generation is enabled.";
+            return false;
+        }
+
         if (MemoryWatcher.EventBufferCapacity <= 0)
         {
             error = "OutbreakTracker:MemoryWatcher:EventBufferCapacity must be greater than 0.";
@@ -153,7 +160,31 @@ public sealed record OutbreakTrackerSettings
             return false;
         }
 
+        if (!IsCompatibleMemoryWatcherPreference(MemoryWatcher.PreferredBackend, MemoryWatcher.PreferredPrecision))
+        {
+            error =
+                $"OutbreakTracker:MemoryWatcher:PreferredPrecision '{MemoryWatcher.PreferredPrecision}' is not compatible with PreferredBackend '{MemoryWatcher.PreferredBackend}'.";
+            return false;
+        }
+
         error = null;
         return true;
+    }
+
+    private static bool IsCompatibleMemoryWatcherPreference(WatchBackendKind backend, WatchPrecision precision)
+    {
+        return backend switch
+        {
+            WatchBackendKind.Auto => true,
+            WatchBackendKind.Snapshot or WatchBackendKind.HashIndexedSnapshot or WatchBackendKind.SegmentedSnapshot =>
+                precision == WatchPrecision.SnapshotBitExact,
+            WatchBackendKind.DirtyPage => precision == WatchPrecision.DirtyPageThenBitDiff,
+            WatchBackendKind.SoftDirty => precision == WatchPrecision.SoftDirtyThenBitDiff,
+            WatchBackendKind.PageFault => precision == WatchPrecision.PageFaultThenBitDiff,
+            WatchBackendKind.HardwareWatchpoint => precision == WatchPrecision.HardwareAddressExact,
+            WatchBackendKind.DirtyRange or WatchBackendKind.NativeAgent => precision
+                == WatchPrecision.DirtyRangeThenBitDiff,
+            _ => false,
+        };
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using ObservableCollections;
 using OutbreakTracker2.Application.Services.Launcher;
 using OutbreakTracker2.Application.Services.Toasts;
-using OutbreakTracker2.Application.Utilities;
+using OutbreakTracker2.Extensions;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientAlreadyRunning;
 

@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using OutbreakTracker2.Application.Services.Settings;
+using OutbreakTracker2.MemoryWatcherIntegration;
 
 namespace OutbreakTracker2.UnitTests;
 
@@ -40,6 +41,24 @@ public sealed class AppSettingsServiceTests
                         ScenarioMatchCreated = true,
                         ScenarioMatchFilter = "Wild things",
                     },
+                },
+                RunReports = new RunReportSettings
+                {
+                    GenerateRunReports = true,
+                    OutputDirectory = "custom-reports",
+                    WriteMarkdown = true,
+                    WriteCsv = false,
+                    WriteHtml = true,
+                },
+                DataManager = new DataManagerSettings { FastUpdateIntervalMs = 111, SlowUpdateIntervalMs = 777 },
+                MemoryWatcher = new MemoryWatcherSettings
+                {
+                    Backend = MemoryBackendMode.MemoryWatcher,
+                    NativeLibraryPath = "C:\\mw\\MemoryWatcher.RemoteAot.dll",
+                    AllowIntrusiveBackends = true,
+                    EventBufferCapacity = 1024,
+                    HashBlockSizeBytes = 128,
+                    UseHashIndex = false,
                 },
             }
         );
@@ -102,6 +121,21 @@ public sealed class AppSettingsServiceTests
             )
             .IsEqualTo(88);
         await Assert
+            .That(settingsElement.GetProperty("RunReports").GetProperty("OutputDirectory").GetString())
+            .IsEqualTo("custom-reports");
+        await Assert
+            .That(settingsElement.GetProperty("DataManager").GetProperty("FastUpdateIntervalMs").GetInt32())
+            .IsEqualTo(111);
+        await Assert
+            .That(settingsElement.GetProperty("DataManager").GetProperty("SlowUpdateIntervalMs").GetInt32())
+            .IsEqualTo(777);
+        await Assert
+            .That(settingsElement.GetProperty("MemoryWatcher").GetProperty("Backend").GetString())
+            .IsEqualTo("MemoryWatcher");
+        await Assert
+            .That(settingsElement.GetProperty("MemoryWatcher").GetProperty("EventBufferCapacity").GetInt32())
+            .IsEqualTo(1024);
+        await Assert
             .That(
                 settingsElement
                     .GetProperty("AlertRules")
@@ -131,23 +165,42 @@ public sealed class AppSettingsServiceTests
                 """
                 {
                   "OutbreakTracker": {
-                                        "Display": {
-                                            "ShowGameplayUiDuringTransitions": true
-                                        },
-                                        "Notifications": {
-                                            "EnableToastAlerts": false
+                    "Display": {
+                      "ShowGameplayUiDuringTransitions": true
                     },
-                                        "AlertRules": {
-                                            "Players": {
-                                                "VirusWarningThreshold": 61,
-                                                "VirusCriticalThreshold": 89
-                                            },
-                                                                                        "Lobby": {
-                                                                                                "NameMatchCreated": true,
-                                                                                                "NameMatchFilter": "Night",
-                                                                                                "ScenarioMatchCreated": true,
-                                                                                                                                                                                                "ScenarioMatchFilter": "Wild things"
+                    "Notifications": {
+                      "EnableToastAlerts": false
+                    },
+                    "AlertRules": {
+                      "Players": {
+                        "VirusWarningThreshold": 61,
+                        "VirusCriticalThreshold": 89
+                      },
+                      "Lobby": {
+                        "NameMatchCreated": true,
+                        "NameMatchFilter": "Night",
+                        "ScenarioMatchCreated": true,
+                        "ScenarioMatchFilter": "Wild things"
                       }
+                    },
+                    "RunReports": {
+                      "GenerateRunReports": true,
+                      "OutputDirectory": "memory-reports",
+                      "WriteMarkdown": false,
+                      "WriteCsv": true,
+                      "WriteHtml": true
+                    },
+                    "DataManager": {
+                      "FastUpdateIntervalMs": 123,
+                      "SlowUpdateIntervalMs": 456
+                    },
+                    "MemoryWatcher": {
+                      "Backend": "MemoryWatcher",
+                      "NativeLibraryPath": "/tmp/mw/libMemoryWatcher.RemoteAot.so",
+                      "AllowIntrusiveBackends": true,
+                      "EventBufferCapacity": 2048,
+                      "HashBlockSizeBytes": 96,
+                      "UseHashIndex": false
                     }
                   }
                 }
@@ -173,6 +226,20 @@ public sealed class AppSettingsServiceTests
         await Assert.That(service.Current.Display.ScenarioItemsDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(importedSettings.Display.ScenarioItemsDock.ProjectAllOntoMap).IsFalse();
         await Assert.That(service.Current.Display.ScenarioItemsDock.ProjectAllOntoMap).IsFalse();
+        await Assert.That(importedSettings.RunReports.OutputDirectory).IsEqualTo("memory-reports");
+        await Assert.That(importedSettings.RunReports.WriteMarkdown).IsFalse();
+        await Assert.That(importedSettings.RunReports.WriteCsv).IsTrue();
+        await Assert.That(service.Current.RunReports.OutputDirectory).IsEqualTo("memory-reports");
+        await Assert.That(service.Current.DataManager.FastUpdateIntervalMs).IsEqualTo(123);
+        await Assert.That(service.Current.DataManager.SlowUpdateIntervalMs).IsEqualTo(456);
+        await Assert.That(service.Current.MemoryWatcher.Backend).IsEqualTo(MemoryBackendMode.MemoryWatcher);
+        await Assert
+            .That(service.Current.MemoryWatcher.NativeLibraryPath)
+            .IsEqualTo("/tmp/mw/libMemoryWatcher.RemoteAot.so");
+        await Assert.That(service.Current.MemoryWatcher.AllowIntrusiveBackends).IsTrue();
+        await Assert.That(service.Current.MemoryWatcher.EventBufferCapacity).IsEqualTo(2048);
+        await Assert.That(service.Current.MemoryWatcher.HashBlockSizeBytes).IsEqualTo(96);
+        await Assert.That(service.Current.MemoryWatcher.UseHashIndex).IsFalse();
         await Assert.That(File.Exists(environment.UserSettingsPath)).IsTrue();
 
         using JsonDocument jsonDocument = JsonDocument.Parse(await File.ReadAllTextAsync(environment.UserSettingsPath));
@@ -237,7 +304,51 @@ public sealed class AppSettingsServiceTests
         await Assert.That(resetSettings.Display.EntitiesDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(resetSettings.Display.ScenarioItemsDock.OnlyShowCurrentPlayerRoom).IsTrue();
         await Assert.That(resetSettings.Display.ScenarioItemsDock.ProjectAllOntoMap).IsFalse();
+        await Assert.That(resetSettings.RunReports.OutputDirectory).IsEqualTo("reports");
+        await Assert.That(resetSettings.DataManager.FastUpdateIntervalMs).IsEqualTo(250);
+        await Assert.That(resetSettings.DataManager.SlowUpdateIntervalMs).IsEqualTo(500);
+        await Assert.That(resetSettings.MemoryWatcher.Backend).IsEqualTo(MemoryBackendMode.MemoryWatcher);
+        await Assert.That(resetSettings.MemoryWatcher.EventBufferCapacity).IsEqualTo(256);
+        await Assert.That(resetSettings.MemoryWatcher.HashBlockSizeBytes).IsEqualTo(64);
         await Assert.That(service.Current.Notifications.EnableToastAlerts).IsTrue();
+    }
+
+    [Test]
+    public async Task CreateService_LoadsUserOverrides_ForRunReportsDataManagerAndMemoryWatcher()
+    {
+        using TestSettingsEnvironment environment = new(
+            """
+            {
+                "OutbreakTracker": {
+                    "RunReports": {
+                        "OutputDirectory": "overridden-reports",
+                        "WriteCsv": false
+                    },
+                    "DataManager": {
+                        "FastUpdateIntervalMs": 99,
+                        "SlowUpdateIntervalMs": 199
+                    },
+                    "MemoryWatcher": {
+                        "Backend": "MemoryWatcher",
+                        "EventBufferCapacity": 4096,
+                        "HashBlockSizeBytes": 160,
+                        "UseHashIndex": false
+                    }
+                }
+            }
+            """
+        );
+
+        using AppSettingsService service = environment.CreateService();
+
+        await Assert.That(service.Current.RunReports.OutputDirectory).IsEqualTo("overridden-reports");
+        await Assert.That(service.Current.RunReports.WriteCsv).IsFalse();
+        await Assert.That(service.Current.DataManager.FastUpdateIntervalMs).IsEqualTo(99);
+        await Assert.That(service.Current.DataManager.SlowUpdateIntervalMs).IsEqualTo(199);
+        await Assert.That(service.Current.MemoryWatcher.Backend).IsEqualTo(MemoryBackendMode.MemoryWatcher);
+        await Assert.That(service.Current.MemoryWatcher.EventBufferCapacity).IsEqualTo(4096);
+        await Assert.That(service.Current.MemoryWatcher.HashBlockSizeBytes).IsEqualTo(160);
+        await Assert.That(service.Current.MemoryWatcher.UseHashIndex).IsFalse();
     }
 
     [Test]
@@ -259,6 +370,28 @@ public sealed class AppSettingsServiceTests
             .IsEqualTo(
                 "OutbreakTracker:AlertRules:Lobby:NameMatchFilter cannot be empty when NameMatchCreated is enabled."
             );
+    }
+
+    [Test]
+    public async Task TryValidate_Fails_WhenRunReportGenerationIsEnabledWithoutAnyOutputFormat()
+    {
+        OutbreakTrackerSettings settings = new()
+        {
+            RunReports = new RunReportSettings
+            {
+                GenerateRunReports = true,
+                WriteMarkdown = false,
+                WriteCsv = false,
+                WriteHtml = false,
+            },
+        };
+
+        bool isValid = settings.TryValidate(out string? error);
+
+        await Assert.That(isValid).IsFalse();
+        await Assert
+            .That(error)
+            .IsEqualTo("OutbreakTracker:RunReports must enable at least one output format when generation is enabled.");
     }
 
     [Test]
@@ -370,6 +503,28 @@ public sealed class AppSettingsServiceTests
                             "ScenarioMatchCreated": false,
                             "ScenarioMatchFilter": ""
                         }
+                    },
+                    "RunReports": {
+                        "GenerateRunReports": true,
+                        "OutputDirectory": "reports",
+                        "WriteMarkdown": true,
+                        "WriteCsv": true,
+                        "WriteHtml": true
+                    },
+                    "DataManager": {
+                        "FastUpdateIntervalMs": 250,
+                        "SlowUpdateIntervalMs": 500
+                    },
+                    "MemoryWatcher": {
+                        "Backend": "Legacy",
+                        "PreferredBackend": "Auto",
+                        "PreferredPrecision": "SnapshotBitExact",
+                        "AllowFallback": true,
+                        "NativeLibraryPath": "",
+                        "AllowIntrusiveBackends": false,
+                        "EventBufferCapacity": 256,
+                        "HashBlockSizeBytes": 64,
+                        "UseHashIndex": true
                     }
                 }
             }

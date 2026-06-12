@@ -3,6 +3,7 @@ using OutbreakTracker2.Application.Services.Data;
 using OutbreakTracker2.Application.Services.Launcher;
 using OutbreakTracker2.Memory.SafeMemory;
 using OutbreakTracker2.Memory.String;
+using OutbreakTracker2.MemoryWatcherIntegration;
 using OutbreakTracker2.Outbreak.Enums;
 using OutbreakTracker2.Outbreak.Models;
 using OutbreakTracker2.Outbreak.Readers;
@@ -20,6 +21,7 @@ public sealed class DataManagerTests
         DataManager manager = new(
             NullLogger<DataManager>.Instance,
             new FakeEEmemMemory(),
+            new FakeMemoryActivitySource(),
             new FakeProcessLauncher(),
             new FakeGameReaderFactory(),
             new DataManagerOptions()
@@ -44,6 +46,7 @@ public sealed class DataManagerTests
         DataManager manager = new(
             NullLogger<DataManager>.Instance,
             eememMemory,
+            new FakeMemoryActivitySource(),
             new FakeProcessLauncher(),
             readerFactory,
             new DataManagerOptions()
@@ -91,6 +94,7 @@ public sealed class DataManagerTests
         DataManager manager = new(
             NullLogger<DataManager>.Instance,
             new FakeEEmemMemory(),
+            new FakeMemoryActivitySource(),
             new FakeProcessLauncher(),
             readerFactory,
             new DataManagerOptions { FastUpdateIntervalMs = 1, SlowUpdateIntervalMs = 25 }
@@ -136,6 +140,7 @@ public sealed class DataManagerTests
         DataManager manager = new(
             NullLogger<DataManager>.Instance,
             new FakeEEmemMemory(),
+            new FakeMemoryActivitySource(),
             new FakeProcessLauncher(),
             readerFactory,
             new DataManagerOptions { FastUpdateIntervalMs = 1, SlowUpdateIntervalMs = 25 }
@@ -166,6 +171,47 @@ public sealed class DataManagerTests
         }
     }
 
+    [Test]
+    public async Task InitializeAsync_EnemySignal_RefreshesEnemiesWithoutRefreshingPlayers()
+    {
+        ScriptedMemoryActivitySource activitySource = new();
+        StableInGameScenarioReader scenarioReader = new(CreateScenario(ScenarioStatus.InGame, frameCounter: 120));
+        CountingDoorReader doorReader = new();
+        CountingEnemiesReader enemiesReader = new();
+        CountingInGamePlayerReader playerReader = new();
+        SelectiveUpdateReaderFactory readerFactory = new(scenarioReader, doorReader, enemiesReader, playerReader);
+        DataManager manager = new(
+            NullLogger<DataManager>.Instance,
+            new FakeEEmemMemory(),
+            activitySource,
+            new FakeProcessLauncher(),
+            readerFactory,
+            new DataManagerOptions { FastUpdateIntervalMs = 1000, SlowUpdateIntervalMs = 1000 }
+        );
+
+        try
+        {
+            await manager.InitializeAsync(new FakeGameClient(), CancellationToken.None);
+
+            await WaitUntilAsync(() => enemiesReader.UpdateCallCount == 1 && playerReader.UpdateCallCount == 1);
+            activitySource.Publish(
+                OutbreakTrackerMemoryActivityResult.Signaled(
+                    OutbreakTrackerMemoryDomains.Enemies,
+                    Environment.TickCount64
+                )
+            );
+
+            await WaitUntilAsync(() => enemiesReader.UpdateCallCount == 2);
+
+            await Assert.That(playerReader.UpdateCallCount).IsEqualTo(1);
+            await Assert.That(doorReader.UpdateCallCount).IsEqualTo(1);
+        }
+        finally
+        {
+            manager.Dispose();
+        }
+    }
+
     private static DecodedInGameScenario CreateScenario(ScenarioStatus status, int frameCounter) =>
         new()
         {
@@ -185,6 +231,16 @@ public sealed class DataManagerTests
             Name = name,
             Type = name,
         };
+
+    private static async Task WaitUntilAsync(Func<bool> condition, int timeoutMilliseconds = 2000)
+    {
+        using CancellationTokenSource timeout = new(TimeSpan.FromMilliseconds(timeoutMilliseconds));
+        while (!condition())
+        {
+            timeout.Token.ThrowIfCancellationRequested();
+            await Task.Delay(10, timeout.Token);
+        }
+    }
 
     private sealed class FakeProcessLauncher : IProcessLauncher
     {
@@ -220,6 +276,60 @@ public sealed class DataManagerTests
         public int GetExitCode(int processId) => 0;
 
         public IGameClient? GetActiveGameClient() => null;
+    }
+
+    private sealed class FakeMemoryActivitySource : IMemoryActivitySource
+    {
+        public async ValueTask<OutbreakTrackerMemoryActivityResult> WaitForActivityAsync(
+            TimeSpan timeout,
+            CancellationToken cancellationToken
+        )
+        {
+            await Task.Delay(timeout, cancellationToken);
+            return OutbreakTrackerMemoryActivityResult.TimedOut(Environment.TickCount64);
+        }
+
+        public void Detach() { }
+    }
+
+    private sealed class ScriptedMemoryActivitySource : IMemoryActivitySource
+    {
+        private readonly System.Threading.Channels.Channel<OutbreakTrackerMemoryActivityResult> _results =
+            System.Threading.Channels.Channel.CreateUnbounded<OutbreakTrackerMemoryActivityResult>();
+
+        public void Publish(OutbreakTrackerMemoryActivityResult result)
+        {
+            _results.Writer.TryWrite(result);
+        }
+
+        public async ValueTask<OutbreakTrackerMemoryActivityResult> WaitForActivityAsync(
+            TimeSpan timeout,
+            CancellationToken cancellationToken
+        )
+        {
+            using CancellationTokenSource timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken
+            );
+            timeoutCts.CancelAfter(timeout);
+
+            try
+            {
+                return await _results.Reader.ReadAsync(timeoutCts.Token);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (OperationCanceledException)
+            {
+                return OutbreakTrackerMemoryActivityResult.TimedOut(Environment.TickCount64);
+            }
+        }
+
+        public void Detach()
+        {
+            _results.Writer.TryComplete();
+        }
     }
 
     private sealed class FakeGameReaderFactory : IGameReaderFactory
@@ -282,6 +392,38 @@ public sealed class DataManagerTests
 
         public IEnemiesReader CreateEnemiesReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
             new FakeEnemiesReader();
+
+        public IInGamePlayerReader CreateInGamePlayerReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
+            playerReader;
+
+        public IInGameScenarioReader CreateInGameScenarioReader(
+            IGameClient gameClient,
+            IEEmemAddressReader eememMemory
+        ) => scenarioReader;
+
+        public ILobbyRoomPlayerReader CreateLobbyRoomPlayerReader(
+            IGameClient gameClient,
+            IEEmemAddressReader eememMemory
+        ) => new FakeLobbyRoomPlayerReader();
+
+        public ILobbyRoomReader CreateLobbyRoomReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
+            new FakeLobbyRoomReader();
+
+        public ILobbySlotReader CreateLobbySlotReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
+            new FakeLobbySlotReader();
+    }
+
+    private sealed class SelectiveUpdateReaderFactory(
+        StableInGameScenarioReader scenarioReader,
+        CountingDoorReader doorReader,
+        CountingEnemiesReader enemiesReader,
+        CountingInGamePlayerReader playerReader
+    ) : IGameReaderFactory
+    {
+        public IDoorReader CreateDoorReader(IGameClient gameClient, IEEmemAddressReader eememMemory) => doorReader;
+
+        public IEnemiesReader CreateEnemiesReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
+            enemiesReader;
 
         public IInGamePlayerReader CreateInGamePlayerReader(IGameClient gameClient, IEEmemAddressReader eememMemory) =>
             playerReader;
@@ -396,6 +538,17 @@ public sealed class DataManagerTests
         public void UpdateDoors() { }
     }
 
+    private sealed class CountingDoorReader : IDoorReader
+    {
+        public DecodedDoor[] DecodedDoors { get; } = [];
+
+        public int UpdateCallCount { get; private set; }
+
+        public void Dispose() { }
+
+        public void UpdateDoors() => UpdateCallCount++;
+    }
+
     private sealed class FakeEnemiesReader : IEnemiesReader
     {
         public DecodedEnemy[] DecodedEnemies2 { get; } = [];
@@ -405,6 +558,17 @@ public sealed class DataManagerTests
         public void UpdateEnemies2() { }
     }
 
+    private sealed class CountingEnemiesReader : IEnemiesReader
+    {
+        public DecodedEnemy[] DecodedEnemies2 { get; } = [];
+
+        public int UpdateCallCount { get; private set; }
+
+        public void Dispose() { }
+
+        public void UpdateEnemies2() => UpdateCallCount++;
+    }
+
     private sealed class FakeInGamePlayerReader : IInGamePlayerReader
     {
         public DecodedInGamePlayer[] DecodedInGamePlayers { get; } = [];
@@ -412,6 +576,17 @@ public sealed class DataManagerTests
         public void Dispose() { }
 
         public void UpdateInGamePlayers() { }
+    }
+
+    private sealed class CountingInGamePlayerReader : IInGamePlayerReader
+    {
+        public DecodedInGamePlayer[] DecodedInGamePlayers { get; } = [];
+
+        public int UpdateCallCount { get; private set; }
+
+        public void Dispose() { }
+
+        public void UpdateInGamePlayers() => UpdateCallCount++;
     }
 
     private sealed class ScriptedInGamePlayerReader(DecodedInGamePlayer[][] snapshots) : IInGamePlayerReader
@@ -501,6 +676,28 @@ public sealed class DataManagerTests
                 if (Interlocked.CompareExchange(ref _nextIndex, current + 1, current) == current)
                     return;
             }
+        }
+    }
+
+    private sealed class StableInGameScenarioReader : IInGameScenarioReader
+    {
+        private readonly DecodedInGameScenario _scenario;
+
+        public StableInGameScenarioReader(DecodedInGameScenario scenario)
+        {
+            _scenario = scenario;
+            DecodedScenario = scenario;
+        }
+
+        public DecodedInGameScenario DecodedScenario { get; private set; }
+
+        public void Dispose() { }
+
+        public bool IsInScenario() => true;
+
+        public void UpdateScenario()
+        {
+            DecodedScenario = _scenario;
         }
     }
 

@@ -28,7 +28,7 @@ public sealed partial class ClientNotRunningViewModel(
     private IDisposable? _isCancellingSubscription;
     private CancellationTokenSource? _launchCancellationTokenSource;
 
-    private const byte LaunchTimeout = 3;
+    private static readonly TimeSpan LaunchTimeout = TimeSpan.FromSeconds(10);
 
     [ObservableProperty]
     private bool _isClientLaunching;
@@ -125,7 +125,7 @@ public sealed partial class ClientNotRunningViewModel(
             }
 
             string arguments = $"-fastboot -nofullscreen -- \"{isoPath}\"";
-            using CancellationTokenSource timeoutCts = new(TimeSpan.FromSeconds(LaunchTimeout));
+            using CancellationTokenSource timeoutCts = new(LaunchTimeout);
             using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
                 launchCts.Token,
                 timeoutCts.Token

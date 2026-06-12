@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Cysharp.Diagnostics;
 using Microsoft.Extensions.Logging;
-using OutbreakTracker2.Application.Utilities;
+using OutbreakTracker2.Extensions;
 using OutbreakTracker2.PCSX2.Client;
 using R3;
 
@@ -341,8 +341,12 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
         if (sender is not Process process)
             return;
 
-        _processes.TryRemove(process.Id, out _);
-        _clientProcessIds.TryRemove(process.Id, out _);
+        int processId = process.GetSafeId();
+        if (processId >= 0)
+        {
+            _processes.TryRemove(processId, out _);
+            _clientProcessIds.TryRemove(processId, out _);
+        }
 
         IGameClient? exitedGameClient = ClearClientStateIfMonitoredProcessMatches(process);
         exitedGameClient?.Dispose();
@@ -351,7 +355,7 @@ public sealed class ProcessLauncher(ILogger<ProcessLauncher> logger, IGameClient
             new ProcessModel
             {
                 IsRunning = false,
-                Id = process.Id,
+                Id = processId,
                 ExitCode = process.GetSafeExitCode(),
             }
         );
