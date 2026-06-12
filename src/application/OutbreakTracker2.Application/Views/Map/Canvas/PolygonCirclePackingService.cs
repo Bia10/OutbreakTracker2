@@ -13,7 +13,9 @@ public sealed class PolygonCirclePackingService : IPolygonCirclePackingService
     private const int CenterSearchGridSize = 10;
     private const int CenterSearchRefinementPasses = 4;
     private const int StackCandidateLimit = 16;
-    private const int ParallelSearchCircleThreshold = 3;
+    private const int AsyncDispatchCircleThreshold = 3;
+    private const int ParallelSearchCircleThreshold = 6;
+    private const int MaximumParallelSearchDegree = 4;
 
     public PolygonCirclePackingResult Pack(PolygonCirclePackingRequest request)
     {
@@ -173,7 +175,8 @@ public sealed class PolygonCirclePackingService : IPolygonCirclePackingService
         ParallelOptions parallelOptions = new()
         {
             CancellationToken = cancellationToken,
-            MaxDegreeOfParallelism = Environment.ProcessorCount,
+            // Small room layouts do not benefit from saturating every core.
+            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, MaximumParallelSearchDegree),
         };
 
         Parallel.For<SearchWorkerState>(
@@ -402,7 +405,7 @@ public sealed class PolygonCirclePackingService : IPolygonCirclePackingService
     }
 
     private static bool ShouldDispatchAsync(int circleCount) =>
-        circleCount >= ParallelSearchCircleThreshold && Environment.ProcessorCount > 1;
+        circleCount >= AsyncDispatchCircleThreshold && Environment.ProcessorCount > 1;
 
     private static bool ShouldUseParallelSearch(int circleCount) =>
         circleCount >= ParallelSearchCircleThreshold && Environment.ProcessorCount > 1;
