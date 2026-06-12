@@ -10,6 +10,7 @@ using R3;
 
 namespace OutbreakTracker2.UnitTests;
 
+[NotInParallel("UiSynchronizationContext")]
 public sealed class InGameEnemiesViewModelTests
 {
     [Test]

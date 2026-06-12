@@ -3,6 +3,7 @@ using OutbreakTracker2.Application.Views.Map.Canvas;
 
 namespace OutbreakTracker2.UnitTests;
 
+[ParallelLimiter<GeometryPackingParallelLimit>]
 public sealed class PolygonCirclePackingServiceTests
 {
     private static readonly IPolygonCirclePackingService Service = new PolygonCirclePackingService();

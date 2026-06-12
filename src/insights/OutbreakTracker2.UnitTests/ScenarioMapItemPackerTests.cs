@@ -12,6 +12,7 @@ using OutbreakTracker2.Outbreak.Models;
 
 namespace OutbreakTracker2.UnitTests;
 
+[ParallelLimiter<GeometryPackingParallelLimit>]
 public sealed class ScenarioMapItemPackerTests
 {
     private static readonly IPolygonCirclePackingService CirclePackingService = new PolygonCirclePackingService();

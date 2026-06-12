@@ -16,6 +16,7 @@ using SukiUI.Toasts;
 
 namespace OutbreakTracker2.UnitTests;
 
+[NotInParallel("UiSynchronizationContext")]
 public sealed class ScenarioItemsDockViewModelTests
 {
     [Test]
