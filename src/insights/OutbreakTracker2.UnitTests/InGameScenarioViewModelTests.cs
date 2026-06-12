@@ -29,20 +29,22 @@ public sealed class InGameScenarioViewModelTests
         using FakeScenarioDataSource dataSource = new();
         using FakeAppSettingsService settingsService = new();
         using TestSynchronizationContextScope scope = new();
+        TrackingDispatcherService scenarioItemsDispatcher = new();
         using ScenarioItemsViewModel scenarioItems = new(
             NullLogger<ScenarioItemsViewModel>.Instance,
             dataSource,
-            new ImmediateDispatcherService(),
+            scenarioItemsDispatcher,
             new NullToastService(),
             new StubItemImageViewModelFactory()
         );
+        TrackingDispatcherService scenarioEnemiesDispatcher = new();
         using ScenarioEnemiesViewModel scenarioEnemies = new(
             NullLogger<ScenarioEnemiesViewModel>.Instance,
             dataSource,
             settingsService,
-            new ImmediateDispatcherService()
+            scenarioEnemiesDispatcher
         );
-        CountingDispatcherService dispatcher = new();
+        TrackingDispatcherService dispatcher = new();
         using InGameScenarioViewModel viewModel = new(
             NullLogger<InGameScenarioViewModel>.Instance,
             dataSource,
@@ -102,12 +104,17 @@ public sealed class InGameScenarioViewModelTests
             },
         ];
 
+        int scenarioItemsBaseline = scenarioItemsDispatcher.InvocationCount;
+        int scenarioEnemiesBaseline = scenarioEnemiesDispatcher.InvocationCount;
+        int scenarioBaseline = dispatcher.InvocationCount;
         dataSource.PublishOverview(new InGameOverviewSnapshot(scenario, players, enemies, doors));
+        await Task.WhenAll(
+            scenarioItemsDispatcher.WaitForInvocationCountAsync(scenarioItemsBaseline + 1),
+            scenarioEnemiesDispatcher.WaitForInvocationCountAsync(scenarioEnemiesBaseline + 1),
+            dispatcher.WaitForInvocationCountAsync(scenarioBaseline + 1)
+        );
 
-        await dispatcher.WaitForInvocationCountAsync(1);
-        await Task.Delay(100);
-
-        await Assert.That(dispatcher.InvocationCount).IsEqualTo(1);
+        await Assert.That(dispatcher.InvocationCount - scenarioBaseline).IsEqualTo(1);
         await Assert.That(viewModel.FrameCounter).IsEqualTo(120);
         await Assert.That((int)viewModel.PlayerCount).IsEqualTo(1);
         await Assert.That(viewModel.PlayerCountDisplay).IsEqualTo($"1/{GameConstants.MaxPlayers}");
@@ -121,17 +128,19 @@ public sealed class InGameScenarioViewModelTests
         using TestSynchronizationContextScope scope = new();
         using FakeScenarioDataSource dataSource = new();
         using FakeAppSettingsService settingsService = new();
+        TrackingDispatcherService scenarioItemsDispatcher = new();
         using ScenarioItemsViewModel scenarioItems = new(
             NullLogger<ScenarioItemsViewModel>.Instance,
             dataSource,
-            new ImmediateDispatcherService(),
+            scenarioItemsDispatcher,
             new NullToastService(),
             new StubItemImageViewModelFactory()
         );
+        TrackingDispatcherService scenarioDispatcher = new();
         using InGameScenarioViewModel viewModel = new(
             NullLogger<InGameScenarioViewModel>.Instance,
             dataSource,
-            new ImmediateDispatcherService(),
+            scenarioDispatcher,
             settingsService,
             new ScenarioEntityCommands(),
             new ScenarioViewModelRouter([])
@@ -159,8 +168,13 @@ public sealed class InGameScenarioViewModelTests
             Items = items,
         };
 
+        int scenarioItemsBaseline = scenarioItemsDispatcher.InvocationCount;
+        int scenarioBaseline = scenarioDispatcher.InvocationCount;
         dataSource.PublishOverview(new InGameOverviewSnapshot(scenario, [], [], []));
-        await Task.Delay(100);
+        await Task.WhenAll(
+            scenarioItemsDispatcher.WaitForInvocationCountAsync(scenarioItemsBaseline + 1),
+            scenarioDispatcher.WaitForInvocationCountAsync(scenarioBaseline + 1)
+        );
 
         await Assert.That(scenario.Items[0].RoomName).IsEqualTo(string.Empty);
         await Assert.That(scenario.Items[0].PickedUpByName).IsEqualTo(string.Empty);
@@ -174,15 +188,17 @@ public sealed class InGameScenarioViewModelTests
         using TestSynchronizationContextScope scope = new();
         using FakeScenarioDataSource dataSource = new();
         using FakeAppSettingsService settingsService = new();
+        TrackingDispatcherService dispatcher = new();
         using InGameScenarioViewModel viewModel = new(
             NullLogger<InGameScenarioViewModel>.Instance,
             dataSource,
-            new ImmediateDispatcherService(),
+            dispatcher,
             settingsService,
             new ScenarioEntityCommands(),
             new ScenarioViewModelRouter([])
         );
 
+        int baseline = dispatcher.InvocationCount;
         dataSource.PublishOverview(
             new InGameOverviewSnapshot(
                 new DecodedInGameScenario
@@ -197,7 +213,7 @@ public sealed class InGameScenarioViewModelTests
                 []
             )
         );
-        await Task.Delay(100);
+        await dispatcher.WaitForInvocationCountAsync(baseline + 1);
 
         await Assert.That(viewModel.Status).IsEqualTo(ScenarioStatus.GameFinished);
         await Assert.That(viewModel.FrameCounter).IsEqualTo(120);
@@ -212,15 +228,17 @@ public sealed class InGameScenarioViewModelTests
         using TestSynchronizationContextScope scope = new();
         using FakeScenarioDataSource dataSource = new();
         using FakeAppSettingsService settingsService = new();
+        TrackingDispatcherService dispatcher = new();
         using InGameScenarioViewModel viewModel = new(
             NullLogger<InGameScenarioViewModel>.Instance,
             dataSource,
-            new ImmediateDispatcherService(),
+            dispatcher,
             settingsService,
             new ScenarioEntityCommands(),
             new ScenarioViewModelRouter([])
         );
 
+        int publishBaseline = dispatcher.InvocationCount;
         dataSource.PublishOverview(
             new InGameOverviewSnapshot(
                 new DecodedInGameScenario
@@ -235,15 +253,16 @@ public sealed class InGameScenarioViewModelTests
                 []
             )
         );
-        await Task.Delay(100);
+        await dispatcher.WaitForInvocationCountAsync(publishBaseline + 1);
 
         await Assert.That(viewModel.IsScenarioActive).IsFalse();
         await Assert.That(viewModel.IsScenarioNotActive).IsTrue();
 
+        int settingsBaseline = dispatcher.InvocationCount;
         settingsService.SetCurrent(
             new OutbreakTrackerSettings { Display = new DisplaySettings { ShowGameplayUiDuringTransitions = true } }
         );
-        await Task.Delay(100);
+        await dispatcher.WaitForInvocationCountAsync(settingsBaseline + 1);
 
         await Assert.That(viewModel.IsScenarioActive).IsTrue();
         await Assert.That(viewModel.IsScenarioNotActive).IsFalse();
@@ -254,10 +273,11 @@ public sealed class InGameScenarioViewModelTests
     {
         using TestSynchronizationContextScope scope = new();
         using FakeScenarioDataSource dataSource = new();
+        TrackingDispatcherService dispatcher = new();
         using ScenarioItemsViewModel scenarioItems = new(
             NullLogger<ScenarioItemsViewModel>.Instance,
             dataSource,
-            new ImmediateDispatcherService(),
+            dispatcher,
             new NullToastService(),
             new StubItemImageViewModelFactory()
         );
@@ -275,6 +295,7 @@ public sealed class InGameScenarioViewModelTests
             RoomId = 3,
         };
 
+        int stableBaseline = dispatcher.InvocationCount;
         dataSource.PublishOverview(
             new InGameOverviewSnapshot(
                 new DecodedInGameScenario
@@ -290,11 +311,12 @@ public sealed class InGameScenarioViewModelTests
                 []
             )
         );
-        await Task.Delay(100);
+        await dispatcher.WaitForInvocationCountAsync(stableBaseline + 1);
 
         await Assert.That(scenarioItems.Items[0].DisplayName).IsEqualTo("Green Herb");
         await Assert.That(scenarioItems.Items[0].RoomName).IsEqualTo(Scenario.Unknown.GetRoomName(3));
 
+        int transitionBaseline = dispatcher.InvocationCount;
         dataSource.PublishOverview(
             new InGameOverviewSnapshot(
                 new DecodedInGameScenario
@@ -310,7 +332,7 @@ public sealed class InGameScenarioViewModelTests
                 []
             )
         );
-        await Task.Delay(100);
+        await dispatcher.WaitForInvocationCountAsync(transitionBaseline + 1);
 
         await Assert.That(scenarioItems.Items[0].DisplayName).IsEqualTo("Green Herb");
         await Assert.That(scenarioItems.Items[0].RoomName).IsEqualTo(Scenario.Unknown.GetRoomName(3));
@@ -408,23 +430,26 @@ public sealed class InGameScenarioViewModelTests
         public void Dispose() => _settings.Dispose();
     }
 
-    private sealed class CountingDispatcherService : IDispatcherService
+    private sealed class TrackingDispatcherService : IDispatcherService
     {
-        private readonly TaskCompletionSource _firstInvocation = new(
-            TaskCreationOptions.RunContinuationsAsynchronously
-        );
+        private readonly Lock _gate = new();
+        private readonly List<DispatcherWaiter> _waiters = [];
 
         public int InvocationCount { get; private set; }
 
         public bool IsOnUIThread() => true;
 
-        public void PostOnUI(Action action) => action();
+        public void PostOnUI(Action action)
+        {
+            action();
+            RegisterInvocation();
+        }
 
         public Task InvokeOnUIAsync(Action action, CancellationToken cancellationToken = default)
         {
-            InvocationCount++;
+            cancellationToken.ThrowIfCancellationRequested();
             action();
-            _firstInvocation.TrySetResult();
+            RegisterInvocation();
             return Task.CompletedTask;
         }
 
@@ -433,19 +458,79 @@ public sealed class InGameScenarioViewModelTests
             CancellationToken cancellationToken = default
         )
         {
-            InvocationCount++;
+            cancellationToken.ThrowIfCancellationRequested();
             TResult result = action();
-            _firstInvocation.TrySetResult();
+            RegisterInvocation();
             return Task.FromResult<TResult?>(result);
         }
 
-        public async Task WaitForInvocationCountAsync(int expected)
+        public async Task WaitForInvocationCountAsync(int expectedCount)
         {
-            if (InvocationCount >= expected)
-                return;
+            Task waitTask;
+
+            lock (_gate)
+            {
+                if (InvocationCount >= expectedCount)
+                    return;
+
+                TaskCompletionSource completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                _waiters.Add(new DispatcherWaiter(expectedCount, completion));
+                waitTask = completion.Task;
+            }
 
             using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(2));
-            await _firstInvocation.Task.WaitAsync(timeout.Token);
+            await waitTask.WaitAsync(timeout.Token);
+        }
+
+        private void RegisterInvocation()
+        {
+            List<TaskCompletionSource>? completedWaiters = null;
+
+            lock (_gate)
+            {
+                InvocationCount++;
+
+                for (int index = _waiters.Count - 1; index >= 0; index--)
+                {
+                    DispatcherWaiter waiter = _waiters[index];
+                    if (InvocationCount < waiter.ExpectedCount)
+                        continue;
+
+                    completedWaiters ??= [];
+                    completedWaiters.Add(waiter.Completion);
+                    _waiters.RemoveAt(index);
+                }
+            }
+
+            if (completedWaiters is null)
+                return;
+
+            foreach (TaskCompletionSource waiter in completedWaiters)
+                waiter.TrySetResult();
+        }
+
+        private readonly record struct DispatcherWaiter(int ExpectedCount, TaskCompletionSource Completion);
+    }
+
+    private sealed class ImmediateDispatcherService : IDispatcherService
+    {
+        public bool IsOnUIThread() => true;
+
+        public void PostOnUI(Action action) => action();
+
+        public Task InvokeOnUIAsync(Action action, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            action();
+            return Task.CompletedTask;
+        }
+
+        public Task<TResult?> InvokeOnUIAsync<TResult>(
+            Func<TResult> action,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult<TResult?>(action());
         }
     }
 
@@ -498,24 +583,6 @@ public sealed class InGameScenarioViewModelTests
     {
         public ImageViewModel Create() =>
             new(NullLogger<ImageViewModel>.Instance, new StubTextureAtlasService(), new ImmediateDispatcherService());
-    }
-
-    private sealed class ImmediateDispatcherService : IDispatcherService
-    {
-        public bool IsOnUIThread() => true;
-
-        public void PostOnUI(Action action) => action();
-
-        public Task InvokeOnUIAsync(Action action, CancellationToken cancellationToken = default)
-        {
-            action();
-            return Task.CompletedTask;
-        }
-
-        public Task<TResult?> InvokeOnUIAsync<TResult>(
-            Func<TResult> action,
-            CancellationToken cancellationToken = default
-        ) => Task.FromResult<TResult?>(action());
     }
 
     private sealed class StubTextureAtlasService : ITextureAtlasService

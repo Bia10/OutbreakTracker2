@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.ComponentModel;
+using Avalonia;
 using Avalonia.Media.Imaging;
 using Microsoft.Extensions.Logging.Abstractions;
 using OutbreakTracker2.Application.Services.Atlas;
@@ -40,16 +41,12 @@ public sealed class MapCanvasViewModelTests
         dataSource.SetScenario(new DecodedInGameScenario { Status = ScenarioStatus.InGame });
         dataSource.SetInGamePlayers([]);
 
-        bool failureObserved = SpinWait.SpinUntil(
-            () => dispatcherService.PostFailureCount == 1,
-            TimeSpan.FromSeconds(2)
-        );
-        await Assert.That(failureObserved).IsTrue();
+        await dispatcherService.WaitForFailureAsync();
 
         dataSource.SetInGamePlayers([new DecodedInGamePlayer { IsEnabled = true, IsInGame = true }]);
 
-        bool resumed = SpinWait.SpinUntil(() => viewModel.IsInGame, TimeSpan.FromSeconds(2));
-        await Assert.That(resumed).IsTrue();
+        await WaitForConditionAsync(viewModel, () => viewModel.IsInGame);
+        await Assert.That(viewModel.IsInGame).IsTrue();
     }
 
     [Test]
@@ -77,8 +74,8 @@ public sealed class MapCanvasViewModelTests
             new OutbreakTrackerSettings { Display = new DisplaySettings { ShowGameplayUiDuringTransitions = true } }
         );
 
-        bool becameVisible = SpinWait.SpinUntil(() => viewModel.IsInGame, TimeSpan.FromSeconds(2));
-        await Assert.That(becameVisible).IsTrue();
+        await WaitForConditionAsync(viewModel, () => viewModel.IsInGame);
+        await Assert.That(viewModel.IsInGame).IsTrue();
     }
 
     [Test]
@@ -178,6 +175,35 @@ public sealed class MapCanvasViewModelTests
             new NullToastService(),
             new StubItemImageViewModelFactory()
         );
+
+    private static async Task WaitForConditionAsync(INotifyPropertyChanged source, Func<bool> condition)
+    {
+        if (condition())
+            return;
+
+        TaskCompletionSource completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        void OnPropertyChanged(object? _, PropertyChangedEventArgs __)
+        {
+            if (condition())
+                completion.TrySetResult();
+        }
+
+        source.PropertyChanged += OnPropertyChanged;
+
+        try
+        {
+            if (condition())
+                return;
+
+            using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(2));
+            await completion.Task.WaitAsync(timeout.Token);
+        }
+        finally
+        {
+            source.PropertyChanged -= OnPropertyChanged;
+        }
+    }
 
     private sealed class FakeDataSource : IDataObservableSource, IDisposable
     {
@@ -375,6 +401,9 @@ public sealed class MapCanvasViewModelTests
     private sealed class FlakyDispatcherService : IDispatcherService
     {
         private int _remainingPostFailures = 1;
+        private readonly TaskCompletionSource _failureObserved = new(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
 
         public int PostFailureCount { get; private set; }
 
@@ -387,6 +416,7 @@ public sealed class MapCanvasViewModelTests
             if (Interlocked.Decrement(ref _remainingPostFailures) >= 0)
             {
                 PostFailureCount++;
+                _failureObserved.TrySetResult();
                 throw new InvalidOperationException("Simulated dispatcher failure.");
             }
 
@@ -407,6 +437,15 @@ public sealed class MapCanvasViewModelTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult<TResult?>(action());
+        }
+
+        public async Task WaitForFailureAsync()
+        {
+            if (PostFailureCount > 0)
+                return;
+
+            using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(2));
+            await _failureObserved.Task.WaitAsync(timeout.Token);
         }
     }
 }
