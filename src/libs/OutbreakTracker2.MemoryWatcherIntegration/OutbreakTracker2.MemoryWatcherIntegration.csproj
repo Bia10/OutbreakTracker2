@@ -3,8 +3,10 @@
     <NoWarn>$(NoWarn);MA0048;CA1416</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OutbreakTracker2.Extensions\OutbreakTracker2.Extensions.csproj" />
     <ProjectReference Include="..\OutbreakTracker2.LinuxInterop\OutbreakTracker2.LinuxInterop.csproj" />
     <ProjectReference Include="..\OutbreakTracker2.Memory\OutbreakTracker2.Memory.csproj" />
+    <ProjectReference Include="..\OutbreakTracker2.Outbreak\OutbreakTracker2.Outbreak.csproj" />
     <ProjectReference Include="..\OutbreakTracker2.PCSX2\OutbreakTracker2.PCSX2.csproj" />
     <ProjectReference Include="..\OutbreakTracker2.WinInterop\OutbreakTracker2.WinInterop.csproj" />
   </ItemGroup>
