@@ -65,7 +65,6 @@ public sealed partial class InGamePlayersViewModel : ObservableObject, IAsyncDis
                         ScenarioItems: scenario.Items
                     )
             )
-            .ObserveOnThreadPool()
             .SubscribeAwait(
                 async (data, ct) =>
                 {

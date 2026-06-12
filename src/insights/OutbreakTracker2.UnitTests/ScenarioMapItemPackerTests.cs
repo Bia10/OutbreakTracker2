@@ -27,30 +27,37 @@ public sealed class ScenarioMapItemPackerTests
         );
         ScenarioItemSlotViewModel[] items = CreateItems(roomId: 1, roomName: "Test room", count: 6);
 
-        IReadOnlyList<ScenarioMapItemPlacement> placements = await ScenarioMapItemPacker.CreateLayoutAsync(
-            section,
-            items,
-            CirclePackingService
-        );
-
-        await Assert.That(placements.Count).IsEqualTo(6);
-
-        for (int i = 0; i < placements.Count; i++)
+        try
         {
-            ScenarioMapItemPlacement placement = placements[i];
-            await Assert.That(placement.CenterX - placement.Radius >= 10).IsTrue();
-            await Assert.That(placement.CenterX + placement.Radius <= 90).IsTrue();
-            await Assert.That(placement.CenterY - placement.Radius >= 10).IsTrue();
-            await Assert.That(placement.CenterY + placement.Radius <= 90).IsTrue();
+            IReadOnlyList<ScenarioMapItemPlacement> placements = await ScenarioMapItemPacker.CreateLayoutAsync(
+                section,
+                items,
+                CirclePackingService
+            );
 
-            for (int j = i + 1; j < placements.Count; j++)
+            await Assert.That(placements.Count).IsEqualTo(6);
+
+            for (int i = 0; i < placements.Count; i++)
             {
-                ScenarioMapItemPlacement other = placements[j];
-                double dx = placement.CenterX - other.CenterX;
-                double dy = placement.CenterY - other.CenterY;
-                double minDistance = placement.Radius + other.Radius;
-                await Assert.That((dx * dx) + (dy * dy) >= (minDistance * minDistance)).IsTrue();
+                ScenarioMapItemPlacement placement = placements[i];
+                await Assert.That(placement.CenterX - placement.Radius >= 10).IsTrue();
+                await Assert.That(placement.CenterX + placement.Radius <= 90).IsTrue();
+                await Assert.That(placement.CenterY - placement.Radius >= 10).IsTrue();
+                await Assert.That(placement.CenterY + placement.Radius <= 90).IsTrue();
+
+                for (int j = i + 1; j < placements.Count; j++)
+                {
+                    ScenarioMapItemPlacement other = placements[j];
+                    double dx = placement.CenterX - other.CenterX;
+                    double dy = placement.CenterY - other.CenterY;
+                    double minDistance = placement.Radius + other.Radius;
+                    await Assert.That((dx * dx) + (dy * dy) >= (minDistance * minDistance)).IsTrue();
+                }
             }
+        }
+        finally
+        {
+            DisposeItems(items);
         }
     }
 
@@ -63,19 +70,26 @@ public sealed class ScenarioMapItemPackerTests
         MapRoomGeometry waitingRoom = section.Rooms.Single(room => room.RoomId == 1);
         ScenarioItemSlotViewModel[] items = CreateItems(roomId: 1, roomName: "Waiting room", count: 4);
 
-        IReadOnlyList<ScenarioMapItemPlacement> placements = ScenarioMapItemPacker.CreateLayout(
-            section,
-            items,
-            CirclePackingService
-        );
-
-        await Assert.That(placements.Count).IsEqualTo(4);
-
-        foreach (ScenarioMapItemPlacement placement in placements)
+        try
         {
-            await Assert
-                .That(IsCircleInsideRoom(waitingRoom, placement.CenterX, placement.CenterY, placement.Radius))
-                .IsTrue();
+            IReadOnlyList<ScenarioMapItemPlacement> placements = ScenarioMapItemPacker.CreateLayout(
+                section,
+                items,
+                CirclePackingService
+            );
+
+            await Assert.That(placements.Count).IsEqualTo(4);
+
+            foreach (ScenarioMapItemPlacement placement in placements)
+            {
+                await Assert
+                    .That(IsCircleInsideRoom(waitingRoom, placement.CenterX, placement.CenterY, placement.Radius))
+                    .IsTrue();
+            }
+        }
+        finally
+        {
+            DisposeItems(items);
         }
     }
 
@@ -103,6 +117,12 @@ public sealed class ScenarioMapItemPackerTests
         }
 
         return items;
+    }
+
+    private static void DisposeItems(IEnumerable<ScenarioItemSlotViewModel> items)
+    {
+        foreach (ScenarioItemSlotViewModel item in items)
+            item.Dispose();
     }
 
     private static bool IsCircleInsideRoom(MapRoomGeometry room, double centerX, double centerY, double radius)

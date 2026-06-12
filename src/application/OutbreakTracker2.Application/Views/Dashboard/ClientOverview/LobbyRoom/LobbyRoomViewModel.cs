@@ -76,17 +76,15 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
         try
         {
             _subscriptions.Add(
-                dataObservable
-                    .IsAtLobbyObservable.ObserveOnThreadPool()
-                    .SubscribeAwait(
-                        async (isAtLobby, cancellationToken) =>
-                        {
-                            await _dispatcherService
-                                .InvokeOnUIAsync(() => IsAtLobby = isAtLobby, cancellationToken)
-                                .ConfigureAwait(false);
-                        },
-                        AwaitOperation.Drop
-                    )
+                dataObservable.IsAtLobbyObservable.SubscribeAwait(
+                    async (isAtLobby, cancellationToken) =>
+                    {
+                        await _dispatcherService
+                            .InvokeOnUIAsync(() => IsAtLobby = isAtLobby, cancellationToken)
+                            .ConfigureAwait(false);
+                    },
+                    AwaitOperation.Drop
+                )
             );
 
             _subscriptions.Add(
@@ -97,7 +95,6 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
                     )
                     .Where(static state => state.IsAtLobby)
                     .Select(static state => state.LobbyData)
-                    .ObserveOnThreadPool()
                     .SubscribeAwait(
                         async (lobbyData, cancellationToken) =>
                         {
@@ -125,7 +122,6 @@ public sealed partial class LobbyRoomViewModel : ObservableObject, IAsyncDisposa
                     )
                     .Where(static state => state.IsAtLobby)
                     .Select(static state => state.Players)
-                    .ObserveOnThreadPool()
                     .SubscribeAwait(
                         async (incomingPlayersSnapshot, cancellationToken) =>
                         {

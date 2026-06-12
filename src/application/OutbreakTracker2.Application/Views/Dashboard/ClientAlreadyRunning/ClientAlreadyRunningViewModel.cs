@@ -9,7 +9,7 @@ using OutbreakTracker2.Extensions;
 
 namespace OutbreakTracker2.Application.Views.Dashboard.ClientAlreadyRunning;
 
-public sealed partial class ClientAlreadyRunningViewModel : ObservableObject
+public sealed partial class ClientAlreadyRunningViewModel : ObservableObject, IDisposable
 {
     private readonly ILogger<ClientAlreadyRunningViewModel> _logger;
     private readonly IProcessLauncher _processLauncher;
@@ -99,4 +99,6 @@ public sealed partial class ClientAlreadyRunningViewModel : ObservableObject
             await _toastService.InvokeErrorToastAsync($"Termination failed: {ex.Message}").ConfigureAwait(false);
         }
     }
+
+    public void Dispose() => RunningProcessesView.Dispose();
 }

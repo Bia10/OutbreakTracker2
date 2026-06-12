@@ -20,7 +20,7 @@ public sealed class ClientAlreadyRunningViewModelTests
 
         try
         {
-            ClientAlreadyRunningViewModel viewModel = new(
+            using ClientAlreadyRunningViewModel viewModel = new(
                 new FakeProcessLauncher(),
                 new FakeGameClientConnectionService(),
                 new FakeToastService(),

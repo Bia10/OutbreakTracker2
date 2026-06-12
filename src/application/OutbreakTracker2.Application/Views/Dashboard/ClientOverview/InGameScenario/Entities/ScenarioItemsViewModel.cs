@@ -53,28 +53,26 @@ public sealed partial class ScenarioItemsViewModel : ObservableObject, IDisposab
         RoomGroups = _roomGroups.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
         _disposables.Add(
-            dataObservable
-                .InGameOverviewObservable.ObserveOnThreadPool()
-                .SubscribeAwait(
-                    async (snapshot, cancellationToken) =>
+            dataObservable.InGameOverviewObservable.SubscribeAwait(
+                async (snapshot, cancellationToken) =>
+                {
+                    try
                     {
-                        try
-                        {
-                            await dispatcherService
-                                .InvokeOnUIAsync(() => ApplySnapshot(snapshot), cancellationToken)
-                                .ConfigureAwait(false);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            _logger.LogInformation("Scenario item update processing cancelled");
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error during scenario item update processing cycle");
-                        }
-                    },
-                    AwaitOperation.Drop
-                )
+                        await dispatcherService
+                            .InvokeOnUIAsync(() => ApplySnapshot(snapshot), cancellationToken)
+                            .ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _logger.LogInformation("Scenario item update processing cancelled");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error during scenario item update processing cycle");
+                    }
+                },
+                AwaitOperation.Drop
+            )
         );
     }
 

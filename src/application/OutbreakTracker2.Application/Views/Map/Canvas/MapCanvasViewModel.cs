@@ -83,13 +83,11 @@ public sealed partial class MapCanvasViewModel : ObservableObject, IDisposable
         EnemiesObservable = dataObservable.EnemiesObservable;
 
         _disposables.Add(
-            dataObservable
-                .InGamePlayersObservable.ObserveOnThreadPool()
-                .Subscribe(
-                    onNext: players => dispatcherService.PostOnUI(() => UpdatePlayers(players)),
-                    onErrorResume: ex => _logger.LogError(ex, "Error while monitoring map canvas player state"),
-                    onCompleted: _ => _logger.LogInformation("Map canvas player-state stream completed")
-                )
+            dataObservable.InGamePlayersObservable.Subscribe(
+                onNext: players => dispatcherService.PostOnUI(() => UpdatePlayers(players)),
+                onErrorResume: ex => _logger.LogError(ex, "Error while monitoring map canvas player state"),
+                onCompleted: _ => _logger.LogInformation("Map canvas player-state stream completed")
+            )
         );
 
         _disposables.Add(

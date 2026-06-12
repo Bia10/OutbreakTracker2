@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using MemoryWatcher;
 using MemoryWatcher.Remote;
@@ -24,7 +25,7 @@ public sealed class MemoryWatcherSnapshotCacheTests
             UseHashIndex = false,
         };
 
-        MemoryWatcherSnapshotCache cache = new(
+        using MemoryWatcherSnapshotCache cache = new(
             new FakeMemoryWatchSessionFactory(),
             new OutbreakTrackerMemoryRegionCatalog(),
             settings,
@@ -60,7 +61,7 @@ public sealed class MemoryWatcherSnapshotCacheTests
         };
         FakeMemoryWatchSessionFactory sessionFactory = new();
         OutbreakTrackerMemoryRegionCatalog regionCatalog = new();
-        MemoryWatcherSnapshotCache cache = new(
+        using MemoryWatcherSnapshotCache cache = new(
             sessionFactory,
             regionCatalog,
             settings,
@@ -121,7 +122,7 @@ public sealed class MemoryWatcherSnapshotCacheTests
         };
         FakeMemoryWatchSessionFactory sessionFactory = new();
         OutbreakTrackerMemoryRegionCatalog regionCatalog = new();
-        MemoryWatcherSnapshotCache cache = new(
+        using MemoryWatcherSnapshotCache cache = new(
             sessionFactory,
             regionCatalog,
             settings,
@@ -236,6 +237,9 @@ public sealed class MemoryWatcherSnapshotCacheTests
 
     private sealed class FakeMemoryWatchHandle(MemoryRegionSpec region) : IMemoryWatchHandle
     {
+        private readonly object _gate = new();
+        private bool _disposed;
+
         public MemoryRegionSpec Region { get; } = region;
 
         public ResolvedMemoryRegion ResolvedRegion => default;
@@ -244,16 +248,48 @@ public sealed class MemoryWatcherSnapshotCacheTests
 
         public MemoryUnitPollResult Poll(Span<MemoryUnitChange> destination) => default;
 
-        public WatchSignalResult WaitForSignal(TimeSpan timeout) => default;
+        public WatchSignalResult WaitForSignal(TimeSpan timeout)
+        {
+            lock (_gate)
+            {
+                if (_disposed)
+                    return CreateResult(WatchSignalStatus.Disposed);
+
+                if (timeout > TimeSpan.Zero)
+                    Monitor.Wait(_gate, timeout);
+
+                return CreateResult(_disposed ? WatchSignalStatus.Disposed : WatchSignalStatus.TimedOut);
+            }
+        }
 
         public bool TryReadSnapshot(Span<byte> destination, out int bytesRead)
         {
-            bytesRead = 0;
-            return false;
+            lock (_gate)
+            {
+                if (_disposed)
+                {
+                    bytesRead = 0;
+                    return false;
+                }
+
+                destination.Clear();
+                bytesRead = destination.Length;
+                return true;
+            }
         }
 
         public MemoryWatcherStats GetStats() => default;
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            lock (_gate)
+            {
+                _disposed = true;
+                Monitor.PulseAll(_gate);
+            }
+        }
+
+        private static WatchSignalResult CreateResult(WatchSignalStatus status) =>
+            new(status, SignalSequence: 0, Stopwatch.GetTimestamp());
     }
 }

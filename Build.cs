@@ -49,8 +49,6 @@ int Test(string[] a)
         "test --project src/insights/OutbreakTracker2.UnitTests/OutbreakTracker2.UnitTests.csproj"
             + $" -c {config}"
             + " --timeout 10m"
-            + " --maximum-parallel-tests 4"
-            + " --parallelism-strategy fixed"
             + $" --results-directory \"{resultsDirectory}\""
             + filterArg,
         repoRoot

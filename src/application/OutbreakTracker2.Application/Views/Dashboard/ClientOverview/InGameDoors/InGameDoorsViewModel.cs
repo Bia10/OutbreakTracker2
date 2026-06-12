@@ -46,63 +46,61 @@ public sealed partial class InGameDoorsViewModel : ObservableObject, IAsyncDispo
 
         DoorsView = Doors.ToNotifyCollectionChanged(SynchronizationContextCollectionEventDispatcher.Current);
 
-        _subscription = trackerRegistry
-            .DoorChanges.Diffs.ObserveOnThreadPool()
-            .SubscribeAwait(
-                async (diff, ct) =>
+        _subscription = trackerRegistry.DoorChanges.Diffs.SubscribeAwait(
+            async (diff, ct) =>
+            {
+                if (diff.Added.Count == 0 && diff.Removed.Count == 0 && diff.Changed.Count == 0)
+                    return;
+
+                _logger.LogDebug(
+                    "Door diff: +{Added} -{Removed} ~{Changed}",
+                    diff.Added.Count,
+                    diff.Removed.Count,
+                    diff.Changed.Count
+                );
+
+                // Prepare new VMs on thread pool — allocation only, no UI dependency
+                List<InGameDoorViewModel>? newVms = null;
+                if (diff.Added.Count > 0)
                 {
-                    if (diff.Added.Count == 0 && diff.Removed.Count == 0 && diff.Changed.Count == 0)
-                        return;
+                    newVms = new(diff.Added.Count);
+                    foreach (DecodedDoor door in diff.Added)
+                        newVms.Add(new InGameDoorViewModel(door));
+                }
 
-                    _logger.LogDebug(
-                        "Door diff: +{Added} -{Removed} ~{Changed}",
-                        diff.Added.Count,
-                        diff.Removed.Count,
-                        diff.Changed.Count
-                    );
+                await _dispatcherService
+                    .InvokeOnUIAsync(
+                        () =>
+                        {
+                            // Individual removes — each fires one CollectionChanged
+                            foreach (DecodedDoor removed in diff.Removed)
+                                if (_viewModelCache.Remove(removed.Id, out InGameDoorViewModel? vm))
+                                    Doors.Remove(vm);
 
-                    // Prepare new VMs on thread pool — allocation only, no UI dependency
-                    List<InGameDoorViewModel>? newVms = null;
-                    if (diff.Added.Count > 0)
-                    {
-                        newVms = new(diff.Added.Count);
-                        foreach (DecodedDoor door in diff.Added)
-                            newVms.Add(new InGameDoorViewModel(door));
-                    }
+                            // In-place property updates — no ObservableList mutation
+                            foreach (EntityChange<DecodedDoor> change in diff.Changed)
+                                if (_viewModelCache.TryGetValue(change.Current.Id, out InGameDoorViewModel? vm))
+                                    vm.Update(change.Current);
 
-                    await _dispatcherService
-                        .InvokeOnUIAsync(
-                            () =>
+                            // Batch add — single CollectionChanged for all new doors
+                            if (newVms is { Count: > 0 })
                             {
-                                // Individual removes — each fires one CollectionChanged
-                                foreach (DecodedDoor removed in diff.Removed)
-                                    if (_viewModelCache.Remove(removed.Id, out InGameDoorViewModel? vm))
-                                        Doors.Remove(vm);
+                                foreach (InGameDoorViewModel vm in newVms)
+                                    _viewModelCache[vm.UniqueId] = vm;
+                                Doors.AddRange(newVms);
+                            }
 
-                                // In-place property updates — no ObservableList mutation
-                                foreach (EntityChange<DecodedDoor> change in diff.Changed)
-                                    if (_viewModelCache.TryGetValue(change.Current.Id, out InGameDoorViewModel? vm))
-                                        vm.Update(change.Current);
-
-                                // Batch add — single CollectionChanged for all new doors
-                                if (newVms is { Count: > 0 })
-                                {
-                                    foreach (InGameDoorViewModel vm in newVms)
-                                        _viewModelCache[vm.UniqueId] = vm;
-                                    Doors.AddRange(newVms);
-                                }
-
-                                HasDoors =
-                                    _scenarioStatus.ShouldShowGameplayUi(_showGameplayUiDuringTransitions)
-                                    && Doors.Count > 0;
-                                _logger.LogDebug("Doors updated: {Count}", Doors.Count);
-                            },
-                            ct
-                        )
-                        .ConfigureAwait(false);
-                },
-                AwaitOperation.Drop
-            );
+                            HasDoors =
+                                _scenarioStatus.ShouldShowGameplayUi(_showGameplayUiDuringTransitions)
+                                && Doors.Count > 0;
+                            _logger.LogDebug("Doors updated: {Count}", Doors.Count);
+                        },
+                        ct
+                    )
+                    .ConfigureAwait(false);
+            },
+            AwaitOperation.Drop
+        );
 
         _scenarioStatusSubscription = dataObservable
             .InGameScenarioObservable.Select(static scenario => scenario.Status)

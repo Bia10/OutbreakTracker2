@@ -72,11 +72,18 @@ public sealed partial class DashboardViewModel : PageBase, IDisposable, IAsyncDi
         );
     }
 
-    public void Dispose() => _disposables.Dispose();
+    public void Dispose()
+    {
+        _disposables.Dispose();
+        ClientAlreadyRunningViewModel?.Dispose();
+        ClientNotRunningViewModel?.Dispose();
+    }
 
     public async ValueTask DisposeAsync()
     {
         _disposables.Dispose();
+        ClientAlreadyRunningViewModel?.Dispose();
+        ClientNotRunningViewModel?.Dispose();
         if (ClientOverviewViewModel is not null)
             await ClientOverviewViewModel.DisposeAsync().ConfigureAwait(false);
     }

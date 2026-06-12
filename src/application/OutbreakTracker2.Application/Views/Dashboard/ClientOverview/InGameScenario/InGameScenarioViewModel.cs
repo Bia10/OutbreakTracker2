@@ -142,36 +142,34 @@ public sealed partial class InGameScenarioViewModel : ObservableObject, IDisposa
         ShowGameplayUiDuringTransitions = GetDisplaySettings(settingsService.Current).ShowGameplayUiDuringTransitions;
 
         _disposables.Add(
-            dataObservable
-                .InGameOverviewObservable.ObserveOnThreadPool()
-                .SubscribeAwait(
-                    async (snapshot, cancellationToken) =>
+            dataObservable.InGameOverviewObservable.SubscribeAwait(
+                async (snapshot, cancellationToken) =>
+                {
+                    _logger.LogTrace("Processing in-game overview snapshot on thread pool");
+                    try
                     {
-                        _logger.LogTrace("Processing in-game overview snapshot on thread pool");
-                        try
-                        {
-                            await dispatcherService
-                                .InvokeOnUIAsync(
-                                    () =>
-                                    {
-                                        _logger.LogTrace("Updating InGameScenarioViewModel on UI thread");
-                                        Update(snapshot.Scenario, snapshot.Players);
-                                    },
-                                    cancellationToken
-                                )
-                                .ConfigureAwait(false);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            _logger.LogInformation("In-game overview snapshot processing cancelled");
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error during in-game overview snapshot processing cycle");
-                        }
-                    },
-                    AwaitOperation.Drop
-                )
+                        await dispatcherService
+                            .InvokeOnUIAsync(
+                                () =>
+                                {
+                                    _logger.LogTrace("Updating InGameScenarioViewModel on UI thread");
+                                    Update(snapshot.Scenario, snapshot.Players);
+                                },
+                                cancellationToken
+                            )
+                            .ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _logger.LogInformation("In-game overview snapshot processing cancelled");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error during in-game overview snapshot processing cycle");
+                    }
+                },
+                AwaitOperation.Drop
+            )
         );
 
         _disposables.Add(
