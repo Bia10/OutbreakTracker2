@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
+using OutbreakTracker2.Extensions;
 using OutbreakTracker2.Memory.SafeMemory;
 using OutbreakTracker2.Memory.String;
 using OutbreakTracker2.PCSX2.Client;
@@ -32,11 +33,13 @@ public sealed class EEmemMemory(ISafeMemoryReader memoryReader, IStringReader st
 
         const int maxAttempts = 20;
         const int delayBetweenAttemptsMs = 100;
+        string processName = _gameClient.Process.GetSafeName() ?? "unknown";
+        int processId = _gameClient.Process.GetSafeId();
 
         _logger.LogInformation(
             "Attempting to initialize EEmemMemory and find base address for PCSX2 process '{ProcessName}' (PID: {ProcessId})...",
-            _gameClient.Process?.ProcessName,
-            _gameClient.Process?.Id
+            processName,
+            processId
         );
 
         for (int i = 0; i < maxAttempts; i++)
@@ -625,13 +628,8 @@ public sealed class EEmemMemory(ISafeMemoryReader memoryReader, IStringReader st
         if (_gameClient is null)
             throw new InvalidOperationException("EEmemMemory not initialized with a GameClient.");
 
-        nint addrNew = nint.Zero;
-        nint addrOld = GetAddressFromPtr(ptrOffset); // BaseAddress + ptrOffset
-
-        foreach (nint offset in offsets)
-            addrNew = addrOld + offset; // This just adds the last offset to (BaseAddress + ptrOffset)
-
-        return addrNew;
+        // OT2 offset "chains" are EE-relative struct offsets, not host-process pointer dereferences.
+        return EEmemOffsetResolver.Resolve(BaseAddress, ptrOffset, offsets);
     }
 
     /// <inheritdoc />
