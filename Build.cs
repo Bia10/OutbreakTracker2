@@ -34,8 +34,25 @@ int Build(string[] a)
 int Test(string[] a)
 {
     var config = a.Length > 1 ? a[1] : "Debug";
-    var filter = a.Length > 2 ? $" --filter \"{a[2]}\"" : "";
-    Run("dotnet", $"test src/OutbreakTracker2.slnx -c {config} --verbosity normal{filter}", repoRoot);
+    var treeFilter = a.Length > 2 ? a[2] : null;
+    var resultsDirectory = Path.Combine(
+        repoRoot,
+        "artifacts",
+        "TestResults",
+        $"build-{DateTime.UtcNow:yyyyMMddHHmmssfff}"
+    );
+    Directory.CreateDirectory(resultsDirectory);
+
+    var filterArg = string.IsNullOrWhiteSpace(treeFilter) ? "" : $" --treenode-filter \"{treeFilter}\"";
+    Run(
+        "dotnet",
+        "test --project src/insights/OutbreakTracker2.UnitTests/OutbreakTracker2.UnitTests.csproj"
+            + $" -c {config}"
+            + " --timeout 10m"
+            + $" --results-directory \"{resultsDirectory}\""
+            + filterArg,
+        repoRoot
+    );
     return 0;
 }
 
@@ -128,7 +145,7 @@ int Help()
 
         Commands:
           build [config]              Build solution (default: Debug)
-          test [config] [filter]      Run tests (default: Debug, all tests)
+          test [config] [tree-filter] Run tests (default: Debug, all tests)
           run [-- app-args]           Run the application
           publish [rid] [config]      Publish self-contained app (default: current RID, Release)
           bench [filter]              Run BenchmarkDotNet benchmarks
